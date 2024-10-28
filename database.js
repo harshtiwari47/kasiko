@@ -9,7 +9,7 @@ if (!fs.existsSync(userDatabasePath)) {
 }
 
 // Helper function to read data from the JSON file
-const readUserData = () => {
+export const readUserData = () => {
     const data = fs.readFileSync(userDatabasePath, 'utf-8');
     return JSON.parse(data);
 };
