@@ -18,6 +18,7 @@ import {
   getUserData,
   updateUser
 } from '../database.js';
+import { leaderboard } from './leaderboard.js';
 
 export default async function textCommands(message) {
   let textMessage = message.content.toLowerCase().trim();
@@ -38,6 +39,10 @@ export default async function textCommands(message) {
   if (args[1] && (args[1].toLowerCase().trim().includes("profile") || args[1].trim() === ".p")) {
     return await profile(message.author.id, message.channel);
   }
+
+  if (args[1] && (args[1].toLowerCase().trim().includes("leaderboard") || args[1].trim() === ".lb")) {
+		return await leaderboard(message)
+	}
   
   // daily login rewards 
   if (args[1] && (args[1].toLowerCase().trim().includes("daily") || args[1].trim() === ".dr")) {
