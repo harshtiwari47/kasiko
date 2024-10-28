@@ -1,11 +1,24 @@
 {
   "1223321207743582211": {
-    "cash": 5000,
-    "networth": 5000,
+    "cash": 9500,
+    "networth": 0,
     "cars": [],
     "houses": [],
     "joined": "2024-10-27T16:54:41.001Z",
+    "dailyReward": "2024-10-28T06:30:16.188Z",
+    "rewardStreak": 1,
+    "charity": 500,
+    "trust": 0,
+    "verified": false
+  },
+  "1276249261498961920": {
+    "cash": 1500,
+    "networth": 1000,
+    "cars": [],
+    "houses": [],
+    "joined": "2024-10-28T07:53:54.251Z",
     "dailyReward": null,
+    "rewardStreak": 0,
     "charity": 0,
     "trust": 0,
     "verified": false

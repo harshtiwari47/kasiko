@@ -13,35 +13,35 @@ async function createUserEmbed(userId, username, userData) {
 
     const embed = new EmbedBuilder()
     .setColor('#ed971e')
-    .setTitle(`<@${userId.toString()}>' Profile ✨`)
-    .setDescription('Building wealth, earning trust, and growing an empire – every journey starts with zero. 💸')
+    .setTitle(`⌞ ⌝  <@${userId.toString()}>' Profile ✨`)
+    .setDescription('Building wealth, earning trust, and growing an empire – every journey starts with zero. 💸\n⟡ ₊ .⋆ ✦⋆𓂁﹏  𓂃⋆.˚ ⊹⟡')
     .addFields(
       {
-        name: 'Cash', value: `<:kasiko_coin:1300141236841086977> ${userData.cash}`, inline: true
+        name: 'ᯓ★𝑪𝒂𝒔𝒉', value: `<:kasiko_coin:1300141236841086977> ${userData.cash}`, inline: true
       },
       {
-        name: 'Net Worth', value: `<:kasiko_coin:1300141236841086977> ${userData.networth}`, inline: true
+        name: 'ᯓ★𝐍𝐞𝐭𝐰𝐨𝐫𝐭𝐡', value: `<:kasiko_coin:1300141236841086977> ${userData.networth}`, inline: true
       },
       {
-        name: 'Cars Owned', value: `${userData.cars.length}`, inline: true
+        name: 'ᯓ★𝐂𝐚𝐫𝐬', value: `${userData.cars.length}`, inline: true
       },
       {
-        name: 'Houses Owned', value: `${userData.houses.length}`, inline: true
+        name: 'ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬', value: `${userData.houses.length}`, inline: true
       },
       {
-        name: 'Daily Reward', value: userData.dailyReward !== null ? userData.dailyReward: 'Not claimed', inline: true
+        name: 'ᯓ★Daily Reward', value: userData.dailyReward !== null ? userData.dailyReward: 'Not claimed', inline: true
       },
       {
-        name: 'Charity', value: `${userData.charity}`, inline: true
+        name: 'ᯓ★Charity', value: `${userData.charity}`, inline: true
       },
       {
-        name: 'Trust Level', value: `${userData.trust}`, inline: true
+        name: 'ᯓ★Trust Level', value: `${userData.trust}`, inline: true
       }
     )
     .setTimestamp()
     .setFooter({
       text: 'Kasiko', iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/cbafd10eba2293768dd9c4c0c7d0623f.png'
-    }); // Replace with your own icon URL if needed
+    }); 
 
     return embed;
   } catch (error) {

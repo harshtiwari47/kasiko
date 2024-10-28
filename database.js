@@ -34,6 +34,7 @@ export const createUser = (userId) => {
         houses: [],
         joined: new Date().toISOString(),
         dailyReward: null,
+        rewardStreak: 0,
         charity: 0,
         trust: 0,
         verified: false
