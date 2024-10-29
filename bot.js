@@ -25,10 +25,11 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', async (message) => {
-  console.log(message);
   
   //return if author is bot
   if (message.author.bot) return;
+  
+  console.log(message);
 
   // check user exist
   if (!userExists(message.author.id)) {

@@ -7,7 +7,7 @@ export async function dailylogin(id, channel) {
   try {
   const today = new Date().toISOString().split('T')[0];
   const todayinMillis = new Date();
-  const user = await channel.guild.members.fetch(id);
+  const guild = await channel.guild.members.fetch(id);
   let userData = getUserData(id);
 
   // Calculate time remaining until nextRewardAt
@@ -25,7 +25,7 @@ export async function dailylogin(id, channel) {
 
   // Check if the dailyReward is set and if it was claimed today
   if (userData.dailyReward && userData.dailyReward.split('T')[0] === today) {
-    channel.send(`Sorry **@${user.username}**, you have **already claimed** your daily reward for today.\nPlease wait ⏳ **${countdown}** until you can claim again. 🎁`);
+    channel.send(`Sorry **@${guild.user.username}**, you have **already claimed** your daily reward for today.\nPlease wait ⏳ **${countdown}** until you can claim again. 🎁`);
   } else {
     // If it's a new claim day, check the streak
     const lastClaimDate = userData.dailyReward ? userData.dailyReward.split('T')[0]: null;
@@ -45,7 +45,7 @@ export async function dailylogin(id, channel) {
 
     // Update the dailyReward to today's date
     userData.dailyReward = new Date().toISOString();
-    channel.send(`🎁 𝑫𝒂𝒊𝒍𝒚 𝒓𝒆𝒘𝒂𝒓𝒅 𝒄𝒍𝒂𝒊𝒎𝒆𝒅!\n **@${user.username}** received <:kasiko_coin:1300141236841086977>**${rewardAmount}** 𝑪𝒂𝒔𝒉. Your current streak is 🔥 **${userData.rewardStreak}** day(s).\n⁠⁠✷ Next reward can be claimed in: ⏳ ${countdown}\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ `);
+    channel.send(`🎁 𝑫𝒂𝒊𝒍𝒚 𝒓𝒆𝒘𝒂𝒓𝒅 𝒄𝒍𝒂𝒊𝒎𝒆𝒅!\n **@${guild.user.username}** received <:kasiko_coin:1300141236841086977>**${rewardAmount}** 𝑪𝒂𝒔𝒉. Your current streak is 🔥 **${userData.rewardStreak}** day(s).\n⁠⁠✷ Next reward can be claimed in: ⏳ ${countdown}\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ `);
 
     // Save the updated user data
     updateUser(id, userData);

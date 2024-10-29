@@ -13,12 +13,13 @@ import {
 import {
   give
 } from './give.js';
+import { sendPaginatedCars, viewCar, usercars, buycar, sellcar} from './cars.js';
+import { leaderboard } from './leaderboard.js';
 
 import {
   getUserData,
   updateUser
 } from '../database.js';
-import { leaderboard } from './leaderboard.js';
 
 export default async function textCommands(message) {
   let textMessage = message.content.toLowerCase().trim();
@@ -39,9 +40,10 @@ export default async function textCommands(message) {
   if (args[1] && (args[1].toLowerCase().trim().includes("profile") || args[1].trim() === ".p")) {
     return await profile(message.author.id, message.channel);
   }
-
+  
+  // leaderboard 
   if (args[1] && (args[1].toLowerCase().trim().includes("leaderboard") || args[1].trim() === ".lb")) {
-		return await leaderboard(message)
+		return await leaderboard(message);
 	}
   
   // daily login rewards 
@@ -84,6 +86,38 @@ export default async function textCommands(message) {
   // Trust Score
   if (args[1] && (args[1].toLowerCase().trim().includes("trust") || args[1].trim() === ".ts")) {
     let userData = getUserData(message.author.id);
-    return message.channel.send(`**@${message.author.username}** has **${userData.charity}** 𝑻𝒓𝒖𝒔𝒕 𝑺𝒄𝒐𝒓𝒆.`);
+    return message.channel.send(`**@${message.author.username}** has **${userData.trust}** 𝑻𝒓𝒖𝒔𝒕 𝑺𝒄𝒐𝒓𝒆.`);
+  }
+  
+  // shop
+  
+  // view Cars List
+  if (args[1] && (args[1].toLowerCase().trim().includes("shop") || args[1].trim() === ".shp") && args[2] && args[2].toLowerCase().trim() === "car") {
+    return await sendPaginatedCars(message);
+  }
+  
+  // view a particular car
+  if (args[1] && (args[1].toLowerCase().trim().includes("cars") || args[1].toLowerCase().trim().includes("car") || args[1].trim() === ".cr") && args[2] && typeof args[2].toLowerCase().trim() === "string" && !args[2].trim().startsWith("<@")) {
+    return await viewCar(args[2].toLowerCase().trim(), message);
+  }
+  
+  // buy car
+  if (args[1] && (args[1].toLowerCase().trim().includes("buy") || args[1].trim() === ".by") && args[2] && args[2].toLowerCase().trim() === "car" && args[3] && typeof args[3].toLowerCase().trim() === "string") {
+    return await buycar(message, args[3].toLowerCase().trim());
+  }
+  
+  // sell car
+  if (args[1] && (args[1].toLowerCase().trim().includes("sell") || args[1].trim() === ".sl") && args[2] && args[2].toLowerCase().trim() === "car" && args[3] && typeof args[3].toLowerCase().trim() === "string") {
+    return await sellcar(message, args[3].toLowerCase().trim());
+  }
+  
+  // view user cars 
+  if (args[1] && (args[1].toLowerCase().trim().includes("cars") || args[1].toLowerCase().trim().includes("car") || args[1].trim() === ".cr") && !args[2]) {
+    return await usercars(message.author.id, message);
+  }
+  
+  // view other's cars
+  if (args[1] && (args[1].toLowerCase().trim().includes("cars") || args[1].toLowerCase().trim().includes("car") || args[1].trim() === ".cr") && args[2] && (args[2].trim().startsWith("<@") && args[2].trim().endsWith(">"))) {
+    return await usercars(args[2].replace(/[^0-9]+/g, ''), message);
   }
 }

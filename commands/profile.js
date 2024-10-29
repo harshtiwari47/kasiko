@@ -32,7 +32,7 @@ async function createUserEmbed(userId, username, userData) {
         name: 'ᯓ★Daily Reward', value: userData.dailyReward !== null ? userData.dailyReward: 'Not claimed', inline: true
       },
       {
-        name: 'ᯓ★Charity', value: `${userData.charity}`, inline: true
+        name: 'ᯓ★Charity', value: `$<:kasiko_coin:1300141236841086977>{userData.charity}`, inline: true
       },
       {
         name: 'ᯓ★Trust Level', value: `${userData.trust}`, inline: true

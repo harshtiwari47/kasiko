@@ -17,7 +17,7 @@ export async function toss(id, amount, channel) {
     let random = Math.random() * 100;
     let winamount = 0;
 
-    if (random < 40) {
+    if (random < 45) {
       winamount = Number(amount * 1.2).toFixed(0) || 0;
       userData.cash += Number(winamount);
       updateUser(id, userData);

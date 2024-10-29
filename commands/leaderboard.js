@@ -19,7 +19,7 @@ async function createLeaderboardEmbed(userId, usersArray) {
 		// Create the embed message
 		const embed = new EmbedBuilder()
 		.setColor('#ed971e')
-		.setTitle('🏆 Kasiko Leaderboard')
+		.setTitle('✩▓▅▁🏆𝐋𝐞𝐚𝐝𝐞𝐫𝐛𝐨𝐚𝐫𝐝▁▅▓✩')
 		.setDescription(leaderboard || 'No users found!')
 		.setFooter({
 			text: `Your position is: ${userPosition > 0 ? userPosition : 'Not ranked'}`,
