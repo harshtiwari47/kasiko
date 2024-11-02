@@ -4,6 +4,9 @@ import {
 import {
   getUserData
 } from '../database.js';
+import {
+  updateNetWorth
+} from '../utils/updateNetworth.js';
 
 // create an embed card based on user data
 async function createUserEmbed(userId, username, userData) {
@@ -32,7 +35,7 @@ async function createUserEmbed(userId, username, userData) {
         name: 'ᯓ★Daily Reward', value: userData.dailyReward !== null ? userData.dailyReward: 'Not claimed', inline: true
       },
       {
-        name: 'ᯓ★Charity', value: `$<:kasiko_coin:1300141236841086977>{userData.charity}`, inline: true
+        name: 'ᯓ★Charity', value: `<:kasiko_coin:1300141236841086977>${userData.charity}`, inline: true
       },
       {
         name: 'ᯓ★Trust Level', value: `${userData.trust}`, inline: true
@@ -52,7 +55,9 @@ async function createUserEmbed(userId, username, userData) {
 export async function profile(id, channel) {
   try {
     const user = await channel.guild.members.fetch(id);
-    let userData = getUserData(id)
+    updateNetWorth(id);
+    let userData = getUserData(id);
+    
     let userProfile = await createUserEmbed(id, user.username, userData);
     return await channel.send({
       embeds: [userProfile]

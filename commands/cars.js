@@ -13,6 +13,10 @@ import {
   updateUser
 } from '../database.js';
 
+import {
+  updateNetWorth
+} from '../utils/updateNetworth.js';
+
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -45,7 +49,7 @@ function createCarEmbed(car) {
       name: "ᯓ★ Rarity", value: car.rarity, inline: true
     },
     {
-      name: "ᯓ★ Maintenance Cost", value: `<:kasiko_coin:1300141236841086977>$${car.maintenance}`, inline: true
+      name: "ᯓ★ Maintenance Cost", value: `<:kasiko_coin:1300141236841086977>${car.maintenance}`, inline: true
     },
     {
       name: "ᯓ★ Emoji", value: `<:${car.id}:${car.emoji}>`, inline: true
@@ -188,9 +192,7 @@ export async function buycar(message, carId) {
     }
 
     if (userData.cash < car[0].price) {
-      return message.channel.send(`⚠️ **$ {
-        message.author.username
-        }**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
+      return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
     }
 
     if (car[0].rarity === "Legendary" && userData.networth < 100000) {
@@ -216,10 +218,11 @@ export async function buycar(message, carId) {
     }
     
     userData.cash -= car[0].price;
-    userData.networth += car[0].price;
     userData.maintanence += car[0].maintenance;
     
     items[carId].owners += 1;
+    
+    updateNetWorth(message.author.id);
 
     updateUser(message.author.id,
       userData);
@@ -266,11 +269,12 @@ export async function sellcar(message, carId) {
       return car;
     }).filter(car => car.items > 0);
 
-    userData.networth -= userCar[0].purchasedPrice;
     userData.cash += Number(car[0].price);
     userData.maintanence -= Number(car[0].maintenance);
     
     items[carId].owners -= 1;
+    
+    updateNetWorth(message.author.id);
     
     writeShopData(items);
     updateUser(message.author.id,

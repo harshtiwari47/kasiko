@@ -1,0 +1,212 @@
+{
+  "TECHCORP": {
+    "currentPrice": 747.44,
+    "last10Prices": [
+      711.53,
+      693.8,
+      728.39,
+      739.73,
+      705.88,
+      713.74,
+      745.1,
+      729,
+      742.85,
+      747.44
+    ],
+    "trend": "up",
+    "sector": "Technology",
+    "marketCap": "1.5B",
+    "volatility": 1,
+    "CEO": "Alice Smith",
+    "image": "techcorp"
+  },
+  "AUTOWORKS": {
+    "currentPrice": 13.33,
+    "last10Prices": [
+      12.42,
+      12.46,
+      12.78,
+      12.89,
+      12.54,
+      12.9,
+      12.79,
+      12.85,
+      13.03,
+      13.33
+    ],
+    "trend": "down",
+    "sector": "Automotive",
+    "marketCap": "850M",
+    "volatility": 0.75,
+    "CEO": "John Doe",
+    "image": "autoworks"
+  },
+  "ECOENERGY": {
+    "currentPrice": 1.55,
+    "last10Prices": [
+      1.69,
+      1.71,
+      1.7,
+      1.73,
+      1.71,
+      1.64,
+      1.62,
+      1.64,
+      1.58,
+      1.55
+    ],
+    "trend": "stable",
+    "sector": "Energy",
+    "marketCap": "500M",
+    "volatility": 0.8,
+    "CEO": "Jane Doe",
+    "image": "ecoenergy"
+  },
+  "FOODIE": {
+    "currentPrice": 2.45,
+    "last10Prices": [
+      2.37,
+      2.29,
+      2.32,
+      2.35,
+      2.47,
+      2.46,
+      2.31,
+      2.27,
+      2.39,
+      2.45
+    ],
+    "trend": "up",
+    "sector": "Food & Beverage",
+    "marketCap": "300M",
+    "volatility": 1.2,
+    "CEO": "Emily Green",
+    "image": "foodie"
+  },
+  "MEDICAL": {
+    "currentPrice": 1.18,
+    "last10Prices": [
+      1,
+      1,
+      1.06,
+      1.08,
+      1.06,
+      1.12,
+      1.14,
+      1.11,
+      1.18,
+      1.18
+    ],
+    "trend": "up",
+    "sector": "Healthcare",
+    "marketCap": "2B",
+    "volatility": 1.4,
+    "CEO": "Michael Brown",
+    "image": "medical"
+  },
+  "RETAILER": {
+    "currentPrice": 2.92,
+    "last10Prices": [
+      2.42,
+      2.49,
+      2.58,
+      2.67,
+      2.78,
+      2.76,
+      2.73,
+      2.71,
+      2.83,
+      2.92
+    ],
+    "trend": "stable",
+    "sector": "Retail",
+    "marketCap": "750M",
+    "volatility": 0.9,
+    "CEO": "Laura Wilson",
+    "image": "retailer"
+  },
+  "FINTECH": {
+    "currentPrice": 11.07,
+    "last10Prices": [
+      10.63,
+      10.06,
+      10.5,
+      10.64,
+      11.08,
+      11.47,
+      11.58,
+      11.33,
+      11.27,
+      11.07
+    ],
+    "trend": "up",
+    "sector": "Finance",
+    "marketCap": "1.8B",
+    "volatility": 1.3,
+    "CEO": "Chris Johnson",
+    "image": "fintech"
+  },
+  "TRAVEL": {
+    "currentPrice": 6.46,
+    "last10Prices": [
+      6.38,
+      6.56,
+      6.41,
+      6.39,
+      6.51,
+      6.43,
+      6.5,
+      6.56,
+      6.64,
+      6.46
+    ],
+    "trend": "stable",
+    "sector": "Travel & Leisure",
+    "marketCap": "400M",
+    "volatility": 0.8,
+    "CEO": "Sarah Lee",
+    "image": "travel"
+  },
+  "EDUCATECH": {
+    "currentPrice": 1.09,
+    "last10Prices": [
+      1.2,
+      1.18,
+      1.12,
+      1.12,
+      1.15,
+      1.16,
+      1.17,
+      1.13,
+      1.08,
+      1.09
+    ],
+    "trend": "up",
+    "sector": "Education",
+    "marketCap": "600M",
+    "volatility": 1.1,
+    "CEO": "Thomas Moore",
+    "image": "educatech"
+  },
+  "CLEANENERGY": {
+    "currentPrice": 1.35,
+    "last10Prices": [
+      1.16,
+      1.19,
+      1.17,
+      1.12,
+      1.18,
+      1.16,
+      1.21,
+      1.28,
+      1.3,
+      1.35
+    ],
+    "trend": "up",
+    "sector": "Clean Energy",
+    "marketCap": "500M",
+    "volatility": 1.2,
+    "CEO": "Karen White",
+    "image": "cleanenergy"
+  }
+}

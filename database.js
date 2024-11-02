@@ -3,6 +3,8 @@ import path from 'path';
 
 const userDatabasePath = path.join(process.cwd(), 'database', 'user.json');
 const shopDatabasePath = path.join(process.cwd(), 'database', 'shop.json');
+const stockDatabasePath = path.join(process.cwd(), 'database', 'stocks.json');
+const aquaticDatabasePath = path.join(process.cwd(), 'database', 'aquatic.json');
 
 // Ensure the data file exists and is initialized
 if (!fs.existsSync(userDatabasePath)) {
@@ -11,6 +13,10 @@ if (!fs.existsSync(userDatabasePath)) {
 
 if (!fs.existsSync(shopDatabasePath)) {
   fs.writeFileSync(shopDatabasePath, JSON.stringify({}, null, 2));
+}
+
+if (!fs.existsSync(stockDatabasePath)) {
+  fs.writeFileSync(stockDatabasePath, JSON.stringify({}, null, 2));
 }
 
 // Helper function to read data from the JSON file
@@ -24,6 +30,16 @@ export const readShopData = () => {
   return JSON.parse(data);
 };
 
+export const readStockData = () => {
+  const data = fs.readFileSync(stockDatabasePath, 'utf-8');
+  return JSON.parse(data);
+};
+
+export const readAquaticData = () => {
+  const data = fs.readFileSync(aquaticDatabasePath, 'utf-8');
+  return JSON.parse(data);
+};
+
 // Helper function to write data to the JSON file
 export const writeUserData = (data) => {
   fs.writeFileSync(userDatabasePath, JSON.stringify(data, null, 2));
@@ -31,6 +47,10 @@ export const writeUserData = (data) => {
 
 export const writeShopData = (data) => {
   fs.writeFileSync(shopDatabasePath, JSON.stringify(data, null, 2));
+};
+
+export const writeStockData = (data) => {
+  fs.writeFileSync(stockDatabasePath, JSON.stringify(data, null, 2));
 };
 
 // Create a new user profile
@@ -47,6 +67,10 @@ export const createUser = (userId) => {
     maintanence: 0,
     cars: [],
     houses: [],
+    aquaCollection: {},
+    aquarium: [],
+    aquariumCollectionTime: null,
+    stocks: {},
     joined: new Date().toISOString(),
     dailyReward: null,
     rewardStreak: 0,

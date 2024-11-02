@@ -18,7 +18,6 @@ export async function guess(id, amount, number, channel) {
 
     let random = Math.floor(Math.random() * 10) + 1;
     let winamount = 0;
-    console.log(random)
 
     if (Number(number) === random) {
       winamount = Number(amount * 2.5).toFixed(0) || 0;

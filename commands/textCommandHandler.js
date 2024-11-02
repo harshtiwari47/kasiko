@@ -13,8 +13,39 @@ import {
 import {
   give
 } from './give.js';
-import { sendPaginatedCars, viewCar, usercars, buycar, sellcar} from './cars.js';
-import { leaderboard } from './leaderboard.js';
+import {
+  sendPaginatedCars,
+  viewCar,
+  usercars,
+  buycar,
+  sellcar
+} from './cars.js';
+import {
+  leaderboard
+} from './leaderboard.js';
+import {
+  sendPaginatedStocks,
+  stockPrice,
+  buyStock,
+  sellStock,
+  portfolio
+} from './stocks.js';
+
+import {
+  listZones,
+  exploreZone,
+  collectAnimal
+} from './ocean/ocean.js';
+import {
+  viewCollection,
+  viewAquarium,
+  addToAquarium,
+  removeFromAquarium,
+  feedAnimals,
+  sellAnimals,
+  collectAquariumReward
+} from './ocean/aquarium.js';
+
 
 import {
   getUserData,
@@ -25,99 +56,132 @@ export default async function textCommands(message) {
   let textMessage = message.content.toLowerCase().trim();
   let args = textMessage.split(" ");
 
-  // check whether message is a command
-  if (!textMessage.startsWith("kas")) return
+  // Check if the message is a command
+  if (!textMessage.startsWith("kas") || !args[1] || !args[1].trim().startsWith(".")) return;
 
-  // check whether user provided arguments or not
-  if (args[1] && !args[1].toLowerCase().trim().startsWith(".")) return;
-  
-  // request others profile
-  if (args[1] && (args[1].toLowerCase().trim().includes("profile") || args[1].trim() === ".p") && args[2] && (args[2].trim().startsWith("<@") && args[2].trim().endsWith(">"))) {
-    return await profile(args[2].replace(/[^0-9]+/g, ''), message.channel);
-  }
-  
-  // request profile
-  if (args[1] && (args[1].toLowerCase().trim().includes("profile") || args[1].trim() === ".p")) {
-    return await profile(message.author.id, message.channel);
-  }
-  
-  // leaderboard 
-  if (args[1] && (args[1].toLowerCase().trim().includes("leaderboard") || args[1].trim() === ".lb")) {
-		return await leaderboard(message);
-	}
-  
-  // daily login rewards 
-  if (args[1] && (args[1].toLowerCase().trim().includes("daily") || args[1].trim() === ".dr")) {
-    return await dailylogin(message.author.id, message.channel);
-  }
-  
-  // give cash
-  if (args[1] && (args[1].toLowerCase().trim().includes("give") || args[1].trim() === ".gv") && !isNaN(args[2].trim()) && args[3] && (args[3].trim().startsWith("<@") && args[3].trim().endsWith(">"))) {
-    if (!Number.isInteger(Number(args[2]))){
-      return message.channel.send("⚠️ Invalid :kasiko_coin:1300141236841086977> cash amount! Cash amount should be an Integer.");
-    }
-    return await give(message, message.author.id, args[2], args[3].replace(/[^0-9]+/g, ''));
+  // a map of commands and their corresponding functions
+  const commands = {
+    "profile": (args) => args[2] && isUserMention(args[2])
+    ? profile(extractUserId(args[2]), message.channel): profile(message.author.id, message.channel),
+
+    "p": (args) => args[2] && isUserMention(args[2])
+    ? profile(extractUserId(args[2]), message.channel): profile(message.author.id, message.channel),
+
+    "leaderboard": () => leaderboard(message),
+    "lb": () => leaderboard(message),
+
+    "daily": () => dailylogin(message.author.id, message.channel),
+    "dr": () => dailylogin(message.author.id, message.channel),
+
+    "give": (args) => isNumber(args[2]) && args[3] && isUserMention(args[3])
+    ? give(message, message.author.id, args[2], extractUserId(args[3])): message.channel.send("⚠️ Invalid cash amount! Cash amount should be an integer."),
+
+    "cash": () => sendUserStat("cash"),
+    "c": () => sendUserStat("cash"),
+
+    "charity": () => sendUserStat("charity"),
+    "chty": () => sendUserStat("charity"),
+
+    "trust": () => sendUserStat("trust"),
+    "ts": () => sendUserStat("trust"),
+
+    //Shop
+    "shop": (args) => args[2] === "car" ? sendPaginatedCars(message): undefined,
+    "shp": (args) => args[2] === "car" ? sendPaginatedCars(message): undefined,
+
+    "cars": (args) => handleCarCommands(args),
+    "car": (args) => handleCarCommands(args),
+    "cr": (args) => handleCarCommands(args),
+
+    "buy": (args) => args[2] === "car" && args[3] ? buycar(message, args[3]): undefined,
+    "by": (args) => args[2] === "car" && args[3] ? buycar(message, args[3]): undefined,
+
+    "sell": (args) => args[2] === "car" && args[3] ? sellcar(message, args[3]): undefined,
+    "sl": (args) => args[2] === "car" && args[3] ? sellcar(message, args[3]): undefined,
+
+
+    // Stocks
+    "stock": () => sendPaginatedStocks(message),
+    "s": () => sendPaginatedStocks(message),
+
+    "stockprice": (args) => args[2] ? stockPrice(args[2].toUpperCase(), message): undefined,
+    "sp": (args) => args[2] ? stockPrice(args[2].toUpperCase(), message): undefined,
+
+    "buystock": (args) => isNumber(args[3]) ? buyStock(args[2].toUpperCase(), args[3], message): undefined,
+    "bs": (args) => isNumber(args[3]) ? buyStock(args[2].toUpperCase(), args[3], message): undefined,
+
+    "sellstock": (args) => isNumber(args[3]) ? sellStock(args[2].toUpperCase(), args[3], message): undefined,
+    "ss": (args) => isNumber(args[3]) ? sellStock(args[2].toUpperCase(), args[3], message): undefined,
+
+    "portfolio": (args) => args[2] && isUserMention(args[2])
+    ? portfolio(extractUserId(args[2]), message): portfolio(message.author.id, message),
+
+    "sport": (args) => args[2] && isUserMention(args[2])
+    ? portfolio(extractUserId(args[2]), message): portfolio(message.author.id, message),
+
+    // Ocean Life
+    "zone": () => listZones(message),
+    "explore": () => args[2] ? exploreZone(message.author.id, args[2].toLowerCase().trim(), message): message.channel.send("⚠️ Specify a zone to explore."),
+    "catch": () => collectAnimal(message.author.id, message),
+    "collect": () => collectAquariumReward(message),
+    "collection": () => args[2] && isUserMention(args[2])
+    ? viewCollection(extractUserId(args[2]), message.channel): viewCollection(message.author.id, message.channel),
+    "aquarium": () => viewAquarium(message.author.id, message.channel),
+    "aqua": () => {
+      switch (args[2]) {
+      case "add":
+        if (args[3]) {
+          return addToAquarium(message.author.id, args[3].toLowerCase(), message.channel);
+        } else {
+          return message.channel.send("⚠️ Specify an animal to add.");
+        }
+
+      case "remove":
+        if (args[3]) {
+          return removeFromAquarium(message.author.id, args[3].toLowerCase(), message.channel);
+        } else {
+          return message.channel.send("⚠️ Specify an animal to remove.");
+        }
+
+      case "sell":
+        if (args[3] && isNumber(args[4])) {
+          return sellAnimals(args[3].toLowerCase(), parseInt(args[4]), message);
+        } else {
+          return message.channel.send("⚠️ Invalid trade request. Please follow `Kas .aqua sell <fish> <amount>`");
+        }
+
+      default:
+        return message.channel.send("⚠️ Invalid aquarium command.");
+      }
+    },
+    "feed": () => args[2] && isNumber(args[3]) ? feedAnimals(args[2], parseInt(args[3]), message): message.channel.send("⚠️ Specify an <animal> && <amount> of food to feed your animals."),
+  };
+
+  // Execute the command if it exists in the map
+  const command = commands[args[1].replace(".", "")];
+  if (command) return await command(args);
+
+  // Helper functions
+  function isUserMention(arg) {
+    return arg.startsWith("<@") && arg.endsWith(">");
   }
 
-  // toss coin
-  if (args[1] && (args[1].toLowerCase().trim().includes("tosscoin") || args[1].trim() === ".tc") && args[2] && !isNaN(args[2])) {
-    return await toss(message.author.id, args[2], message.channel);
+  function extractUserId(mention) {
+    return mention.replace(/[^0-9]+/g, '');
   }
 
-  // guess number
-  if (args[1] && (args[1].toLowerCase().trim().includes("guessno") || args[1].trim() === ".gn") && args[2] && !isNaN(args[2]), args[3] && !isNaN(args[3])) {
-    return await guess(message.author.id, Number(args[2]), Number(args[3]), message.channel);
+  function isNumber(value) {
+    return !isNaN(value) && Number.isInteger(Number(value));
   }
 
-  // Normal commands
-
-  // cash
-  if (args[1] && (args[1].toLowerCase().trim().includes("cash") || args[1].trim() === ".c")) {
-    let userData = getUserData(message.author.id);
-    return message.channel.send(`**@${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData.cash}** 𝑪𝒂𝒔𝒉.`);
+  function sendUserStat(stat) {
+    const userData = getUserData(message.author.id);
+    message.channel.send(`**@${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** 𝑪𝒂𝒔𝒉.`);
   }
 
-  // charity
-  if (args[1] && (args[1].toLowerCase().trim().includes("charity") || args[1].trim() === ".chty")) {
-    let userData = getUserData(message.author.id);
-    return message.channel.send(`**@${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData.charity}** 𝑪𝒉𝒂𝒓𝒊𝒕𝒚 .`);
-  }
-
-  // Trust Score
-  if (args[1] && (args[1].toLowerCase().trim().includes("trust") || args[1].trim() === ".ts")) {
-    let userData = getUserData(message.author.id);
-    return message.channel.send(`**@${message.author.username}** has **${userData.trust}** 𝑻𝒓𝒖𝒔𝒕 𝑺𝒄𝒐𝒓𝒆.`);
-  }
-  
-  // shop
-  
-  // view Cars List
-  if (args[1] && (args[1].toLowerCase().trim().includes("shop") || args[1].trim() === ".shp") && args[2] && args[2].toLowerCase().trim() === "car") {
-    return await sendPaginatedCars(message);
-  }
-  
-  // view a particular car
-  if (args[1] && (args[1].toLowerCase().trim().includes("cars") || args[1].toLowerCase().trim().includes("car") || args[1].trim() === ".cr") && args[2] && typeof args[2].toLowerCase().trim() === "string" && !args[2].trim().startsWith("<@")) {
-    return await viewCar(args[2].toLowerCase().trim(), message);
-  }
-  
-  // buy car
-  if (args[1] && (args[1].toLowerCase().trim().includes("buy") || args[1].trim() === ".by") && args[2] && args[2].toLowerCase().trim() === "car" && args[3] && typeof args[3].toLowerCase().trim() === "string") {
-    return await buycar(message, args[3].toLowerCase().trim());
-  }
-  
-  // sell car
-  if (args[1] && (args[1].toLowerCase().trim().includes("sell") || args[1].trim() === ".sl") && args[2] && args[2].toLowerCase().trim() === "car" && args[3] && typeof args[3].toLowerCase().trim() === "string") {
-    return await sellcar(message, args[3].toLowerCase().trim());
-  }
-  
-  // view user cars 
-  if (args[1] && (args[1].toLowerCase().trim().includes("cars") || args[1].toLowerCase().trim().includes("car") || args[1].trim() === ".cr") && !args[2]) {
-    return await usercars(message.author.id, message);
-  }
-  
-  // view other's cars
-  if (args[1] && (args[1].toLowerCase().trim().includes("cars") || args[1].toLowerCase().trim().includes("car") || args[1].trim() === ".cr") && args[2] && (args[2].trim().startsWith("<@") && args[2].trim().endsWith(">"))) {
-    return await usercars(args[2].replace(/[^0-9]+/g, ''), message);
+  function handleCarCommands(args) {
+    if (!args[2]) return usercars(message.author.id, message);
+    if (isUserMention(args[2])) return usercars(extractUserId(args[2]), message);
+    return viewCar(args[2], message);
   }
 }
