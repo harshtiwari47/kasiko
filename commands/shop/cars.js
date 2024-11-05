@@ -11,11 +11,11 @@ import {
   writeShopData,
   getUserData,
   updateUser
-} from '../database.js';
+} from '../../database.js';
 
 import {
   updateNetWorth
-} from '../utils/updateNetworth.js';
+} from '../../utils/updateNetworth.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -169,7 +169,7 @@ export async function usercars(userId, message) {
     .setDescription(Garrage)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/cbafd10eba2293768dd9c4c0c7d0623f.png'
+      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
@@ -206,7 +206,7 @@ export async function buycar(message, carId) {
         purchasedDate: new Date().toISOString(),
         items: 1
       }
-
+      items[carId].owners += 1;
       userData.cars.push(userCarData);
     } else {
       userData.cars = userData.cars.map(car => {
@@ -220,8 +220,6 @@ export async function buycar(message, carId) {
     userData.cash -= car[0].price;
     userData.maintanence += car[0].maintenance;
     
-    items[carId].owners += 1;
-    
     updateNetWorth(message.author.id);
 
     updateUser(message.author.id,
@@ -234,7 +232,7 @@ export async function buycar(message, carId) {
     .setDescription(`\n✩▓▅▁𝐍𝐞𝐰 𝐂𝐚𝐫▁▅▓✩\n\n Everyone congrats 👏🏻 **${message.author.username}** for purchasing brand-new <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car 🎉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/cbafd10eba2293768dd9c4c0c7d0623f.png'
+      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
@@ -266,13 +264,12 @@ export async function sellcar(message, carId) {
         car.items -= 1;
         return car;
       }
+      items[carId].owners -= 1;
       return car;
     }).filter(car => car.items > 0);
 
     userData.cash += Number(car[0].price);
     userData.maintanence -= Number(car[0].maintenance);
-    
-    items[carId].owners -= 1;
     
     updateNetWorth(message.author.id);
     
@@ -286,7 +283,7 @@ export async function sellcar(message, carId) {
     .setDescription(`**${message.author.username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${car[0].price}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that car for <:kasiko_coin:1300141236841086977>${userCar[0].purchasedPrice}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/cbafd10eba2293768dd9c4c0c7d0623f.png'
+      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 

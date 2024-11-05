@@ -129,7 +129,8 @@ export async function sendPaginatedStocks(context) {
 function updateStockPrices() {
   for (const stock in stockData) {
     const changePercent = (Math.random() * 10 - 5) * stockData[stock].volatility; // +/- 5% * volatility change
-    const newPrice = Math.max(1, stockData[stock].currentPrice * (1 + changePercent / 100));
+    let newPrice = Math.max(stockData[stock].maxmin[1], stockData[stock].currentPrice * (1 + changePercent / 100));
+    if (newPrice > stockData[stock].maxmin[0]) newPrice = stockData[stock].maxmin[0];
     stockData[stock].currentPrice = parseFloat(newPrice.toFixed(2));
     stockData[stock].last10Prices.push(parseFloat(newPrice.toFixed(2)));
 
@@ -182,7 +183,7 @@ export async function buyStock(stockName, amount, message) {
       // update user data
       updateUser(message.author.id,
         userData);
-      return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**@${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
+      return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
     } else {
       return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
     }
@@ -217,7 +218,7 @@ export async function sellStock(stockName, amount, message) {
     updateUser(message.author.id,
       userData);
 
-    message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**@${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings}** 𝑪𝒂𝒔𝒉.`);
+    message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings}** 𝑪𝒂𝒔𝒉.`);
   } catch (e) {
     console.error(e);
     message.channel.send("⚠️ Something went wrong while selling stock(s).");

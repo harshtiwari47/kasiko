@@ -88,5 +88,174 @@
     "color": "Yellow-Black",
     "emoji": "1300487311758196837",
     "type": "car"
+  },
+  "house1": {
+    "name": "Beachside Retreat",
+    "id": "house1",
+    "description": "A charming house on a sandy beach, offering a serene escape with stunning ocean views.",
+    "price": 50000,
+    "category": "beach house",
+    "owners": 2,
+    "image": "1303256975798173756",
+    "rarity": "uncommon",
+    "maintenance": 2000,
+    "color": "yellow",
+    "type": "structures",
+    "square_footage": 1500,
+    "floors": 2,
+    "lot_size": 0.5,
+    "amenities": [
+      "ocean view",
+      "porch"
+    ],
+    "location": "Sandy Shores"
+  },
+  "house2": {
+    "name": "Victorian Farmhouse",
+    "id": "house2",
+    "description": "A charming Victorian farmhouse with a wraparound porch, set in lush surroundings.",
+    "price": 90000,
+    "category": "victorian farmhouse",
+    "owners": 0,
+    "image": "1303256977677484132",
+    "rarity": "uncommon",
+    "maintenance": 2500,
+    "color": "white",
+    "type": "structures",
+    "square_footage": 2000,
+    "floors": 2,
+    "lot_size": 1,
+    "amenities": [
+      "wraparound porch",
+      "large yard"
+    ],
+    "location": "Rural Countryside"
+  },
+  "house3": {
+    "name": "Cozy Suburban Home",
+    "id": "house3",
+    "description": "A charming two-story house with a welcoming front porch.",
+    "price": 150000,
+    "category": "suburban home",
+    "owners": 0,
+    "image": "1303256977589145622",
+    "rarity": "common",
+    "maintenance": 1500,
+    "color": "brick",
+    "type": "structures",
+    "square_footage": 1800,
+    "floors": 2,
+    "lot_size": 0.25,
+    "amenities": [
+      "front porch",
+      "yard"
+    ],
+    "location": "Suburban Neighborhood"
+  },
+  "house4": {
+    "name": "Grand Victorian Mansion",
+    "id": "house4",
+    "description": "A magnificent mansion with intricate details and a stunning pool.",
+    "price": 200000,
+    "category": "victorian mansion",
+    "owners": 0,
+    "image": "1303256977115185182",
+    "rarity": "rare",
+    "maintenance": 5000,
+    "color": "peach",
+    "type": "structures",
+    "square_footage": 4000,
+    "floors": 3,
+    "lot_size": 1,
+    "amenities": [
+      "grand porch",
+      "swimming pool",
+      "gardens"
+    ],
+    "location": "Upscale Neighborhood"
+  },
+  "building1": {
+    "name": "Modern Office Complex",
+    "id": "building1",
+    "description": "A sleek office building with a unique design and expansive glass windows.",
+    "price": 500000,
+    "category": "office building",
+    "owners": 0,
+    "image": "1303256977073242183",
+    "rarity": "rare",
+    "maintenance": 22000,
+    "color": "gray and black",
+    "type": "structures",
+    "square_footage": 50000,
+    "floors": 8,
+    "amenities": [
+      "parking",
+      "conference rooms",
+      "rooftop garden"
+    ],
+    "location": "Urban Business District"
+  },
+  "building2": {
+    "name": "Urban Skyscraper",
+    "id": "building2",
+    "description": "A modern skyscraper with a glass facade, offering luxurious spaces.",
+    "price": 1000000,
+    "category": "skyscraper",
+    "owners": 0,
+    "image": "1303256977022914560",
+    "rarity": "epic",
+    "maintenance": 30000,
+    "color": "gray and black",
+    "type": "structures",
+    "square_footage": 200000,
+    "floors": 25,
+    "amenities": [
+      "rooftop pool",
+      "lounge area",
+      "business center"
+    ],
+    "location": "City Center"
+  },
+  "building3": {
+    "name": "Modern Urban Apartment",
+    "id": "building3",
+    "description": "A modern apartment building with luxurious living spaces.",
+    "price": 1500000,
+    "category": "apartment building",
+    "owners": 0,
+    "image": "1303256976783835186",
+    "rarity": "rare",
+    "maintenance": 50000,
+    "color": "gray and black",
+    "type": "structures",
+    "square_footage": 150000,
+    "floors": 20,
+    "amenities": [
+      "rooftop terrace",
+      "private balconies",
+      "concierge"
+    ],
+    "location": "City Center"
+  },
+  "building4": {
+    "name": "Modern Mixed-Use Building",
+    "id": "building4",
+    "description": "A modern building with a mix of residential and commercial spaces.",
+    "price": 2000000,
+    "category": "mixed-use building",
+    "owners": 0,
+    "image": "1303256973164285993",
+    "rarity": "legendary",
+    "maintenance": 75000,
+    "color": "gray and black",
+    "type": "structures",
+    "square_footage": 100000,
+    "floors": 12,
+    "amenities": [
+      "restaurants",
+      "shopping area",
+      "community space"
+    ],
+    "location": "Downtown"
   }
 }

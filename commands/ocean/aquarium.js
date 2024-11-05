@@ -35,7 +35,7 @@ export async function viewCollection(userId, channel) {
     .setDescription(collection)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/cbafd10eba2293768dd9c4c0c7d0623f.png'
+      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
@@ -64,12 +64,12 @@ export async function viewAquarium(userId, channel) {
     }).join(" | "): "Nothing here yet 🐟";
 
     // Create a border around the aquarium content
-    const aquariumDisplay = `┌────────────────────────┐\n` +
+    const aquariumDisplay = `┌───────────────────────┐\n` +
     `│  <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝒚𝒐𝒖𝒓 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎 │\n` +
     `│                             │\n` + // Extra padding line
     `│ ${filledAquarium} │\n` + // Fill the aquarium content
     `│                             │\n` + // Extra padding line
-    `└────────────────────────┘`;
+    `└───────────────────────┘`;
 
     return channel.send(`${aquariumDisplay}\n\n${decorations}`);
   } catch (e) {

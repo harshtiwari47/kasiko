@@ -113,7 +113,6 @@ export async function give(message, userId, amount, recipientId) {
         });
       }
     });
-
     collector.on('end',
       async (collected, reason) => {
         if (reason === 'time') {

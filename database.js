@@ -66,16 +66,20 @@ export const createUser = (userId) => {
     networth: 0,
     maintanence: 0,
     cars: [],
-    houses: [],
+    structures: [],
     aquaCollection: {},
     aquarium: [],
     aquariumCollectionTime: null,
     stocks: {},
+    spouse: null,
+    roses: 0,
+    bondXP: 0,
+    marriedOn: null,
     joined: new Date().toISOString(),
     dailyReward: null,
     rewardStreak: 0,
     charity: 0,
-    trust: 0,
+    trust: 100,
     verified: false
   };
 

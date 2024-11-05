@@ -1,5 +1,6 @@
 import { EmbedBuilder } from "discord.js";
 import { readUserData } from "../database.js";
+import { client } from "../bot.js";
 
 
 async function createLeaderboardEmbed(userId, usersArray) {
@@ -7,11 +8,17 @@ async function createLeaderboardEmbed(userId, usersArray) {
 		// Sort users by networth in descending order and get the top 10 users
 		const sortedUsers = usersArray.sort((a, b) => b.networth - a.networth).slice(0, 10);
 
-		// Build the leaderboard description
+		// Build the leaderboard
 		let leaderboard = '';
-		sortedUsers.forEach((user, index) => {
-			leaderboard += `**${index + 1}.** <@${user.id}> - Networth: <:kasiko_coin:1300141236841086977> **$${user.networth}**\n`;
-		});
+		for (const [index, user] of sortedUsers.entries()) {
+			let userDetails;
+			try {
+				userDetails = await client.users.fetch(user.id);
+			} catch (err) {
+				userDetails = { "username": "Failed to Fetch" };
+			}
+			leaderboard += `**${index + 1}.** **${userDetails.username}** - Networth: <:kasiko_coin:1300141236841086977> **$${user.networth}**\n`;
+		}
 
 		// Find the position of the command invoker
 		const userPosition = usersArray.findIndex(user => user.id === userId) + 1;
@@ -23,13 +30,13 @@ async function createLeaderboardEmbed(userId, usersArray) {
 		.setDescription(leaderboard || 'No users found!')
 		.setFooter({
 			text: `Your position is: ${userPosition > 0 ? userPosition : 'Not ranked'}`,
-			iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/cbafd10eba2293768dd9c4c0c7d0623f.png'
+			iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
 		})
 		.setTimestamp();
 
 		return embed;
 	} catch (error) {
-		console.error('Oops! An error occurred while creating generating leaderboard', error);
+		console.error('Oops! An error occurred while generating the leaderboard', error);
 	}
 }
 

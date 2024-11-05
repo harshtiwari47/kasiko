@@ -65,7 +65,7 @@ async function addToCollection(animal, message, zone = null) {
   }
 }
 
-export async function listZones(channel) {
+export async function listZones(message) {
   const zones = ["CoralReef",
     "KelpForest",
     "DeepSea",
