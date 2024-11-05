@@ -28,11 +28,9 @@ client.on('messageCreate', async (message) => {
   
   //return if author is bot
   if (message.author.bot) return;
-  
-  console.log(message);
 
   // check user exist
-  if (!userExists(message.author.id)) {
+  if (message.content.startsWith("kas") && !userExists(message.author.id)) {
     createUser(message.author.id)
   }
 

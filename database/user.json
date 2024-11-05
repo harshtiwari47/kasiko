@@ -1,1 +1,23 @@
-{}
+{
+  "1223321207743582211": {
+    "cash": 2000,
+    "networth": 0,
+    "maintanence": 0,
+    "cars": [],
+    "structures": [],
+    "aquaCollection": {},
+    "aquarium": [],
+    "aquariumCollectionTime": null,
+    "stocks": {},
+    "spouse": null,
+    "roses": 0,
+    "bondXP": 0,
+    "marriedOn": null,
+    "joined": "2024-11-05T11:02:00.238Z",
+    "dailyReward": null,
+    "rewardStreak": 0,
+    "charity": 0,
+    "trust": 100,
+    "verified": false
+  }
+}
