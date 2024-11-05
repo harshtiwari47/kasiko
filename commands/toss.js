@@ -8,9 +8,9 @@ export async function toss(id, amount, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = getUserData(id)
 
-    if (userData.cash <= 250) {
+    if (userData.cash < 250) {
       return channel.send("⚠️ You don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.");
-    } else if (amount <= 250) {
+    } else if (amount < 250) {
       return channel.send("⚠️ minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **250**.");
     }
 
