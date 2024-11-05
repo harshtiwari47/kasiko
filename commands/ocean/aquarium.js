@@ -35,7 +35,7 @@ export async function viewCollection(userId, channel) {
     .setDescription(collection)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 

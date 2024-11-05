@@ -14,6 +14,7 @@ export function updateNetWorth(userId) {
 
   try {
     const userData = getUserData(userId);
+    if (!userData) return;
     let totalNetWorth = userData.cash || 0;
     // Calculate stock values
     if (userData.stocks) {

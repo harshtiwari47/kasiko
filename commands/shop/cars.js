@@ -169,7 +169,7 @@ export async function usercars(userId, message) {
     .setDescription(Garrage)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
@@ -232,7 +232,7 @@ export async function buycar(message, carId) {
     .setDescription(`\n✩▓▅▁𝐍𝐞𝐰 𝐂𝐚𝐫▁▅▓✩\n\n Everyone congrats 👏🏻 **${message.author.username}** for purchasing brand-new <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car 🎉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
@@ -283,7 +283,7 @@ export async function sellcar(message, carId) {
     .setDescription(`**${message.author.username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${car[0].price}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that car for <:kasiko_coin:1300141236841086977>${userCar[0].purchasedPrice}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 

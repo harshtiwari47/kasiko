@@ -173,7 +173,7 @@ export async function userstructures(userId, message) {
     .setDescription(Properties)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
@@ -237,7 +237,7 @@ export async function buystructure(message, structureId) {
     .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure[0].image}.png`)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
@@ -288,7 +288,7 @@ export async function sellstructure(message, structureId) {
     .setDescription(`**${message.author.username}** successfully sold a **${structure[0].name}** structure for <:kasiko_coin:1300141236841086977> **${structure[0].price}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that structure for <:kasiko_coin:1300141236841086977>${userStructure[0].purchasedPrice}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 

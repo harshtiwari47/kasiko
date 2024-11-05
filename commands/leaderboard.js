@@ -30,7 +30,7 @@ async function createLeaderboardEmbed(userId, usersArray) {
 		.setDescription(leaderboard || 'No users found!')
 		.setFooter({
 			text: `Your position is: ${userPosition > 0 ? userPosition : 'Not ranked'}`,
-			iconURL: 'https://cdn.discordapp.com/avatars/1300081477358452756/1303245073324048479.png'
+			iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
 		})
 		.setTimestamp();
 
