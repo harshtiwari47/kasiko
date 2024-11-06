@@ -16,23 +16,33 @@ async function createUserEmbed(userId, username, userData) {
   try {
     const joinDate = new Date(userData.joined);
     const isToday = joinDate.toDateString() === new Date().toDateString();
-    
+
     const currentTime = Date.now();
     let dailyRewardsDetail = "Not claimed";
     // Check if 24 hours have passed since the last collection
     const nextClaim = 24 * 60 * 60 * 1000; // 12 hours in milliseconds
     if (userData.dailyReward && (currentTime - userData.dailyReward) < nextClaim) {
-    dailyRewardsDetail = "Claimed";
+      dailyRewardsDetail = "Claimed";
     } else {
-    dailyRewardsDetail = "Not claimed";
+      dailyRewardsDetail = "Not claimed";
     }
-    
+
     let partner = {
-        "username": "Not married"
-      };
-      
+      "username": "Not married"
+    };
+
+    let totalCars = userData.cars.reduce((sum, car) => {
+      sum += car.items
+      return sum
+    }, 0);
+    
+   let totalStructures = userData.structures.reduce((sum, structure) => {
+      sum += structure.items
+      return sum
+    }, 0);
+
     if (userData.spouse) {
-     partner = await client.users.fetch(userData.spouse) || {
+      partner = await client.users.fetch(userData.spouse) || {
         "username": "Failed to Fetch"
       };
     }
@@ -52,10 +62,10 @@ async function createUserEmbed(userId, username, userData) {
         name: 'ᯓ★𝑺𝒑𝒐𝒖𝒔𝒆 ', value: `**${partner.username}**`, inline: true
       },
       {
-        name: 'ᯓ★𝐂𝐚𝐫𝐬', value: `${userData.cars.length}`, inline: true
+        name: 'ᯓ★𝐂𝐚𝐫𝐬', value: `${totalCars}`, inline: true
       },
       {
-        name: 'ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬', value: `${userData.structures.length}`, inline: true
+        name: 'ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬', value: `${totalStructures}`, inline: true
       },
       {
         name: 'ᯓ★Daily Rewards', value: `${dailyRewardsDetail}`, inline: true
@@ -70,7 +80,7 @@ async function createUserEmbed(userId, username, userData) {
     .setTimestamp()
     .setFooter({
       text: 'Kasiko', iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
-    }); 
+    });
 
     return embed;
   } catch (error) {
@@ -83,7 +93,7 @@ export async function profile(id, channel) {
     const user = await channel.guild.members.fetch(id);
     updateNetWorth(id);
     let userData = getUserData(id);
-    
+
     let userProfile = await createUserEmbed(id, user.username, userData);
     return await channel.send({
       embeds: [userProfile]

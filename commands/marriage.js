@@ -86,6 +86,10 @@ export async function marry(user, message) {
     let userData = getUserData(message.author.id);
     let invitedUserData = getUserData(user);
     const guild = await message.channel.guild.members.fetch(user);
+    
+    if (message.author.id === user) {
+      message.channel.send(`⚠️ You can not propose yourself!`);
+    }
 
     if (userData.spouse && userData.spouse !== user) {
       message.channel.send(`⚠️ You are already married to **<@${userData.spouse}>**.`);
@@ -311,4 +315,12 @@ export async function sendRoses(toUser, amount, message) {
     console.error(e);
     return message.channel.send("⚠️ An error occurred while sending roses. Please try again later.");
   }
+}
+
+export const Marriage = {
+  marriage,
+  marry,
+  divorce,
+  roses,
+  sendRoses
 }

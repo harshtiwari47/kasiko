@@ -290,3 +290,13 @@ export async function collectAquariumReward(message) {
     return message.channel.send('⚠️ There was an error collecting your aquarium rewards. Please try again later.');
   }
 }
+
+export const Aqua = {
+  viewCollection,
+  viewAquarium,
+  addToAquarium,
+  removeFromAquarium,
+  feedAnimals,
+  sellAnimals,
+  collectAquariumReward
+}

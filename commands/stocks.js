@@ -143,7 +143,7 @@ function updateStockPrices() {
 }
 
 // Update stock prices every hour (3600000 ms)
-setInterval(updateStockPrices, 36000);
+setInterval(updateStockPrices, 360000);
 
 
 export async function stockPrice(stockName, message) {
@@ -247,4 +247,12 @@ export async function portfolio(userId, message) {
     console.error(e);
     message.channel.send("⚠️ Something went wrong while viewing stock portfolio.");
   }
+}
+
+export const Stock = {
+  sendPaginatedStocks,
+  stockPrice,
+  buyStock,
+  sellStock,
+  portfolio
 }

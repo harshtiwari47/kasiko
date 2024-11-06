@@ -1,7 +1,7 @@
 {
   "1223321207743582211": {
-    "cash": 10096.4,
-    "networth": 114053.8,
+    "cash": 18426.4,
+    "networth": 107132.4,
     "maintanence": 3200,
     "cars": [
       {
@@ -52,17 +52,17 @@
     "bondXP": 0,
     "marriedOn": 1730805899592,
     "joined": "2024-11-05T11:12:50.267Z",
-    "dailyReward": 1730805420243,
-    "rewardStreak": 1,
+    "dailyReward": 1730894556164,
+    "rewardStreak": 2,
     "charity": 1650,
     "trust": 100,
-    "exp": 1490,
-    "level": 3,
+    "exp": 2060,
+    "level": 4,
     "verified": false
   },
   "1283732086699851846": {
-    "cash": 65830.2,
-    "networth": 149830.2,
+    "cash": 67880.2,
+    "networth": 151880.2,
     "maintanence": 3700,
     "cars": [
       {
@@ -118,11 +118,11 @@
     "bondXP": 0,
     "marriedOn": null,
     "joined": "2024-11-05T11:57:40.943Z",
-    "dailyReward": 1730807925909,
-    "rewardStreak": 1,
+    "dailyReward": 1730901788481,
+    "rewardStreak": 2,
     "charity": 10000,
     "trust": 100,
-    "exp": 1280,
+    "exp": 1480,
     "level": 3,
     "verified": false
   }

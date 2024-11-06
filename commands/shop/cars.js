@@ -216,10 +216,10 @@ export async function buycar(message, carId) {
         return car;
       });
     }
-    
+
     userData.cash -= car[0].price;
     userData.maintanence += car[0].maintenance;
-    
+
     updateNetWorth(message.author.id);
 
     updateUser(message.author.id,
@@ -270,9 +270,9 @@ export async function sellcar(message, carId) {
 
     userData.cash += Number(car[0].price);
     userData.maintanence -= Number(car[0].maintenance);
-    
+
     updateNetWorth(message.author.id);
-    
+
     writeShopData(items);
     updateUser(message.author.id,
       userData);
@@ -295,3 +295,100 @@ export async function sellcar(message, carId) {
     return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while transition!`);
   }
 }
+
+export const Car = {
+  sendPaginatedCars,
+  viewCar,
+  usercars,
+  buycar,
+  sellcar
+}
+
+Car.commandsInfo = {
+  // send list of cars from shop
+  "sendPaginatedCars": {
+    "args": [{
+      type: "string",
+      value: ["car", "cr"],
+      "optional": false,
+    }],
+    "description": "View the list of cars in the shop.",
+    "suggestCommands": ['buy'],
+    "example": "Kas .shop car",
+    "cooldown": 2000,
+  },
+  // view any car from the shop
+  "viewCar": {
+    "args": [{
+      "type": "string",
+      "value": [],
+      "optional": true
+    }],
+    "description": "View the details of a particular car by typing the <carId>.",
+    "suggestCommands": [],
+    "example": "Kas .cars jetstream",
+    "cooldown": 2000
+  },
+  // viewing user garage 
+  "usercars": {
+    "args": [{
+      "type": "user",
+      "value": [],
+      "optional": true
+    }],
+    "description": "View your collection or other user's cars collection by mentioning the user.",
+    "suggestCommands": [],
+    "example": "Kas .cars || Kas .cars @username",
+    "cooldown": 2000
+  },
+  // Buying a car
+  "buycar": {
+    "args": [{
+      "type": "string",
+      "value": ["car", "cr"],
+      "optional": false
+    }, {
+      "type": "string",
+      "value": [],
+      "optional": false
+    }],
+    "description": "Buy your favourite car from the shop by mentioning car's id.",
+    "suggestCommands": ['sell'],
+    "example": "Kas .buy car/cr jetstream",
+    "cooldown": 2000
+  },
+  // Selling a car
+  "sellcar": {
+    "args": [{
+      "type": "string",
+      "value": ["car", "cr"],
+      "optional": false
+    }, {
+      "type": "string",
+      "value": [],
+      "optional": false
+    }],
+    "description": "Sell car from your garrage by mentioning car's id.",
+    "suggestCommands": [],
+    "example": "Kas .sell car/cr jetstream",
+    "cooldown": 2000
+  }
+}
+
+  /*
+   commandsInfo = {
+  "": {
+    "args": [
+      {
+        "type": "",
+        "value": [],
+        "optional":
+      }
+    ],
+    "description": "",
+    "suggestCommands": [],
+    "example": "",
+    "cooldown": 0
+  }
+}
+*/

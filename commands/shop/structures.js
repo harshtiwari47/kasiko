@@ -300,3 +300,11 @@ export async function sellstructure(message, structureId) {
     return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while transition!`);
   }
 }
+
+export const Structure = {
+  sendPaginatedStructures,
+  viewStructure,
+  userstructures,
+  buystructure,
+  sellstructure
+}

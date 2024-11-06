@@ -18,6 +18,9 @@ export const shortHandCommands = [{
   "command": "cash",
   "alias": ["c"]
 }, {
+  "command": "networth",
+  "alias": ["nw"]
+}, {
   "command": "charity",
   "alias": ["cy"]
 }, {

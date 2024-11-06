@@ -1,7 +1,7 @@
 import {
   getUserData,
   updateUser
-} from '../database.js';
+} from '../../database.js';
 
 export async function toss(id, amount, channel) {
   try {

@@ -7,7 +7,7 @@ import {
 import {
   getUserData,
   updateUser
-} from '../database.js';
+} from '../../database.js';
 
 export const sendConfirmation = async (message, userId, amount, recipient) => {
   // Create an embed for the confirmation message

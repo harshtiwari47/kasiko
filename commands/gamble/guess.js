@@ -1,7 +1,7 @@
 import {
   getUserData,
   updateUser
-} from '../database.js';
+} from '../../database.js';
 
 export async function guess(id, amount, number, channel) {
   try {

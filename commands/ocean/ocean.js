@@ -133,3 +133,9 @@ export async function collectAnimal(userId, message) {
     message.channel.send(`⚠️ Something went wrong while catching a fish.`);
   }
 }
+
+export const Ocean = {
+  listZones,
+  exploreZone,
+  collectAnimal
+}
