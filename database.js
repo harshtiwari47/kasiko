@@ -80,6 +80,8 @@ export const createUser = (userId) => {
     rewardStreak: 0,
     charity: 0,
     trust: 100,
+    exp: 0,
+    level: 0,
     verified: false
   };
 

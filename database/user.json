@@ -1,14 +1,51 @@
 {
   "1223321207743582211": {
-    "cash": 1550,
-    "networth": 0,
-    "maintanence": 0,
-    "cars": [],
+    "cash": 7025,
+    "networth": 94149.7,
+    "maintanence": 3200,
+    "cars": [
+      {
+        "id": "jetstream",
+        "purchasedPrice": 34000,
+        "purchasedDate": "2024-11-05T12:36:06.312Z",
+        "items": 1
+      },
+      {
+        "id": "vanguard",
+        "purchasedPrice": 24000,
+        "purchasedDate": "2024-11-05T12:36:42.130Z",
+        "items": 1
+      }
+    ],
     "structures": [],
-    "aquaCollection": {},
-    "aquarium": [],
-    "aquariumCollectionTime": null,
-    "stocks": {},
+    "aquaCollection": {
+      "Otter": {
+        "level": 1,
+        "animals": 2,
+        "name": "Otter"
+      },
+      "Dolphin": {
+        "level": 2,
+        "animals": 1,
+        "name": "Dolphin",
+        "food": 10
+      },
+      "Shark": {
+        "level": 1,
+        "animals": 1,
+        "name": "Shark"
+      }
+    },
+    "aquarium": [
+      "Otter",
+      "Shark",
+      "Dolphin"
+    ],
+    "aquariumCollectionTime": 1730871521178,
+    "stocks": {
+      "AUTOWORKS": 80,
+      "AEROSPACE": 50
+    },
     "spouse": null,
     "roses": 0,
     "bondXP": 0,
@@ -16,8 +53,78 @@
     "joined": "2024-11-05T11:12:50.267Z",
     "dailyReward": 1730805420243,
     "rewardStreak": 1,
-    "charity": 0,
+    "charity": 1650,
     "trust": 100,
+    "exp": 120,
+    "level": 1,
+    "verified": false
+  },
+  "1283732086699851846": {
+    "cash": 22474,
+    "networth": 141620,
+    "maintanence": 3700,
+    "cars": [
+      {
+        "id": "jetstream",
+        "purchasedPrice": 34000,
+        "purchasedDate": "2024-11-05T12:43:22.493Z",
+        "items": 1
+      },
+      {
+        "id": "turtle",
+        "purchasedPrice": 50000,
+        "purchasedDate": "2024-11-05T12:44:16.662Z",
+        "items": 1
+      }
+    ],
+    "structures": [],
+    "aquaCollection": {
+      "Lionfish": {
+        "level": 1,
+        "animals": 1,
+        "name": "Lionfish"
+      },
+      "Otter": {
+        "level": 1,
+        "animals": 1,
+        "name": "Otter"
+      },
+      "Dolphin": {
+        "level": 1,
+        "animals": 1,
+        "name": "Dolphin"
+      },
+      "Pufferfish": {
+        "level": 1,
+        "animals": 1,
+        "name": "Pufferfish"
+      },
+      "Anglerfish": {
+        "level": 1,
+        "animals": 1,
+        "name": "Anglerfish"
+      }
+    },
+    "aquarium": [
+      "Lionfish",
+      "Dolphin",
+      "Pufferfish"
+    ],
+    "aquariumCollectionTime": 1730810019042,
+    "stocks": {
+      "CLEANENERGY": 50
+    },
+    "spouse": null,
+    "roses": 0,
+    "bondXP": 0,
+    "marriedOn": null,
+    "joined": "2024-11-05T11:57:40.943Z",
+    "dailyReward": 1730807925909,
+    "rewardStreak": 1,
+    "charity": 10000,
+    "trust": 100,
+    "exp": 0,
+    "level": 0,
     "verified": false
   }
 }
