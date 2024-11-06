@@ -243,7 +243,7 @@ export default async function textCommands(message) {
 
   function sendUserStat(stat) {
     const userData = getUserData(message.author.id);
-    message.channel.send(`**@${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** 𝑪𝒂𝒔𝒉.`);
+    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** ${ stat === "cash" ? "𝑪𝒂𝒔𝒉" : "Score"}.`);
   }
 
   function handleCarCommands(args) {
