@@ -5,6 +5,7 @@ import {
 import dotenv from 'dotenv';
 
 import ping from './commands/ping.js';
+import { updateExpPoints } from './utils/experience.js';
 import textCommands from './commands/textCommandHandler.js';
 
 import {
@@ -28,7 +29,9 @@ client.on('messageCreate', async (message) => {
   
   //return if author is bot
   if (message.author.bot) return;
-
+  
+  updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
+  
   // check user exist
   if (message.content.startsWith("kas") && !userExists(message.author.id)) {
     createUser(message.author.id)
