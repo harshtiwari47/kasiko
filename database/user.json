@@ -1,7 +1,7 @@
 {
   "1223321207743582211": {
-    "cash": 7025,
-    "networth": 94149.7,
+    "cash": 10096.4,
+    "networth": 114053.8,
     "maintanence": 3200,
     "cars": [
       {
@@ -43,8 +43,9 @@
     ],
     "aquariumCollectionTime": 1730871521178,
     "stocks": {
-      "AUTOWORKS": 80,
-      "AEROSPACE": 50
+      "AUTOWORKS": 40,
+      "AEROSPACE": 50,
+      "CYBERPROTECT": 50
     },
     "spouse": null,
     "roses": 0,
@@ -55,13 +56,13 @@
     "rewardStreak": 1,
     "charity": 1650,
     "trust": 100,
-    "exp": 120,
-    "level": 1,
+    "exp": 1490,
+    "level": 3,
     "verified": false
   },
   "1283732086699851846": {
-    "cash": 22474,
-    "networth": 141620,
+    "cash": 65830.2,
+    "networth": 149830.2,
     "maintanence": 3700,
     "cars": [
       {
@@ -110,10 +111,8 @@
       "Dolphin",
       "Pufferfish"
     ],
-    "aquariumCollectionTime": 1730810019042,
-    "stocks": {
-      "CLEANENERGY": 50
-    },
+    "aquariumCollectionTime": 1730875438269,
+    "stocks": {},
     "spouse": null,
     "roses": 0,
     "bondXP": 0,
@@ -123,8 +122,8 @@
     "rewardStreak": 1,
     "charity": 10000,
     "trust": 100,
-    "exp": 0,
-    "level": 0,
+    "exp": 1280,
+    "level": 3,
     "verified": false
   }
 }

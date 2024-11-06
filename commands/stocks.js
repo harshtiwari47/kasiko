@@ -143,7 +143,7 @@ function updateStockPrices() {
 }
 
 // Update stock prices every hour (3600000 ms)
-setInterval(updateStockPrices, 3600);
+setInterval(updateStockPrices, 36000);
 
 
 export async function stockPrice(stockName, message) {
@@ -218,7 +218,7 @@ export async function sellStock(stockName, amount, message) {
     updateUser(message.author.id,
       userData);
 
-    message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings}** 𝑪𝒂𝒔𝒉.`);
+    message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings.toFixed(1)}** 𝑪𝒂𝒔𝒉.`);
   } catch (e) {
     console.error(e);
     message.channel.send("⚠️ Something went wrong while selling stock(s).");
