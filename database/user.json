@@ -1,7 +1,7 @@
 {
   "1223321207743582211": {
-    "cash": 18426.4,
-    "networth": 107132.4,
+    "cash": 13431,
+    "networth": 124811.5,
     "maintanence": 3200,
     "cars": [
       {
@@ -33,36 +33,37 @@
       "Shark": {
         "level": 1,
         "animals": 1,
-        "name": "Shark"
+        "name": "Shark",
+        "food": 10
       }
     },
     "aquarium": [
-      "Otter",
       "Shark",
-      "Dolphin"
+      "Dolphin",
+      "Otter"
     ],
-    "aquariumCollectionTime": 1730871521178,
+    "aquariumCollectionTime": 1730961382866,
     "stocks": {
-      "AUTOWORKS": 40,
-      "AEROSPACE": 50,
-      "CYBERPROTECT": 50
+      "AEROSPACE": 70,
+      "CYBERPROTECT": 60,
+      "ECOENERGY": 10
     },
     "spouse": null,
-    "roses": 0,
+    "roses": 10,
     "bondXP": 0,
-    "marriedOn": 1730805899592,
+    "marriedOn": 1730967098624,
     "joined": "2024-11-05T11:12:50.267Z",
     "dailyReward": 1730894556164,
     "rewardStreak": 2,
-    "charity": 1650,
+    "charity": 1750,
     "trust": 100,
-    "exp": 2060,
-    "level": 4,
+    "exp": 6820,
+    "level": 8,
     "verified": false
   },
   "1283732086699851846": {
-    "cash": 67880.2,
-    "networth": 151880.2,
+    "cash": 53620.030000000006,
+    "networth": 166788.34,
     "maintanence": 3700,
     "cars": [
       {
@@ -112,7 +113,11 @@
       "Pufferfish"
     ],
     "aquariumCollectionTime": 1730875438269,
-    "stocks": {},
+    "stocks": {
+      "AEROSPACE": 28,
+      "BIOGENICS": 18,
+      "FOODIE": 15
+    },
     "spouse": null,
     "roses": 0,
     "bondXP": 0,
@@ -122,8 +127,8 @@
     "rewardStreak": 2,
     "charity": 10000,
     "trust": 100,
-    "exp": 1480,
-    "level": 3,
+    "exp": 4270,
+    "level": 6,
     "verified": false
   }
 }

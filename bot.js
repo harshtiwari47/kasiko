@@ -4,9 +4,10 @@ import {
 } from 'discord.js';
 import dotenv from 'dotenv';
 
-import ping from './commands/ping.js';
-import { updateExpPoints } from './utils/experience.js';
-import textCommands from './commands/textCommandHandler.js';
+import {
+  updateExpPoints
+} from './utils/experience.js';
+import txtcommands from './src/textCommandHandler.js';
 
 import {
   createUser,
@@ -26,24 +27,34 @@ client.once('ready', () => {
 });
 
 client.on('messageCreate', async (message) => {
-  
+
   //return if author is bot
   if (message.author.bot) return;
-  
-  updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
-  
+
+  let prefix = "kas";
+
   // check user exist
-  if (message.content.startsWith("kas") && !userExists(message.author.id)) {
+  if (message.content.startsWith(prefix) && !userExists(message.author.id)) {
     createUser(message.author.id)
   }
+  
+  if (!message.content.toLowerCase().startsWith(prefix)) return
 
-  if (message.content.toLowerCase().trim() === 'kas !ping') {
-    ping(message);
-  }
-  
+  updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
+
   // handle all types of text commands started with kas
-  await textCommands(message);
-  
+  const args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
+  const commandName = args[0].toLowerCase();
+  const command = txtcommands.get(commandName);
+
+  if (!command) return;
+
+  try {
+    command.execute(args, message);
+  } catch (error) {
+    console.error(error);
+    message.reply("There was an error executing that command.");
+  }
 });
 
 client.login(TOKEN);
