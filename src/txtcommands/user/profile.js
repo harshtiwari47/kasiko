@@ -64,6 +64,9 @@ async function createUserEmbed(userId, username, userData) {
         name: 'ᯓ★𝑺𝒑𝒐𝒖𝒔𝒆 ', value: `**${partner.username}**`, inline: true
       },
       {
+        name: 'ᯓ★𝑪𝒉𝒊𝒍𝒅𝒓𝒆𝒏 ', value: `**${userData.children.length ===0 ? "0" : userData.children.join(" ")}**`, inline: true
+      },
+      {
         name: 'ᯓ★𝐂𝐚𝐫𝐬', value: `${totalCars}`, inline: true
       },
       {

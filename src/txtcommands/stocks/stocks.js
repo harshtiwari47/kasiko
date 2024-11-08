@@ -9,7 +9,13 @@ import {
   updateNetWorth
 } from '../../../utils/updateNetworth.js';
 
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
+import {
+  buildNews,
+  currentNewspaper
+} from './stockNews.js';
 
 import {
   ActionRowBuilder,
@@ -131,20 +137,60 @@ function updateStockPrices() {
   for (const stock in stockData) {
     const changePercent = (Math.random() * 10 - 5) * stockData[stock].volatility; // +/- 5% * volatility change
     let newPrice = Math.max(stockData[stock].maxmin[1], stockData[stock].currentPrice * (1 + changePercent / 100));
+
     if (newPrice > stockData[stock].maxmin[0]) newPrice = stockData[stock].maxmin[0];
-    stockData[stock].currentPrice = parseFloat(newPrice.toFixed(2));
-    stockData[stock].last10Prices.push(parseFloat(newPrice.toFixed(2)));
+
+    newPrice = parseFloat(newPrice.toFixed(2));
+    stockData[stock].currentPrice = newPrice;
+    stockData[stock].last10Prices.push(newPrice);
 
     if (stockData[stock].last10Prices.length > 10) {
       stockData[stock].last10Prices.shift(); // Remove the oldest price
+    }
+
+    // Calculate trend based on the last 3 prices in last10Prices
+    const prices = stockData[stock].last10Prices;
+    if (prices.length >= 3) {
+      const [p1,
+        p2,
+        p3] = prices.slice(-3); // Get the last 3 prices
+
+      if (p3 > p2 && p2 > p1) {
+        stockData[stock].trend = "up";
+      } else if (p3 < p2 && p2 < p1) {
+        stockData[stock].trend = "down";
+      } else {
+        stockData[stock].trend = "stable";
+      }
+    } else {
+      stockData[stock].trend = "stable"; // Default to stable if not enough data
+    }
+
+    if (Math.random() * 100 < 50) {
+      let stockTrend = stockData[stock].trend;
+      if (stockTrend === "stable") stockTrend = "";
+      buildNews(stock, stockTrend, stockData[stock]);
     }
   }
 
   writeStockData(stockData);
 }
 
-// Update stock prices every hour (3600000 ms)
-setInterval(updateStockPrices, 360000);
+export async function sendNewspaper(message) {
+  let newspaperJSON = currentNewspaper();
+  let newspaper = `## 📊 NEWSPAPER 🗞️\n⊹\n`;
+
+  newspaperJSON.forEach((news, i) => {
+    newspaper += `📰 **${i+1}. ** **${news.headline}**\n${news.description}\n\n`
+  });
+
+  return message.channel.send(newspaper)
+}
+
+// Update stock prices every server start 
+updateStockPrices();
+// Update stock prices every hour (600000 ms)
+setInterval(updateStockPrices, 600000);
 
 
 export async function stockPrice(stockName, message) {
@@ -174,15 +220,47 @@ export async function buyStock(stockName, amount, message) {
     let totalCost = stockPrice * numShares;
     totalCost = Number(totalCost.toFixed(0));
 
-    if ((userData.cash || 0) >= totalCost) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Calculate total shares owned by the user across all stocks
+    const totalSharesOwned = Object.values(userData.stocks).reduce((sum, stock) => sum + stock.shares, 0);
+
+    // Check limits before processing purchase
+    if (userData.stocks[stockName] && numShares > 100 - userData.stocks[stockName].dailyPurchased[1]) {
+      return message.channel.send(`⚠️ **${message.author.username}**, you can't buy more than 100 shares of **${stockName}** today.`);
+    } else if (totalSharesOwned + numShares > 200) {
+      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than 200 shares in total.`);
+    } else if ((userData.cash || 0) >= totalCost) {
+      // Process the purchase
       userData.cash = (userData.cash || 0) - totalCost;
-      userData.stocks[stockName] = (userData.stocks[stockName] || 0) + numShares;
 
+      if (userData.stocks[stockName]) {
+        userData.stocks[stockName].shares += numShares;
+        userData.stocks[stockName].cost += totalCost;
+
+
+        // Initialize or update daily purchased shares count
+        if (userData.stocks[stockName] && !userData.stocks[stockName]?.dailyPurchased || userData.stocks[stockName].dailyPurchased[0] !== today.getTime()) {
+          userData.stocks[stockName].dailyPurchased = [today.getTime(),
+            0];
+        }
+
+        userData.stocks[stockName].dailyPurchased[1] += numShares; // Update daily purchased count
+      } else {
+        userData.stocks[stockName] = {
+          shares: numShares,
+          cost: totalCost,
+          dailySold: [],
+          dailyPurchased: [today.getTime(),
+            numShares] // Track daily purchased count for new stock
+        };
+      }
+
+      // Update net worth and user data
       updateNetWorth(message.author.id);
+      updateUser(message.author.id, userData);
 
-      // update user data
-      updateUser(message.author.id,
-        userData);
       return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
     } else {
       return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
@@ -199,7 +277,7 @@ export async function sellStock(stockName, amount, message) {
     let userData = getUserData(userId);
     const numShares = parseInt(amount);
 
-    if (!stockData[stockName] || !userData.stocks || userData.stocks[stockName] < numShares) {
+    if (!stockData[stockName] || !userData.stocks || userData.stocks[stockName].shares < numShares) {
       return message.channel.send(`⚠️ **${message.author.username}**, you don’t own enough shares or stock not found.`);
     }
 
@@ -207,8 +285,12 @@ export async function sellStock(stockName, amount, message) {
     const earnings = stockPrice * numShares;
 
     userData.cash = Number(((userData.cash || 0) + earnings).toFixed(1));
-    userData.stocks[stockName] -= numShares;
-    if (userData.stocks[stockName] === 0) delete userData.stocks[stockName];
+    userData.stocks[stockName].shares -= numShares;
+    if (userData.stocks[stockName].shares === 0) {
+      let dailyPurchased = userData.stocks[stockName].dailyPurchased;
+      delete userData.stocks[stockName];
+      userData.stocks[stockName].dailyPurchased = dailyPurchased;
+    }
 
 
     updateNetWorth(message.author.id);
@@ -233,15 +315,23 @@ export async function portfolio(userId, message) {
 
     let portfolioDetails = `▒░✩ <@${userId}>'s 𝐒𝐭𝐨𝐜𝐤𝐬 𝐏𝐨𝐫𝐭𝐟𝐨𝐥𝐢𝐨\n▁▁▁▁▁▁▁▁▁\n`;
     let portfolioValue = 0;
+    let cost = 0;
 
     for (const stockName in userData.stocks) {
-      const numShares = userData.stocks[stockName];
+      const numShares = userData.stocks[stockName].shares;
       const stockPrice = stockData[stockName].currentPrice;
       const stockValue = numShares * stockPrice;
       portfolioValue += stockValue;
+      cost += userData.stocks[stockName].cost;
       portfolioDetails += `ᯓ★ **${stockName}**: **${numShares}** shares worth <:kasiko_coin:1300141236841086977>**${stockValue.toFixed(0)}** 𝑪𝒂𝒔𝒉\n`;
     }
+    const profitLossPercent = ((portfolioValue - cost) / cost) * 100;
+    const profitLossLabel = profitLossPercent >= 0 ? "Profit": "Loss";
+    const profitLossSymbol = profitLossPercent >= 0 ? "+": "-";
+
     portfolioDetails += `\n𝑇𝑜𝑡𝑎𝑙 𝑃𝑜𝑟𝑡𝑓𝑜𝑙𝑖𝑜 𝑉𝑎𝑙𝑢𝑒: <:kasiko_coin:1300141236841086977>${portfolioValue.toFixed(0)} 𝑪𝒂𝒔𝒉`;
+    portfolioDetails += `\n𝑇𝑜𝑡𝑎𝑙 𝐵𝑟𝑜𝑢𝑔ℎ𝑡 𝑃𝑟𝑖𝑐𝑒: <:kasiko_coin:1300141236841086977>${cost.toFixed(0)} 𝑪𝒂𝒔𝒉`;
+    portfolioDetails += `\n𝑁𝑒𝑡 ${profitLossLabel}: ${profitLossSymbol}${Math.abs(profitLossPercent).toFixed(2)}%`;
     message.channel.send(portfolioDetails);
   } catch (e) {
     console.error(e);
@@ -253,57 +343,73 @@ export async function portfolio(userId, message) {
 export default {
   name: "stock",
   description: "View and manage stocks in the stock market.",
-  aliases: ["stocks", "s"],
+  aliases: ["stocks",
+    "s"],
   args: "<command> [parameters]",
   example: [
-    "stock", // View all available stocks
-    "stock price <symbol>", // View the price of a specific stock
-    "stock buy <symbol> <amount>", // Buy a specific stock
-    "stock sell <symbol> <amount>", // Sell a specific stock
-    "stock portfolio [@user]", // View a user's portfolio or your own
+    "stock",
+    // View all available stocks
+    "stock price <symbol>",
+    // View the price of a specific stock
+    "stock buy <symbol> <amount>",
+    // Buy a specific stock
+    "stock sell <symbol> <amount>",
+    // Sell a specific stock
+    "stock portfolio [@user]",
+    // View a user's portfolio or your own
+    "stock news/newspaper",
+    // View a user's portfolio or your own
   ],
-  related: ["stocks", "portfolio", "buy", "sell"],
-  cooldown: 2000, // Cooldown of 2 seconds
+  related: ["stocks",
+    "portfolio",
+    "buy",
+    "sell"],
+  cooldown: 2000,
+  // Cooldown of 2 seconds
   category: "Stocks",
 
   execute: (args, message) => {
-    const command = args[1] ? args[1].toLowerCase() : null;
+    const command = args[1] ? args[1].toLowerCase(): null;
 
     switch (command) {
-      case "price":
-      case "p":
-        if (args[2]) {
-          return stockPrice(args[2].toUpperCase(), message); // Show stock price for the given symbol
-        }
-        return message.channel.send("⚠️ Please specify a stock symbol to check the price.");
+    case "news":
+    case "newspaper":
+      return sendNewspaper(message);
 
-      case "buy":
-      case "b":
-        if (args[2] && Helper.isNumber(args[3])) {
-          return buyStock(args[2].toUpperCase(), args[3], message); // Buy a stock
-        }
-        return message.channel.send("⚠️ Please specify a valid stock symbol and amount to buy. Example: `.buyStock <symbol> <amount>`");
+    case "price":
+    case "p":
+      if (args[2]) {
+        return stockPrice(args[2].toUpperCase(), message); // Show stock price for the given symbol
+      }
+      return message.channel.send("⚠️ Please specify a stock symbol to check the price.");
 
-      case "sell":
-      case "s":
-        if (args[2] && Helper.isNumber(args[3])) {
-          return sellStock(args[2].toUpperCase(), args[3], message); // Sell a stock
-        }
-        return message.channel.send("⚠️ Please specify a valid stock symbol and amount to sell. Example: `.sellStock <symbol> <amount>`");
+    case "buy":
+    case "b":
+      if (args[2] && Helper.isNumber(args[3])) {
+        return buyStock(args[2].toUpperCase(), args[3], message); // Buy a stock
+      }
+      return message.channel.send("⚠️ Please specify a valid stock symbol and amount to buy. Example: `.buyStock <symbol> <amount>`");
 
-      case "portfolio":
-      case "pf":
-        if (args[2] && Helper.isUserMention(args[2])) {
-          return portfolio(Helper.extractUserId(args[2]), message); // View mentioned user's portfolio
-        }
-        return portfolio(message.author.id, message); // View the user's own portfolio
+    case "sell":
+    case "s":
+      if (args[2] && Helper.isNumber(args[3])) {
+        return sellStock(args[2].toUpperCase(), args[3], message); // Sell a stock
+      }
+      return message.channel.send("⚠️ Please specify a valid stock symbol and amount to sell. Example: `.sellStock <symbol> <amount>`");
 
-      case "all":
-      case "view":
-        return sendPaginatedStocks(message); // Show all available stocks
+    case "portfolio":
+    case "pf":
+      if (args[2] && Helper.isUserMention(args[2])) {
+        return portfolio(Helper.extractUserId(args[2]), message); // View mentioned user's portfolio
+      }
+      return portfolio(message.author.id, message); // View the user's own portfolio
 
-      default:
-        return message.channel.send("⚠️ Invalid command. Use `stock all`, `stock price <symbol>`, `stock buy <symbol> <amount>`, `stock sell <symbol> <amount>`, or `stock portfolio`.");
+    case "all":
+    case "view":
+      return sendPaginatedStocks(message); // Show all available stocks
+
+    default:
+      return message.channel.send("⚠️ Invalid command. Use `stock all`, `stock price <symbol>`, `stock buy <symbol> <amount>`, `stock sell <symbol> <amount>`, `stock news` or `stock portfolio`.");
     }
   }
 };

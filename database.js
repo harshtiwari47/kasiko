@@ -62,8 +62,8 @@ export const createUser = (userId) => {
   }
 
   const userData = {
-    cash: 2000,
-    networth: 0,
+    cash: 5000,
+    networth: 5000,
     maintanence: 0,
     cars: [],
     structures: [],
@@ -72,6 +72,7 @@ export const createUser = (userId) => {
     aquariumCollectionTime: null,
     stocks: {},
     spouse: null,
+    children: [],
     roses: 0,
     bondXP: 0,
     marriedOn: null,

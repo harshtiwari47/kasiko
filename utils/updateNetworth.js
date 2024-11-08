@@ -19,7 +19,7 @@ export function updateNetWorth(userId) {
     // Calculate stock values
     if (userData.stocks) {
       for (const stockName in userData.stocks) {
-        const numShares = userData.stocks[stockName];
+        const numShares = userData.stocks[stockName].shares;
         const stockPrice = stockData[stockName].currentPrice;
         totalNetWorth += numShares * stockPrice;
       }
