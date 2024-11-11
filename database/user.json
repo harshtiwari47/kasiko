@@ -1,1 +1,140 @@
-{}
+{
+  "1223321207743582211": {
+    "cash": 30163,
+    "networth": 5000,
+    "maintanence": 0,
+    "cars": [],
+    "structures": [],
+    "aquaCollection": {
+      "Lionfish": {
+        "level": 1,
+        "animals": 3,
+        "name": "Lionfish",
+        "food": 0
+      },
+      "Whale": {
+        "level": 1,
+        "animals": 2,
+        "name": "Whale",
+        "food": 0
+      },
+      "Turtle": {
+        "level": 1,
+        "animals": 3,
+        "name": "Turtle",
+        "food": 0
+      },
+      "Dolphin": {
+        "level": 1,
+        "animals": 2,
+        "name": "Dolphin",
+        "food": 0
+      },
+      "Clownfish": {
+        "level": 1,
+        "animals": 2,
+        "name": "Clownfish",
+        "food": 0
+      },
+      "Anglerfish": {
+        "level": 1,
+        "animals": 2,
+        "name": "Anglerfish",
+        "food": 0
+      },
+      "Garibaldifish": {
+        "level": 1,
+        "animals": 2,
+        "name": "Garibaldifish",
+        "food": 0
+      },
+      "Pufferfish": {
+        "level": 1,
+        "animals": 4,
+        "name": "Pufferfish",
+        "food": 0
+      },
+      "Otter": {
+        "level": 1,
+        "animals": 3,
+        "name": "Otter",
+        "food": 0
+      }
+    },
+    "aquarium": [],
+    "aquariumCollectionTime": null,
+    "stocks": {
+      "AUTOWORKS": {
+        "shares": 50,
+        "cost": 1005.7,
+        "dailySold": [],
+        "dailyPurchased": [
+          1731177000000,
+          70
+        ]
+      }
+    },
+    "spouse": null,
+    "children": [],
+    "roses": 0,
+    "bondXP": 0,
+    "marriedOn": null,
+    "joined": "2024-11-10T06:36:07.213Z",
+    "dailyReward": null,
+    "rewardStreak": 0,
+    "charity": 0,
+    "trust": 100,
+    "exp": 6200,
+    "level": 7,
+    "verified": false,
+    "lastBattle": 1731321652268
+  },
+  "1283732086699851846": {
+    "cash": 7500,
+    "networth": 5000,
+    "maintanence": 0,
+    "cars": [],
+    "structures": [],
+    "aquaCollection": {},
+    "aquarium": [],
+    "aquariumCollectionTime": null,
+    "stocks": {},
+    "spouse": null,
+    "children": [],
+    "roses": 0,
+    "bondXP": 0,
+    "marriedOn": null,
+    "joined": "2024-11-10T15:16:14.847Z",
+    "dailyReward": null,
+    "rewardStreak": 0,
+    "charity": 0,
+    "trust": 100,
+    "exp": 180,
+    "level": 1,
+    "verified": false
+  },
+  "undefined": {
+    "cash": 5000,
+    "networth": 5000,
+    "maintanence": 0,
+    "cars": [],
+    "structures": [],
+    "aquaCollection": {},
+    "aquarium": [],
+    "aquariumCollectionTime": null,
+    "stocks": {},
+    "spouse": null,
+    "children": [],
+    "roses": 0,
+    "bondXP": 0,
+    "marriedOn": null,
+    "joined": "2024-11-11T08:39:29.945Z",
+    "dailyReward": null,
+    "rewardStreak": 0,
+    "charity": 0,
+    "trust": 100,
+    "exp": 0,
+    "level": 0,
+    "verified": false
+  }
+}

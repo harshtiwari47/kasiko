@@ -6,6 +6,7 @@ import {
 export async function updateExpPoints(content, user, channel) {
   try {
   const userData = getUserData(user.id);
+  if (!userData) return
   userData.exp += 10;
   if (content.includes("kas")) userData.exp += 10;
 

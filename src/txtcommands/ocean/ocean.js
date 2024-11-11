@@ -10,6 +10,10 @@ import {
   Helper
 } from '../../../helper.js';
 
+import {
+  Ship
+} from '../battle/shipsHandler.js';
+
 const aquaData = readAquaticData();
 
 async function addToCollection(animal, message, zone = null) {
@@ -118,6 +122,47 @@ export async function exploreZone(userId, zoneName, message) {
   }
 }
 
+function collect(userId, message) {
+  collectAnimal(userId, message);
+  stealShip(userId, message);
+
+  return;
+}
+
+export async function stealShip(userId, message) {
+  try {
+    let randomChance = Math.floor(Math.random() * 100);
+    let ships = Ship.shipsData.sort((a, b) => a.probability - b.probability);
+    let shipDetail = {}
+    let shipStolen = false;
+    let userShips = Ship.getUserShipsData(userId);
+    for (let i = 0; i < ships.length; i++) {
+      if (randomChance < ships[i].probability) {
+        shipDetail = ships[i];
+        
+        if (userShips.some(shipDetails => shipDetails.id === ships[i].id)) return
+        
+        shipStolen = true;
+        userShips.push({
+          level: 1,
+          id: ships[i].id,
+          name: ships[i].name,
+          durability: ships[i].durability,
+          active: false
+        });
+
+        Ship.modifyUserShips(userId, userShips);
+        break;
+      }
+    }
+    if (!shipStolen) return
+    return message.channel.send(`🚢 **ᗩᕼOY, @${message.author.username}!**\n\nYou’ve *stolen* a <:${shipDetail.id}:${shipDetail.emoji}> **${shipDetail.name}** with no master! It's  ${['a', 'e', 'i', 'o', 'u'].includes(shipDetail.rarity[0].toLowerCase()) ? 'an' : 'a'} **${shipDetail.rarity}** ship 🔥! ⚓ You’re the captain now! 🏴‍☠️`);
+  } catch (e) {
+    console.error(e);
+    return message.channel.send("⚠️ Something went wrong while stealing ship!");
+  }
+}
+
 export async function collectAnimal(userId, message) {
   try {
     const foundAnimals = [
@@ -144,7 +189,7 @@ export async function collectAnimal(userId, message) {
 export default {
   name: "ocean",
   description: "Explore ocean zones, collect animals, and manage ocean-related activities.",
-  aliases: ["oc"],
+  aliases: ["oc", "o"],
   // Short alias for the ocean command
   args: "<action> [parameters]",
   example: [
@@ -152,7 +197,8 @@ export default {
     // List available zones
     "ocean explore <zone>",
     // Explore a specific zone
-    "ocean catch", // Catch an animal in the ocean
+    "ocean catch",
+    // Catch an animal in the ocean
     "ocean collection <@username optional>" // view an animal collection
   ],
   related: ["aquarium",
@@ -177,17 +223,17 @@ export default {
       } else {
         return message.channel.send("⚠️ Please specify a zone to explore. Example: `.ocean explore <zone>`");
       }
-      
+
     case "cl":
     case "collection":
       if (args[2] && Helper.isUserMention(args[2])) {
-      return viewCollection(Helper.extractUserId(args[2]), message.channel);
+        return viewCollection(Helper.extractUserId(args[2]), message.channel);
       }
-      
+
       return viewCollection(message.author.id, message.channel);
-      
+
     case "catch":
-      return collectAnimal(message.author.id, message); // Catch an animal in the ocean
+      return collect(message.author.id, message); // Catch an animal in the ocean
 
     default:
       return message.channel.send("⚠️ Invalid ocean subcommand. Use `ocean zone`, `ocean explore <zone>`, `ocean collection <@username (optional)>`, or `ocean catch`.");

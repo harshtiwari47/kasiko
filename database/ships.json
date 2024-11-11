@@ -1,0 +1,11 @@
+{
+  "1223321207743582211": [
+    {
+      "level": 4,
+      "id": "ship2",
+      "name": "Zephyr",
+      "durability": 90,
+      "active": true
+    }
+  ]
+}

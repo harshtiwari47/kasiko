@@ -187,7 +187,7 @@ export async function sendNewspaper(message) {
   return message.channel.send(newspaper)
 }
 
-// Update stock prices every server start 
+// Update stock prices every server start
 updateStockPrices();
 // Update stock prices every hour (600000 ms)
 setInterval(updateStockPrices, 600000);
@@ -233,7 +233,7 @@ export async function buyStock(stockName, amount, message) {
       return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than 200 shares in total.`);
     } else if ((userData.cash || 0) >= totalCost) {
       // Process the purchase
-      userData.cash = (userData.cash || 0) - totalCost;
+      userData.cash = Number(((userData.cash || 0) - totalCost).toFixed(1));
 
       if (userData.stocks[stockName]) {
         userData.stocks[stockName].shares += numShares;
@@ -285,11 +285,29 @@ export async function sellStock(stockName, amount, message) {
     const earnings = stockPrice * numShares;
 
     userData.cash = Number(((userData.cash || 0) + earnings).toFixed(1));
+
+    // average weighted cost
+    if (
+      userData.stocks[stockName] &&
+      typeof userData.stocks[stockName].cost === 'number' &&
+      typeof userData.stocks[stockName].shares === 'number' &&
+      userData.stocks[stockName].shares !== 0 &&
+      typeof numShares === 'number'
+    ) {
+      userData.stocks[stockName].cost -= Number(((userData.stocks[stockName].cost / userData.stocks[stockName].shares) * numShares).toFixed(1));
+    } else {
+      console.error("Invalid data for cost calculation:", userData.stocks[stockName]);
+    }
+
     userData.stocks[stockName].shares -= numShares;
+
     if (userData.stocks[stockName].shares === 0) {
       let dailyPurchased = userData.stocks[stockName].dailyPurchased;
       delete userData.stocks[stockName];
+      userData.stocks[stockName] = {};
       userData.stocks[stockName].dailyPurchased = dailyPurchased;
+      userData.stocks[stockName].cost = 0;
+      userData.stocks[stockName].shares = 0;
     }
 
 

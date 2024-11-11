@@ -1,0 +1,93 @@
+{
+  "ship1": {
+    "id": "ship1",
+    "name": "Seraph",
+    "dmg": 75,
+    "durability": 240,
+    "repairCost": 175,
+    "levelUpCost": 1800,
+    "rarity": "epic",
+    "health": 460,
+    "probability": 12,
+    "emoji": "1304674707789840425",
+    "type": "sailing ship"
+  },
+  "ship2": {
+    "id": "ship2",
+    "name": "Zephyr",
+    "dmg": 65,
+    "durability": 140,
+    "repairCost": 140,
+    "levelUpCost": 1400,
+    "rarity": "common",
+    "health": 300,
+    "probability": 28,
+    "emoji": "1304674535441961052",
+    "type": "airship"
+  },
+  "ship3": {
+    "id": "ship3",
+    "name": "Leviathan",
+    "dmg": 105,
+    "durability": 260,
+    "repairCost": 210,
+    "levelUpCost": 2100,
+    "rarity": "epic",
+    "health": 490,
+    "probability": 8,
+    "emoji": "1304674506648064081",
+    "type": "battleship"
+  },
+  "ship4": {
+    "id": "ship4",
+    "name": "Aurora",
+    "dmg": 80,
+    "durability": 310,
+    "repairCost": 170,
+    "levelUpCost": 1850,
+    "rarity": "rare",
+    "health": 410,
+    "probability": 10,
+    "emoji": "1304674433377501256",
+    "type": "crystal ship"
+  },
+  "ship5": {
+    "id": "ship5",
+    "name": "Nebula",
+    "dmg": 55,
+    "durability": 160,
+    "repairCost": 155,
+    "levelUpCost": 1500,
+    "rarity": "common",
+    "health": 330,
+    "probability": 18,
+    "emoji": "1304674376406532146",
+    "type": "sailing ship"
+  },
+  "ship6": {
+    "id": "ship6",
+    "name": "Nightshade",
+    "dmg": 95,
+    "durability": 245,
+    "repairCost": 200,
+    "levelUpCost": 2000,
+    "rarity": "epic",
+    "health": 480,
+    "probability": 12,
+    "emoji": "1304674360660852807",
+    "type": "pirate ship"
+  },
+  "ship7": {
+    "id": "ship7",
+    "name": "Mirage",
+    "dmg": 70,
+    "durability": 220,
+    "repairCost": 160,
+    "levelUpCost": 1750,
+    "rarity": "rare",
+    "health": 390,
+    "probability": 18,
+    "emoji": "1304674341849665626",
+    "type": "airship"
+  }
+}

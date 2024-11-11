@@ -58,7 +58,7 @@ export const createUser = (userId) => {
   const data = readUserData();
 
   if (data[userId]) {
-    return "User already exist!"
+    return;
   }
 
   const userData = {
@@ -153,11 +153,11 @@ export const updateShop = (itemId, newData) => {
 
 // Delete user data
 export const deleteUser = (userId) => {
-  const data = readShopData();
+  const data = readUserData();
 
   if (data[userId]) {
     delete data[userId];
-    writeShopData(data);
+    writeUserData(data);
     return true;
   }
   return false;

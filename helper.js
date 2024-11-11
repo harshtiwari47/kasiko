@@ -7,8 +7,18 @@ import {
 } from './database.js';
 
 
-function isUserMention(arg) {
-  return arg.startsWith("<@") && arg.endsWith(">");
+function isUserMention(arg, message) {
+  if (arg.startsWith("<@") && arg.endsWith(">")) {
+    if (message) {
+      const targetUser = message.guild.members.cache.get(extractUserId(arg));
+
+      if (!targetUser) return false
+    }
+
+    return true
+  } else {
+    return false
+  }
 }
 
 function extractUserId(mention) {
@@ -22,9 +32,9 @@ function isNumber(value) {
 
 function newsDatabase() {
   try {
-  const newsDataPath = path.join(process.cwd(), 'data', 'stocknews.json');
-  const data = fs.readFileSync(newsDataPath, 'utf-8');
-  return JSON.parse(data) || [];
+    const newsDataPath = path.join(process.cwd(), 'data', 'stocknews.json');
+    const data = fs.readFileSync(newsDataPath, 'utf-8');
+    return JSON.parse(data) || [];
   } catch (e) {
     console.error(e);
   }

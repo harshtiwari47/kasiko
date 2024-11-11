@@ -1,8 +1,6 @@
 import {
   getUserData,
   updateUser,
-  readStockData,
-  writeStockData
 } from '../../../database.js';
 
 import {

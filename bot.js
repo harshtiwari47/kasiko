@@ -31,14 +31,19 @@ client.on('messageCreate', async (message) => {
   //return if author is bot
   if (message.author.bot) return;
 
+  const mentionedBots = message.mentions.users.filter(user => user.bot);
+ 
   let prefix = "kas";
+  
+  
+  if (!message.content.toLowerCase().startsWith(prefix)) return
 
+  if (mentionedBots.size > 0) return 
+  
   // check user exist
   if (message.content.startsWith(prefix) && !userExists(message.author.id)) {
     createUser(message.author.id)
   }
-  
-  if (!message.content.toLowerCase().startsWith(prefix)) return
 
   updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
 
