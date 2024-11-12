@@ -1,3 +1,6 @@
+# database 
+database/user.json
+database/ships.json
 # Logs
 logs
 *.log
