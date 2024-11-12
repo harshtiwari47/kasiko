@@ -336,6 +336,7 @@ export async function portfolio(userId, message) {
     let cost = 0;
 
     for (const stockName in userData.stocks) {
+      if (userData && userData.stocks && userData.stocks[stockName] && userData.stocks[stockName].shares === 0) continue;
       const numShares = userData.stocks[stockName].shares;
       const stockPrice = stockData[stockName].currentPrice;
       const stockValue = numShares * stockPrice;
@@ -406,14 +407,14 @@ export default {
       if (args[2] && Helper.isNumber(args[3])) {
         return buyStock(args[2].toUpperCase(), args[3], message); // Buy a stock
       }
-      return message.channel.send("⚠️ Please specify a valid stock symbol and amount to buy. Example: `.buyStock <symbol> <amount>`");
+      return message.channel.send("⚠️ Please specify a valid stock symbol and amount to buy. Example: `stock buy <symbol> <amount>`");
 
     case "sell":
     case "s":
       if (args[2] && Helper.isNumber(args[3])) {
         return sellStock(args[2].toUpperCase(), args[3], message); // Sell a stock
       }
-      return message.channel.send("⚠️ Please specify a valid stock symbol and amount to sell. Example: `.sellStock <symbol> <amount>`");
+      return message.channel.send("⚠️ Please specify a valid stock symbol and amount to sell. Example: `stock sell <symbol> <amount>`");
 
     case "portfolio":
     case "pf":
