@@ -125,6 +125,9 @@ export const updateUser = (userId, newData) => {
   } else if (newData.networth < 0) {
     newData.networth = 0;
   }
+  
+  newData.cash = Number((newData.cash).toFixed(1));
+  newData.networth = Number((newData.networth).toFixed(1));
 
   const updatedData = {
     ...data[userId],
