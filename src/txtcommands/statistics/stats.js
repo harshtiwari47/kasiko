@@ -7,6 +7,11 @@ import {
   Helper
 } from '../../../helper.js';
 
+import {
+  updateNetWorth
+} from '../../../utils/updateNetworth.js';
+
+
 function sendUserStat(stat, message) {
   const userData = getUserData(message.author.id);
   if (stat === "cash") {
@@ -16,6 +21,7 @@ function sendUserStat(stat, message) {
     message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`);
   }
   if (stat === "networth") {
+    updateNetWorth(message.author.id);
     message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** net worth.`);
   }
   if (stat === "level") {

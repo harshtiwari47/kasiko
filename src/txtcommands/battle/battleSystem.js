@@ -115,7 +115,7 @@ export async function battle(message, player1, player2) {
   const loser = player1.health > player2.health ? player2: player1;
 
   const userData1 = getUserData(player1.id);
-  const userData2 = ``;
+  let userData2 = ``;
   let userShips = Ship.getUserShipsData(player1.id);
   let currentShipIndex = userShips.findIndex(ship => ship.name === player1.shipName);
 
@@ -188,7 +188,8 @@ function gatherDetails(username, userId, isPlayer = false, message) {
     const lastBattleTime = new Date(userData.lastBattle || Date.now() - (1000 * 60 * 60));
     const currentTime = new Date();
     const timeDifferenceInHours = (currentTime - lastBattleTime) / (1000 * 60 * 60);
-    const timeDifferenceInMinutes = (60 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
+ // const timeDifferenceInMinutes = (60 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
+    const timeDifferenceInMinutes = (10 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
 
     if (timeDifferenceInHours < .1) {
       message.channel.send(`⚠️ You can come back again for battle after ${timeDifferenceInMinutes} minutes.`);

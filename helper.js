@@ -6,7 +6,6 @@ import {
   updateUser
 } from './database.js';
 
-
 function isUserMention(arg, message) {
   if (arg.startsWith("<@") && arg.endsWith(">")) {
     if (message) {
