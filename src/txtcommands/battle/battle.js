@@ -2,7 +2,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  ComponentType
 } from 'discord.js';
 
 import {
@@ -60,11 +61,12 @@ async function sendChallenge(args, message) {
 
   // Create an interaction collector for the buttons
   const collector = requestMessage.createMessageComponentCollector({
-    componentType: 'BUTTON',
+    componentType: ComponentType.Button,
     time: 600000 // 10 minutes
   });
 
   collector.on('collect', async interaction => {
+    try {
     if (interaction.user.id !== targetId) {
       return interaction.reply({
         content: "You are not the challenged user!",
@@ -84,6 +86,9 @@ async function sendChallenge(args, message) {
       });
       collector.stop();
     }
+    } catch (error) {
+    console.error("Interaction failed:", error);
+  }
   });
 
   collector.on('end',
