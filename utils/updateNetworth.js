@@ -10,6 +10,7 @@ export function updateNetWorth(userId) {
   const stockData = readStockData();
   const items = readShopData();
   const carItems = Object.values(items).filter(item => item.type === "car");
+  const strItems = Object.values(items).filter(item => item.type === "structures");
 
 
   try {
@@ -31,6 +32,16 @@ export function updateNetWorth(userId) {
         const carItem = carItems.find(car => car.id === usercar.id);
         if (carItem) {
           totalNetWorth += carItem.price * usercar.items;
+        }
+      }
+    }
+    
+     // Calculate house values
+    if (userData.structures) {
+      for (const userstr of userData.structures) {
+        const strItem = strItems.find(structure => structure.id === userstr.id);
+        if (strItem) {
+          totalNetWorth += strItem.price * userstr.items;
         }
       }
     }
