@@ -1,9 +1,14 @@
 {
   "1223321207743582211": {
-    "cash": 36207.8,
-    "networth": 42226.6,
-    "maintanence": 0,
-    "cars": [],
+    "cash": 17768.8,
+    "networth": 17768.8,
+    "maintanence": 1400,
+    "cars": [{
+      "id":"jetstream",
+      "purchasedDate": "2024-11-13T15:14:11.143Z",
+      "purchasedPrice": 34000,
+      "items": 1
+    }],
     "structures": [],
     "aquaCollection": {
       "Turtle": {
@@ -22,7 +27,6 @@
     "aquarium": [
       "Turtle"
     ],
-    "aquariumCollectionTime": 1731401304067,
     "stocks": {
       "AUTOWORKS": {
         "dailyPurchased": [
@@ -50,35 +54,31 @@
         "shares": 0
       }
     },
-    "spouse": null,
     "children": [],
+    "battleLog": [],
+    "aquariumCollectionTime": 1731401304067,
+    "spouse": null,
     "roses": 0,
     "bondXP": 0,
     "marriedOn": null,
     "joined": "2024-11-11T15:14:11.143Z",
     "dailyReward": 1731338068993,
-    "rewardStreak": 1,
-    "charity": 2203,
+    "rewardStreak": 2,
+    "charity": 12454,
     "trust": 100,
     "exp": 4080,
     "level": 6,
     "verified": false,
-    "battleLog": [
-      "**<@1223321207743582211>**, you have lost the defense against **<@1283732086699851846>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024.",
-      "**<@1223321207743582211>**, you have lost the defense against **<@1283732086699851846>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024.",
-      "**<@1223321207743582211>**, you have lost the defense against **<@1283732086699851846>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024.",
-      "**<@1223321207743582211>**, you have lost the defense against **<@1283732086699851846>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024."
-    ],
     "lastBattle": 1731418132433
   },
   "1301546911773364277": {
-    "cash": 7500,
-    "networth": 5000,
+    "cash": 2500,
+    "networth": 2500,
     "maintanence": 0,
     "cars": [],
     "structures": [],
-    "aquaCollection": {},
     "aquarium": [],
+    "aquaCollection": {},
     "aquariumCollectionTime": null,
     "stocks": {},
     "spouse": null,
@@ -89,14 +89,14 @@
     "joined": "2024-11-11T16:24:52.972Z",
     "dailyReward": null,
     "rewardStreak": 0,
-    "charity": 0,
+    "charity": 5000,
     "trust": 100,
     "exp": 140,
     "level": 1,
     "verified": false
   },
   "816307490026946571": {
-    "cash": 16862.4,
+    "cash": 20032.4,
     "networth": 13952.16,
     "maintanence": 0,
     "cars": [],
@@ -148,16 +148,14 @@
     "marriedOn": null,
     "joined": "2024-11-11T16:28:41.441Z",
     "dailyReward": 1731343564725,
-    "rewardStreak": 1,
-    "charity": 703,
+    "rewardStreak": 2,
+    "charity": 7703,
     "trust": 100,
     "exp": 1900,
     "level": 4,
     "verified": false,
     "lastBattle": 1731344227993,
-    "battleLog": [
-      "**<@816307490026946571>**, you have lost the defense against **<@1223321207743582211>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024."
-    ]
+    "battleLog": []
   },
   "874227579459108864": {
     "cash": 9628,
@@ -194,11 +192,16 @@
     "lastBattle": 1731398389546
   },
   "1283732086699851846": {
-    "cash": 20706.1,
-    "networth": 16493.1,
-    "maintanence": 0,
+    "cash": 929.1,
+    "networth": 929.1,
+    "maintanence": 2000,
     "cars": [],
-    "structures": [],
+    "structures": [{
+      "id":"house1",
+      "purchasedDate": "2024-11-13T15:14:11.143Z",
+      "purchasedPrice": 50000,
+      "items": 1
+    }],
     "aquaCollection": {
       "Dolphin": {
         "level": 1,
@@ -252,17 +255,13 @@
     "marriedOn": null,
     "joined": "2024-11-12T07:54:44.211Z",
     "dailyReward": 1731399020425,
-    "rewardStreak": 1,
-    "charity": 3000,
+    "rewardStreak": 2,
+    "charity": 5300,
     "trust": 100,
     "exp": 4600,
     "level": 6,
     "verified": false,
     "lastBattle": 1731417611396,
-    "battleLog": [
-      "**<@1283732086699851846>**, you have lost the defense against **<@1223321207743582211>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024.",
-      "**<@1283732086699851846>**, you have lost the defense against **<@1223321207743582211>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024.",
-      "**<@1283732086699851846>**, you have lost the defense against **<@1223321207743582211>** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on 11/12/2024."
-    ]
+    "battleLog": []
   }
 }

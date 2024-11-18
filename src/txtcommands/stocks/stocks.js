@@ -6,10 +6,6 @@ import {
 } from '../../../database.js';
 
 import {
-  updateNetWorth
-} from '../../../utils/updateNetworth.js';
-
-import {
   Helper
 } from '../../../helper.js';
 import {
@@ -209,7 +205,7 @@ export async function stockPrice(stockName, message) {
 export async function buyStock(stockName, amount, message) {
   try {
     const userId = message.author.id;
-    let userData = getUserData(userId);
+    let userData = await getUserData(userId);
     const numShares = parseInt(amount);
 
     if (!stockData[stockName]) {
@@ -258,8 +254,7 @@ export async function buyStock(stockName, amount, message) {
       }
 
       // Update net worth and user data
-      updateNetWorth(message.author.id);
-      updateUser(message.author.id, userData);
+      await updateUser(message.author.id, userData);
 
       return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
     } else {
@@ -274,10 +269,11 @@ export async function buyStock(stockName, amount, message) {
 export async function sellStock(stockName, amount, message) {
   try {
     const userId = message.author.id;
-    let userData = getUserData(userId);
+    let userData = await getUserData(userId);
     const numShares = parseInt(amount);
-
-    if (!stockData[stockName] || !userData.stocks || userData.stocks[stockName].shares < numShares) {
+    stockName = stockName.toUpperCase().trim();
+  
+    if (!stockData[stockName] || !userData.stocks || !userData.stocks[stockName] || userData.stocks[stockName].shares < numShares) {
       return message.channel.send(`⚠️ **${message.author.username}**, you don’t own enough shares or stock not found.`);
     }
 
@@ -310,12 +306,8 @@ export async function sellStock(stockName, amount, message) {
       userData.stocks[stockName].shares = 0;
     }
 
-
-    updateNetWorth(message.author.id);
-
-
     // update user data
-    updateUser(message.author.id,
+    await updateUser(message.author.id,
       userData);
 
     message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings.toFixed(1)}** 𝑪𝒂𝒔𝒉.`);
@@ -327,16 +319,17 @@ export async function sellStock(stockName, amount, message) {
 
 export async function portfolio(userId, message) {
   try {
-    let userData = getUserData(userId);
-
+    let userData = await getUserData(userId);
+    
     if (!userData.stocks) return message.channel.send("⚠️ User don't own any 📊 stocks.");
 
     let portfolioDetails = `▒░✩ <@${userId}>'s 𝐒𝐭𝐨𝐜𝐤𝐬 𝐏𝐨𝐫𝐭𝐟𝐨𝐥𝐢𝐨\n▁▁▁▁▁▁▁▁▁\n`;
     let portfolioValue = 0;
     let cost = 0;
 
-    for (const stockName in userData.stocks) {
-      if (userData && userData.stocks && userData.stocks[stockName] && userData.stocks[stockName].shares === 0) continue;
+    for (const stockName in userData.stocks.toJSON()) {
+      if (stockName === "_id") continue;
+      if (userData && userData.stocks && userData.stocks[stockName] && stockData[stockName] && userData.stocks[stockName].shares === 0) continue;
       const numShares = userData.stocks[stockName].shares;
       const stockPrice = stockData[stockName].currentPrice;
       const stockValue = numShares * stockPrice;
@@ -348,9 +341,11 @@ export async function portfolio(userId, message) {
     const profitLossLabel = profitLossPercent >= 0 ? "Profit": "Loss";
     const profitLossSymbol = profitLossPercent >= 0 ? "+": "-";
 
+    let finalPercentage = `${profitLossSymbol}${Math.abs(profitLossPercent).toFixed(2)}`;
+
     portfolioDetails += `\n𝑇𝑜𝑡𝑎𝑙 𝑃𝑜𝑟𝑡𝑓𝑜𝑙𝑖𝑜 𝑉𝑎𝑙𝑢𝑒: <:kasiko_coin:1300141236841086977>${portfolioValue.toFixed(0)} 𝑪𝒂𝒔𝒉`;
     portfolioDetails += `\n𝑇𝑜𝑡𝑎𝑙 𝐵𝑟𝑜𝑢𝑔ℎ𝑡 𝑃𝑟𝑖𝑐𝑒: <:kasiko_coin:1300141236841086977>${cost.toFixed(0)} 𝑪𝒂𝒔𝒉`;
-    portfolioDetails += `\n𝑁𝑒𝑡 ${profitLossLabel}: ${profitLossSymbol}${Math.abs(profitLossPercent).toFixed(2)}%`;
+    portfolioDetails += `\n𝑁𝑒𝑡 ${profitLossLabel}: ${isNaN(finalPercentage) ? "0": finalPercentage }%`;
     message.channel.send(portfolioDetails);
   } catch (e) {
     console.error(e);
@@ -389,7 +384,7 @@ export default {
 
   execute: (args, message) => {
     const command = args[1] ? args[1].toLowerCase(): null;
-
+    if (!command) return sendPaginatedStocks(message); // Show all available Stocks
     switch (command) {
     case "news":
     case "newspaper":

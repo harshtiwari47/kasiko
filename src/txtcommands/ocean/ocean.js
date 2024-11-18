@@ -18,7 +18,7 @@ const aquaData = readAquaticData();
 
 async function addToCollection(animal, message, zone = null) {
   try {
-    const userData = getUserData(message.author.id);
+    const userData = await getUserData(message.author.id);
 
     if (userData.cash < 1500) {
       return message.channel.send(`⚠️ **${message.author.username}**, you have insufficient cash for fishing.\nMinimum Cash: <:kasiko_coin:1300141236841086977> 1500 𝑪𝒂𝒔𝒉.`);
@@ -49,12 +49,13 @@ async function addToCollection(animal, message, zone = null) {
     if (randomChance > probability) {
       cost = 800 + zonecost;
       userData.cash -= cost;
-      updateUser(message.author.id, userData);
+      await updateUser(message.author.id, userData);
 
       return message.channel.send(`🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝\n\n**@${message.author.username}** cast their line... but all they got was a soggy boot from <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉. Better luck next time! 🥾💦`);
     }
 
-    if (!userData.aquaCollection[animal]) {
+    if (!userData.aquaCollection || !userData.aquaCollection[animal]) {
+      if (!userData.aquaCollection) userData.aquaCollection = {};
       userData.aquaCollection[animal] = {
         level: 1,
         animals: 1,
@@ -67,7 +68,7 @@ async function addToCollection(animal, message, zone = null) {
 
     userData.cash -= cost;
 
-    updateUser(message.author.id, userData);
+    await updateUser(message.author.id, userData);
 
     return message.channel.send(`🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝\n\n**@${message.author.username}** collected a _${fish[0].rarity}_ <:${fish[0].name}_fish:${fish[0].emoji}> **\`${animal}\`** ${zone? "in the **" + zone.toUpperCase() + "**": ""} from <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
   } catch (e) {
@@ -132,18 +133,18 @@ function collect(userId, message) {
 export async function stealShip(userId, message) {
   try {
     let randomChance = Math.floor(Math.random() * 100);
-    let ships = Ship.shipsData.sort((a, b) => a.probability - b.probability);
+    let ships = await Ship.shipsData.sort((a, b) => a.probability - b.probability);
     let shipDetail = {}
     let shipStolen = false;
-    let userShips = Ship.getUserShipsData(userId);
+    let userShips = await Ship.getUserShipsData(userId);
     for (let i = 0; i < ships.length; i++) {
       if (randomChance < ships[i].probability) {
         shipDetail = ships[i];
-        
-        if (userShips.some(shipDetails => shipDetails.id === ships[i].id)) return
-        
+
+        if (userShips.ships && userShips.ships.some(shipDetails => shipDetails.id && shipDetails.id === ships[i].id)) return
+
         shipStolen = true;
-        userShips.push({
+        userShips.ships.push({
           level: 1,
           id: ships[i].id,
           name: ships[i].name,
@@ -151,12 +152,12 @@ export async function stealShip(userId, message) {
           active: false
         });
 
-        Ship.modifyUserShips(userId, userShips);
+        await Ship.modifyUserShips(userId, userShips);
         break;
       }
     }
     if (!shipStolen) return
-    return message.channel.send(`🚢 **ᗩᕼOY, @${message.author.username}!**\n\nYou’ve *stolen* a <:${shipDetail.id}:${shipDetail.emoji}> **${shipDetail.name}** with no master! It's  ${['a', 'e', 'i', 'o', 'u'].includes(shipDetail.rarity[0].toLowerCase()) ? 'an' : 'a'} **${shipDetail.rarity}** ship 🔥! ⚓ You’re the captain now! 🏴‍☠️`);
+    return message.channel.send(`🚢 **ᗩᕼOY, @${message.author.username}!**\n\nYou’ve *stolen* a <:${shipDetail.id}:${shipDetail.emoji}> **${shipDetail.name}** with no master! It's  ${['a', 'e', 'i', 'o', 'u'].includes(shipDetail.rarity[0].toLowerCase()) ? 'an': 'a'} **${shipDetail.rarity}** ship 🔥! ⚓ You’re the captain now! 🏴‍☠️`);
   } catch (e) {
     console.error(e);
     return message.channel.send("⚠️ Something went wrong while stealing ship!");
@@ -189,7 +190,9 @@ export async function collectAnimal(userId, message) {
 export default {
   name: "ocean",
   description: "Explore ocean zones, collect animals, and manage ocean-related activities.",
-  aliases: ["oc", "o"],
+  aliases: ["oc",
+    "o",
+    "catch"],
   // Short alias for the ocean command
   args: "<action> [parameters]",
   example: [
@@ -197,7 +200,7 @@ export default {
     // List available zones
     "ocean explore <zone>",
     // Explore a specific zone
-    "ocean catch",
+    "catch",
     // Catch an animal in the ocean
     "ocean collection <@username optional>" // view an animal collection
   ],
@@ -210,7 +213,9 @@ export default {
 
   execute: (args, message) => {
     // Extract the subcommand from the user's input
+    if (args[0] === "catch") return collect(message.author.id, message);
     const subcommand = args[1] ? args[1].toLowerCase(): null;
+
     const zone = args[2] ? args[2].toLowerCase(): null;
     // Handle different subcommands for the "ocean" command
     switch (subcommand) {
@@ -232,11 +237,13 @@ export default {
 
       return viewCollection(message.author.id, message.channel);
 
+
     case "catch":
-      return collect(message.author.id, message); // Catch an animal in the ocean
+    case "c":
+      return collect(message.author.id, message); // Catch an animal in the Ocean
 
     default:
-      return message.channel.send("⚠️ Invalid ocean subcommand. Use `ocean zone`, `ocean explore <zone>`, `ocean collection <@username (optional)>`, or `ocean catch`.");
+      return message.channel.send("⚠️ 🌊🐚 ocean subcommand.\nUse `ocean zone`, `ocean explore <zone>`, `ocean collection <@username (optional)>`, `catch` for fishing 🎣 or `ocean catch`.");
     }
   }
 };

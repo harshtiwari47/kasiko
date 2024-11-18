@@ -1,10 +1,10 @@
 {
   "1223321207743582211": [
     {
-      "level": 6,
+      "level": 8,
       "id": "ship3",
       "name": "Leviathan",
-      "durability": 85,
+      "durability": 100,
       "active": true
     },
     {
@@ -30,6 +30,13 @@
       "name": "Zephyr",
       "durability": 140,
       "active": true
+    },
+    {
+      "level": 7,
+      "id": "ship3",
+      "name": "Leviathan",
+      "durability": 235,
+      "active": true
     }
   ],
   "874227579459108864": [
@@ -43,10 +50,10 @@
   ],
   "1283732086699851846": [
     {
-      "level": 6,
+      "level": 9,
       "id": "ship3",
       "name": "Leviathan",
-      "durability": 860,
+      "durability": 185,
       "active": true
     },
     {

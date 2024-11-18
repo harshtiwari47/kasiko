@@ -8,7 +8,7 @@ import { Helper } from '../../../helper.js';
 export async function guess(id, amount, number, channel) {
   try {
     const guild = await channel.guild.members.fetch(id);
-    let userData = getUserData(id)
+    let userData = await getUserData(id)
     
     if (!Number.isInteger(Number(number)) || Number(number) <= 0 || Number(number) > 10) {
       return channel.send("⚠️ Please guess integer number between 1-10.");
@@ -29,7 +29,7 @@ export async function guess(id, amount, number, channel) {
     } else {
       winamount = Number(-1 * amount) || 0;
       userData.cash += Number(winamount);
-      updateUser(id, userData);
+      await updateUser(id, userData);
       return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You guessed the wrong number. The number is **${random}**.`);
     }
 

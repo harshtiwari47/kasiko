@@ -8,7 +8,7 @@ export async function dailylogin(message) {
     const currentTime = Date.now();
     const nextClaim = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-    const userData = getUserData(message.author.id);
+    const userData = await getUserData(message.author.id);
 
     if (userData && userData.dailyReward && (currentTime - Number(userData.dailyReward)) < nextClaim) {
       // Calculate remaining time
@@ -39,7 +39,7 @@ export async function dailylogin(message) {
       userData.dailyReward = currentTime;
 
       // Save the updated user data
-      updateUser(message.author.id, userData);
+      await updateUser(message.author.id, userData);
 
       return message.channel.send(
         `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount} Cash**.\n` +

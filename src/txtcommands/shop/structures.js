@@ -16,10 +16,6 @@ import {
 
 import { Helper } from '../../../helper.js';
 
-import {
-  updateNetWorth
-} from '../../../utils/updateNetworth.js';
-
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -65,7 +61,7 @@ function createStructureEmbed(structure) {
     }
   )
   .setFooter({
-    text: `ID: ${structure.id}`
+    text: `ID: ${structure.id} | \`kas structure ${structure.id}\``
   })
   .setColor("#0b4ee2");
 }
@@ -73,68 +69,73 @@ function createStructureEmbed(structure) {
 export async function sendPaginatedStructures(context) {
   try {
     const user = context.user || context.author; // Handles both Interaction and Message
-    if (!user) return; // Handle the case where neither user nor author exists
+    if (!user) return;
 
     let currentIndex = 0;
     const structureEmbed = createStructureEmbed(structureItems[currentIndex]);
 
     // Buttons for navigation
-    const buttons = new ActionRowBuilder()
-    .addComponents(
+    const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-      .setCustomId("previousStructure")
-      .setLabel("previousStructure")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(true),
+        .setCustomId("previousStructure")
+        .setLabel("Previous Structure")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
       new ButtonBuilder()
-      .setCustomId("nextStructure")
-      .setLabel("nextStructure")
-      .setStyle(ButtonStyle.Primary)
+        .setCustomId("nextStructure")
+        .setLabel("Next Structure")
+        .setStyle(ButtonStyle.Primary)
     );
 
     // Send initial message
     const message = await context.channel.send({
-      embeds: [structureEmbed], components: [buttons], fetchReply: true
+      embeds: [structureEmbed],
+      components: [buttons],
+      fetchReply: true,
     });
 
     const collector = message.createMessageComponentCollector({
-      time: 180000
+      time: 180000, // 3 minutes
     });
 
     collector.on("collect", async (buttonInteraction) => {
       if (buttonInteraction.user.id !== user.id) {
         return buttonInteraction.reply({
-          content: "You can't interact with this button.", ephemeral: true
+          content: "You can't interact with this button.",
+          ephemeral: true,
         });
       }
+
+      // Defer the interaction
+      await buttonInteraction.deferUpdate();
 
       // Update index based on button click
       if (buttonInteraction.customId === "nextStructure") {
-        currentIndex++;
+        currentIndex = Math.min(currentIndex + 1, structureItems.length - 1);
       } else if (buttonInteraction.customId === "previousStructure") {
-        currentIndex--;
+        currentIndex = Math.max(currentIndex - 1, 0);
       }
 
       // Update embed and button state
-      const newstructureEmbed = createStructureEmbed(structureItems[currentIndex]);
+      const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
       buttons.components[0].setDisabled(currentIndex === 0);
       buttons.components[1].setDisabled(currentIndex === structureItems.length - 1);
 
-      await buttonInteraction.update({
-        embeds: [newstructureEmbed], components: [buttons]
+      await message.edit({
+        embeds: [newStructureEmbed],
+        components: [buttons],
       });
     });
 
-    collector.on("end",
-      () => {
-        buttons.components.forEach(button => button.setDisabled(true));
-        message.edit({
-          components: [buttons]
-        });
-      });
+    collector.on("end", async () => {
+      buttons.components.forEach((button) => button.setDisabled(true));
+      await message.edit({
+        components: [buttons],
+      }).catch(console.error);
+    });
   } catch (e) {
-    console.error(e);
-    return context.channel.send("⚠️ Something went wrong while viewing shop!");
+    console.error("Error in sendPaginatedStructures:", e);
+    return context.channel.send("⚠️ Something went wrong while viewing the shop!");
   }
 }
 
@@ -155,7 +156,7 @@ export async function viewStructure(id, message) {
 
 export async function userstructures(userId, message) {
   try {
-    let userData = getUserData(userId);
+    let userData = await getUserData(userId);
     const structures = userData.structures;
 
     let Properties = "";
@@ -191,7 +192,7 @@ export async function userstructures(userId, message) {
 export async function buystructure(message, structureId) {
   try {
     const structure = Object.values(structureItems).filter(item => item.id === structureId);
-    let userData = getUserData(message.author.id);
+    let userData = await getUserData(message.author.id);
 
     if (structure.length === 0) {
       return message.channel.send(`⚠️ No items with this ID exist.`);
@@ -224,11 +225,9 @@ export async function buystructure(message, structureId) {
     }
 
     userData.cash -= structure[0].price;
-    userData.maintanence += structure[0].maintenance;
+    userData.maintenance += structure[0].maintenance;
 
-    updateNetWorth(message.author.id);
-
-    updateUser(message.author.id,
+    await updateUser(message.author.id,
       userData);
     writeShopData(items);
 
@@ -255,7 +254,7 @@ export async function buystructure(message, structureId) {
 export async function sellstructure(message, structureId) {
   try {
     const structure = Object.values(structureItems).filter(item => item.id === structureId);
-    let userData = getUserData(message.author.id);
+    let userData = await getUserData(message.author.id);
     const userStructure = Object.values(userData.structures).filter(item => item.id === structureId);
 
     if (structure.length === 0) {
@@ -276,12 +275,10 @@ export async function sellstructure(message, structureId) {
     }).filter(structure => structure.items > 0);
 
     userData.cash += Number(structure[0].price);
-    userData.maintanence -= Number(structure[0].maintenance);
-
-    updateNetWorth(message.author.id);
+    userData.maintenance -= Number(structure[0].maintenance);
 
     writeShopData(items);
-    updateUser(message.author.id,
+    await updateUser(message.author.id,
       userData);
 
     const embed = new EmbedBuilder()

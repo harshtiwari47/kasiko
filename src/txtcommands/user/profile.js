@@ -11,7 +11,9 @@ import {
   updateNetWorth
 } from '../../../utils/updateNetworth.js';
 
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
 
 // create an embed card based on user data
 async function createUserEmbed(userId, username, userData) {
@@ -37,8 +39,8 @@ async function createUserEmbed(userId, username, userData) {
       sum += car.items
       return sum
     }, 0);
-    
-   let totalStructures = userData.structures.reduce((sum, structure) => {
+
+    let totalStructures = userData.structures.reduce((sum, structure) => {
       sum += structure.items
       return sum
     }, 0);
@@ -64,7 +66,7 @@ async function createUserEmbed(userId, username, userData) {
         name: 'ᯓ★𝑺𝒑𝒐𝒖𝒔𝒆 ', value: `**${partner.username}**`, inline: true
       },
       {
-        name: 'ᯓ★𝑪𝒉𝒊𝒍𝒅𝒓𝒆𝒏 ', value: `**${userData.children.length ===0 ? "0" : userData.children.join(" ")}**`, inline: true
+        name: 'ᯓ★𝑪𝒉𝒊𝒍𝒅𝒓𝒆𝒏 ', value: `**${userData.children.length === 0 ? "0": userData.children.join(" ")}**`, inline: true
       },
       {
         name: 'ᯓ★𝐂𝐚𝐫𝐬', value: `${totalCars}`, inline: true
@@ -97,14 +99,14 @@ export async function profile(id, channel) {
   try {
     const user = await channel.guild.members.fetch(id);
     updateNetWorth(id);
-    let userData = getUserData(id);
+    let userData = await getUserData(id);
 
     let userProfile = await createUserEmbed(id, user.username, userData);
     return await channel.send({
       embeds: [userProfile]
     });
   } catch (e) {
-    console.log(e)
+    console.error(e)
     return channel.send("Oops! something went wrong while exploring user's profile!");
   }
 }
@@ -112,14 +114,22 @@ export async function profile(id, channel) {
 export default {
   name: "profile",
   description: "Displays the user's profile or another user's profile if mentioned.",
-  aliases: ["userinfo", "profileinfo", "p"],
+  aliases: ["userinfo",
+    "profileinfo",
+    "p"],
   args: "<@user> (optional)",
   example: [
-    "profile", // View your own profile
-    "profile @user", // View another user's profile
+    "profile",
+    // View your own profile
+    "profile @user",
+    // View another user's profile
   ],
-  related: ["userinfo", "profile", "user", "info"],
-  cooldown: 5000, // Cooldown of 5 seconds
+  related: ["userinfo",
+    "profile",
+    "user",
+    "info"],
+  cooldown: 5000,
+  // Cooldown of 5 seconds
   category: "User",
 
   execute: (args, message) => {

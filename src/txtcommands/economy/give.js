@@ -8,7 +8,9 @@ import {
   getUserData,
   updateUser
 } from '../../../database.js';
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
 
 export const sendConfirmation = async (message, userId, amount, recipient) => {
   // Create an embed for the confirmation message
@@ -57,12 +59,12 @@ export async function give(message, userId, amount, recipientId) {
       return message.channel.send("¯⁠\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯ Giving **yourself** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉?\nThat’s like trying to give your own reflection a high five—totally __unnecessary and a little weird__!");
     }
 
-    let userData = getUserData(userId);
+    let userData = await getUserData(userId);
 
     if (userData.cash < amount) {
       return message.channel.send("⚠️🧾 You don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!");
     }
-    
+
     const replyMessage = await sendConfirmation(message, userId, amount, recipientId);
 
     // Create a collector to capture button interactions from the author only
@@ -91,17 +93,17 @@ export async function give(message, userId, amount, recipientId) {
       );
 
       if (i.customId === 'confirmgiving') {
-        
-                let userData = getUserData(userId);
-        let recipientData = getUserData(recipientId);
+
+        let userData = await getUserData(userId);
+        let recipientData = await getUserData(recipientId);
 
         userData.cash -= Number(amount);
         userData.charity += Number(amount);
         recipientData.cash += Number(amount);
 
-        updateUser(userId, userData);
-        updateUser(recipientId, recipientData);
-        
+        await updateUser(userId, userData);
+        await updateUser(recipientId, recipientData);
+
         return await i.update({
           content: `🧾 **<@${userId}>** has generously sent <:kasiko_coin:1300141236841086977>**${amount}** 𝑪𝒂𝒔𝒉 to **<@${recipientId}>**. Your support helps each other level up—keep the teamwork!`,
           components: [rowDisabled]
@@ -152,7 +154,8 @@ export default {
   related: ["daily", "cash"],
   cooldown: 5000,
   category: "Economy",
-  execute: (args, message) => {
+  execute: (args,
+    message) => {
     if (Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2])) {
       give(message, message.author.id, args[1], Helper.extractUserId(args[2]));
     } else {

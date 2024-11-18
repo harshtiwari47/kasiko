@@ -1,141 +1,184 @@
 import fs from 'fs';
 import path from 'path';
 
-const userDatabasePath = path.join(process.cwd(), 'database', 'user.json');
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+
+import User from "./models/User.js";
+
+import {
+  updateNetWorth
+} from './utils/updateNetworth.js';
+
+dotenv.config();
+
+export const connectDB = async () => {
+  mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log('MongoDB connected successfully to Atlas!');
+  })
+  .catch((error) => {
+    console.error('Error connecting to MongoDB:', error);
+  });
+};
+
+connectDB();
+
 const shopDatabasePath = path.join(process.cwd(), 'database', 'shop.json');
 const stockDatabasePath = path.join(process.cwd(), 'database', 'stocks.json');
 const aquaticDatabasePath = path.join(process.cwd(), 'database', 'aquatic.json');
 
-// Ensure the data file exists and is initialized
-if (!fs.existsSync(userDatabasePath)) {
-  fs.writeFileSync(userDatabasePath, JSON.stringify({}, null, 2));
-}
+// Function to create a new user in the database
+export const createUser = async (userId) => {
+  try {
+    // Check if the user already exists
+    const existingUser = await User.findOne({
+      id: userId
+    });
+    if (existingUser) {
+      return {
+        success: false,
+        message: 'User already exists.'
+      };
+    }
 
-if (!fs.existsSync(shopDatabasePath)) {
-  fs.writeFileSync(shopDatabasePath, JSON.stringify({}, null, 2));
-}
+    // Create a new user if not found
+    const newUser = new User( {
+      id: userId,
+      cash: 0, // Default values
+      networth: 0,
+      maintenance: 0,
+      spouse: null,
+      roses: 0,
+      bondXP: 0,
+      charity: 0,
+      trust: 100,
+      exp: 0,
+      level: 1, // Starting level
+      verified: false,
+      acceptedTerms: true,
+      lastBattle: null,
+      lastRobbery: null,
+      aquariumCollectionTime: null,
+      marriedOn: null,
+      joined: Date.now(), // Timestamp of joining
+      dailyReward: null,
+      rewardStreak: 0,
+      stocks: {},
+      cars: [],
+      structures: [],
+      aquaCollection: {},
+      aquarium: [],
+      children: [],
+      battleLog: [],
+    });
 
-if (!fs.existsSync(stockDatabasePath)) {
-  fs.writeFileSync(stockDatabasePath, JSON.stringify({}, null, 2));
-}
-
-// Helper function to read data from the JSON file
-export const readUserData = () => {
-  const data = fs.readFileSync(userDatabasePath, 'utf-8');
-  return JSON.parse(data);
-};
-
-export const readShopData = () => {
-  const data = fs.readFileSync(shopDatabasePath, 'utf-8');
-  return JSON.parse(data);
-};
-
-export const readStockData = () => {
-  const data = fs.readFileSync(stockDatabasePath, 'utf-8');
-  return JSON.parse(data);
-};
-
-export const readAquaticData = () => {
-  const data = fs.readFileSync(aquaticDatabasePath, 'utf-8');
-  return JSON.parse(data);
-};
-
-// Helper function to write data to the JSON file
-export const writeUserData = (data) => {
-  fs.writeFileSync(userDatabasePath, JSON.stringify(data, null, 2));
-};
-
-export const writeShopData = (data) => {
-  fs.writeFileSync(shopDatabasePath, JSON.stringify(data, null, 2));
-};
-
-export const writeStockData = (data) => {
-  fs.writeFileSync(stockDatabasePath, JSON.stringify(data, null, 2));
-};
-
-// Create a new user profile
-export const createUser = (userId) => {
-  const data = readUserData();
-
-  if (data[userId]) {
-    return;
+    await newUser.save(); // Save to the database
+    return {
+      success: true,
+      message: 'User created successfully.'
+    };
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return {
+      success: false,
+      message: 'Failed to create user.'
+    };
   }
-
-  const userData = {
-    cash: 5000,
-    networth: 5000,
-    maintanence: 0,
-    cars: [],
-    structures: [],
-    aquaCollection: {},
-    aquarium: [],
-    aquariumCollectionTime: null,
-    stocks: {},
-    spouse: null,
-    children: [],
-    roses: 0,
-    bondXP: 0,
-    marriedOn: null,
-    joined: new Date().toISOString(),
-    dailyReward: null,
-    rewardStreak: 0,
-    charity: 0,
-    trust: 100,
-    exp: 0,
-    level: 0,
-    verified: false
-  };
-
-  data[userId] = userData;
-  writeUserData(data);
-  return userData;
 };
 
-// Get user data
-export const getUserData = (userId) => {
-  const data = readUserData();
-
-  if (!data[userId]) {
-    createUser(userId);
+// Function to retrieve user data from the database
+export const getUserData = async (userId) => {
+  try {
+    const user = await User.findOne({
+      id: userId
+    });
+    let createdUserData = {
+      success: true
+    };
+    if (!user) {
+      createdUserData = await createUser(userId);
+    }
+    if (!createdUserData.success) return console.error('Failed creating new user');
+    return user
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return null
   }
-
-  return data[userId];
 };
 
-export const getShopData = (itemId) => {
+// Function to check if a user exists in the database
+export const userExists = async (userId) => {
+  try {
+    const user = await User.findOne({
+      id: userId
+    });
+    return user ? true: false;
+  } catch (error) {
+    console.error('Error checking if user exists:', error);
+    return false;
+  }
+};
+
+// Function to update user data
+export const updateUser = async (userId, user) => {
+  try {
+    // update net worth
+    await updateNetWorth(userId);
+
+    user.cash = Number(user.cash.toFixed(1));
+    user.networth = Number(user.networth.toFixed(1));
+
+    if (user.cash < 0) user.cash = 0;
+    if (user.networth < 0) user.networth = 0;
+    // Save the updated user document
+    const updatedUser = await user.save();
+
+    return updatedUser; // Return the updated user
+
+  } catch (error) {
+    console.error('Error in transaction:', error);
+    return 'Error in transaction';
+  }
+};
+
+// Function to delete a user from the database
+export const deleteUser = async (userId) => {
+  try {
+    const user = await User.findOne({
+      id: userId
+    });
+    if (!user) {
+      return null
+    }
+
+    await user.remove(); // Delete the user from the database
+    return {
+      success: true,
+      message: 'User deleted successfully.'
+    };
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return null
+  }
+};
+
+export const userAcceptedTerms = async (userId) => {
+  try {
+    const user = await User.findOne({
+      id: userId
+    });
+    if (!user) return false;
+    if (user) return user.acceptedTerms;
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+// other
+export const itemExists = (itemId) => {
   const data = readShopData();
-
-  if (!data[itemId]) {
-    return {}
-  }
-
-  return data[itemId];
-};
-
-// Update user data (partial update)
-export const updateUser = (userId, newData) => {
-  const data = readUserData();
-
-  if (!data[userId]) {
-    createUser(userId);
-  }
-
-  if (newData.cash < 0) {
-    newData.cash = 0;
-  } else if (newData.networth < 0) {
-    newData.networth = 0;
-  }
-  
-  newData.cash = Number((newData.cash).toFixed(1));
-  newData.networth = Number((newData.networth).toFixed(1));
-
-  const updatedData = {
-    ...data[userId],
-    ...newData
-  };
-  data[userId] = updatedData;
-  writeUserData(data);
-  return updatedData;
+  return data.hasOwnProperty(itemId);
 };
 
 export const updateShop = (itemId, newData) => {
@@ -154,25 +197,36 @@ export const updateShop = (itemId, newData) => {
   return updatedData;
 };
 
-// Delete user data
-export const deleteUser = (userId) => {
-  const data = readUserData();
-
-  if (data[userId]) {
-    delete data[userId];
-    writeUserData(data);
-    return true;
-  }
-  return false;
-};
-
-// Check if user exists
-export const userExists = (userId) => {
-  const data = readUserData();
-  return data.hasOwnProperty(userId);
-};
-
-export const itemExists = (itemId) => {
+export const getShopData = (itemId) => {
   const data = readShopData();
-  return data.hasOwnProperty(itemId);
+
+  if (!data[itemId]) {
+    return {}
+  }
+
+  return data[itemId];
+};
+
+
+export const writeShopData = (data) => {
+  fs.writeFileSync(shopDatabasePath, JSON.stringify(data, null, 2));
+};
+
+export const writeStockData = (data) => {
+  fs.writeFileSync(stockDatabasePath, JSON.stringify(data, null, 2));
+};
+
+export const readShopData = () => {
+  const data = fs.readFileSync(shopDatabasePath, 'utf-8');
+  return JSON.parse(data);
+};
+
+export const readStockData = () => {
+  const data = fs.readFileSync(stockDatabasePath, 'utf-8');
+  return JSON.parse(data);
+};
+
+export const readAquaticData = () => {
+  const data = fs.readFileSync(aquaticDatabasePath, 'utf-8');
+  return JSON.parse(data);
 };

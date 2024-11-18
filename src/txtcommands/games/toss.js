@@ -3,12 +3,14 @@ import {
   updateUser
 } from '../../../database.js';
 
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
 
-export async function toss(id, amount, channel) {
+export async function toss(id, amount, channel, choice = "head") {
   try {
     const guild = await channel.guild.members.fetch(id);
-    let userData = getUserData(id)
+    let userData = await getUserData(id)
 
     if (userData.cash < 250) {
       return channel.send("⚠️ You don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.");
@@ -16,19 +18,24 @@ export async function toss(id, amount, channel) {
       return channel.send("⚠️ minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **250**.");
     }
 
-    let random = Math.random() * 100;
+    let random = Math.floor(Math.random() * 2);
     let winamount = 0;
 
-    if (random < 50) {
+    if (random === 1 && choice === "head") {
       winamount = Number(amount * 1.2).toFixed(0) || 0;
       userData.cash += Number(winamount);
-      updateUser(id, userData);
+      await updateUser(id, userData);
       return channel.send(`𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 **@${guild.user.username}** 🎉!\nYou have won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You tossed a 🪙 coin and you got heads.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`);
+    } else if (random === 0 && choice === "tail") {
+      winamount = Number(amount * 1.2).toFixed(0) || 0;
+      userData.cash += Number(winamount);
+      await updateUser(id, userData);
+      return channel.send(`𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 **@${guild.user.username}** 🎉!\nYou have won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You tossed a 🪙 coin and you got tails.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`);
     } else {
       winamount = Number(-1 * amount) || 0;
       userData.cash += Number(winamount);
-      updateUser(id, userData);
-      return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You tossed a 🪙 coin and you got tails.`);
+      await updateUser(id, userData);
+      return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You tossed a 🪙 coin and you got ${choice === "tail" ? "heads" : "tails"}.`);
     }
 
   } catch (e) {
@@ -43,8 +50,11 @@ export default {
   aliases: ["tc"],
   args: "<amount>",
   example: "tosscoin 250",
-  related: ["guess", "gamble", "cash"],
-  cooldown: 2000, // 2 seconds cooldown
+  related: ["guess",
+    "gamble",
+    "cash"],
+  cooldown: 2000,
+  // 2 seconds cooldown
   category: "Games",
 
   // Main function to execute the coin toss logic
@@ -57,12 +67,12 @@ export default {
       if (amount < 250) {
         return message.channel.send("⚠️ Minimum bet amount is 250.");
       }
-
+      let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail" : "head";
       // Call the Gamble module's toss function
-      toss(message.author.id, amount, message.channel);
+      toss(message.author.id, amount, message.channel, choice);
     } else {
       // Send usage error if the amount argument is invalid
-      message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `tosscoin <amount>`.");
+      message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `tosscoin <amount> <choice heads(h)/tails(t) (optional)>`, default choice is heads.");
     }
   }
 };

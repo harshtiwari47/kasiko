@@ -12,8 +12,9 @@ import {
 } from '../../../utils/updateNetworth.js';
 
 
-function sendUserStat(stat, message) {
-  const userData = getUserData(message.author.id);
+async function sendUserStat(stat, message) {
+  const userData = await getUserData(message.author.id);
+  
   if (stat === "cash") {
     message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** 𝑪𝒂𝒔𝒉.`);
   }
@@ -21,7 +22,7 @@ function sendUserStat(stat, message) {
     message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`);
   }
   if (stat === "networth") {
-    updateNetWorth(message.author.id);
+    await updateNetWorth(message.author.id);
     message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** net worth.`);
   }
   if (stat === "level") {
@@ -29,6 +30,9 @@ function sendUserStat(stat, message) {
   }
   if (stat === "exp") {
     message.channel.send(`**${message.author.username}**'s current experience points are ✴️ **${userData[stat]}**.`);
+  }
+  if (stat === "charity") {
+    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** charity.`);
   }
 }
 

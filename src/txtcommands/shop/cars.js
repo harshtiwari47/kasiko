@@ -13,10 +13,6 @@ import {
   updateUser
 } from '../../../database.js';
 
-import {
-  updateNetWorth
-} from '../../../utils/updateNetworth.js';
-
 import { Helper } from '../../../helper.js';
 
 import dotenv from 'dotenv';
@@ -61,77 +57,79 @@ function createCarEmbed(car) {
     }
   )
   .setFooter({
-    text: `ID: ${car.id}`
+    text: `ID: ${car.id} | \`kas car ${car.id}\``
   })
   .setColor("#0b4ee2");
 }
 
 export async function sendPaginatedCars(context) {
-  try {
-    const user = context.user || context.author; // Handles both Interaction and Message
-    if (!user) return; // Handle the case where neither user nor author exists
+    try {
+        const user = context.user || context.author; // Handles both Interaction and Message
+        if (!user) return;
 
-    let currentIndex = 0;
-    const carEmbed = createCarEmbed(carItems[currentIndex]);
+        let currentIndex = 0;
+        const carEmbed = createCarEmbed(carItems[currentIndex]);
 
-    // Buttons for navigation
-    const buttons = new ActionRowBuilder()
-    .addComponents(
-      new ButtonBuilder()
-      .setCustomId("previousCar")
-      .setLabel("PreviousCar")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(true),
-      new ButtonBuilder()
-      .setCustomId("nextCar")
-      .setLabel("NextCar")
-      .setStyle(ButtonStyle.Primary)
-    );
+        // Buttons for navigation
+        const buttons = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId("previousCar")
+                .setLabel("Previous Car")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId("nextCar")
+                .setLabel("Next Car")
+                .setStyle(ButtonStyle.Primary)
+        );
 
-    // Send initial message
-    const message = await context.channel.send({
-      embeds: [carEmbed], components: [buttons], fetchReply: true
-    });
-
-    const collector = message.createMessageComponentCollector({
-      time: 180000
-    });
-
-    collector.on("collect", async (buttonInteraction) => {
-      if (buttonInteraction.user.id !== user.id) {
-        return buttonInteraction.reply({
-          content: "You can't interact with this button.", ephemeral: true
+        // Send initial message
+        const message = await context.channel.send({
+            embeds: [carEmbed],
+            components: [buttons],
+            fetchReply: true,
         });
-      }
 
-      // Update index based on button click
-      if (buttonInteraction.customId === "nextCar") {
-        currentIndex++;
-      } else if (buttonInteraction.customId === "previousCar") {
-        currentIndex--;
-      }
-
-      // Update embed and button state
-      const newCarEmbed = createCarEmbed(carItems[currentIndex]);
-      buttons.components[0].setDisabled(currentIndex === 0);
-      buttons.components[1].setDisabled(currentIndex === carItems.length - 1);
-
-      await buttonInteraction.update({
-        embeds: [newCarEmbed], components: [buttons]
-      });
-    });
-
-    collector.on("end",
-      () => {
-        buttons.components.forEach(button => button.setDisabled(true));
-        message.edit({
-          components: [buttons]
+        const collector = message.createMessageComponentCollector({
+            time: 180000,
         });
-      });
-  } catch (e) {
-    console.error(e);
-    return context.channel.send("⚠️ Something went wrong while viewing shop!");
-  }
+
+        collector.on("collect", async (buttonInteraction) => {
+            if (buttonInteraction.user.id !== user.id) {
+                return buttonInteraction.reply({
+                    content: "You can't interact with this button.",
+                    ephemeral: true,
+                });
+            }
+
+            await buttonInteraction.deferUpdate();
+
+            if (buttonInteraction.customId === "nextCar") {
+                currentIndex = Math.min(currentIndex + 1, carItems.length - 1);
+            } else if (buttonInteraction.customId === "previousCar") {
+                currentIndex = Math.max(currentIndex - 1, 0);
+            }
+
+            const newCarEmbed = createCarEmbed(carItems[currentIndex]);
+            buttons.components[0].setDisabled(currentIndex === 0);
+            buttons.components[1].setDisabled(currentIndex === carItems.length - 1);
+
+            await message.edit({
+                embeds: [newCarEmbed],
+                components: [buttons],
+            });
+        });
+
+        collector.on("end", async () => {
+            buttons.components.forEach((button) => button.setDisabled(true));
+            await message.edit({
+                components: [buttons],
+            }).catch(console.error);
+        });
+    } catch (e) {
+        console.error("Error in sendPaginatedCars:", e);
+        return context.channel.send("⚠️ Something went wrong while viewing the shop!");
+    }
 }
 
 export async function viewCar(id, message) {
@@ -151,7 +149,7 @@ export async function viewCar(id, message) {
 
 export async function usercars(userId, message) {
   try {
-    let userData = getUserData(userId);
+    let userData = await getUserData(userId);
     const cars = userData.cars;
 
     let Garrage = "";
@@ -187,7 +185,7 @@ export async function usercars(userId, message) {
 export async function buycar(message, carId) {
   try {
     const car = Object.values(carItems).filter(item => item.id === carId);
-    let userData = getUserData(message.author.id);
+    let userData = await getUserData(message.author.id);
 
     if (car.length === 0) {
       return message.channel.send(`⚠️ No items with this ID exist.`);
@@ -220,11 +218,9 @@ export async function buycar(message, carId) {
     }
 
     userData.cash -= car[0].price;
-    userData.maintanence += car[0].maintenance;
+    userData.maintenance += car[0].maintenance;
 
-    updateNetWorth(message.author.id);
-
-    updateUser(message.author.id,
+    await updateUser(message.author.id,
       userData);
     writeShopData(items);
 
@@ -250,7 +246,7 @@ export async function buycar(message, carId) {
 export async function sellcar(message, carId) {
   try {
     const car = Object.values(carItems).filter(item => item.id === carId);
-    let userData = getUserData(message.author.id);
+    let userData = await getUserData(message.author.id);
     const userCar = Object.values(userData.cars).filter(item => item.id === carId);
 
     if (car.length === 0) {
@@ -271,12 +267,10 @@ export async function sellcar(message, carId) {
     }).filter(car => car.items > 0);
 
     userData.cash += Number(car[0].price);
-    userData.maintanence -= Number(car[0].maintenance);
-
-    updateNetWorth(message.author.id);
-
+    userData.maintenance -= Number(car[0].maintenance);
+    
     writeShopData(items);
-    updateUser(message.author.id,
+    await updateUser(message.author.id,
       userData);
 
     const embed = new EmbedBuilder()

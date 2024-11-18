@@ -22,7 +22,7 @@ import {
   Bot
 } from './req/botPlayer.js';
 
-export async function battle(message, player1, player2) {
+export async function battle(message, player1, player2, friendly = false) {
   // Initializing battle state
   let battleLog = [];
   let currentPlayer = player1;
@@ -77,6 +77,7 @@ export async function battle(message, player1, player2) {
 
   // Battle loop - we will simulate the battle for 10 turns (or until one player loses all health)
   let turnCount = 0;
+
   while (player1.health > 0 && player2.health > 0 && turnCount < 10) {
     if (!battleStarted) {
       battleStarted = true;
@@ -84,6 +85,14 @@ export async function battle(message, player1, player2) {
       await battleMessage.edit({
         embeds: [generateEmbed()]
       });
+
+      let firstAttack = Math.floor(Math.random() * 2);
+      if (firstAttack === 0) {
+        [currentPlayer,
+          opponent] = [opponent,
+          currentPlayer];
+      }
+
       turnCount++;
     }
 
@@ -114,15 +123,20 @@ export async function battle(message, player1, player2) {
   const winner = player1.health > player2.health ? player1: player2;
   const loser = player1.health > player2.health ? player2: player1;
 
-  const userData1 = getUserData(player1.id);
+  const userData1 = await getUserData(player1.id);
   let userData2 = ``;
-  let userShips = Ship.getUserShipsData(player1.id);
-  let currentShipIndex = userShips.findIndex(ship => ship.name === player1.shipName);
+  let userShips = await Ship.getUserShipsData(player1.id);
+  let currentShipIndex = userShips.ships.findIndex(ship => ship.name === player1.shipName);
 
   let reward = Number(5000 + Math.floor(Math.random() * 5000));
+
+  if (friendly) {
+    reward = 1000;
+  }
+
   let otherMessage = ``;
   if (player2.user === "bot") {} else {
-    userData2 = getUserData(player2.id);
+    userData2 = await getUserData(player2.id);
   }
 
   const date = new Date().toLocaleDateString();
@@ -133,7 +147,7 @@ export async function battle(message, player1, player2) {
   if (userData2 && player2.user !== "bot" && winner.id === player1.id) {
     userData1.cash += reward;
     userData2.cash -= userData2.cash > 1000 ? 1000: userData2.cash;
-    userShips[currentShipIndex].durability -= 25;
+    userShips.ships[currentShipIndex].durability -= 25;
 
     if (!userData2.battleLog) userData2.battleLog = [];
     userData2.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on ${date}.`);
@@ -144,7 +158,7 @@ export async function battle(message, player1, player2) {
     otherMessage = `**${player1.name}**, you have won <:coin:1304675604171460728>${reward} 𝒄𝒂𝒔𝒉, and your **durability** has **decreased by 25**. Also, **${player2.name}** has lost <:coin:1304675604171460728>1000 of their 𝒄𝒂𝒔𝒉.`;
 
   } else if (userData2 && player2.user !== "bot" && winner.id !== player1.id) {
-    userShips[currentShipIndex].durability -= userShips[currentShipIndex].durability > 100 ? 100: userShips[currentShipIndex].durability;
+    userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
     userData2.cash += userData2.cash > 1000 ? 1000: userData2.cash;
 
     if (!userData2.battleLog) userData2.battleLog = [];
@@ -156,18 +170,18 @@ export async function battle(message, player1, player2) {
     otherMessage = `**${player1.name}**, you have lost your **100 durability**, and **${player2.name}** has won <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉.`;
     // if other player is bot
   } else if (winner.id !== player1.id) {
-    userShips[currentShipIndex].durability -= userShips[currentShipIndex].durability > 100 ? 100: userShips[currentShipIndex].durability;
+    userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
     otherMessage = `**${player1.name}**, you have lost **100** durability.`;
   } else {
-    userShips[currentShipIndex].durability -= 25;
+    userShips.ships[currentShipIndex].durability -= 25;
     userData1.cash += reward;
     otherMessage = `**${player1.name}**, you have won <:coin:1304675604171460728>${reward} 𝒄𝒂𝒔𝒉 and your **durability has decreased by 25**.`;
   }
 
-  updateUser(player1.id, userData1);
-  Ship.modifyUserShips(player1.id, userShips);
+  await updateUser(player1.id, userData1);
+  await Ship.modifyUserShips(player1.id, userShips);
 
-  if (userData2) updateUser(player2.id, userData2);
+  if (userData2) await updateUser(player2.id, userData2);
 
   battleLog.push(`\n\n🎖️ **${winner.name}** emerges victorious, defeating **${loser.name}** with ${winner.health} health left. ${otherMessage}`);
   await battleMessage.edit({
@@ -176,93 +190,114 @@ export async function battle(message, player1, player2) {
 }
 
 function gatherDetails(username, userId, isPlayer = false, message) {
-  let userData = getUserData(userId);
-  let userShips = Ship.getUserShipsData(userId);
+  return new Promise(async (resolve) => {
+    try {
+      const userData = await getUserData(userId);
+      const userShips = await Ship.getUserShipsData(userId);
 
-  if (isPlayer && userData.cash < 1000) {
-    message.channel.send("⚠️ You don't have sufficient cash to start a battle.");
-    return {}
-  }
+      if (isPlayer && userData.cash < 1000) {
+        return resolve( {
+          error: true, message: "⚠️ You don't have sufficient cash to start a battle."
+        });
+      }
 
-  if (isPlayer) {
-    const lastBattleTime = new Date(userData.lastBattle || Date.now() - (1000 * 60 * 60));
-    const currentTime = new Date();
-    const timeDifferenceInHours = (currentTime - lastBattleTime) / (1000 * 60 * 60);
- // const timeDifferenceInMinutes = (60 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
-    const timeDifferenceInMinutes = (10 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
+      if (isPlayer) {
+        const lastBattleTime = new Date(userData.lastBattle || Date.now() - (1000 * 60 * 60));
+        const currentTime = new Date();
+        const timeDifferenceInMinutes = (10 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
 
-    if (timeDifferenceInHours < .1) {
-      message.channel.send(`⚠️ You can come back again for battle after ${timeDifferenceInMinutes} minutes.`);
-      return {}
+        if (timeDifferenceInMinutes > 0) {
+          return resolve( {
+            error: true, message: `⚠️ You can come back again for battle after ${timeDifferenceInMinutes} minutes.`
+          });
+        }
+      }
+
+      if (!isPlayer && userShips.ships.length === 0) {
+        return resolve( {
+          error: true, message: "⚠️ Opponent has no ships."
+        });
+      }
+
+      if (isPlayer && userShips.ships.length === 0) {
+        return resolve( {
+          error: true, message: "⚠️ You don't have any ships for battle. Ships can be found while catching fish."
+        });
+      }
+
+      const activeShip = userShips.ships.find(ship => ship.active);
+
+      if (!activeShip) {
+        const noActiveShipMessage = isPlayer
+        ? "⚠️ No active ship found in your ship collection. For help, use the command `Kas help battle`.": "⚠️ Opponent doesn't have any active ships for battle. What's the point of a battle?";
+        return resolve( {
+          error: true, message: noActiveShipMessage
+        });
+      }
+
+      const shipDetails = await Ship.shipsData.find(ship => ship.id === activeShip.id);
+
+      if (!shipDetails) {
+        return resolve( {
+          error: true, message: `⚠️ No such ship exists in ${isPlayer ? "your": "opponent"} active ship collection in our database! Battle start failed.`
+        });
+      }
+
+      if (activeShip.durability < 100 && isPlayer) {
+        return resolve( {
+          error: true, message: "⚠️ Your ship is not ready for battle. Minimum durability required: 100"
+        });
+      }
+
+      if (isPlayer) {
+        userData.cash -= 1000;
+        await updateUser(userId, userData);
+      }
+
+      resolve( {
+        name: username,
+        health: activeShip.level * shipDetails.health,
+        dmg: activeShip.level * shipDetails.dmg,
+        shipName: activeShip.name,
+        shipLvl: activeShip.level,
+        id: userId,
+        user: "player"
+      });
+    } catch (error) {
+      console.error("Error in gatherDetails:", error);
+      resolve( {
+        error: true, message: "An error occurred while gathering details. Please try again later."
+      });
     }
-  }
-
-  if (!isPlayer && userShips.length === 0) {
-    message.channel.send("⚠️ Opponent has no ships.");
-    return {}
-  }
-
-  if (!isPlayer && userShips.length === 0) {
-    message.channel.send("⚠️ You don't have any ships for battle. Ships can be found while catching fish.");
-    return {}
-  }
-
-  let activeShip = userShips.find(ship => ship.active);
-
-  if (!activeShip && !isPlayer) {
-    message.channel.send("⚠️ Opponent doesn't have any active ships for battle. What's the point of a battle?");
-    return {}
-  }
-
-  if (!activeShip && isPlayer) {
-    message.channel.send("⚠️ No active ship found in your ship collection. For help, use the command `Kas help battle`.");
-    return {}
-  }
-
-  let shipDetails = Ship.shipsData.find(ship => ship.id === activeShip.id);
-
-  if (!shipDetails) {
-    message.channel.send(`⚠️ No such ship exists in ${isPlayer ? "your": "opponent"} active ship collection in our database! Battle start failed.`);
-    return {}
-  }
-
-  if (activeShip.durability < 100 && isPlayer) {
-    message.channel.send("⚠️ Your ship is not ready for battle. Minimum durability required: 100");
-    return {}
-  }
-  if (isPlayer) {
-    userData.cash -= 1000;
-    updateUser(userId, userData);
-  }
-
-  return {
-    name: username,
-    health: activeShip.level * shipDetails.health,
-    dmg: activeShip.level * shipDetails.dmg,
-    shipName: activeShip.name,
-    shipLvl: activeShip.level,
-    id: userId,
-    user: "player"
-  }
+  });
 }
 
 export async function startBattle(opponent, message) {
   let opponentPlayer;
   let player;
+  let friendly = false;
   let usernamePlayer = await client.users.fetch(message.author.id) || {
     "username": "unknown"
   }
 
-  player = gatherDetails(usernamePlayer, message.author.id, true, message);
+  player = await gatherDetails(usernamePlayer,
+    message.author.id,
+    true,
+    message);
+
+  if (player.error) return message.channel.send(player.message);
 
   if (!opponent) {
     opponentPlayer = Bot.createRandomPlayer(player);
   } else {
+    friendly = true;
     let usernameOpponent = await client.users.fetch(opponent) || {
       "username": "unknown"
     }
-    opponentPlayer = gatherDetails(usernameOpponent, opponent, false, message);
+    opponentPlayer = await gatherDetails(usernameOpponent, opponent, false, message);
   }
+
+  if (opponentPlayer.error) return message.channel.send(opponentPlayer.message);
 
   if (!player.name || !opponentPlayer.name) {
     return
@@ -270,18 +305,18 @@ export async function startBattle(opponent, message) {
 
   if (player && opponentPlayer) {
     try {
-      return battle(message, player, opponentPlayer);
+      return battle(message, player, opponentPlayer, friendly);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       return message.channel.send("⚠️ Something went wrong during battle.")
     }
   }
 }
 
-export function battleLog(message) {
-  let userData = getUserData(message.author.id);
+export async function battleLog(message) {
+  let userData = await getUserData(message.author.id);
   let logs;
-  
+
   if (userData.battleLog && userData.battleLog.length > 0) {
     logs = "- " + userData.battleLog.join('\n- ');
   }

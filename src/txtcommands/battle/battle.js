@@ -14,7 +14,8 @@ import {
   Helper
 } from '../../../helper.js';
 import {
-  startBattle, battleLog
+  startBattle,
+  battleLog
 } from './battleSystem.js';
 
 async function sendChallenge(args, message) {
@@ -67,28 +68,28 @@ async function sendChallenge(args, message) {
 
   collector.on('collect', async interaction => {
     try {
-    if (interaction.user.id !== targetId) {
-      return interaction.reply({
-        content: "You are not the challenged user!",
-        ephemeral: true
-      });
-    }
+      if (interaction.user.id !== targetId) {
+        return interaction.reply({
+          content: "You are not the challenged user!",
+          ephemeral: true
+        });
+      }
 
-    if (interaction.customId === 'accept') {
-      await interaction.update({
-        content: `${targetUser} accepted the battle! ⚔️`, embeds: [], components: []
-      });
-      await startBattle(targetId, message);
-      collector.stop();
-    } else if (interaction.customId === 'decline') {
-      await interaction.update({
-        content: `${targetUser} declined the battle.`, embeds: [], components: []
-      });
-      collector.stop();
-    }
+      if (interaction.customId === 'accept') {
+        await interaction.update({
+          content: `${targetUser} accepted the battle! ⚔️`, embeds: [], components: []
+        });
+        await startBattle(targetId, message);
+        collector.stop();
+      } else if (interaction.customId === 'decline') {
+        await interaction.update({
+          content: `${targetUser} declined the battle.`, embeds: [], components: []
+        });
+        collector.stop();
+      }
     } catch (error) {
-    console.error("Interaction failed:", error);
-  }
+      console.error("Interaction failed:", error);
+    }
   });
 
   collector.on('end',
@@ -105,18 +106,12 @@ async function sendChallenge(args, message) {
 export default {
   name: "battle",
   description: "View or engage in pirate battles, attack others, check ship stats, weapon stats, and battle messages.",
-  aliases: ["battle", "b",
-    "ship",
-    "ships",
-    "fight",
-    "active"],
+  aliases: ["battle", "b", "fight"],
   // Aliases allow calling the command with different variations for battles or ships
   args: "<action> [target]",
   example: [
+    "battle",
     "battle <user (optional but not a friendly battle)> {Note: each battle cost $1000}",
-    "ship",
-    "ship active <shipId (optional: specify to set as active)>",
-    "active <option (optional)> (option: use 'up' to level up or 'repair <count>' for number of repairs; count is optional)",
   ],
   related: ["stat",
     "profile"],
@@ -129,31 +124,6 @@ export default {
     const action = args[0] ? args[0].toLowerCase(): null;
 
     switch (action) {
-    case "ship":
-    case "ships":
-      if (args[1]) {
-        if (args[1].toLowerCase() === "active" && !args[2]) {
-          return Ship.activeShip(message.author.id, message);
-        } else {
-          return Ship.setActiveShip(args[2], message.author.id, message);
-        }
-      } else {
-        // If the command is "ship", show ship stats
-        return Ship.showUserShips(message.author.id, message);
-      }
-      break;
-    case "active":
-      if (args[1]) {
-        if (args[1] === "up") {
-          return Ship.levelUp(message.author.id, message);
-        } else if (args[1] === "repair") {
-          let times = args[2] && Helper.isNumber(args[2]) ? args[2]: 1;
-          return Ship.repair(times, message.author.id, message);
-        }
-      } else {
-        return Ship.activeShip(message.author.id, message);
-      }
-      break;
     case "battle":
     case "fight":
     case "b":
@@ -163,18 +133,18 @@ export default {
           return sendChallenge(args, message);
         } else {
           if (args[1] && (args[1].toLowerCase() === "log" || args[1].toLowerCase() === "logs")) {
-          return battleLog(message);
+            return battleLog(message);
           } else {
-          return startBattle(null, message);
+            return startBattle(null, message);
           }
         }
       } catch (e) {
-      console.log(e)
-      return  message.channel.send("⚠️ Something went wrong! Can't start the battle.")
+        console.log(e)
+        return message.channel.send("⚠️ Something went wrong! Can't start the battle.")
       }
       break;
     default:
-      return message.channel.send("⚔️ **Invalid Command**\nUse `battle ship` to view ship stats, or `battle engage <target>` to engage in a pirate battle.");
+      return message.channel.send("⚔️ **Invalid Command**\nUse `battle log` to view logs of your battle defenses, or `battle engage <target>` to engage in a pirate battle.");
     }
   }
 };

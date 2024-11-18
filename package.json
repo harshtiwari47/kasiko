@@ -22,9 +22,15 @@
   },
   "homepage": "https://github.com/harshtiwari47/kasiko#readme",
   "dependencies": {
+    "@discordjs/builders": "^1.9.0",
+    "@discordjs/rest": "^2.4.0",
+    "@napi-rs/canvas": "^0.1.62",
+    "discord-api-types": "^0.37.105",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
     "fs": "^0.0.1-security",
+    "mongodb": "^6.10.0",
+    "mongoose": "^8.8.1",
     "nodejs": "^0.0.0",
     "path": "^0.12.7"
   }

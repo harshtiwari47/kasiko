@@ -14,7 +14,9 @@ import {
   client
 } from "../../../bot.js";
 
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
 
 export const sendConfirmation = async (title, description, color, message, id) => {
   // Create an embed for the confirmation message
@@ -58,7 +60,7 @@ export const sendConfirmation = async (title, description, color, message, id) =
 
 export async function marriage(message) {
   try {
-    let userData = getUserData(message.author.id);
+    let userData = await getUserData(message.author.id);
 
     if (userData.spouse) {
       let marrydate = new Date(userData.marriedOn) || new Date(); // The user's marriage date
@@ -71,7 +73,7 @@ export async function marriage(message) {
 
       return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n✿⁠ Couple BondXP: **♡ ${userData.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**`);
     } else {
-      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas .marry @username` to propose 💐 to someone!");
+      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!");
     }
   } catch (e) {
     console.error(e);
@@ -81,10 +83,10 @@ export async function marriage(message) {
 
 export async function marry(user, message) {
   try {
-    let userData = getUserData(message.author.id);
-    let invitedUserData = getUserData(user);
+    let userData = await getUserData(message.author.id);
+    let invitedUserData = await getUserData(user);
     const guild = await message.channel.guild.members.fetch(user);
-    
+
     if (message.author.id === user) {
       return message.channel.send(`⚠️ You can not propose yourself!`);
     }
@@ -129,8 +131,8 @@ export async function marry(user, message) {
           invitedUserData.spouse = message.author.id;
           invitedUserData.marriedOn = date;
 
-          updateUser(message.author.id, userData);
-          updateUser(user, invitedUserData);
+          await updateUser(message.author.id, userData);
+          await updateUser(user, invitedUserData);
 
           return await i.update({
             content: `🤵🏻👰🏻🎉 **<@${user}>** has accepted <@${message.author.id}>'s proposal! 🎉\n**Congratulations to the happy couple! 💍**`,
@@ -175,8 +177,8 @@ export async function marry(user, message) {
 
 export async function divorce(user, message) {
   try {
-    let userData = getUserData(message.author.id);
-    let invitedUserData = getUserData(user);
+    let userData = await getUserData(message.author.id);
+    let invitedUserData = await getUserData(user);
     const guild = await message.channel.guild.members.fetch(user);
 
     if (userData.spouse && userData.spouse !== user) {
@@ -218,8 +220,8 @@ export async function divorce(user, message) {
           userData.spouse = null;
           invitedUserData.spouse = null;
 
-          updateUser(message.author.id, userData);
-          updateUser(user, invitedUserData);
+          await updateUser(message.author.id, userData);
+          await updateUser(user, invitedUserData);
 
           return await i.update({
             content: `💔 **<@${user}>** has accepted the divorce from <@${message.author.id}>.\n**The two have now parted ways.**`,
@@ -270,7 +272,7 @@ export async function roses(message) {
     if (userData && typeof userData.roses === 'number') {
       return message.channel.send(`**${message.author.username}**, you currently have **${userData.roses}** roses! 🌹`);
     } else {
-      return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas .shop roses <amount>\` 🌹`);
+      return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` 🌹`);
     }
   } catch (e) {
     console.error(e);
@@ -280,9 +282,9 @@ export async function roses(message) {
 
 export async function sendRoses(toUser, amount, message) {
   try {
-    let senderData = getUserData(message.author.id);
+    let senderData = await getUserData(message.author.id);
 
-    let recipientData = getUserData(toUser);
+    let recipientData = await getUserData(toUser);
 
     // Check if the sender has enough roses
     if (senderData.roses >= amount) {
@@ -293,14 +295,14 @@ export async function sendRoses(toUser, amount, message) {
       if (senderData.spouse && senderData.spouse === toUser) {
         senderData.bondXP += 10;
         recipientData.bondXP += 10;
-        updateUser(toUser, recipientData);
-        updateUser(message.author.id, senderData);
+        await updateUser(toUser, recipientData);
+        await updateUser(message.author.id, senderData);
 
         return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing bondXP by 10! 🌹`);
       } else {
         recipientData.roses = (recipientData.roses || 0) + amount;
-        updateUser(toUser, recipientData);
-        updateUser(message.author.id, senderData);
+        await updateUser(toUser, recipientData);
+        await updateUser(message.author.id, senderData);
 
         return message.channel.send(`🌹 | **${message.author.username}** has sent **${amount}** roses to <@${toUser}>! 🌹`);
       }
@@ -325,38 +327,68 @@ export const Marriage = {
 
 export default {
   name: "marriage",
-  description: "Manage marriages and related actions.",
-  aliases: ["love", "m"],
+  description: "Manage marriages and related actions. A marriage's BondXP can be increased by sending roses to your spouse. After reaching a certain amount of BondXP, you can expect a child.",
+  aliases: ["marry",
+    "divorce",
+    "love",
+    "roses",
+    "m"],
   args: "<command> [parameters]",
   example: [
-    "marry <@user>", // Marry a user
-    "divorce <@user>", // Divorce a user
-    "marriage", // View marriage status
-    "roses <amount> <@user>", // Send roses to a user
+    "marry <@user>",
+    // Marry a user
+    "divorce <@user>",
+    // Divorce a user
+    "marriage",
+    // View marriage status
+    "roses <amount> <@user>",
+    // Send roses to a user
   ],
-  related: ["marriage", "divorce", "roses"],
-  cooldown: 5000, // Cooldown of 5 seconds
+  related: ["marriage",
+    "divorce",
+    "roses"],
+  cooldown: 5000,
+  // Cooldown of 5 seconds
   category: "Marriage",
 
   execute: (args, message) => {
-    const command = args[1] ? args[1].toLowerCase() : null;
+    try {
+      if (args[0] === "marry") {
+        if (args[1] && Helper.isUserMention(args[1])) {
+          return Marriage.marry(Helper.extractUserId(args[1]), message); // Marry a user
+        }
+        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`");
+      }
 
-    switch (command) {
+      if (args[0] === "divorce") {
+        if (args[1] && Helper.isUserMention(args[1])) {
+          return Marriage.divorce(Helper.extractUserId(args[1]), message); // Divorce a user
+        }
+        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`");
+      }
+      if (args[0] === "roses") {
+        if (args[1] && Helper.isNumber(args[1]) && Helper.isUserMention(args[2])) {
+          return Marriage.sendRoses(Helper.extractUserId(args[2]), parseInt(args[1]), message); // Send roses to a user
+        }
+        return Marriage.roses(message); // Show the roses system info if no arguments are provided
+      }
+
+      const command = args[1] ? args[1].toLowerCase(): null;
+
+      if (!command) return Marriage.marriage(message); // View the marriage status of the username
+
+      switch (command) {
       case "marry":
         if (args[2] && Helper.isUserMention(args[2])) {
           return Marriage.marry(Helper.extractUserId(args[2]), message); // Marry a user
         }
-        return message.channel.send("⚠️ Please mention a user to marry. Example: `.marry @user`");
+        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`");
 
       case "divorce":
         if (args[2] && Helper.isUserMention(args[2])) {
           return Marriage.divorce(Helper.extractUserId(args[2]), message); // Divorce a user
         }
-        return message.channel.send("⚠️ Please mention a user to divorce. Example: `.divorce @user`");
-
-      case "status":
-      case "spouse":
-        return Marriage.marriage(message); // View the marriage status of the user
+        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`");
 
       case "roses":
         if (args[2] && Helper.isNumber(args[2]) && Helper.isUserMention(args[3])) {
@@ -365,7 +397,10 @@ export default {
         return Marriage.roses(message); // Show the roses system info if no arguments are provided
 
       default:
-        return message.channel.send("⚠️ Invalid command. Use `marriage/m marry <@username>`, `marriage/m divorce <@username>`, `marriage/m status/spouse/`, or `marriage/m roses <@username (optional for sending)> <amount (if @user)>`.");
+        return message.channel.send("⚠️ Invalid command. Use `marry <@username>`, `divorce <@username>`, `marriage/m`, or `roses <@username (optional for sending)> <amount (if @user)>`.");
+      }
+    } catch (e) {
+      console.error(e);
     }
   }
 };
