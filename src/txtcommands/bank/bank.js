@@ -17,7 +17,7 @@ const BankInfo = {
   security: 1,
   charge: 1.5,
   levelUpCost: 1000,
-  storage: 1000
+  storage: 20000
 }
 
 export const Bank = {
@@ -40,6 +40,10 @@ export const Bank = {
       // Deduct cash and increase bank deposit
       userData.cash = userData.cash - amount;
       const newDeposit = account.deposit + amount;
+
+      if (newDeposit > account.level * BankInfo.storage) {
+        return message.channel.send(`⚠️ Oops! You can't deposit an amount exceeding your account's deposit limit.`);
+      }
 
       await updateUser(userId, userData);
       await updateBankDetails(userId, {
@@ -65,7 +69,8 @@ export const Bank = {
         );
       }
 
-      const charge = Math.ceil((amount * BankInfo.charge) / 100);
+      const intrest = Math.min(BankInfo.charge * account.level * 0.5, 30);
+      const charge = Math.ceil((amount * intrest) / 100);
       const totalWithdrawal = amount + charge;
 
       if (totalWithdrawal > account.deposit) {
@@ -118,7 +123,7 @@ export const Bank = {
           name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${account.level * BankInfo.storage}`, inline: true
         },
         {
-          name: '𝑰𝒏𝒕𝒓𝒆𝒔𝒕', value: `${BankInfo.charge}`, inline: true
+          name: '𝑰𝒏𝒕𝒓𝒆𝒔𝒕', value: `${Math.min(BankInfo.charge * account.level * 0.5, 30)}`, inline: true
         },
         {
           name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash}`, inline: true

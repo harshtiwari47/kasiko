@@ -12,7 +12,7 @@ export async function updateExpPoints(content, user, channel) {
 
     let threshold = 100;
     let lvl = Math.floor(Math.sqrt(userData.exp / threshold)) || 0;
-    let lvlUpReward = 0;
+    let lvlUpReward = 10;
     let lvlUp = false;
 
     if (!(lvl === userData.level)) {

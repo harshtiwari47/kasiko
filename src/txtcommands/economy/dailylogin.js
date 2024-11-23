@@ -3,6 +3,8 @@ import {
   updateUser
 } from '../../../database.js';
 
+import UserPet from "../../../models/Pet.js";
+
 export async function dailylogin(message) {
   try {
     const currentTime = Date.now();
@@ -22,7 +24,7 @@ export async function dailylogin(message) {
       );
     } else {
       // Calculate the last claim date
-      const lastClaimDate = userData.dailyReward ? Number(userData.dailyReward) : 0;
+      const lastClaimDate = userData.dailyReward ? Number(userData.dailyReward): 0;
 
       // Increment streak if the last claim was yesterday, otherwise reset
       if (currentTime - lastClaimDate < 2 * nextClaim && currentTime - lastClaimDate >= nextClaim) {
@@ -38,11 +40,24 @@ export async function dailylogin(message) {
       // Update the dailyReward timestamp
       userData.dailyReward = currentTime;
 
+      let userPetData = await UserPet.findOne({
+        id: message.author.id
+      });
+
+      if (!userPetData) {
+        userPetData = await new UserPet( {
+          id: message.author.id,
+        })
+      }
+      userPetData.food += 2;
+
+      await userPetData.save();
+
       // Save the updated user data
       await updateUser(message.author.id, userData);
 
       return message.channel.send(
-        `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount} Cash**.\n` +
+        `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount}** Cash and 🍖 **2** pet food.\n` +
         `Your current streak is 🔥 **${userData.rewardStreak}** day(s).\n` +
         `Next reward can be claimed tomorrow.`
       );
@@ -56,13 +71,18 @@ export async function dailylogin(message) {
 export default {
   name: "daily",
   description: "Claim your daily login reward.",
-  aliases: ["dailylogin", "dlogin", "dr", "dl"],
+  aliases: ["dailylogin",
+    "dlogin",
+    "dr",
+    "dl"],
   args: "",
   example: "daily",
-  related: ["give", "cash", "profile"],
+  related: ["give",
+    "cash",
+    "profile"],
   cooldown: 5000,
   category: "Economy",
-  
+
   // Main function to execute the daily login reward logic
   execute: (args, message) => {
     dailylogin(message);

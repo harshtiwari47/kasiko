@@ -31,7 +31,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
       const remainingTime = 12 - checkTimeGap(userData.lastRobbery, Date.now(), {
         format: 'hours'
       }).toFixed(2);
-      channel.send(`<@${userId}>, you cannot rob again for another ${remainingTime} hours.`);
+     return message.channel.send(`<@${userId}>, you cannot rob again for another ${remainingTime.toFixed(1)} hours.`);
     }
 
     userData.lastRobbery = Date.now();

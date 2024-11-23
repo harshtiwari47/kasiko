@@ -13,7 +13,9 @@ import {
   updateUser
 } from '../../../database.js';
 
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -63,73 +65,82 @@ function createCarEmbed(car) {
 }
 
 export async function sendPaginatedCars(context) {
-    try {
-        const user = context.user || context.author; // Handles both Interaction and Message
-        if (!user) return;
+  try {
+    const user = context.user || context.author; // Handles both Interaction and Message
+    if (!user) return;
 
-        let currentIndex = 0;
-        const carEmbed = createCarEmbed(carItems[currentIndex]);
-
-        // Buttons for navigation
-        const buttons = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("previousCar")
-                .setLabel("Previous Car")
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(true),
-            new ButtonBuilder()
-                .setCustomId("nextCar")
-                .setLabel("Next Car")
-                .setStyle(ButtonStyle.Primary)
-        );
-
-        // Send initial message
-        const message = await context.channel.send({
-            embeds: [carEmbed],
-            components: [buttons],
-            fetchReply: true,
-        });
-
-        const collector = message.createMessageComponentCollector({
-            time: 180000,
-        });
-
-        collector.on("collect", async (buttonInteraction) => {
-            if (buttonInteraction.user.id !== user.id) {
-                return buttonInteraction.reply({
-                    content: "You can't interact with this button.",
-                    ephemeral: true,
-                });
-            }
-
-            await buttonInteraction.deferUpdate();
-
-            if (buttonInteraction.customId === "nextCar") {
-                currentIndex = Math.min(currentIndex + 1, carItems.length - 1);
-            } else if (buttonInteraction.customId === "previousCar") {
-                currentIndex = Math.max(currentIndex - 1, 0);
-            }
-
-            const newCarEmbed = createCarEmbed(carItems[currentIndex]);
-            buttons.components[0].setDisabled(currentIndex === 0);
-            buttons.components[1].setDisabled(currentIndex === carItems.length - 1);
-
-            await message.edit({
-                embeds: [newCarEmbed],
-                components: [buttons],
-            });
-        });
-
-        collector.on("end", async () => {
-            buttons.components.forEach((button) => button.setDisabled(true));
-            await message.edit({
-                components: [buttons],
-            }).catch(console.error);
-        });
-    } catch (e) {
-        console.error("Error in sendPaginatedCars:", e);
-        return context.channel.send("⚠️ Something went wrong while viewing the shop!");
+    if (!carItems || carItems.length === 0) {
+      return context.channel.send("No cars are available to view!");
     }
+
+    let currentIndex = 0;
+    const carEmbed = createCarEmbed(carItems[currentIndex]);
+
+    const buttons = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId("previousCar")
+      .setLabel("Previous Car")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true),
+      new ButtonBuilder()
+      .setCustomId("nextCar")
+      .setLabel("Next Car")
+      .setStyle(ButtonStyle.Primary)
+    );
+
+    const message = await context.channel.send({
+      embeds: [carEmbed],
+      components: [buttons],
+      fetchReply: true,
+    });
+
+    const collector = message.createMessageComponentCollector({
+      time: 180000,
+    });
+
+    collector.on("collect", async (buttonInteraction) => {
+      if (buttonInteraction.user.id !== user.id) {
+        await buttonInteraction.reply({
+          content: "You can't interact with this button.",
+          ephemeral: true,
+        });
+        return; // Stop further processing
+      }
+
+      await buttonInteraction.deferUpdate();
+
+      if (buttonInteraction.customId === "nextCar") {
+        currentIndex = Math.min(currentIndex + 1, carItems.length - 1);
+      } else if (buttonInteraction.customId === "previousCar") {
+        currentIndex = Math.max(currentIndex - 1, 0);
+      }
+
+      const newCarEmbed = createCarEmbed(carItems[currentIndex]);
+      buttons.components[0].setDisabled(currentIndex === 0);
+      buttons.components[1].setDisabled(currentIndex === carItems.length - 1);
+
+      await message.edit({
+        embeds: [newCarEmbed],
+        components: [buttons],
+      });
+    });
+
+    collector.on("end",
+      async () => {
+        try {
+          buttons.components.forEach((button) => button.setDisabled(true));
+          await message.edit({
+            components: [buttons]
+          });
+        } catch (err) {
+          console.error("Failed to edit message after collector ended:", err);
+        }
+      });
+  } catch (e) {
+    console.error("Error in sendPaginatedCars:",
+      e);
+    return context.channel.send("⚠️ Something went wrong while viewing the shop!");
+  }
 }
 
 export async function viewCar(id, message) {
@@ -268,7 +279,7 @@ export async function sellcar(message, carId) {
 
     userData.cash += Number(car[0].price);
     userData.maintenance -= Number(car[0].maintenance);
-    
+
     writeShopData(items);
     await updateUser(message.author.id,
       userData);
@@ -310,18 +321,24 @@ function handleCarCommands(args, message) {
 export default {
   name: "cars",
   description: "View owned cars, check another user's cars, or view details of a specific car by ID.",
-  aliases: ["car", "cr"],
+  aliases: ["car",
+    "cr"],
   args: "[user] | <car_id>",
   example: [
-    "cars",                // View the command user's cars
-    "cars @User",          // View cars of a mentioned user
-    "cars <car_id>",       // View details of a specific car by ID
+    "cars",
+    // View the command user's cars
+    "cars @User",
+    // View cars of a mentioned user
+    "cars <car_id>",
+    // View details of a specific car by ID
   ],
-  related: ["shop", "structures", "buildings", "houses"],
+  related: ["shop",
+    "structures",
+    "buildings",
+    "houses"],
   cooldown: 4000,
   category: "Shop",
 
   // Execute the function when the command is called
   execute: (args, message) => handleCarCommands(args, message)
 };
-

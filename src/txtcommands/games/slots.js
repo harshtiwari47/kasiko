@@ -19,18 +19,24 @@ export async function slots(id, amount, channel) {
     }
 
     // Slots symbols
-    const symbols = ['🍒', '🍋', '🍊', '🍇', '💎'];
+    const symbols = ['🍒',
+      '🍋',
+      '🍊',
+      '🍇',
+      '💎'];
 
     // Initial placeholders and message
-    let spinResult = ['❓', '❓', '❓'];
+    let spinResult = ['❓',
+      '❓',
+      '❓'];
     const slotBackground = `
-╔══════════╗
- 🎰 **Slot Machine**
- ┌─────────────────┐ 
-     ${spinResult.join(' | ')}
- └─────────────────┘ 
-╚══════════╝
-`;
+    ╔══════════╗
+    🎰 **Slot Machine**
+    ┌─────────────────┐
+    ${spinResult.join(' | ')}
+    └─────────────────┘
+    ╚══════════╝
+    `;
 
     let spinningMessage = await channel.send(
       `${slotBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!`
@@ -45,16 +51,17 @@ export async function slots(id, amount, channel) {
 
     // Simulate locking each position one by one
     for (let i = 0; i < spinResult.length; i++) {
-      for (let j = 0; j < 5; j++) { // Spin animation for this position
+      for (let j = 0; j < 5; j++) {
+        // Spin animation for this position
         spinResult[i] = symbols[Math.floor(Math.random() * symbols.length)];
         const updatedBackground = `
-╔══════════╗
- 🎰 **Slot Machine**
- ┌─────────────────┐ 
-     ${spinResult.join(' | ')}
- └─────────────────┘ 
-╚══════════╝
-`;
+        ╔══════════╗
+        🎰 **Slot Machine**
+        ┌─────────────────┐
+        ${spinResult.join(' | ')}
+        └─────────────────┘
+        ╚══════════╝
+        `;
         await spinningMessage.edit(
           `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!`
         );
@@ -63,13 +70,13 @@ export async function slots(id, amount, channel) {
       // Lock the current position
       spinResult[i] = finalResult[i];
       const updatedBackground = `
-╔══════════╗
- 🎰 **Slot Machine**
- ┌─────────────────┐ 
-     ${spinResult.join(' | ')}
- └─────────────────┘ 
-╚══════════╝
-`;
+      ╔══════════╗
+      🎰 **Slot Machine**
+      ┌─────────────────┐
+      ${spinResult.join(' | ')}
+      └─────────────────┘
+      ╚══════════╝
+      `;
       await spinningMessage.edit(
         `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!`
       );
@@ -79,7 +86,7 @@ export async function slots(id, amount, channel) {
     let winAmount = 0;
     if (finalResult[0] === finalResult[1] && finalResult[1] === finalResult[2]) {
       // Jackpot: all three match
-      winAmount = Number(amount * 3).toFixed(0);
+      winAmount = Number(amount * 2).toFixed(0);
       userData.cash += Number(winAmount);
       await updateUser(id, userData);
       return spinningMessage.edit(
@@ -89,7 +96,7 @@ export async function slots(id, amount, channel) {
       );
     } else if (finalResult[0] === finalResult[1] || finalResult[1] === finalResult[2] || finalResult[0] === finalResult[2]) {
       // Small win: any two match
-      winAmount = Number(amount * 1.5).toFixed(0);
+      winAmount = Number(amount * 0.5).toFixed(0);
       userData.cash += Number(winAmount);
       await updateUser(id, userData);
       return spinningMessage.edit(
@@ -117,11 +124,15 @@ export async function slots(id, amount, channel) {
 export default {
   name: "slots",
   description: "Play a slot machine game by betting an amount. Win or lose based on the result.",
-  aliases: ["slotmachine", "slot"],
+  aliases: ["slotmachine",
+    "slot"],
   args: "<amount>",
   example: "slots 250",
-  related: ["gamble", "cash", "games"],
-  cooldown: 3000, // 3 seconds cooldown
+  related: ["gamble",
+    "cash",
+    "games"],
+  cooldown: 3000,
+  // 3 seconds cooldown
   category: "Games",
 
   // Main function to execute the slots game logic

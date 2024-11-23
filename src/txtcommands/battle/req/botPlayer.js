@@ -71,7 +71,7 @@ export function createRandomPlayer(player) {
   ];
 
   let shipDetails = Ship.shipsData.find(ship => ship.health * player.shipLvl < player.health + Math.floor(Math.random() * 100) && ship.health * player.shipLvl > player.health - Math.floor(Math.random() * 100));
-  let randomDmg  = Math.floor(Math.random() * 100);
+  let randomDmg  = Math.floor(Math.random() * 50);
   
   if (!shipDetails) {
     return {

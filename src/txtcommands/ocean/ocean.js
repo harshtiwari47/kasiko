@@ -14,6 +14,8 @@ import {
   Ship
 } from '../battle/shipsHandler.js';
 
+import UserPet from "../../../models/Pet.js";
+
 const aquaData = readAquaticData();
 
 async function addToCollection(animal, message, zone = null) {
@@ -123,10 +125,28 @@ export async function exploreZone(userId, zoneName, message) {
   }
 }
 
-function collect(userId, message) {
+async function collect(userId, message) {
   collectAnimal(userId, message);
-  stealShip(userId, message);
 
+  let randomProb = Math.floor(Math.random() * 100);
+  if (randomProb < 30) {
+    stealShip(userId, message);
+  } else if (randomProb > 80 && randomProb < 100) {
+    let userPetData = await UserPet.findOne({
+      id: userId
+    });
+
+    if (!userPetData) {
+      userPetData = await new UserPet( {
+        id: userId,
+      });
+    }
+    userPetData.food += 2;
+
+    await userPetData.save();
+
+    message.channel.send(`You found **2 sea food** for your pets in the ocean 🐱.`)
+  }
   return;
 }
 

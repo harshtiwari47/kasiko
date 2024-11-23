@@ -67,76 +67,90 @@ function createStructureEmbed(structure) {
 }
 
 export async function sendPaginatedStructures(context) {
-  try {
-    const user = context.user || context.author; // Handles both Interaction and Message
-    if (!user) return;
+    try {
+        const user = context.user || context.author; // Handles both Interaction and Message
+        if (!user) return;
 
-    let currentIndex = 0;
-    const structureEmbed = createStructureEmbed(structureItems[currentIndex]);
+        // Validate structureItems
+        if (!structureItems || structureItems.length === 0) {
+            return context.channel.send("No structures are available to view!");
+        }
 
-    // Buttons for navigation
-    const buttons = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("previousStructure")
-        .setLabel("Previous Structure")
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId("nextStructure")
-        .setLabel("Next Structure")
-        .setStyle(ButtonStyle.Primary)
-    );
+        let currentIndex = 0;
+        const structureEmbed = createStructureEmbed(structureItems[currentIndex]);
 
-    // Send initial message
-    const message = await context.channel.send({
-      embeds: [structureEmbed],
-      components: [buttons],
-      fetchReply: true,
-    });
+        // Buttons for navigation
+        const buttons = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId("previousStructure")
+                .setLabel("Previous Structure")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(true),
+            new ButtonBuilder()
+                .setCustomId("nextStructure")
+                .setLabel("Next Structure")
+                .setStyle(ButtonStyle.Primary)
+        );
 
-    const collector = message.createMessageComponentCollector({
-      time: 180000, // 3 minutes
-    });
-
-    collector.on("collect", async (buttonInteraction) => {
-      if (buttonInteraction.user.id !== user.id) {
-        return buttonInteraction.reply({
-          content: "You can't interact with this button.",
-          ephemeral: true,
+        // Send initial message
+        const message = await context.channel.send({
+            embeds: [structureEmbed],
+            components: [buttons],
+            fetchReply: true,
         });
-      }
 
-      // Defer the interaction
-      await buttonInteraction.deferUpdate();
+        const collector = message.createMessageComponentCollector({
+            time: 180000, // 3 minutes
+        });
 
-      // Update index based on button click
-      if (buttonInteraction.customId === "nextStructure") {
-        currentIndex = Math.min(currentIndex + 1, structureItems.length - 1);
-      } else if (buttonInteraction.customId === "previousStructure") {
-        currentIndex = Math.max(currentIndex - 1, 0);
-      }
+        collector.on("collect", async (buttonInteraction) => {
+            if (buttonInteraction.user.id !== user.id) {
+                await buttonInteraction.reply({
+                    content: "You can't interact with this button.",
+                    ephemeral: true,
+                });
+                return; // Stop further handling for unauthorized users
+            }
 
-      // Update embed and button state
-      const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
-      buttons.components[0].setDisabled(currentIndex === 0);
-      buttons.components[1].setDisabled(currentIndex === structureItems.length - 1);
+            try {
+                // Defer the interaction
+                await buttonInteraction.deferUpdate();
 
-      await message.edit({
-        embeds: [newStructureEmbed],
-        components: [buttons],
-      });
-    });
+                // Update index based on button click
+                if (buttonInteraction.customId === "nextStructure") {
+                    currentIndex = Math.min(currentIndex + 1, structureItems.length - 1);
+                } else if (buttonInteraction.customId === "previousStructure") {
+                    currentIndex = Math.max(currentIndex - 1, 0);
+                }
 
-    collector.on("end", async () => {
-      buttons.components.forEach((button) => button.setDisabled(true));
-      await message.edit({
-        components: [buttons],
-      }).catch(console.error);
-    });
-  } catch (e) {
-    console.error("Error in sendPaginatedStructures:", e);
-    return context.channel.send("⚠️ Something went wrong while viewing the shop!");
-  }
+                // Update embed and button state
+                const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
+                buttons.components[0].setDisabled(currentIndex === 0);
+                buttons.components[1].setDisabled(currentIndex === structureItems.length - 1);
+
+                await message.edit({
+                    embeds: [newStructureEmbed],
+                    components: [buttons],
+                });
+            } catch (err) {
+                console.error("Error during interaction handling:", err);
+            }
+        });
+
+        collector.on("end", async () => {
+            try {
+                buttons.components.forEach((button) => button.setDisabled(true));
+                await message.edit({
+                    components: [buttons],
+                });
+            } catch (err) {
+                console.error("Failed to edit message after collector ended:", err);
+            }
+        });
+    } catch (e) {
+        console.error("Error in sendPaginatedStructures:", e);
+        return context.channel.send("⚠️ Something went wrong while viewing the structures!");
+    }
 }
 
 export async function viewStructure(id, message) {

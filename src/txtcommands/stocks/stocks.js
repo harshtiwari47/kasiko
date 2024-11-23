@@ -99,21 +99,31 @@ export async function sendPaginatedStocks(context) {
         });
       }
 
-      // Update index based on button click
-      if (buttonInteraction.customId === "nextStock") {
-        currentIndex++;
-      } else if (buttonInteraction.customId === "previousStock") {
-        currentIndex--;
+      try {
+        // Update index based on button click
+        if (buttonInteraction.customId === "nextStock") {
+          currentIndex++;
+        } else if (buttonInteraction.customId === "previousStock") {
+          currentIndex--;
+        }
+
+        // Update embed and button state
+        const newStockEmbed = createStockEmbed(Object.keys(stockData)[currentIndex], stockDataArray[currentIndex]);
+        buttons.components[0].setDisabled(currentIndex === 0);
+        buttons.components[1].setDisabled(currentIndex === stockDataArray.length - 1);
+
+        // Use deferUpdate() to prevent timeout issues
+        await buttonInteraction.deferUpdate(); // Defer update before sending response
+        await buttonInteraction.editReply({
+          embeds: [newStockEmbed], components: [buttons]
+        });
+
+      } catch (err) {
+        console.error('Failed to update interaction:', err);
+        buttonInteraction.reply({
+          content: "An error occurred while updating. Please try again.", ephemeral: true
+        });
       }
-
-      // Update embed and button state
-      const newStockEmbed = createStockEmbed(Object.keys(stockData)[currentIndex], stockDataArray[currentIndex]);
-      buttons.components[0].setDisabled(currentIndex === 0);
-      buttons.components[1].setDisabled(currentIndex === stockDataArray.length - 1);
-
-      await buttonInteraction.update({
-        embeds: [newStockEmbed], components: [buttons]
-      });
     });
 
     collector.on("end",
@@ -220,7 +230,7 @@ export async function buyStock(stockName, amount, message) {
     today.setHours(0, 0, 0, 0);
 
     // Calculate total shares owned by the user across all stocks
-    const totalSharesOwned = Object.values(userData.stocks).reduce((sum, stock) => sum + stock.shares, 0);
+    const totalSharesOwned = Object.values(userData.stocks.toJSON()).reduce((sum, stock) => stock.name ? sum + stock.shares : 0, 0);
 
     // Check limits before processing purchase
     if (userData.stocks[stockName] && numShares > 100 - userData.stocks[stockName].dailyPurchased[1]) {
@@ -272,7 +282,7 @@ export async function sellStock(stockName, amount, message) {
     let userData = await getUserData(userId);
     const numShares = parseInt(amount);
     stockName = stockName.toUpperCase().trim();
-  
+
     if (!stockData[stockName] || !userData.stocks || !userData.stocks[stockName] || userData.stocks[stockName].shares < numShares) {
       return message.channel.send(`⚠️ **${message.author.username}**, you don’t own enough shares or stock not found.`);
     }
@@ -320,7 +330,7 @@ export async function sellStock(stockName, amount, message) {
 export async function portfolio(userId, message) {
   try {
     let userData = await getUserData(userId);
-    
+
     if (!userData.stocks) return message.channel.send("⚠️ User don't own any 📊 stocks.");
 
     let portfolioDetails = `▒░✩ <@${userId}>'s 𝐒𝐭𝐨𝐜𝐤𝐬 𝐏𝐨𝐫𝐭𝐟𝐨𝐥𝐢𝐨\n▁▁▁▁▁▁▁▁▁\n`;

@@ -1,6 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
+import {
+  Helper
+} from '../../../helper.js';
+
 import UserShips from "../../../models/UserShips.js";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname); // Get the directory of the current filter
@@ -163,7 +167,9 @@ async function setActiveShip(shipId, userId, message) {
   try {
     let userShips = await getUserShipsData(userId);
 
-    if (!userShips.ships.some(ship => ship.id === shipId.toLowerCase())) return message.channel.send("⚠️ No ship found with this id.");
+    if (!shipId) return message.channel.send(`**${message.author.username}**, please provide a valid ship ID.`);
+
+    if (!userShips.ships.some(ship => ship.id && ship.id === shipId.toLowerCase())) return message.channel.send("⚠️ No ship found with this id.");
 
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
