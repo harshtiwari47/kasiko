@@ -55,7 +55,7 @@ client.on('messageCreate', async (message) => {
     // check user exist
     let userExistence = await userExists(message.author.id);
     if (!userExistence) {
-     return termsAndcondition(message);
+      return termsAndcondition(message);
     }
 
     updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
@@ -79,28 +79,11 @@ client.on('messageCreate', async (message) => {
 });
 
 client.on('interactionCreate', async (interaction) => {
-  if (interaction.type === InteractionType.MessageComponent) {
-    if (interaction.customId === 'accept_terms') {
-      // Handle the button click (User accepted terms)
-      let userAgreementState = await userAcceptedTerms(interaction.user.id);
-
-      if (!userAgreementState) {
-        await createUser(interaction.user.id).then(async () => {
-          await interaction.reply({
-            content: 'Thank you for accepting the Terms and Conditions!',
-            ephemeral: true
-          });
-        }).catch(async (err) => {
-          console.error(err);
-          await interaction.reply({
-            content: 'Something went wrong while accepting the Terms and Conditions!',
-            ephemeral: true
-          });
-        })
-      }
-    }
+  try {
+    await handleSlashCommand(interaction); // Handle slash command interactions
+  } catch (e) {
+    console.error(e);
   }
-  await handleSlashCommand(interaction); // Handle slash command interactions
 });
 
 client.on('guildCreate', WelcomeMsg.execute);
