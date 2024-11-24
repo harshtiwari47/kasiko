@@ -28,6 +28,7 @@
     "discord-api-types": "^0.37.105",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
+    "express": "^4.21.1",
     "fs": "^0.0.1-security",
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.1",

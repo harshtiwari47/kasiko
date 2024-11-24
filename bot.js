@@ -5,6 +5,8 @@ import {
 } from 'discord.js';
 import dotenv from 'dotenv';
 
+import express from 'express';
+
 import {
   updateExpPoints
 } from './utils/experience.js';
@@ -26,6 +28,14 @@ import {
 } from './database.js';
 
 dotenv.config();
+
+// Bind to port
+const app = express();
+// Simulate port binding
+const PORT = process.env.PORT || 3000;
+app.get('/', (req, res) => res.send('Discord bot is running!'));
+app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+// port bind ends
 
 export const client = new Client( {
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
