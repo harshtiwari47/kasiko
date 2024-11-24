@@ -70,71 +70,69 @@ export async function sendPaginatedStocks(context) {
     const stockEmbed = createStockEmbed(Object.keys(stockData)[currentIndex], stockDataArray[currentIndex]);
 
     // Buttons for navigation
-    const buttons = new ActionRowBuilder()
-    .addComponents(
-      new ButtonBuilder()
-      .setCustomId("previousStock")
-      .setLabel("previousStock")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(true),
-      new ButtonBuilder()
-      .setCustomId("nextStock")
-      .setLabel("nextStock")
-      .setStyle(ButtonStyle.Primary)
+    const buttons = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId("previousStock").setLabel("Previous").setStyle(ButtonStyle.Primary).setDisabled(true),
+      new ButtonBuilder().setCustomId("nextStock").setLabel("Next").setStyle(ButtonStyle.Primary)
     );
 
     // Send initial message
     const message = await context.channel.send({
-      embeds: [stockEmbed], components: [buttons], fetchReply: true
+      embeds: [stockEmbed],
+      components: [buttons],
+      fetchReply: true,
     });
 
     const collector = message.createMessageComponentCollector({
-      time: 360000
+      time: 3 * 60 * 1000, // 15 minutes
     });
 
     collector.on("collect", async (buttonInteraction) => {
       if (buttonInteraction.user.id !== user.id) {
         return buttonInteraction.reply({
-          content: "You can't interact with this button.", ephemeral: true
+          content: "You can't interact with this button.",
+          ephemeral: true,
         });
       }
 
       try {
-        // Update index based on button click
-        if (buttonInteraction.customId === "nextStock") {
-          currentIndex++;
-        } else if (buttonInteraction.customId === "previousStock") {
-          currentIndex--;
-        }
+        await buttonInteraction.deferUpdate(); // Prevent timeout
+        if (buttonInteraction.customId === "nextStock") currentIndex++;
+        else if (buttonInteraction.customId === "previousStock") currentIndex--;
 
-        // Update embed and button state
-        const newStockEmbed = createStockEmbed(Object.keys(stockData)[currentIndex], stockDataArray[currentIndex]);
+        // Update embed and button states
+        const newStockEmbed = createStockEmbed(
+          Object.keys(stockData)[currentIndex],
+          stockDataArray[currentIndex]
+        );
         buttons.components[0].setDisabled(currentIndex === 0);
         buttons.components[1].setDisabled(currentIndex === stockDataArray.length - 1);
 
-        // Use deferUpdate() to prevent timeout issues
-        await buttonInteraction.deferUpdate(); // Defer update before sending response
         await buttonInteraction.editReply({
-          embeds: [newStockEmbed], components: [buttons]
+          embeds: [newStockEmbed],
+          components: [buttons],
         });
-
       } catch (err) {
-        console.error('Failed to update interaction:', err);
+        console.error("Error updating interaction:", err);
         buttonInteraction.reply({
-          content: "An error occurred while updating. Please try again.", ephemeral: true
+          content: "An error occurred while updating. Please try again.",
+          ephemeral: true,
         });
       }
     });
 
     collector.on("end",
-      () => {
-        buttons.components.forEach(button => button.setDisabled(true));
-        message.edit({
-          components: [buttons]
-        });
+      async () => {
+        buttons.components.forEach((button) => button.setDisabled(true));
+        try {
+          await message.edit({
+            components: [buttons],
+          });
+        } catch (err) {
+          console.error("Error disabling buttons on collector end:", err);
+        }
       });
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error(err);
     return context.channel.send("⚠️ Something went wrong while viewing stock!");
   }
 }
@@ -230,7 +228,7 @@ export async function buyStock(stockName, amount, message) {
     today.setHours(0, 0, 0, 0);
 
     // Calculate total shares owned by the user across all stocks
-    const totalSharesOwned = Object.values(userData.stocks.toJSON()).reduce((sum, stock) => stock.name ? sum + stock.shares : 0, 0);
+    const totalSharesOwned = Object.values(userData.stocks.toJSON()).reduce((sum, stock) => stock.name ? sum + stock.shares: 0, 0);
 
     // Check limits before processing purchase
     if (userData.stocks[stockName] && numShares > 100 - userData.stocks[stockName].dailyPurchased[1]) {
