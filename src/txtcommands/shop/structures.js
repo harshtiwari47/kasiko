@@ -128,7 +128,7 @@ export async function sendPaginatedStructures(context) {
                 buttons.components[0].setDisabled(currentIndex === 0);
                 buttons.components[1].setDisabled(currentIndex === structureItems.length - 1);
 
-                await message.edit({
+                return await message.edit({
                     embeds: [newStructureEmbed],
                     components: [buttons],
                 });
@@ -140,7 +140,7 @@ export async function sendPaginatedStructures(context) {
         collector.on("end", async () => {
             try {
                 buttons.components.forEach((button) => button.setDisabled(true));
-                await message.edit({
+                return await message.edit({
                     components: [buttons],
                 });
             } catch (err) {

@@ -16,6 +16,11 @@ import {
 
 export async function diceDuel(id, opponentId, amount, channel) {
   try {
+    amount = parseInt(amount, 10);
+
+    if (isNaN(amount)) {
+      return channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **diceduel**!`);
+    }
     // Fetch both players' user data
     const guild = await channel.guild.members.fetch(id);
     const opponent = await channel.guild.members.fetch(opponentId);
@@ -33,7 +38,7 @@ export async function diceDuel(id, opponentId, amount, channel) {
 
     // Check if both players have enough balance to proceed
     if (userData.cash < amount) {
-      return channel.send(`⚠️ You don't have enough <:kasiko_coin:1300141236841086977> cash to bet. Please check your balance with \`!balance\` and try again.`);
+      return channel.send(`⚠️ **${guild.user.username}** don't have enough <:kasiko_coin:1300141236841086977> cash to bet. Please check your balance with \`cash\` and try again.`);
     } else if (opponentData.cash < amount) {
       return channel.send(`⚠️ Your opponent doesn't have enough <:kasiko_coin:1300141236841086977> cash. Ask them to check their balance.`);
     }
@@ -201,7 +206,7 @@ export default {
   name: "diceduel",
   description: "Challenge another player to a thrilling dice duel! Bet an amount of your in-game currency and roll the dice to see who wins. The player with the higher roll claims the prize. Test your luck and strategy in this exciting game of chance!",
   aliases: ["dice", "dd", "diceduel"],
-  args: "<subcommand> <opponent_id> <amount>",
+  args: "<opponent_id> <amount>",
   example: ["dice @opponent 500"],
   related: ["gamble", "cash", "games"],
   cooldown: 3000, // 3 seconds cooldown

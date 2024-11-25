@@ -119,7 +119,7 @@ export async function sendPaginatedCars(context) {
       buttons.components[0].setDisabled(currentIndex === 0);
       buttons.components[1].setDisabled(currentIndex === carItems.length - 1);
 
-      await message.edit({
+      return await message.edit({
         embeds: [newCarEmbed],
         components: [buttons],
       });
@@ -129,7 +129,7 @@ export async function sendPaginatedCars(context) {
       async () => {
         try {
           buttons.components.forEach((button) => button.setDisabled(true));
-          await message.edit({
+          return await message.edit({
             components: [buttons]
           });
         } catch (err) {

@@ -53,122 +53,124 @@ export const sendConfirmation = async (message, userId, amount, recipient) => {
 };
 
 export async function give(message, userId, amount, recipientId) {
-    try {
-        if (userId === recipientId) {
-            return message.channel.send(
-                "¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯ Giving **yourself** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉?\nThat’s like trying to give your own reflection a high five—totally __unnecessary and a little weird__!"
-            );
-        }
-
-        let userData = await getUserData(userId);
-
-        if (userData.cash < amount) {
-            return message.channel.send(
-                "⚠️🧾 You don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!"
-            );
-        }
-
-        const replyMessage = await sendConfirmation(message, userId, amount, recipientId);
-
-        // Create a filter to ensure only the original user interacts
-        const filter = (i) =>
-            i.user.id === message.author.id &&
-            (i.customId === "confirmgiving" || i.customId === "cancelgiving");
-
-        // Create the collector
-        const collector = replyMessage.createMessageComponentCollector({
-            filter,
-            time: 15000, // 15 seconds
-        });
-
-        // Handle button interactions
-        collector.on("collect", async (interaction) => {
-            try {
-                // Disable buttons after a choice
-                const rowDisabled = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder()
-                        .setCustomId("confirmgiving")
-                        .setLabel("Yes")
-                        .setStyle(ButtonStyle.Success)
-                        .setDisabled(true),
-                    new ButtonBuilder()
-                        .setCustomId("cancelgiving")
-                        .setLabel("No")
-                        .setStyle(ButtonStyle.Danger)
-                        .setDisabled(true)
-                );
-
-                if (interaction.customId === "confirmgiving") {
-                    // Fetch user and recipient data
-                    let userData = await getUserData(userId);
-                    let recipientData = await getUserData(recipientId);
-
-                    if (userData.cash < amount) {
-                        return await interaction.update({
-                            content:
-                                "⚠️🧾 You no longer have enough <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to complete this transaction.",
-                            components: [rowDisabled],
-                        });
-                    }
-
-                    // Update balances
-                    userData.cash -= Number(amount);
-                    userData.charity = (userData.charity || 0) + Number(amount);
-                    recipientData.cash = (recipientData.cash || 0) + Number(amount);
-
-                    await updateUser(userId, userData);
-                    await updateUser(recipientId, recipientData);
-
-                    return await interaction.update({
-                        content: `🧾 **<@${userId}>** has generously sent <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉 to **<@${recipientId}>**. Your support helps each other level up—keep the teamwork!`,
-                        components: [rowDisabled],
-                    });
-                } else if (interaction.customId === "cancelgiving") {
-                    return await interaction.update({
-                        content: "Cash transfer cancelled!",
-                        components: [rowDisabled],
-                    });
-                }
-            } catch (err) {
-                console.error("Error handling button interaction:", err);
-                await interaction.reply({
-                    content: "⚠️ Something went wrong. Please try again.",
-                    ephemeral: true,
-                });
-            }
-        });
-
-        // Handle collector end
-        collector.on("end", async (_, reason) => {
-            if (reason === "time") {
-                try {
-                    const rowDisabled = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder()
-                            .setCustomId("confirmgiving")
-                            .setLabel("Yes")
-                            .setStyle(ButtonStyle.Success)
-                            .setDisabled(true),
-                        new ButtonBuilder()
-                            .setCustomId("cancelgiving")
-                            .setLabel("No")
-                            .setStyle(ButtonStyle.Danger)
-                            .setDisabled(true)
-                    );
-
-                    await replyMessage.edit({
-                        components: [rowDisabled],
-                    });
-                } catch (err) {
-                    console.error("Error disabling buttons after timeout:", err);
-                }
-            }
-        });
-    } catch (e) {
-        console.error("Error in give function:", e);
-        return await message.channel.send(
-            "⚠️ Something went wrong while processing the transaction. Please try again."
-        );
+  try {
+    if (userId === recipientId) {
+      return message.channel.send(
+        "¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯ Giving **yourself** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉?\nThat’s like trying to give your own reflection a high five—totally __unnecessary and a little weird__!"
+      );
     }
+
+    let userData = await getUserData(userId);
+
+    if (userData.cash < amount) {
+      return message.channel.send(
+        "⚠️🧾 You don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!"
+      );
+    }
+
+    const replyMessage = await sendConfirmation(message, userId, amount, recipientId);
+
+    // Create a filter to ensure only the original user interacts
+    const filter = (i) =>
+    i.user.id === message.author.id &&
+    (i.customId === "confirmgiving" || i.customId === "cancelgiving");
+
+    // Create the collector
+    const collector = replyMessage.createMessageComponentCollector({
+      filter,
+      time: 15000, // 15 seconds
+    });
+
+    // Handle button interactions
+    collector.on("collect", async (interaction) => {
+      try {
+        // Disable buttons after a choice
+        const rowDisabled = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId("confirmgiving")
+          .setLabel("Yes")
+          .setStyle(ButtonStyle.Success)
+          .setDisabled(true),
+          new ButtonBuilder()
+          .setCustomId("cancelgiving")
+          .setLabel("No")
+          .setStyle(ButtonStyle.Danger)
+          .setDisabled(true)
+        );
+
+        if (interaction.customId === "confirmgiving") {
+          // Fetch user and recipient data
+          let userData = await getUserData(userId);
+          let recipientData = await getUserData(recipientId);
+
+          if (userData.cash < amount) {
+            return await interaction.update({
+              content:
+              "⚠️🧾 You no longer have enough <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to complete this transaction.",
+              components: [rowDisabled],
+            });
+          }
+
+          // Update balances
+          userData.cash -= Number(amount);
+          userData.charity = (userData.charity || 0) + Number(amount);
+          recipientData.cash = (recipientData.cash || 0) + Number(amount);
+
+          await updateUser(userId, userData);
+          await updateUser(recipientId, recipientData);
+
+          return await interaction.update({
+            content: `🧾 **<@${userId}>** has generously sent <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉 to **<@${recipientId}>**. Your support helps each other level up—keep the teamwork!`,
+            components: [rowDisabled],
+          });
+        } else if (interaction.customId === "cancelgiving") {
+          return await interaction.update({
+            content: "Cash transfer cancelled!",
+            components: [rowDisabled],
+          });
+        }
+      } catch (err) {
+        console.error("Error handling button interaction:", err);
+        return await interaction.reply({
+          content: "⚠️ Something went wrong. Please try again.",
+          ephemeral: true,
+        });
+      }
+    });
+
+    // Handle collector end
+    collector.on("end",
+      async (_, reason) => {
+        if (reason === "time") {
+          try {
+            const rowDisabled = new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+              .setCustomId("confirmgiving")
+              .setLabel("Yes")
+              .setStyle(ButtonStyle.Success)
+              .setDisabled(true),
+              new ButtonBuilder()
+              .setCustomId("cancelgiving")
+              .setLabel("No")
+              .setStyle(ButtonStyle.Danger)
+              .setDisabled(true)
+            );
+
+            return await replyMessage.edit({
+              components: [rowDisabled],
+            });
+          } catch (err) {
+            console.error("Error disabling buttons after timeout:", err);
+          }
+        }
+      });
+  } catch (e) {
+    console.error("Error in give function:",
+      e);
+    return await message.channel.send(
+      "⚠️ Something went wrong while processing the transaction. Please try again."
+    );
+  }
 }
 
 export default {

@@ -83,8 +83,9 @@ export async function sendPaginatedStocks(context) {
     });
 
     const collector = message.createMessageComponentCollector({
-      time: 3 * 60 * 1000, // 15 minutes
+      time: 3 * 60 * 1000, // 3 minutes
     });
+
 
     collector.on("collect", async (buttonInteraction) => {
       if (buttonInteraction.user.id !== user.id) {
@@ -107,13 +108,13 @@ export async function sendPaginatedStocks(context) {
         buttons.components[0].setDisabled(currentIndex === 0);
         buttons.components[1].setDisabled(currentIndex === stockDataArray.length - 1);
 
-        await buttonInteraction.editReply({
+        return await buttonInteraction.editReply({
           embeds: [newStockEmbed],
           components: [buttons],
         });
       } catch (err) {
         console.error("Error updating interaction:", err);
-        buttonInteraction.reply({
+        return buttonInteraction.reply({
           content: "An error occurred while updating. Please try again.",
           ephemeral: true,
         });
@@ -124,13 +125,14 @@ export async function sendPaginatedStocks(context) {
       async () => {
         buttons.components.forEach((button) => button.setDisabled(true));
         try {
-          await message.edit({
+          return await message.edit({
             components: [buttons],
           });
         } catch (err) {
           console.error("Error disabling buttons on collector end:", err);
         }
       });
+      
   } catch (err) {
     console.error(err);
     return context.channel.send("⚠️ Something went wrong while viewing stock!");

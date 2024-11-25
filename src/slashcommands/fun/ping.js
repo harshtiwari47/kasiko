@@ -1,9 +1,11 @@
-import { SlashCommandBuilder } from '@discordjs/builders';
+import {
+  SlashCommandBuilder
+} from '@discordjs/builders';
 
 export default {
   data: new SlashCommandBuilder()
-    .setName('ping')
-    .setDescription('Replies with Pong and shows latency!'),
+  .setName('ping')
+  .setDescription('Replies with Pong and shows latency!'),
   async execute(interaction) {
     try {
       // Defer reply to avoid timeout
@@ -14,13 +16,13 @@ export default {
       const latency = sent.createdTimestamp - interaction.createdTimestamp;
 
       // Edit reply with latency
-      await interaction.editReply(`Pong! Latency: **${latency}ms**.`);
+      return await interaction.editReply(`Pong! Latency: **${latency}ms**.`);
     } catch (error) {
       console.error('Error executing ping command:', error);
       if (interaction.deferred || interaction.replied) {
-        await interaction.editReply('An error occurred while processing your request.');
+        return await interaction.editReply('An error occurred while processing your request.');
       } else {
-        await interaction.reply('An error occurred while processing your request.');
+        return await interaction.reply('An error occurred while processing your request.');
       }
     }
   },
