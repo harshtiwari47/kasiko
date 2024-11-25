@@ -2,6 +2,7 @@ import {
   EmbedBuilder
 } from "discord.js";
 import IceCreamShop from "../../../models/IceCream.js";
+import User from "../../../models/User.js";
 
 const flavors = [{
   level: 1,
@@ -67,6 +68,17 @@ const flavors = [{
     description: "Hazelnut ice cream is a smooth, creamy dessert infused with the nutty flavor of roasted hazelnuts. Its rich taste and satisfying texture make it a luxurious treat for ice cream lovers."
   }];
 
+const layout = [{
+  color: "#f0935e",
+  decoration: "𐙚⋆🍂⁺₊ 〰˖ ִֶָ 🍨 ˚˖𓍢ִ໋🦢💮",
+  image: "https://harshtiwari47.github.io/kasiko-public/images/icecream-shop.jpg"
+}];
+
+function getLayout(lvl) {
+  if (lvl > 7) lvl = 7;
+  return layout[lvl - 1].image;
+}
+
 function capitalizeFirstLetter(word) {
   if (!word) return ""; // Handle empty or undefined input
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
@@ -105,344 +117,474 @@ export default {
   cooldown: 5000,
   category: "Game",
   async execute(args, message) {
-    const userId = message.author.id;
-    const username = message.author.username;
-    args.shift();
+    try {
+      const userId = message.author.id;
+      const username = message.author.username;
+      args.shift();
 
-    const playerShop = await IceCreamShop.findOne({
-      userId
-    });
-
-    const getRandomFlavor = () => {
-      let level = playerShop.shopLevel;
-      let selectedFlavours = flavors.filter(flavor => flavor.level < level + 1 || flavor.level < level);
-      return selectedFlavours[Math.floor(Math.random() * selectedFlavours.length)];
-    };
-
-    // Command: Create a new shop
-    if (args[0] === "create") {
-      if (!args[1]) return message.channel.send("❌ Shop name not found! Please create your ice cream shop first using `icecream/ice create <shopname>`.");
-      const shopName = args[1].substring(0, 15);
-
-      const newShop = new IceCreamShop( {
-        userId,
-        shopName,
-        flavors: [{
-          name: "Kulfi",
-          icecream: "Kulfi <:kulfi:1308433408946339840>",
-          items: 1
-        }],
-        customersServed: 0,
-        money: 100, // Starting cash
-        loyaltyPoints: 0,
-        reputation: 50,
-        shopLevel: 1,
-        dailyBonusClaimed: false
+      const playerShop = await IceCreamShop.findOne({
+        userId
       });
 
-      try {
-        await newShop.save();
+      const getRandomFlavor = () => {
+        let level = playerShop.shopLevel;
+        let selectedFlavours = flavors.filter(flavor => flavor.level < level + 1 || flavor.level < level);
+        return selectedFlavours[Math.floor(Math.random() * selectedFlavours.length)];
+      };
 
-        const embed = new EmbedBuilder()
-        .setColor("Random")
-        .setTitle(`🍨 Welcome to **${shopName}**!`)
-        .setDescription(
-          `🎉 Congratulations, **${username}**! You've opened **${shopName}** with your first flavor: **Kulfi <:kulfi:1308433408946339840>**. Start serving customers to grow your shop!`
-        )
-        .setImage("https://harshtiwari47.github.io/kasiko-public/images/icecream-shop.jpg") // Replace with a relevant image URL
-        .setFooter({
-          text: "Type `icecream help` to see what you can do!"
+      // Command: Create a new shop
+      if (args[0] === "create") {
+        if (!args[1]) return message.channel.send("❌ Shop name not found! Please create your ice cream shop first using `icecream/ice create <shopname>`.");
+        const shopName = args[1].substring(0, 15);
+
+        if (playerShop) {
+          return message.channel.send(`⚠️🍧 **${message.author.username}**, you already have a shop!`);
+        }
+
+        const newShop = new IceCreamShop( {
+          userId,
+          shopName,
+          flavors: [{
+            name: "Kulfi",
+            icecream: "Kulfi <:kulfi:1308433408946339840>",
+            items: 1
+          }],
+          customersServed: 0,
+          money: 100, // Starting cash
+          loyaltyPoints: 40,
+          reputation: 50,
+          shopLevel: 1,
+          dailyBonusClaimed: false
         });
+
+        try {
+          await newShop.save();
+
+          const embed = new EmbedBuilder()
+          .setColor("Random")
+          .setTitle(`🍨 Welcome to **${shopName}**!`)
+          .setDescription(
+            `🎉 Congratulations, **${username}**! You've opened **${shopName}** with your first flavor: **Kulfi <:kulfi:1308433408946339840>**. Start serving customers to grow your shop!`
+          )
+          .setImage("https://harshtiwari47.github.io/kasiko-public/images/icecream-shop.jpg") // Replace with a relevant image URL
+          .setFooter({
+            text: "Type `icecream help` to see what you can do!"
+          });
+
+          return message.channel.send({
+            embeds: [embed]
+          });
+        } catch (err) {
+          console.error(err);
+          return message.channel.send("There was an issue creating your shop. Please try again.");
+        }
+      }
+
+      if (!playerShop) {
+        return message.channel.send(`🍧 **${message.author.username}**, you need to create an ice cream shop first using \`icecream/ice create <shopname>\`. The shop name must not contain spaces and must be within 15 characters.`);
+      }
+      // Command: Serve a customer
+      if (args[0] === "serve") {
+        if (playerShop.loyaltyPoints < 20) {
+          return message.channel.send(
+            `⚠️ **${message.author.username}**, your shop's ✪ loyalty points are below 20. You can earn more by using \`icecream daily\` or sharing ice cream with your friends!`
+          );
+        }
+
+        if (playerShop.reputation < 0) {
+          return message.channel.send(
+            `⚠️ **${message.author.username}**, your shop's reputation points are below 0. You can earn more by using \`icecream daily\` or sharing ice cream with your friends!`
+          );
+        }
+
+        const customerPreference = getRandomFlavor();
+        const suspenseMessage = await message.channel.send("🍨 A customer is approaching... Let's see what they want!");
+
+        setTimeout(async () => {
+          const servedSuccessfully = playerShop.flavors.some(
+            FLAVOUR => customerPreference.name === FLAVOUR.name && FLAVOUR.items > 0
+          );
+
+          if (servedSuccessfully) {
+            const flavorDetail = playerShop.flavors.find(FLAVOUR => customerPreference.name === FLAVOUR.name);
+            flavorDetail.items -= 1;
+          }
+
+          // Determine customer satisfaction
+          const customerDislikesIceCream = Math.random() < 0.2; // 20% chance of disliking
+          if (servedSuccessfully && customerDislikesIceCream) {
+            playerShop.reputation -= 1; // Customer disliked the ice cream
+          } else {
+            playerShop.customersServed += servedSuccessfully ? 1: 0;
+            playerShop.money += servedSuccessfully ? Math.floor(1.3 * customerPreference.cost): 0;
+            playerShop.loyaltyPoints += servedSuccessfully ? 10: 0;
+            playerShop.reputation += servedSuccessfully ? (customerDislikesIceCream ? -1: 2): -1;
+          }
+
+          await playerShop.save();
+
+          const embed = new EmbedBuilder()
+          .setColor(servedSuccessfully ? (customerDislikesIceCream ? "Yellow": "Green"): "Red")
+          .setTitle("🍧 Customer Served!")
+          .setDescription(
+            servedSuccessfully
+            ? customerDislikesIceCream
+            ? `😬 The customer tried **${customerPreference.icecream}**, but they didn't enjoy it. \n\n⭐ **Reputation:** ${playerShop.reputation}`: `🎉 Great job! You served a customer their favorite flavor: **${customerPreference.icecream}**. \n\n💰 **Earned:** <:creamcash:1309495440030302282> ${Math.floor(1.3 * customerPreference.cost)} cash\n✪ **Loyalty Points:** +10\n⭐ **Reputation:** ${playerShop.reputation}`: `😅 Oops! The customer wanted **${customerPreference.icecream}**, but you couldn't serve it. \n\n⭐ **Reputation:** ${playerShop.reputation}`
+          )
+          .setFooter({
+            text: servedSuccessfully
+            ? customerDislikesIceCream
+            ? "Not every customer loves the same flavor! Keep improving!": "Keep serving customers to grow your reputation!": "Try adding more flavors to meet customer preferences.",
+          });
+
+          suspenseMessage.edit({
+            content: null,
+            embeds: [embed],
+          });
+        },
+          3000);
+      }
+
+      // Other commands (share, createFlavor, upgrade, status, dailyBonus) follow a similar structure.
+
+      if (args[0] === "status" || args[0] === "shop") {
+        let decoration = `𐙚⋆🍂⁺₊ 〰˖ ִֶָ 🍨 ˚˖𓍢ִ໋🦢💮`;
+        const embed = new EmbedBuilder()
+        .setColor(layout[playerShop.shopLayout - 1].color)
+        .setTitle(`🍦 ${playerShop.shopName}'s 𝑆𝐻𝑂𝑃`)
+        .setDescription(
+          `**Customers Served:** ${playerShop.customersServed}\n**Money:** <:creamcash:1309495440030302282> ${playerShop.money} cash\n**Loyalty Points:** ✪ ${playerShop.loyaltyPoints}\n**Reputation:** ${playerShop.reputation}\n**Shop Level:** ${playerShop.shopLevel}\n**Shop Layout:** ${playerShop.shopLayout}\n${decoration}`
+        )
+        .setImage(getLayout(playerShop.shopLayout)) // Replace with a relevant image URL
+        .setFooter({
+          text: "Keep serving and upgrading to reach new heights!"
+        });
+
+        message.channel.send({
+          embeds: [embed]
+        });
+
+        const embed2 = new EmbedBuilder()
+        .setColor('#f5bbaf')
+        .setDescription(`**𝑆𝐻𝑂𝑃 𝐹𝐿𝐴𝑉𝑂𝑈𝑅𝑆**\n${playerShop.flavors.map(flavour => `**${flavour.icecream}** (${flavour.items})`).join(", ")}`);
+
+        return message.channel.send({
+          embeds: [embed2]
+        });
+      }
+
+      // Command: Share ice cream with a friend
+      if (args[0] === "share") {
+        try {
+          let sharedIceCreamName;
+
+          if (!args[2]) {
+            return message.channel.send(
+              `⚠️ **${message.author.username}**, please mention the ice cream 🍨 name you want to share with your friend!\n\`icecream share @username <icecream>\``
+            );
+          }
+
+          sharedIceCreamName = capitalizeFirstLetter(args[2].toLowerCase());
+
+          if (!playerShop.flavors.some(flavour => flavour.name === sharedIceCreamName && flavour.items > 0)) {
+            return message.channel.send(
+              `⚠️ **${message.author.username}**, no ice cream 🍨 with this name was found in your collection, or you don't have any left. Please check your collection and try again!`
+            );
+          }
+
+          const targetUser = message.mentions.users.first();
+          if (!targetUser) {
+            return message.channel.send("👥 Please mention a user to share your ice cream with.");
+          }
+
+          const targetShop = await IceCreamShop.findOne({
+            userId: targetUser.id
+          });
+
+          if (!playerShop || !targetShop) {
+            return message.channel.send("🍦 Both users must own an ice cream shop to share ice cream. Use `icecream create <shop name>` to start your shop!");
+          }
+
+          const sharedIceCream = flavors.find(flavour => flavour.name === sharedIceCreamName);
+          const targetIceCream = targetShop.flavors.find(flavour => flavour.name === sharedIceCreamName);
+
+          if (targetShop.shopLevel < sharedIceCream.level) {
+            return message.channel.send(
+              `⚠️ **${message.author.username}**, your friend's shop level is too low to receive this ice cream 🍨. Encourage them to level up their shop and try again!`
+            );
+          }
+
+          if (targetIceCream) {
+            targetIceCream.items += 1;
+          } else {
+            targetShop.flavors.push({
+              name: sharedIceCream.name,
+              icecream: sharedIceCream.icecream,
+              items: 1
+            });
+          }
+
+          playerShop.money += 10;
+          playerShop.reputation += 1;
+          playerShop.loyaltyPoints += 15;
+
+          playerShop.flavors.find(flavour => flavour.name === sharedIceCreamName).items -= 1;
+
+          await targetShop.save();
+          await playerShop.save();
+
+          const shareEmbed = new EmbedBuilder()
+          .setTitle("🎁 Ice Cream Shared!")
+          .setDescription(
+            `You generously shared a **${sharedIceCream}** ice cream with **${targetUser.username}**! 🍦`
+          )
+          .addFields(
+            {
+              name: "🎉 Reward for Sharing", value: "<:creamcash:1309495440030302282> +10 cash, +1 reputation, ✪⁠ +15 Loyalty Points!"
+            }
+          )
+          .setColor(0x00ff00)
+          .setFooter({
+            text: "Sharing is caring!"
+          });
+
+          return message.channel.send({
+            embeds: [shareEmbed]
+          });
+        } catch (e) {
+          console.error(e);
+          return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while sharing ice cream 🍯!`)
+        }
+      }
+
+      if ((args[0] === "flavours" || args[0] === "flavour") && args[1] && args[1] === "my") {
+        const embed2 = new EmbedBuilder()
+        .setColor('#f5bbaf')
+        .setDescription(`**${message.author.username} 𝑆𝐻𝑂𝑃 𝐹𝐿𝐴𝑉𝑂𝑈𝑅𝑆**\n${playerShop.flavors.map(flavour => `**${flavour.icecream}** (${flavour.items})`).join(", ")}`);
+
+        return message.channel.send({
+          embeds: [embed2]
+        });
+      }
+
+      if (args[0] === "flavours" || args[0] === "flavour") {
+        const embed = new EmbedBuilder()
+        .setColor('#f5bbaf')
+        .setDescription(`**AVAILABLE FLAVOURS**\n${flavors.map(flavour => `**${flavour.icecream}**・⁠ <:creamcash:1309495440030302282> ${flavour.cost}・⁠**Lvl:** ${flavour.level}`).join(",\n")}`);
 
         return message.channel.send({
           embeds: [embed]
         });
-      } catch (err) {
-        return message.channel.send("There was an issue creating your shop. Please try again.");
       }
-    }
 
-    if (!playerShop) {
-      return message.channel.send("❌ You need to create an ice cream shop first using `icecream/ice create <shopname>`. The shop name must not contain spaces and must be within 15 characters.");
-    }
-    // Command: Serve a customer
-    if (args[0] === "serve") {
+      // Command: Create a new flavor for your shop
+      if (args[0] === "make") {
 
-      const customerPreference = getRandomFlavor();
-      const suspenseMessage = await message.channel.send("🍨 A customer is approaching... Let's see what they want!");
-
-      setTimeout(async () => {
-        const servedSuccessfully = playerShop.flavors.some(FLAVOUR => customerPreference.name === FLAVOUR.name && FLAVOUR.items > 0);
-
-        if (servedSuccessfully) {
-          const flavorDetail = playerShop.flavors.find(FLAVOUR => customerPreference.name === FLAVOUR.name);
-          flavorDetail.items -= 1;
+        if (!args[1]) {
+          return message.channel.send(
+            `⚠️ Please specify the ice cream name or to view the available list, try \`flavour all\` 🍧`
+          );
         }
 
-        playerShop.customersServed += servedSuccessfully ? 1: 0;
-        playerShop.customersServed += servedSuccessfully ? 1: 0;
-        playerShop.money += servedSuccessfully ? 20: 0;
-        playerShop.loyaltyPoints += servedSuccessfully ? 10: 0;
-        playerShop.reputation += servedSuccessfully ? 2: -1;
+        const newFlavor = capitalizeFirstLetter(args[1].trim().toLowerCase());
 
+        if (!flavors.some(flavor => flavor.name === newFlavor)) {
+          return message.channel.send("⚠️ Sorry, the specified ice cream was not found. Please check the name or try again.");
+        }
+
+        const userIcecream = playerShop.flavors.find(flavor => flavor.name === newFlavor);
+        const IcecreamDetail = flavors.find(flavor => flavor.name === newFlavor);
+
+        if (IcecreamDetail.level > playerShop.shopLevel) {
+          return message.channel.send(`🍯 **${message.author.username}**, your shop machine can't make this flavour, please upgrade your shop level`);
+        }
+
+        if (userIcecream && userIcecream.items > (playerShop.shopLevel * 2) + 1) {
+          const maxStorage = playerShop.shopLevel * 2;
+          return message.channel.send(
+            `⚠️👀 Oops! **${message.author.username}**, your shop can only store up to **${playerShop.shopLevel * 2}** **${newFlavor}**, but you already have **${userIcecream.items}**. You need more space to store **${newFlavor}**. Try upgrading your shop! 🍧`
+          );
+        }
+
+        if (playerShop.money < IcecreamDetail.cost) {
+          return message.channel.send(`⚠️💰 **${message.author.username}**, you don't have enough cash to create a new flavor (Cost: <:creamcash:1309495440030302282> ${IcecreamDetail.cost} cash).`);
+        }
+
+        if (userIcecream) {
+          userIcecream.items += 1;
+        } else {
+          playerShop.flavors.push({
+            name: IcecreamDetail.name,
+            icecream: IcecreamDetail.icecream,
+            items: 1
+          });
+        }
+
+        playerShop.money -= IcecreamDetail.cost;
         await playerShop.save();
 
-        const embed = new EmbedBuilder()
-        .setColor(servedSuccessfully ? "Green": "Red")
-        .setTitle("🍧 Customer Served!")
-        .setDescription(
-          servedSuccessfully
-          ? `🎉 Great job! You served a customer their favorite flavor: **${customerPreference.icecream}**. \n\n💰 **Earned:** <:creamcash:1309495440030302282> 20 cash\n🏆 **Loyalty Points:** +10\n⭐ **Reputation:** ${playerShop.reputation}`: `😅 Oops! The customer wanted **${customerPreference.icecream}**, but you couldn't serve it. \n\n⭐ **Reputation:** ${playerShop.reputation}`
-        )
-        .setFooter({
-          text: servedSuccessfully
-          ? "Keep serving customers to grow your reputation!": "Try adding more flavors to meet customer preferences.",
-        });
-
-        suspenseMessage.edit({
-          content: null, embeds: [embed]
-        });
-      },
-        3000);
-    }
-
-    // Other commands (share, createFlavor, upgrade, status, dailyBonus) follow a similar structure.
-
-    if (args[0] === "status") {
-
-      const embed = new EmbedBuilder()
-      .setColor("Blue")
-      .setTitle(`🍦 ${playerShop.shopName} - Shop Status`)
-      .setDescription(
-        `**Customers Served:** ${playerShop.customersServed}\n**Money:** <:creamcash:1309495440030302282> ${playerShop.money} cash\n**Loyalty Points:** ${playerShop.loyaltyPoints}\n**Reputation:** ${playerShop.reputation}\n**Shop Level:** ${playerShop.shopLevel}`
-      )
-      .setImage("https://harshtiwari47.github.io/kasiko-public/images/icecream-shop.jpg") // Replace with a relevant image URL
-      .setFooter({
-        text: "Keep serving and upgrading to reach new heights!"
-      });
-
-      message.channel.send({
-        embeds: [embed]
-      });
-
-      const embed2 = new EmbedBuilder()
-      .setColor('#f5bbaf')
-      .setDescription(`**SHOP FLAVOURS**\n${playerShop.flavors.map(flavour => `${flavour.icecream} (${flavour.items})`).join(",")}`);
-
-      return message.channel.send({
-        embeds: [embed2]
-      });
-    }
-
-    // Command: Share ice cream with a friend
-    if (args[0] === "share") {
-      const targetUser = message.mentions.users.first();
-      if (!targetUser) {
-        return message.channel.send("👥 Please mention a user to share your ice cream with.");
-      }
-
-      const targetShop = await IceCreamShop.findOne({
-        userId: targetUser.id
-      });
-
-      if (!playerShop || !targetShop) {
-        return message.channel.send("🍦 Both users must own an ice cream shop to share ice cream. Use `/create` to start your shop!");
-      }
-
-      const sharedIceCream = getRandomFlavor();
-      targetShop.flavors.push(sharedIceCream);
-      targetShop.money += 30;
-      targetShop.loyaltyPoints += 15;
-      await targetShop.save();
-
-      const shareEmbed = new EmbedBuilder()
-      .setTitle("🎁 Ice Cream Shared!")
-      .setDescription(
-        `You generously shared a **${sharedIceCream}** ice cream with **${targetUser.username}**! 🍦`
-      )
-      .addFields(
-        {
-          name: "🎉 Reward for Sharing", value: "<:creamcash:1309495440030302282> +30 cash, +15 Loyalty Points!"
-        }
-      )
-      .setColor(0x00ff00)
-      .setFooter({
-        text: "Sharing is caring!"
-      });
-
-      return message.channel.send({
-        embeds: [shareEmbed]
-      });
-    }
-
-    if (args[0] === "flavour" && args[1] === "all") {
-      const embed = new EmbedBuilder()
-      .setColor('#f5bbaf')
-      .setDescription(`**AVAILABLE FLAVOURS**\n${flavors.map(flavour => `**${flavour.icecream}** — <:creamcash:1309495440030302282> ${flavour.cost}`).join(",\n")}`);
-
-      return message.channel.send({
-        embeds: [embed]
-      });
-    }
-
-    // Command: Create a new flavor for your shop
-    if (args[0] === "flavour") {
-
-      if (!args[1]) {
-        return message.channel.send(
-          `⚠️ Please specify the ice cream name or to view the available list, try \`flavour all\` 🍧`
-        );
-      }
-
-      const newFlavor = capitalizeFirstLetter(args[1].trim().toLowerCase());
-
-      if (!flavors.some(flavor => flavor.name === newFlavor)) {
-        return message.channel.send("⚠️ Sorry, the specified ice cream was not found. Please check the name or try again.");
-      }
-
-      const userIcecream = playerShop.flavors.find(flavor => flavor.name === newFlavor);
-      const IcecreamDetail = flavors.find(flavor => flavor.name === newFlavor);
-
-      if (userIcecream && userIcecream.items > playerShop.shopLevel * 2) {
-        const maxStorage = playerShop.shopLevel * 2;
-        return message.channel.send(
-          `⚠️👀 Oops! **${message.author.username}**, your shop can only store up to **${playerShop.shopLevel * 2}** **${newFlavor}**, but you already have **${userIcecream.items}**. You need more space to store **${newFlavor}**. Try upgrading your shop!`
-        );
-      }
-
-      if (playerShop.money < IcecreamDetail.cost) {
-        return message.channel.send(`⚠️💰 **${message.author.username}**, you don't have enough cash to create a new flavor (Cost: <:creamcash:1309495440030302282> ${IcecreamDetail.cost} cash).`);
-      }
-
-      if (userIcecream) {
-        userIcecream.items += 1;
-      } else {
-        playerShop.flavors.push({
-          name: IcecreamDetail.name,
-          icecream: IcecreamDetail.icecream,
-          items: 1
-        });
-      }
-
-      playerShop.money -= IcecreamDetail.cost;
-      await playerShop.save();
-
-      const flavorEmbed = new EmbedBuilder()
-      .setTitle("🍧 New Flavor Created!")
-      .setDescription(`**${message.author.username}**, you just created the flavor: **${IcecreamDetail.icecream}**!`)
-      .addFields(
-        {
-          name: "💰 cash Spent", value: `<:creamcash:1309495440030302282> ${IcecreamDetail.cost} cash`
-        }
-      )
-      .setColor(0xffa500)
-      .setFooter({
-        text: "Keep innovating with new flavors!"
-      });
-
-      return message.channel.send({
-        embeds: [flavorEmbed]
-      });
-    }
-
-    // Command: Upgrade the ice cream shop
-    if (args[0] === "upgrade") {
-      const upgradeType = args[1];
-
-      const playerShop = await IceCreamShop.findOne({
-        userId
-      });
-      if (!playerShop) {
-        return message.channel.send(`🔧 **${message.author.username}**, need an ice cream shop to upgrade. Use \`create\`.`);
-      }
-
-      let upgradeCost = 0;
-      let upgradeMessage = "";
-
-      if (upgradeType === "machine") {
-        upgradeCost = 200;
-        if (playerShop.money < upgradeCost) {
-          return message.channel.send(`💸 **${message.author.username}**, you don't have enough cash to upgrade your machine (Cost: <:creamcash:1309495440030302282> 200 cash).`);
-        }
-        playerShop.shopLevel += 1;
-        upgradeMessage = "Machine Level";
-      } else if (upgradeType === "layout") {
-        upgradeCost = 150;
-        if (playerShop.money < upgradeCost) {
-          return message.channel.send(`💸 **${message.author.username}**, don't have enough cash to upgrade your layout (Cost: <:creamcash:1309495440030302282> 150 cash).`);
-        }
-        playerShop.shopLevel += 0.5;
-        upgradeMessage = "Shop Layout";
-      } else {
-        return message.channel.send("❌ Invalid upgrade type! Use `ice upgrade machine` or `ice upgrade layout`.");
-      }
-
-      playerShop.money -= upgradeCost;
-      await playerShop.save();
-
-      const upgradeEmbed = new EmbedBuilder()
-      .setTitle("🔧 Shop Upgraded!")
-      .setDescription(`**${message.author.username}**, your shop's **${upgradeMessage}** has been improved! 🚀`)
-      .addFields(
-        {
-          name: "💰 cash Spent", value: `<:creamcash:1309495440030302282> -${upgradeCost} cash`
-        },
-        {
-          name: "📈 Shop Level", value: playerShop.shopLevel.toString()
-        }
-      )
-      .setColor(0x00c8ff)
-      .setFooter({
-        text: "Keep upgrading to become the top ice cream shop!"
-      });
-
-      return message.channel.send({
-        embeds: [upgradeEmbed]
-      });
-    }
-
-    // Command: Claim daily bonus
-    if (args[0] === "daily") {
-      const playerShop = await IceCreamShop.findOne({
-        userId
-      });
-      if (!playerShop) {
-        return message.channel.send(`🎁 **${message.author.username}**, you need an ice cream shop to claim daily bonuses. Use \`create\`.`);
-      }
-
-      const timeElapsed = Date.now() - playerShop.lastVisit;
-      if (timeElapsed < 86400000 && playerShop.dailyBonusClaimed) {
-        return message.channel.send(`🕒 **${message.author.username}**, you've already claimed your daily bonus today. Come back tomorrow!`);
-      }
-
-      const suspenseMessage = await message.channel.send("🎁 Claiming your daily bonus... Please wait! 🎉");
-      setTimeout(async () => {
-        playerShop.dailyBonusClaimed = true;
-        playerShop.money += 100;
-        playerShop.loyaltyPoints += 20;
-        playerShop.lastVisit = Date.now();
-        await playerShop.save();
-
-        const bonusEmbed = new EmbedBuilder()
-        .setTitle("🎉 Daily Bonus Claimed!")
-        .setDescription(`**${message.author.username}** received today's reward!`)
+        const flavorEmbed = new EmbedBuilder()
+        .setTitle("🍧 New Flavor Created!")
+        .setDescription(`**${message.author.username}**, you just created the flavor: **${IcecreamDetail.icecream}**!`)
         .addFields(
           {
-            name: "💰 cash", value: "<:creamcash:1309495440030302282> +100 cash"
-          },
-          {
-            name: "🎯 Loyalty Points", value: "+20 Points"
+            name: "💰 cash Spent", value: `<:creamcash:1309495440030302282> ${IcecreamDetail.cost} cash`
           }
         )
-        .setColor(0x32cd32)
+        .setColor(0xffa500)
         .setFooter({
-          text: "Come back tomorrow for more rewards!"
+          text: "Keep innovating with new flavors!"
         });
 
-        suspenseMessage.edit({
-          embeds: [bonusEmbed], content: null
+        return message.channel.send({
+          embeds: [flavorEmbed]
         });
-      }, 2000); // Adding suspense with a 2-second delay
+      }
+
+      // Command: Upgrade the ice cream shop
+      if (args[0] === "upgrade") {
+        const upgradeType = args[1] ? args[1].toLowerCase(): "machine";
+
+        let upgradeCost = 0;
+        let upgradeRoyaltyCost = 0;
+        let upgradeMessage = "";
+
+        if (upgradeType === "machine") {
+          upgradeCost = 200 * playerShop.shopLevel;
+          if (playerShop.money < upgradeCost) {
+            return message.channel.send(`💸 **${message.author.username}**, you don't have enough cash to upgrade your machine (Cost: <:creamcash:1309495440030302282> ${upgradeCost} cash).`);
+          }
+          playerShop.shopLevel += 1;
+          upgradeMessage = "machine";
+        } else if (upgradeType === "layout") {
+          upgradeRoyaltyCost = 200 * playerShop.shopLayout * playerShop.shopLayout/2;
+          if (playerShop.loyaltyPoints < upgradeRoyaltyCost) {
+            return message.channel.send(`💸 **${message.author.username}**, don't have enough ✪⁠ loyalty points to upgrade your layout (Cost: ✪⁠ 150 points).`);
+          }
+          playerShop.shopLayout += 1;
+          upgradeMessage = "layout";
+        } else {
+          return message.channel.send("❌ Invalid upgrade type! Use `ice upgrade machine` or `ice upgrade layout`.");
+        }
+
+        playerShop.money -= upgradeCost;
+        playerShop.loyaltyPoints -= upgradeRoyaltyCost;
+        await playerShop.save();
+
+        const upgradeEmbed = new EmbedBuilder()
+        .setTitle("🍨🔧 Shop Upgraded!")
+        .setDescription(`**${message.author.username}**, your shop's **${upgradeMessage}** has been improved! 🚀`)
+        .addFields(
+          {
+            name: `${upgradeType === "machine" ? "💰 Cash": "✪ Loyalty"} Spent`, value: `${upgradeType === "machine" ? "<:creamcash:1309495440030302282> -" + upgradeCost + "cash": "✪⁠" + upgradeRoyaltyCost + "loyalty"}`
+          },
+          {
+            name: `📈 Shop ${upgradeType === "machine" ? "Level": "Layout"}`, value: `${upgradeType === "machine" ? playerShop.shopLevel: playerShop.shopLayout}`
+          }
+        )
+        .setColor(0x00c8ff)
+        .setFooter({
+          text: "Keep upgrading to become the top ice cream shop!"
+        });
+
+        return message.channel.send({
+          embeds: [upgradeEmbed]
+        });
+      }
+
+      // Command: Layout
+      if (args[0] === "layout") {
+        if (!args[1]) args[1] = 1;
+        if (args[1] && !isNaN(args[1]) && Number.isInteger(parseInt(args[1])) && (parseInt(args[1]) < 8) && (parseInt(args[1]) > 0)) {
+
+          let level = parseInt(args[1]);
+
+          const embed = new EmbedBuilder()
+          .setColor(layout[level - 1].color)
+          .setDescription(`**LEVEL ${level} LAYOUT**\n${layout[level - 1].decoration}`)
+          .setImage(layout[level - 1].image);
+
+          return message.channel.send({
+            embeds: [embed]
+          });
+        } else {
+          return message.channel.send(
+            `⚠️ **${message.author.username}**, please provide a valid level (1-7) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
+          );
+        }
+      }
+
+      // Command: Exchange
+      if (args[0] === "exchange") {
+        if (args[1] && !isNaN(args[1]) && Number.isInteger(parseInt(args[1]))) {
+          let amount = parseInt(args[1]);
+
+          if (playerShop.loyaltyPoints < amount) {
+            return message.channel.send(`⚠️ **${message.author.username}**, your shop doesn't have ✪⁠ ${amount} loyalty points.`);
+          }
+
+          const user = await User.findOne({
+            id: userId
+          });
+
+          if (!user) {
+            return message.channel.send(`⚠️ **${message.author.username}**, your account doesn't exist in Kasiko.`);
+          }
+
+          user.cash += amount * 50;
+          playerShop.loyaltyPoints -= amount;
+
+          await user.save();
+          await playerShop.save();
+
+          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${amount * 50} cash!`);
+        } else {
+          return message.channel.send(`⚠️ **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``);
+        }
+      }
+
+      // Command: Claim daily bonus
+      if (args[0] === "daily") {
+
+        const timeElapsed = Date.now() - playerShop.lastVisit;
+        if (timeElapsed < 86400000 && playerShop.dailyBonusClaimed) {
+          return message.channel.send(`🕒 **${message.author.username}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`);
+        }
+
+        const suspenseMessage = await message.channel.send("🎁 Claiming your daily bonus... Please wait! 🎉");
+        setTimeout(async () => {
+          playerShop.dailyBonusClaimed = true;
+          playerShop.money += 100;
+          let loyaltyPointsGained = playerShop.reputation > 150 ? 20 * Math.floor(playerShop.reputation/150): 20;
+          playerShop.loyaltyPoints += loyaltyPointsGained;
+          playerShop.reputation += 1;
+          playerShop.lastVisit = Date.now();
+          await playerShop.save();
+
+          const bonusEmbed = new EmbedBuilder()
+          .setTitle("🎉 𝐃𝐚𝐢𝐥𝐲 𝐁𝐨𝐧𝐮𝐬 𝐂𝐥𝐚𝐢𝐦𝐞𝐝!")
+          .setDescription(`**${message.author.username}** received today's reward, including +1 reputation points!\nYou can claim 20 loyalty points, plus 20 for every 150 reputation!`)
+          .addFields(
+            {
+              name: "<:creamcash:1309495440030302282> cash", value: "+100 cash"
+            },
+            {
+              name: "✪⁠ Loyalty Points", value: `+${loyaltyPointsGained} Points`
+            }
+          )
+          .setColor(0xefb7b7)
+          .setFooter({
+            text: "Come back tomorrow for more rewards!"
+          });
+
+          return suspenseMessage.edit({
+            embeds: [bonusEmbed], content: null
+          });
+        }, 2000); // Adding suspense with a 2-second delay
+      }
+    } catch (e) {
+      console.error(e);
+      return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while executing the ice cream shop command! 🍧🍯`);
     }
   },
 };

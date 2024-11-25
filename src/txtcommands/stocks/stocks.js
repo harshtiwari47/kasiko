@@ -6,6 +6,10 @@ import {
 } from '../../../database.js';
 
 import {
+  generateStockChart
+} from './canvas.js';
+
+import {
   Helper
 } from '../../../helper.js';
 import {
@@ -17,7 +21,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  AttachmentBuilder
 } from 'discord.js';
 
 import dotenv from 'dotenv';
@@ -132,7 +137,7 @@ export async function sendPaginatedStocks(context) {
           console.error("Error disabling buttons on collector end:", err);
         }
       });
-      
+
   } catch (err) {
     console.error(err);
     return context.channel.send("⚠️ Something went wrong while viewing stock!");
@@ -198,16 +203,39 @@ updateStockPrices();
 // Update stock prices every hour (600000 ms)
 setInterval(updateStockPrices, 600000);
 
-
 export async function stockPrice(stockName, message) {
   try {
+    // Check if the stock exists
     if (stockData[stockName]) {
-      message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤 𝐏𝐫𝐢𝐜𝐞\n\n**${stockName}** is currently priced at <:kasiko_coin:1300141236841086977>**${stockData[stockName].currentPrice}** 𝑪𝒂𝒔𝒉.`);
+      const stock = stockData[stockName];
+
+      // Generate the stock chart
+      const chartBuffer = await generateStockChart(stock);
+
+      // Create the image attachment
+      const attachment = new AttachmentBuilder(chartBuffer, {
+        name: 'stock-chart.png'
+      });
+
+      // Create the embed
+      const embed = new EmbedBuilder()
+      .setTitle(`📊 Stock Price: ${stockName}`)
+      .setDescription(`**${stockName}** is currently priced at <:kasiko_coin:1300141236841086977> **${stock.currentPrice}** 𝑪𝒂𝒔𝒉.`)
+      .setImage('attachment://stock-chart.png')
+      .setColor('#007bff')
+      .setFooter({
+        text: 'Stock data provided by Heroliq Stocks'
+      });
+
+      // Send the embed with the attachment
+      await message.channel.send({
+        embeds: [embed], files: [attachment]
+      });
     } else {
       message.channel.send("⚠️ Stock not found.");
     }
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
     message.channel.send("⚠️ Something went wrong while checking stock's price.");
   }
 }

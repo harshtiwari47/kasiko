@@ -25,12 +25,15 @@ const icecreamSchema = new mongoose.Schema({
       type: Number, default: 0
     },
     loyaltyPoints: {
-      type: Number, default: 0
+      type: Number, default: 40
     },
     money: {
       type: Number, default: 100 // Initial money for setup
     },
     shopLevel: {
+      type: Number, default: 1
+    },
+    shopLayout: {
       type: Number, default: 1
     },
     flavors: {
