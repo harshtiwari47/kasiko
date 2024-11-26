@@ -6,6 +6,7 @@ import {
 } from '../../../helper.js';
 
 import UserShips from "../../../models/UserShips.js";
+import redisClient from "../../../redis.js";
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname); // Get the directory of the current filter
 const shipsDatabasePath = path.join(__dirname, '../../../data/ships.json');
@@ -18,7 +19,6 @@ import {
   getUserData,
   updateUser
 } from '../../../database.js';
-
 
 import {
   EmbedBuilder
@@ -33,15 +33,26 @@ export const allShips = () => {
 // Fetch all ships for a user
 export const getUserShipsData = async (userId) => {
   try {
+
+    const cachedData = await redisClient.get(`user:${userId}:ships`);
+    if (cachedData) {
+      // If data is in cache, parse and return it
+      let data = UserShips.hydrate(JSON.parse(cachedData));
+      return data;
+    }
+
     const userships = await UserShips.findOne({
       id: userId
     });
+
     if (!userships) {
-      return new UserShips( {
+      userships = new UserShips( {
         id: userId,
         ships: []
       })
     }
+
+    await redisClient.set(`user:${userId}:ships`, JSON.stringify(emptyShips.toObject()));
 
     return userships
   } catch (error) {
@@ -55,6 +66,8 @@ export const modifyUserShips = async (userId, data) => {
   try {
     // Save the updated user document
     const updatedData = await data.save();
+
+    await redisClient.set(`user:${userId}:ships`, JSON.stringify(updatedData.toObject()));
     return updatedData; // Return the updated user
   } catch (error) {
     console.error('Error in transaction while saving user\'s ships data:', error);

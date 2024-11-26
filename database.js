@@ -91,41 +91,25 @@ export const createUser = async (userId) => {
 
 // Function to retrieve user data from the database
 export const getUserData = async (userId) => {
-  const startTime = performance.now();  // Start the overall timer
   try {
     // Check external Redis cache
-    const cacheStartTime = performance.now();
     const cachedUser = await redisClient.get(`user:${userId}`);
-    const cacheTime = performance.now() - cacheStartTime;
-    console.log(`Cache check took ${cacheTime.toFixed(2)} ms`);
 
     if (cachedUser) {
-      const hydrateStartTime = performance.now();
       const user = User.hydrate(JSON.parse(cachedUser));
-      const hydrateTime = performance.now() - hydrateStartTime;
-      console.log(`Cache hydration took ${hydrateTime.toFixed(2)} ms`);
-      
-      console.log(`Total getUserData execution time (from cache): ${(performance.now() - startTime).toFixed(2)} ms`);
       return user;
     }
 
     // Fetch from the database
-    const dbStartTime = performance.now();
     const user = await User.findOne({
       id: userId
     });
-    const dbTime = performance.now() - dbStartTime;
-    console.log(`DB fetch took ${dbTime.toFixed(2)} ms`);
-
     let createdUserData = {
       success: true
     };
 
     if (!user) {
-      const createStartTime = performance.now();
       createdUserData = await createUser(userId);
-      const createTime = performance.now() - createStartTime;
-      console.log(`User creation took ${createTime.toFixed(2)} ms`);
     }
 
     if (!createdUserData.success) {
@@ -134,17 +118,11 @@ export const getUserData = async (userId) => {
     }
 
     // Cache user data in external Redis
-    const cacheSetStartTime = performance.now();
     if (user) {
       await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
         EX: 180
       }); // Cache for 3 min
     }
-    const cacheSetTime = performance.now() - cacheSetStartTime;
-    console.log(`Cache set took ${cacheSetTime.toFixed(2)} ms`);
-
-    console.log(`Total getUserData execution time (full): ${(performance.now() - startTime).toFixed(2)} ms`);
-
     return user;
   } catch (error) {
     console.error('Error fetching user data:', error);
