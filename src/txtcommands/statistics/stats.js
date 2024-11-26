@@ -14,7 +14,7 @@ import {
 
 async function sendUserStat(stat, message) {
   const userData = await getUserData(message.author.id);
-  
+
   if (stat === "cash") {
     message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** 𝑪𝒂𝒔𝒉.`);
   }
@@ -22,7 +22,10 @@ async function sendUserStat(stat, message) {
     message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`);
   }
   if (stat === "networth") {
-    await updateNetWorth(message.author.id);
+    let newNetWorth = await updateNetWorth(message.author.id);
+    if (newNetWorth) {
+      userData[stat] = newNetWorth;
+    }
     message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** net worth.`);
   }
   if (stat === "level") {
@@ -43,7 +46,7 @@ function handleUserStat(statType, message) {
   if (statType === "ts") name = "trust"
   if (statType === "nw") name = "networth"
   if (statType === "cy") name = "charity"
-  
+
   return sendUserStat(name, message);
 }
 
@@ -51,10 +54,16 @@ function handleUserStat(statType, message) {
 export default {
   name: "stat",
   description: "View various user statistics like cash, net worth, charity, or trust level.",
-  aliases: ["cash", "c",
-    "networth", "nw",
-    "charity", "cy",
-    "trust", "ts", "level", "exp"],
+  aliases: ["cash",
+    "c",
+    "networth",
+    "nw",
+    "charity",
+    "cy",
+    "trust",
+    "ts",
+    "level",
+    "exp"],
   // These aliases allow calling the command with any of the stats directly
   args: "<type>",
   example: [
@@ -78,7 +87,7 @@ export default {
       const statType = args[1].toLowerCase();
       return handleUserStat(statType, message);
     } else {
-        return message.channel.send("⚠️ Invalid Command\nUse `stat cash`, `stat networth`, `stat trust`, `stat charity`, `stat level`, `stat exp`");
+      return message.channel.send("⚠️ Invalid Command\nUse `stat cash`, `stat networth`, `stat trust`, `stat charity`, `stat level`, `stat exp`");
     }
   }
 };
