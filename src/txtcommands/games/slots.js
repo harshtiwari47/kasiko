@@ -13,9 +13,13 @@ export async function slots(id, amount, channel) {
     let userData = await getUserData(id);
 
     if (userData.cash < 250) {
-      return channel.send("⚠️ You don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.");
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.`);
     } else if (amount < 250) {
       return channel.send("⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **250**.");
+    }
+
+    if (userData.cash < amount) {
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount}** cash.`);
     }
 
     // Slots symbols
