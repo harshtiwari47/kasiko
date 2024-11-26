@@ -6,6 +6,8 @@ import dotenv from 'dotenv';
 
 import User from "./models/User.js";
 
+import redisClient from "./redis.js";
+
 import {
   updateNetWorth
 } from './utils/updateNetworth.js';
@@ -89,31 +91,89 @@ export const createUser = async (userId) => {
 
 // Function to retrieve user data from the database
 export const getUserData = async (userId) => {
+  const startTime = performance.now();  // Start the overall timer
   try {
+    // Check external Redis cache
+    const cacheStartTime = performance.now();
+    const cachedUser = await redisClient.get(`user:${userId}`);
+    const cacheTime = performance.now() - cacheStartTime;
+    console.log(`Cache check took ${cacheTime.toFixed(2)} ms`);
+
+    if (cachedUser) {
+      const hydrateStartTime = performance.now();
+      const user = User.hydrate(JSON.parse(cachedUser));
+      const hydrateTime = performance.now() - hydrateStartTime;
+      console.log(`Cache hydration took ${hydrateTime.toFixed(2)} ms`);
+      
+      console.log(`Total getUserData execution time (from cache): ${(performance.now() - startTime).toFixed(2)} ms`);
+      return user;
+    }
+
+    // Fetch from the database
+    const dbStartTime = performance.now();
     const user = await User.findOne({
       id: userId
     });
+    const dbTime = performance.now() - dbStartTime;
+    console.log(`DB fetch took ${dbTime.toFixed(2)} ms`);
+
     let createdUserData = {
       success: true
     };
+
     if (!user) {
+      const createStartTime = performance.now();
       createdUserData = await createUser(userId);
+      const createTime = performance.now() - createStartTime;
+      console.log(`User creation took ${createTime.toFixed(2)} ms`);
     }
-    if (!createdUserData.success) return console.error('Failed creating new user');
-    return user
+
+    if (!createdUserData.success) {
+      console.error('Failed creating new user');
+      return null;
+    }
+
+    // Cache user data in external Redis
+    const cacheSetStartTime = performance.now();
+    if (user) {
+      await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
+        EX: 180
+      }); // Cache for 3 min
+    }
+    const cacheSetTime = performance.now() - cacheSetStartTime;
+    console.log(`Cache set took ${cacheSetTime.toFixed(2)} ms`);
+
+    console.log(`Total getUserData execution time (full): ${(performance.now() - startTime).toFixed(2)} ms`);
+
+    return user;
   } catch (error) {
     console.error('Error fetching user data:', error);
-    return null
+    return null;
   }
 };
 
 // Function to check if a user exists in the database
 export const userExists = async (userId) => {
   try {
+    // Check Redis cache
+    const cachedUser = await redisClient.get(`user:${userId}`);
+    if (cachedUser) {
+      return true;
+    }
+
+    // Fetch from database
     const user = await User.findOne({
       id: userId
     });
-    return user ? true: false;
+    if (user) {
+      // Cache the user data
+      await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
+        EX: 180
+      });
+      return true;
+    }
+
+    return false;
   } catch (error) {
     console.error('Error checking if user exists:', error);
     return false;
@@ -123,22 +183,52 @@ export const userExists = async (userId) => {
 // Function to update user data
 export const updateUser = async (userId, user) => {
   try {
-    // update net worth
-    await updateNetWorth(userId);
+    // Update net worth
+    let newNetWorth = await updateNetWorth(userId);
+
+    user.networth = newNetWorth && (newNetWorth > 0) ? newNetWorth: user.networth;
 
     user.cash = Number(user.cash.toFixed(1));
     user.networth = Number(user.networth.toFixed(1));
 
-    if (user.cash < 0) user.cash = 0;
-    if (user.networth < 0) user.networth = 0;
-    // Save the updated user document
+    // Save updated user to database
     const updatedUser = await user.save();
 
-    return updatedUser; // Return the updated user
+    // Update Redis cache
+    await redisClient.set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
+      EX: 180
+    });
 
+    return updatedUser; // Return the updated user
   } catch (error) {
     console.error('Error in transaction:', error);
     return 'Error in transaction';
+  }
+};
+
+export const userAcceptedTerms = async (userId) => {
+  try {
+    // Check Redis cache
+    const cachedUser = await redisClient.get(`user:${userId}`);
+    if (cachedUser) {
+      const user = JSON.parse(cachedUser);
+      return user.acceptedTerms || false;
+    }
+
+    // Fetch from database
+    const user = await User.findOne({
+      id: userId
+    });
+    if (!user) return false;
+
+    // Cache user data in Redis
+    await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
+      EX: 180
+    });
+    return user.acceptedTerms || false;
+  } catch (error) {
+    console.error('Error checking user accepted terms:', error);
+    return false;
   }
 };
 
@@ -162,18 +252,6 @@ export const deleteUser = async (userId) => {
     return null
   }
 };
-
-export const userAcceptedTerms = async (userId) => {
-  try {
-    const user = await User.findOne({
-      id: userId
-    });
-    if (!user) return false;
-    if (user) return user.acceptedTerms;
-  } catch (e) {
-    console.error(e);
-  }
-}
 
 // other
 export const itemExists = (itemId) => {

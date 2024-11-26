@@ -5,10 +5,10 @@ const stockDetailSchema = new mongoose.Schema({
   dailyPurchased: [Number, Number],
   dailySold: [Number, Number],
   cost: {
-    type: Number, default: 0
+    type: Number, default: 0, min: 0
     }, // Current cost of the stock
     shares: {
-      type: Number, default: 0
+      type: Number, default: 0, min: 0
     }, // Current number of shares
     history: [{
       timestamp: {
@@ -16,7 +16,8 @@ const stockDetailSchema = new mongoose.Schema({
         required: true
       },
       cost: {
-        type: Number
+        type: Number,
+        min: 0
       }, // Stock cost at that time
       shares: {
         type: Number

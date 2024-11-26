@@ -9,7 +9,9 @@ const icecreamSchema = new mongoose.Schema({
     type: String
   },
   items: {
-    type: Number, default: 1 // default value for items
+    type: Number,
+    default: 1,
+      min: 0 // default value for items
     }
   });
 
@@ -25,16 +27,16 @@ const icecreamSchema = new mongoose.Schema({
       type: Number, default: 0
     },
     loyaltyPoints: {
-      type: Number, default: 40
+      type: Number, default: 40, min: 0
     },
     money: {
-      type: Number, default: 100 // Initial money for setup
+      type: Number, default: 100, min: 0// Initial money for setup
     },
     shopLevel: {
-      type: Number, default: 1
+      type: Number, default: 1, min: 1
     },
     shopLayout: {
-      type: Number, default: 1
+      type: Number, default: 1, min: 1
     },
     flavors: {
       type: [icecreamSchema],
@@ -45,7 +47,7 @@ const icecreamSchema = new mongoose.Schema({
       }]
     },
     reputation: {
-      type: Number, default: 50 // Shop's initial reputation
+      type: Number, default: 50, min: 0 // Shop's initial reputation
     },
     dailyBonusClaimed: {
       type: Boolean, default: false

@@ -59,9 +59,10 @@ client.on('messageCreate', async (message) => {
     let prefix = "kas";
 
     if (!message.content.toLowerCase().startsWith(prefix)) return
-
+    
     if (mentionedBots.size > 0) return
-
+     
+    let ps = performance.now();
     // check user exist
     let userExistence = await userExists(message.author.id);
     if (!userExistence) {
@@ -69,7 +70,10 @@ client.on('messageCreate', async (message) => {
     }
 
     updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
-
+    
+    let pe = performance.now();
+    
+    console.log(pe-ps + "overall")
     // handle all types of text commands started with kas
     const args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
     const commandName = args[0].toLowerCase();

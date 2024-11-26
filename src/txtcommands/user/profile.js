@@ -98,8 +98,8 @@ async function createUserEmbed(userId, username, userData, avatar) {
 export async function profile(id, channel) {
   try {
     const user = await channel.guild.members.fetch(id);
-    updateNetWorth(id);
     let userData = await getUserData(id);
+    userData.networth = updateNetWorth(id);
 
     let userProfile = await createUserEmbed(id, user.username, userData, user.displayAvatarURL({
       dynamic: true, size: 256
