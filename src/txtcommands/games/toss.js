@@ -10,37 +10,51 @@ import {
 export async function toss(id, amount, channel, choice = "head") {
   try {
     const guild = await channel.guild.members.fetch(id);
-    let userData = await getUserData(id)
+    let userData = await getUserData(id);
 
+    // Check if the user has enough cash and if the amount is valid
     if (userData.cash < 250) {
-      return channel.send("⚠️ You don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.");
+      return channel.send("⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.");
     } else if (amount < 250) {
-      return channel.send("⚠️ minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **250**.");
+      return channel.send("⚠️ Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **250**.");
     }
 
+    // Send a suspenseful message
+    const suspenseMessage = await channel.send(`🔮 Tossing the coin... It's spinning in the air... 🪙 The fate of **${guild.user.username}** cash is on the line...`);
+
+    // Simulate a short delay to build suspense
+    await new Promise(resolve => setTimeout(resolve, 3000)); // 3-second delay for better effect
+
+    // Randomly decide the result of the coin toss
     let random = Math.floor(Math.random() * 2);
     let winamount = 0;
 
     if (random === 1 && choice === "head") {
       winamount = Number(amount * 1.2).toFixed(0) || 0;
       userData.cash += Number(winamount);
-      await updateUser(id, userData);
-      return channel.send(`𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 **@${guild.user.username}** 🎉!\nYou have won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You tossed a 🪙 coin and you got heads.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`);
     } else if (random === 0 && choice === "tail") {
       winamount = Number(amount * 1.2).toFixed(0) || 0;
       userData.cash += Number(winamount);
-      await updateUser(id, userData);
-      return channel.send(`𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 **@${guild.user.username}** 🎉!\nYou have won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You tossed a 🪙 coin and you got tails.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`);
     } else {
       winamount = Number(-1 * amount) || 0;
       userData.cash += Number(winamount);
-      await updateUser(id, userData);
-      return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You tossed a 🪙 coin and you got ${choice === "tail" ? "heads" : "tails"}.`);
+    }
+
+    // Save updated user data to the database
+    await updateUser(id, userData);
+
+    // Edit the initial "thinking" message to the final result
+    if (random === 1 && choice === "head") {
+      await suspenseMessage.edit(`🎉 **${guild.user.username}**, you did it! 🪙\nThe coin landed on heads! You won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉! Fortune is on your side today!`);
+    } else if (random === 0 && choice === "tail") {
+      await suspenseMessage.edit(`🎉 **${guild.user.username}**, victory is yours! 🪙\nThe coin landed on tails! You won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉! Luck favors you this time!`);
+    } else {
+      await suspenseMessage.edit(`🚨 Oops, **${guild.user.username}**, fate wasn't kind! 🪙\nThe coin landed on ${choice === "tail" ? "heads" : "tails"}... You lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. Better luck next time!`);
     }
 
   } catch (e) {
-    console.log(e)
-    return channel.send("Oops! something went wrong while tossing a coin 🪙!");
+    console.log(e);
+    return channel.send("Oops! Something went wrong while tossing the coin 🪙!");
   }
 }
 

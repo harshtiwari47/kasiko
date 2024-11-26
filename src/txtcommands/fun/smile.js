@@ -40,7 +40,7 @@ export default {
       .setDescription("Spreading some happiness! 😊")
       .setImage(randomGif) // Set a randomly selected happy GIF
       .setFooter({
-        text: `Requested by ${message.author.tag} | Gif: gipher`
+        text: `Requested by ${message.author.tag} | Gif: gifer`
       });
 
       await message.reply({

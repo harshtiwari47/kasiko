@@ -359,35 +359,78 @@ export async function portfolio(userId, message) {
   try {
     let userData = await getUserData(userId);
 
-    if (!userData.stocks) return message.channel.send("⚠️ User don't own any 📊 stocks.");
+    if (!userData.stocks) {
+      return message.channel.send({
+        content: "⚠️ User doesn't own any 📊 stocks.",
+      });
+    }
 
-    let portfolioDetails = `▒░✩ <@${userId}>'s 𝐒𝐭𝐨𝐜𝐤𝐬 𝐏𝐨𝐫𝐭𝐟𝐨𝐥𝐢𝐨\n▁▁▁▁▁▁▁▁▁\n`;
+    let portfolioDetails = "";
     let portfolioValue = 0;
     let cost = 0;
 
     for (const stockName in userData.stocks.toJSON()) {
       if (stockName === "_id") continue;
-      if (userData && userData.stocks && userData.stocks[stockName] && stockData[stockName] && userData.stocks[stockName].shares === 0) continue;
+      if (
+        userData &&
+        userData.stocks &&
+        userData.stocks[stockName] &&
+        stockData[stockName] &&
+        userData.stocks[stockName].shares === 0
+      )
+        continue;
+
       const numShares = userData.stocks[stockName].shares;
       const stockPrice = stockData[stockName].currentPrice;
       const stockValue = numShares * stockPrice;
+
       portfolioValue += stockValue;
       cost += userData.stocks[stockName].cost;
-      portfolioDetails += `ᯓ★ **${stockName}**: **${numShares}** shares worth <:kasiko_coin:1300141236841086977>**${stockValue.toFixed(0)}** 𝑪𝒂𝒔𝒉\n`;
+
+      portfolioDetails += `ᯓ★ **${stockName}**: **${numShares}** shares worth <:kasiko_coin:1300141236841086977>**${stockValue.toFixed(
+        0
+      )}** 𝑪𝒂𝒔𝒉\n`;
     }
+
     const profitLossPercent = ((portfolioValue - cost) / cost) * 100;
     const profitLossLabel = profitLossPercent >= 0 ? "Profit": "Loss";
     const profitLossSymbol = profitLossPercent >= 0 ? "+": "-";
+    const finalPercentage = `${profitLossSymbol}${Math.abs(profitLossPercent).toFixed(2)}`;
 
-    let finalPercentage = `${profitLossSymbol}${Math.abs(profitLossPercent).toFixed(2)}`;
+    // Embed 1: Portfolio Overview
+    const embed1 = new EmbedBuilder()
+    .setTitle(`📈 <@${userId}>'s 𝐒𝐭𝐨𝐜𝐤𝐬 𝐏𝐨𝐫𝐭𝐟𝐨𝐥𝐢𝐨`)
+    .setDescription(portfolioDetails || "No stocks found.")
+    .addFields([{
+      name: "𝑻𝒐𝒕𝒂𝒍 𝑷𝒐𝒓𝒕𝒇𝒐𝒍𝒊𝒐 𝑽𝒂𝒍𝒖𝒆",
+      value: `<:kasiko_coin:1300141236841086977>${portfolioValue.toFixed(0)} 𝑪𝒂𝒔𝒉`,
+    },
+    ])
+    .setColor("#f2dada");
 
-    portfolioDetails += `\n𝑇𝑜𝑡𝑎𝑙 𝑃𝑜𝑟𝑡𝑓𝑜𝑙𝑖𝑜 𝑉𝑎𝑙𝑢𝑒: <:kasiko_coin:1300141236841086977>${portfolioValue.toFixed(0)} 𝑪𝒂𝒔𝒉`;
-    portfolioDetails += `\n𝑇𝑜𝑡𝑎𝑙 𝐵𝑟𝑜𝑢𝑔ℎ𝑡 𝑃𝑟𝑖𝑐𝑒: <:kasiko_coin:1300141236841086977>${cost.toFixed(0)} 𝑪𝒂𝒔𝒉`;
-    portfolioDetails += `\n𝑁𝑒𝑡 ${profitLossLabel}: ${isNaN(finalPercentage) ? "0": finalPercentage }%`;
-    message.channel.send(portfolioDetails);
+    // Embed 2: Portfolio Summary
+    const embed2 = new EmbedBuilder()
+    .addFields([{
+      name: "𝑻𝒐𝒕𝒂𝒍 𝑩𝒓𝒐𝒖𝒈𝒉𝒕 𝑷𝒓𝒊𝒄𝒆",
+      value: `<:kasiko_coin:1300141236841086977>${cost.toFixed(0)} 𝑪𝒂𝒔𝒉`,
+    },
+      {
+        name: `𝑁𝑒𝑡 ${profitLossLabel}`,
+        value: `${isNaN(finalPercentage) ? "0": finalPercentage}%`,
+      },
+    ])
+    .setColor(profitLossPercent >= 0 ? "#a8dabf": "#f56056");
+
+    // Send Embeds
+    return await message.channel.send({
+      embeds: [embed1, embed2]
+    });
+    //await message.channel.send({ embeds: [embed2] });
   } catch (e) {
     console.error(e);
-    message.channel.send("⚠️ Something went wrong while viewing stock portfolio.");
+    return message.channel.send({
+      content: "⚠️ Something went wrong while viewing stock portfolio.",
+    });
   }
 }
 

@@ -16,82 +16,82 @@ import {
 } from '../../../helper.js';
 
 // create an embed card based on user data
-async function createUserEmbed(userId, username, userData) {
+async function createUserEmbed(userId, username, userData, avatar) {
   try {
     const joinDate = new Date(userData.joined);
     const isToday = joinDate.toDateString() === new Date().toDateString();
 
     const currentTime = Date.now();
     let dailyRewardsDetail = "Not claimed";
-    // Check if 24 hours have passed since the last collection
-    const nextClaim = 24 * 60 * 60 * 1000; // 12 hours in milliseconds
+    const nextClaim = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
     if (userData.dailyReward && (currentTime - userData.dailyReward) < nextClaim) {
       dailyRewardsDetail = "Claimed";
-    } else {
-      dailyRewardsDetail = "Not claimed";
     }
 
     let partner = {
-      "username": "Not married"
+      username: "Not married"
     };
 
     let totalCars = userData.cars.reduce((sum, car) => {
-      sum += car.items
-      return sum
+      sum += car.items;
+      return sum;
     }, 0);
 
     let totalStructures = userData.structures.reduce((sum, structure) => {
-      sum += structure.items
-      return sum
+      sum += structure.items;
+      return sum;
     }, 0);
 
     if (userData.spouse) {
       partner = await client.users.fetch(userData.spouse) || {
-        "username": "Failed to Fetch"
+        username: "Failed to Fetch"
       };
     }
 
-    const embed = new EmbedBuilder()
-    .setColor('#ed971e')
-    .setTitle(`⌞ ⌝  <@${userId.toString()}>' Profile ✨`)
-    .setDescription('Building wealth, earning trust, and growing an empire – every journey starts with zero. 💸\n⟡ ₊ .⋆ ✦⋆𓂁﹏  𓂃⋆.˚ ⊹⟡')
+    // Embed 1: Personal Info & Wealth Stats
+    const embed1 = new EmbedBuilder()
+    .setColor('#f6e59a')
+    .setTitle(`⌞ ⌝  <@${userId.toString()}>'s Profile ✨`)
+    .setDescription('Building wealth, trust, and empires starts from zero! 💸')
     .addFields(
+      // Financial Information
       {
-        name: 'ᯓ★𝑪𝒂𝒔𝒉', value: `<:kasiko_coin:1300141236841086977> ${Number(userData.cash.toFixed(1))}`, inline: true
+        name: '💰 Financial Details',
+        value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData.cash.toFixed(1))}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth}\n**Charity:** <:kasiko_coin:1300141236841086977> ${userData.charity}`,
+        inline: true
       },
-      {
-        name: 'ᯓ★𝐍𝐞𝐭𝐰𝐨𝐫𝐭𝐡', value: `<:kasiko_coin:1300141236841086977> ${userData.networth}`, inline: true
-      },
-      {
-        name: 'ᯓ★𝑺𝒑𝒐𝒖𝒔𝒆 ', value: `**${partner.username}**`, inline: true
-      },
-      {
-        name: 'ᯓ★𝑪𝒉𝒊𝒍𝒅𝒓𝒆𝒏 ', value: `**${userData.children.length === 0 ? "0": userData.children.join(" ")}**`, inline: true
-      },
-      {
-        name: 'ᯓ★𝐂𝐚𝐫𝐬', value: `${totalCars}`, inline: true
-      },
-      {
-        name: 'ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬', value: `${totalStructures}`, inline: true
-      },
-      {
-        name: 'ᯓ★Daily Rewards', value: `${dailyRewardsDetail}`, inline: true
-      },
-      {
-        name: 'ᯓ★Charity', value: `<:kasiko_coin:1300141236841086977>${userData.charity}`, inline: true
-      },
-      {
-        name: 'ᯓ★Trust Level', value: `${userData.trust}`, inline: true
-      }
-    )
-    .setTimestamp()
-    .setFooter({
-      text: 'Kasiko', iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
-    });
 
-    return embed;
+      // Rewards and Status
+      {
+        name: '🎉 Rewards & Status',
+        value: `**Daily Rewards:** ${dailyRewardsDetail}\n**Trust Level:** ${userData.trust}`,
+        inline: true
+      },
+
+      // Personal Information
+      {
+        name: '👪 Family Details',
+        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.children.length === 0 ? "0": userData.children.join(", ")}**`,
+        inline: true
+      }
+    );
+
+    // Embed 2: Property & Achievements
+    const embed2 = new EmbedBuilder()
+    .setTitle(`⌞ ⌝ Assets ✨`)
+    .setThumbnail(avatar)
+    .setDescription(
+      `Investing & securing assets is life's ultimate game. 💰\n\n` +
+      `**ᯓ★𝐂𝐚𝐫𝐬**: ${totalCars}\n` +
+      `**ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬**: ${totalStructures}\n`+
+      `⟡ ₊ .⋆ ✦⋆𓂁﹏ 𓂃⋆.˚⟡\n`
+    );
+
+    return [embed1,
+      embed2];
   } catch (error) {
-    console.error('Error creating user embed:', error);
+    return [];
+    console.error('Error creating user embeds:', error);
   }
 }
 
@@ -101,9 +101,11 @@ export async function profile(id, channel) {
     updateNetWorth(id);
     let userData = await getUserData(id);
 
-    let userProfile = await createUserEmbed(id, user.username, userData);
+    let userProfile = await createUserEmbed(id, user.username, userData, user.displayAvatarURL({
+      dynamic: true, size: 256
+    }));
     return await channel.send({
-      embeds: [userProfile]
+      embeds: userProfile
     });
   } catch (e) {
     console.error(e)

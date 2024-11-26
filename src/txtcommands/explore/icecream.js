@@ -260,16 +260,12 @@ export default {
           text: "Keep serving and upgrading to reach new heights!"
         });
 
-        message.channel.send({
-          embeds: [embed]
-        });
-
         const embed2 = new EmbedBuilder()
         .setColor('#f5bbaf')
         .setDescription(`**𝑆𝐻𝑂𝑃 𝐹𝐿𝐴𝑉𝑂𝑈𝑅𝑆**\n${playerShop.flavors.map(flavour => `**${flavour.icecream}** (${flavour.items})`).join(", ")}`);
 
         return message.channel.send({
-          embeds: [embed2]
+          embeds: [embed, embed2]
         });
       }
 

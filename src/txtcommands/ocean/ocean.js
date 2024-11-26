@@ -10,6 +10,12 @@ import {
   Helper
 } from '../../../helper.js';
 
+
+import {
+  EmbedBuilder
+} from 'discord.js';
+
+
 import {
   Ship
 } from '../battle/shipsHandler.js';
@@ -48,31 +54,65 @@ async function addToCollection(animal, message, zone = null) {
       probability = 40;
     }
 
-    if (randomChance > probability) {
-      cost = 800 + zonecost;
-      userData.cash -= cost;
-      await updateUser(message.author.id, userData);
+    // First embed - show the fishing attempt with suspense
+    const initialEmbed = new EmbedBuilder()
+      .setTitle("🎣 𝑭𝒊𝒔𝒉𝒊𝒏𝒈 𝒊𝒏 𝑷𝒓𝒐𝒈𝒓𝒆𝒔𝒔!")
+      .setDescription(`**${message.author.username}** cast their line... They're trying to catch a _${fish[0].rarity}_ fish! ⏳`)
+      .setColor('#0e2c42')
+      .setImage('https://harshtiwari47.github.io/kasiko-public/images/fishing.jpg') // fishing image
+      .setFooter({ text: "𝐻𝑜𝑙𝑑 𝑜𝑛, 𝑡ℎ𝑒 𝑓𝑖𝑠ℎ 𝑖𝑠 𝑜𝑛 𝑡ℎ𝑒 𝑙𝑖𝑛𝑒..." });
 
-      return message.channel.send(`🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝\n\n**@${message.author.username}** cast their line... but all they got was a soggy boot from <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉. Better luck next time! 🥾💦`);
-    }
+    // Send the first embed immediately
+    const fishingMessage = await message.channel.send({ embeds: [initialEmbed] });
 
-    if (!userData.aquaCollection || !userData.aquaCollection[animal]) {
-      if (!userData.aquaCollection) userData.aquaCollection = {};
-      userData.aquaCollection[animal] = {
-        level: 1,
-        animals: 1,
-        name: animal,
-        food: 0,
+    // Second embed - to update with result after suspense
+    let resultEmbed;
+
+    // Simulate a delay to build suspense before revealing the result
+    setTimeout(async () => {
+      if (randomChance > probability) {
+        cost = 800 + zonecost;
+        userData.cash -= cost;
+        await updateUser(message.author.id, userData);
+
+        // No luck message
+        resultEmbed = new EmbedBuilder()
+          .setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
+          .setDescription(`**${message.author.username}** 𝑐𝑎𝑠𝑡 𝑡ℎ𝑒𝑖𝑟 𝑙𝑖𝑛𝑒... 𝑏𝑢𝑡 𝑎𝑙𝑙 𝑡ℎ𝑒𝑦 𝑔𝑜𝑡 𝑤𝑎𝑠 𝑎 𝑠𝑜𝑔𝑔𝑦 𝑏𝑜𝑜𝑡 𝑓𝑟𝑜𝑚 <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉. 𝘉𝘦𝘵𝘵𝘦𝘳 𝘭𝘶𝘤𝘬 𝘯𝘦𝘹𝘵 𝘵𝘪𝘮𝘦! 🥾💦`)
+          .setColor('#620a0a')
+          .setThumbnail('https://harshtiwari47.github.io/kasiko-public/images/empty-boat.jpg'); // a boot image
+      } else {
+        if (!userData.aquaCollection || !userData.aquaCollection[animal]) {
+          if (!userData.aquaCollection) userData.aquaCollection = {};
+          userData.aquaCollection[animal] = {
+            level: 1,
+            animals: 1,
+            name: animal,
+            food: 0,
+          };
+        } else {
+          userData.aquaCollection[animal]["animals"] += 1;
+        }
+
+        userData.cash -= cost;
+        await updateUser(message.author.id, userData);
+
+        // Success message
+        resultEmbed = new EmbedBuilder()
+          .setTitle("🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝")
+          .setDescription(`**${message.author.username}** collected a _${fish[0].rarity}_ <:${fish[0].name}_fish:${fish[0].emoji}> **\`${animal}\`** ${zone? "in the **" + zone.toUpperCase() + "**": ""} from <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
+          .setColor('#58dbf7')
+          .setThumbnail(`https://cdn.discordapp.com/emojis/${fish[0].emoji}.png`); // Replace with actual image of the fish
       }
-    } else {
-      userData.aquaCollection[animal]["animals"] += 1;
-    }
 
-    userData.cash -= cost;
+      // Send the second embed with the result after the delay
+      return await fishingMessage.edit({ embeds: [initialEmbed, resultEmbed] });
 
-    await updateUser(message.author.id, userData);
+      // Delete the first message to keep things clean (optional)
+     // await fishingMessage.delete();
 
-    return message.channel.send(`🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝\n\n**@${message.author.username}** collected a _${fish[0].rarity}_ <:${fish[0].name}_fish:${fish[0].emoji}> **\`${animal}\`** ${zone? "in the **" + zone.toUpperCase() + "**": ""} from <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
+    }, 5000); // Delay of 3 seconds (adjust as needed)
+
   } catch (e) {
     console.error(e);
     return message.channel.send(`⚠️ Something went wrong. The 🐟 fish escaped.`);
