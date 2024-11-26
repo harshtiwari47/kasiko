@@ -172,11 +172,12 @@ export const updateUser = async (userId, user) => {
     // Save updated user to database
     const updatedUser = await user.save();
 
-    // Update Redis cache
+    await redisClient.del(`user:${userId}`);
+    /*// Update Redis cache
     await redisClient.set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
       EX: 180
     });
-
+    */
     return updatedUser; // Return the updated user
   } catch (error) {
     console.error('Error in transaction:', error);
