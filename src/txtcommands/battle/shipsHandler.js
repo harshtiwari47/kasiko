@@ -52,7 +52,7 @@ export const getUserShipsData = async (userId) => {
       })
     }
 
-    await redisClient.set(`user:${userId}:ships`, JSON.stringify(emptyShips.toObject()));
+    await redisClient.set(`user:${userId}:ships`, JSON.stringify(userships.toObject()));
 
     return userships
   } catch (error) {

@@ -3,6 +3,10 @@ import {
 } from "discord.js";
 import IceCreamShop from "../../../models/IceCream.js";
 import User from "../../../models/User.js";
+import {
+  getUserData,
+  updateUser
+} from '../../../database.js';
 
 const flavors = [{
   level: 1,
@@ -530,7 +534,7 @@ export default {
           user.cash += amount * 50;
           playerShop.loyaltyPoints -= amount;
 
-          await user.save();
+          await updateUser(userId, user);
           await playerShop.save();
 
           return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${amount * 50} cash!`);
