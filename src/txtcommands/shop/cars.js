@@ -28,40 +28,23 @@ const carItems = Object.values(items).filter(item => item.type === "car");
 
 // Embed builder
 function createCarEmbed(car) {
-  return new EmbedBuilder()
-  .setTitle(car.name)
-  .setDescription(car.description)
-  .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${car.image}.png`) // Use image
-  .addFields(
-    {
-      name: "ᯓ★ Price", value: `<:kasiko_coin:1300141236841086977>${car.price}`, inline: true
-    },
-    {
-      name: "ᯓ★ Original Price", value: `<:kasiko_coin:1300141236841086977>${car.originalPrice}`, inline: true
-    },
-    {
-      name: "ᯓ★ Category", value: car.category, inline: true
-    },
-    {
-      name: "ᯓ★ owners", value: `${car.owners}`, inline: true
-    },
-    {
-      name: "ᯓ★ Rarity", value: car.rarity, inline: true
-    },
-    {
-      name: "ᯓ★ Maintenance Cost", value: `<:kasiko_coin:1300141236841086977>${car.maintenance}`, inline: true
-    },
-    {
-      name: "ᯓ★ Emoji", value: `<:${car.id}:${car.emoji}>`, inline: true
-    },
-    {
-      name: "ᯓ★ Color", value: car.color, inline: true
-    }
-  )
-  .setFooter({
-    text: `ID: ${car.id} | \`kas car ${car.id}\``
-  })
-  .setColor("#0b4ee2");
+  return [new EmbedBuilder()
+    .setTitle(car.name)
+    .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${car.image}.png`) // Use image
+    .addFields(
+      {
+        name: `ᯓ★ Price`, value: `**Price:** <:kasiko_coin:1300141236841086977>${car.price}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${car.maintenance}`, inline: false
+      },
+      {
+        name: `ᯓ★ Car Details`, value: `**ID:** ${car.id}\n**Category:** ${car.category}\n**Owners:** ${car.owners}\n**Rarity:** ${car.rarity}\n**Color:** ${car.color}\n**Emoji:** <:${car.id}:${car.emoji}>
+        `, inline: false
+      }
+    )
+    .setFooter({
+      text: `ID: ${car.id} | \`kas car ${car.id}\``
+    })
+    .setColor("#0b4ee2"),
+    new EmbedBuilder().setDescription(car.description)]
 }
 
 export async function sendPaginatedCars(context) {
@@ -89,7 +72,7 @@ export async function sendPaginatedCars(context) {
     );
 
     const message = await context.channel.send({
-      embeds: [carEmbed],
+      embeds: carEmbed,
       components: [buttons],
       fetchReply: true,
     });
@@ -120,7 +103,7 @@ export async function sendPaginatedCars(context) {
       buttons.components[1].setDisabled(currentIndex === carItems.length - 1);
 
       return await message.edit({
-        embeds: [newCarEmbed],
+        embeds: newCarEmbed,
         components: [buttons],
       });
     });
@@ -144,7 +127,7 @@ export async function sendPaginatedCars(context) {
 }
 
 export async function viewCar(id, message) {
-  const car = Object.values(carItems).filter(item => item.id === id);
+  const car = Object.values(carItems).filter(item => item.id === id.toLowerCase());
 
   if (car.length === 0) {
     return message.channel.send(`⚠️ No items with this ID exist.`);
@@ -154,7 +137,7 @@ export async function viewCar(id, message) {
   const carEmbed = await createCarEmbed(car[0]);
 
   return message.channel.send({
-    embeds: [carEmbed]
+    embeds: carEmbed
   });
 }
 
@@ -163,33 +146,138 @@ export async function usercars(userId, message) {
     let userData = await getUserData(userId);
     const cars = userData.cars;
 
-    let Garrage = "";
-
     if (cars.length === 0) {
-      Garrage = "⚠️ User doesn't own any cars!";
-    } else {
-      cars.forEach((car, i) => {
-        let carDetails = Object.values(carItems).filter(item => item.id === car.id);
-        Garrage += `\nᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails[0].name}**\n**Owns**: ${car.items}\n**Car**: <:${car.id}_car:${carDetails[0].emoji}> \n**Purchased Cost**: ${car.purchasedPrice}\n`;
-      })
+      const embed = new EmbedBuilder()
+      .setColor(0xFFCC00)
+      .setTitle("No Cars Found!")
+      .setDescription("⚠️ User doesn't own any cars!");
+
+      return message.channel.send({
+        embeds: [embed]
+      });
     }
 
-    const embed = new EmbedBuilder()
-    .setColor('#6835fe')
-    .setTitle(`░ <@${userId}> 's GARRAGE ░ ✩`)
-    .setDescription(Garrage)
-    .setFooter({
-      text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
-    })
-    .setTimestamp();
+    // Split cars into chunks of 2
+    const chunkedCars = [];
+    const chunkSize = 2; // Two cars per embed
+    for (let i = 0; i < cars.length; i += chunkSize) {
+      chunkedCars.push(cars.slice(i, i + chunkSize));
+    }
 
-    return message.channel.send({
-      embeds: [embed]
+    // Create embeds for the car chunks
+    const embeds = chunkedCars.map((chunk, index) => {
+      const embeds = chunk.map((car, CarIndex) => {
+        const carDetails = Object.values(carItems).find(item => item.id === car.id);
+
+        const embed = new EmbedBuilder()
+        .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${carDetails.emoji}.png`)
+        .setColor('#6835fe');
+
+        // Add car details to embed
+        let description = '';
+        description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n**Owns**: ${car.items}\n**Car**: <:${car.id}_car:${carDetails.emoji}> \n**Purchased Cost**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice}\n\n`;
+
+        embed.setDescription(description.trim());
+
+        if (CarIndex === 0) {
+          embed.setTitle(`░ <@${userId}> 's GARRAGE ░ ✩`)
+        }
+
+        // Add footer with page numbers
+        if (CarIndex === (chunk.length - 1)) {
+          embed.setFooter({
+            text: `Page ${index + 1} of ${chunkedCars.length}`
+          });
+        }
+        return embed;
+      });
+
+      return embeds;
     });
+
+    let currentPage = 0;
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId('prev')
+      .setLabel('◀')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true),
+      new ButtonBuilder()
+      .setCustomId('next')
+      .setLabel('▶')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(chunkedCars.length === 1)
+    );
+
+    const sentMessage = await message.channel.send({
+      embeds: embeds[currentPage],
+      // Send the first embed
+      components: [row]
+    });
+
+    const collector = sentMessage.createMessageComponentCollector({
+      filter: interaction => interaction.user.id === userId || interaction.user.id !== userId,
+      time: 60000 // 1-minute timeout
+    });
+
+    collector.on('collect',
+      interaction => {
+        if (interaction.user.id !== userId) {
+          return interaction.reply({
+            content: "⚠️ Only the original user can interact with these buttons!",
+            ephemeral: true // Private reply
+          });
+        }
+
+        if (interaction.customId === 'next') {
+          currentPage++;
+        } else if (interaction.customId === 'prev') {
+          currentPage--;
+        }
+
+        const updatedRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('prev')
+          .setLabel('◀')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(currentPage === 0),
+          new ButtonBuilder()
+          .setCustomId('next')
+          .setLabel('▶')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(currentPage === embeds.length - 1)
+        );
+
+        interaction.update({
+          embeds: embeds[currentPage], // Update to the current page embed
+          components: [updatedRow]
+        });
+      });
+
+    collector.on('end',
+      () => {
+        const disabledRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('prev')
+          .setLabel('◀')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true),
+          new ButtonBuilder()
+          .setCustomId('next')
+          .setLabel('▶')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true)
+        );
+
+        sentMessage.edit({
+          components: [disabledRow]
+        }).catch(() => {});
+      });
+
   } catch (e) {
-    console.error(e)
-    return message.channel.send("⚠️ something went wrong while visiting **User's Garrage**");
+    console.error(e);
+    return message.channel.send("⚠️ Something went wrong while visiting **User's GARRAGE**");
   }
 }
 

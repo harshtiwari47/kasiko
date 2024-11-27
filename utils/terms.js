@@ -10,6 +10,10 @@ import {
   client
 } from "../bot.js";
 
+import {
+  createUser
+} from "../database.js";
+
 export const termsAndcondition = async (message) => {
   try {
     // Create the embed for Terms and Conditions
@@ -58,16 +62,26 @@ export const termsAndcondition = async (message) => {
 
     collector.on('collect', async (interaction) => {
       if (interaction.customId === 'accept_terms') {
-        await interaction.reply({
-          content: 'Thank you for accepting the Terms and Conditions!',
-          ephemeral: true
-        });
-        // Disable the button after interaction
-        const updatedButton = ButtonBuilder.from(button).setDisabled(true);
-        const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
-        return await sentMessage.edit({
-          components: [updatedRow]
-        });
+
+        let user = await createUser(message.author.id);
+        if (user) {
+          await interaction.reply({
+            content: 'Thank you for accepting the Terms and Conditions!',
+            ephemeral: true
+          });
+
+          // Disable the button after interaction
+          const updatedButton = ButtonBuilder.from(button).setDisabled(true);
+          const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
+          return await sentMessage.edit({
+            components: [updatedRow]
+          });
+        } else {
+          return message.reply({
+            content: '⚠️ Something went wrong! Please contact the support or try again',
+            ephemeral: true
+          });
+        }
         collector.stop();
       }
     });

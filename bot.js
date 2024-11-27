@@ -59,17 +59,26 @@ client.on('messageCreate', async (message) => {
     let prefix = "kas";
 
     if (!message.content.toLowerCase().startsWith(prefix)) return
-    
+
     if (mentionedBots.size > 0) return
-     
+
     // check user exist
     let userExistence = await userExists(message.author.id);
     if (!userExistence) {
       return termsAndcondition(message);
     }
 
+    const firstUserMention = message.mentions.users.first();
+
+    if (firstUserMention) {
+      let userExistenceMentioned = await userExists(firstUserMention.id);
+      if (!userExistenceMentioned) {
+        return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas terms`.");
+      }
+    }
+
     updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
-   
+
     // handle all types of text commands started with kas
     const args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
     const commandName = args[0].toLowerCase();

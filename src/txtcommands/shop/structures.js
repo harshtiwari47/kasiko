@@ -14,7 +14,9 @@ import {
   updateUser
 } from '../../../database.js';
 
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
 
 import dotenv from 'dotenv';
 dotenv.config();
@@ -27,134 +29,120 @@ const structureItems = Object.values(items).filter(item => item.type === "struct
 
 // Embed builder
 function createStructureEmbed(structure) {
-  return new EmbedBuilder()
-  .setTitle(structure.name)
-  .setDescription(structure.description)
-  .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure.image}.png`) // Use image
-  .addFields(
-    {
-      name: "ᯓ★ Price", value: `<:kasiko_coin:1300141236841086977>${structure.price}`, inline: true
-    },
-    {
-      name: "ᯓ★ Category", value: structure.category, inline: true
-    },
-    {
-      name: "ᯓ★ owners", value: `${structure.owners}`, inline: true
-    },
-    {
-      name: "ᯓ★ Rarity", value: structure.rarity, inline: true
-    },
-    {
-      name: "ᯓ★ Maintenance Cost", value: `<:kasiko_coin:1300141236841086977>${structure.maintenance}`, inline: true
-    },
-    {
-      name: "ᯓ★ Floors", value: `${structure.floors}`, inline: true
-    },
-    {
-      name: "ᯓ★ Amenities", value: `${structure.amenities.join(", ")}`, inline: true
-    },
-    {
-      name: "ᯓ★ Location", value: `${structure.location}`, inline: true
-    },
-    {
-      name: "ᯓ★ Color", value: structure.color, inline: true
-    }
-  )
-  .setFooter({
-    text: `ID: ${structure.id} | \`kas structure ${structure.id}\``
-  })
-  .setColor("#0b4ee2");
+  return [new EmbedBuilder()
+    .setTitle(structure.name)
+    .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure.image}.png`)
+    .addFields(
+      {
+        name: `ᯓ★ Price `, value: `
+        **Price:** <:kasiko_coin:1300141236841086977>${structure.price}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${structure.maintenance}
+        `, inline: false
+      },
+      {
+        name: `ᯓ★ Details`, value: `**ID:** ${structure.id}\n**Category:** ${structure.category}\n**Owners:** ${structure.owners}\n**Rarity:** ${structure.rarity}\n**Floors:** ${structure.floors}\n**Color:** ${structure.color}\n**Location:** ${structure.location}
+        `, inline: false
+      }
+    )
+    .setFooter({
+      text: `ID: ${structure.id} | \`kas structure ${structure.id}\``
+    })
+    .setColor("#0b4ee2"),
+    new EmbedBuilder().setDescription(structure.description).addFields( {
+      name: `ᯓ★ Amenities`, value: `${structure.amenities.join(", ")}`, inline: true
+    })]
 }
 
 export async function sendPaginatedStructures(context) {
-    try {
-        const user = context.user || context.author; // Handles both Interaction and Message
-        if (!user) return;
+  try {
+    const user = context.user || context.author; // Handles both Interaction and Message
+    if (!user) return;
 
-        // Validate structureItems
-        if (!structureItems || structureItems.length === 0) {
-            return context.channel.send("No structures are available to view!");
+    // Validate structureItems
+    if (!structureItems || structureItems.length === 0) {
+      return context.channel.send("No structures are available to view!");
+    }
+
+    let currentIndex = 0;
+    const structureEmbed = createStructureEmbed(structureItems[currentIndex]);
+
+    // Buttons for navigation
+    const buttons = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId("previousStructure")
+      .setLabel("Previous")
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true),
+      new ButtonBuilder()
+      .setCustomId("nextStructure")
+      .setLabel("Next")
+      .setStyle(ButtonStyle.Primary)
+    );
+
+    // Send initial message
+    const message = await context.channel.send({
+      embeds: structureEmbed,
+      components: [buttons],
+      fetchReply: true,
+    });
+
+    const collector = message.createMessageComponentCollector({
+      time: 180000, // 3 minutes
+    });
+
+    collector.on("collect", async (buttonInteraction) => {
+      if (buttonInteraction.user.id !== user.id) {
+        await buttonInteraction.reply({
+          content: "You can't interact with this button.",
+          ephemeral: true,
+        });
+        return; // Stop further handling for unauthorized users
+      }
+
+      try {
+        // Defer the interaction
+        await buttonInteraction.deferUpdate();
+
+        // Update index based on button click
+        if (buttonInteraction.customId === "nextStructure") {
+          currentIndex = Math.min(currentIndex + 1, structureItems.length - 1);
+        } else if (buttonInteraction.customId === "previousStructure") {
+          currentIndex = Math.max(currentIndex - 1, 0);
         }
 
-        let currentIndex = 0;
-        const structureEmbed = createStructureEmbed(structureItems[currentIndex]);
+        // Update embed and button state
+        const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
+        buttons.components[0].setDisabled(currentIndex === 0);
+        buttons.components[1].setDisabled(currentIndex === structureItems.length - 1);
 
-        // Buttons for navigation
-        const buttons = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("previousStructure")
-                .setLabel("Previous Structure")
-                .setStyle(ButtonStyle.Primary)
-                .setDisabled(true),
-            new ButtonBuilder()
-                .setCustomId("nextStructure")
-                .setLabel("Next Structure")
-                .setStyle(ButtonStyle.Primary)
-        );
+        return await message.edit({
+          embeds: newStructureEmbed,
+          components: [buttons],
+        });
+      } catch (err) {
+        console.error("Error during interaction handling:", err);
+      }
+    });
 
-        // Send initial message
-        const message = await context.channel.send({
-            embeds: [structureEmbed],
+    collector.on("end",
+      async () => {
+        try {
+          buttons.components.forEach((button) => button.setDisabled(true));
+          return await message.edit({
             components: [buttons],
-            fetchReply: true,
-        });
-
-        const collector = message.createMessageComponentCollector({
-            time: 180000, // 3 minutes
-        });
-
-        collector.on("collect", async (buttonInteraction) => {
-            if (buttonInteraction.user.id !== user.id) {
-                await buttonInteraction.reply({
-                    content: "You can't interact with this button.",
-                    ephemeral: true,
-                });
-                return; // Stop further handling for unauthorized users
-            }
-
-            try {
-                // Defer the interaction
-                await buttonInteraction.deferUpdate();
-
-                // Update index based on button click
-                if (buttonInteraction.customId === "nextStructure") {
-                    currentIndex = Math.min(currentIndex + 1, structureItems.length - 1);
-                } else if (buttonInteraction.customId === "previousStructure") {
-                    currentIndex = Math.max(currentIndex - 1, 0);
-                }
-
-                // Update embed and button state
-                const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
-                buttons.components[0].setDisabled(currentIndex === 0);
-                buttons.components[1].setDisabled(currentIndex === structureItems.length - 1);
-
-                return await message.edit({
-                    embeds: [newStructureEmbed],
-                    components: [buttons],
-                });
-            } catch (err) {
-                console.error("Error during interaction handling:", err);
-            }
-        });
-
-        collector.on("end", async () => {
-            try {
-                buttons.components.forEach((button) => button.setDisabled(true));
-                return await message.edit({
-                    components: [buttons],
-                });
-            } catch (err) {
-                console.error("Failed to edit message after collector ended:", err);
-            }
-        });
-    } catch (e) {
-        console.error("Error in sendPaginatedStructures:", e);
-        return context.channel.send("⚠️ Something went wrong while viewing the structures!");
-    }
+          });
+        } catch (err) {
+          console.error("Failed to edit message after collector ended:", err);
+        }
+      });
+  } catch (e) {
+    console.error("Error in sendPaginatedStructures:",
+      e);
+    return context.channel.send("⚠️ Something went wrong while viewing the structures!");
+  }
 }
 
 export async function viewStructure(id, message) {
-  const structure = Object.values(structureItems).filter(item => item.id === id);
+  const structure = Object.values(structureItems).filter(item => item.id === id.toLowerCase());
 
   if (structure.length === 0) {
     return message.channel.send(`⚠️ No items with this ID exist.`);
@@ -164,42 +152,135 @@ export async function viewStructure(id, message) {
   const structureEmbed = await createStructureEmbed(structure[0]);
 
   return message.channel.send({
-    embeds: [structureEmbed]
+    embeds: structureEmbed
   });
 }
+
 
 export async function userstructures(userId, message) {
   try {
     let userData = await getUserData(userId);
     const structures = userData.structures;
 
-    let Properties = "";
-
     if (structures.length === 0) {
-      Properties = "⚠️ User doesn't own any structures!";
-    } else {
-      structures.forEach((structure, i) => {
-        let propertyDetails = Object.values(structureItems).filter(item => item.id === structure.id);
-        Properties += `\nᯓ★ 𝑺𝒕𝒓𝒖𝒄𝒕𝒖𝒓𝒆𝒔: **${propertyDetails[0].name}**\n**Owns**: ${structure.items}\n**Structure**: [View Property](https://cdn.discordapp.com/app-assets/${APPTOKEN}/${propertyDetails[0].image}.png)\n**Purchased Cost**: ${structure.purchasedPrice}\n`;
-      })
+      const embed = new EmbedBuilder()
+      .setColor(0xFF0000)
+      .setDescription("⚠️ User doesn't own any structures!");
+
+      return message.channel.send({
+        embeds: [embed]
+      });
     }
 
-    const embed = new EmbedBuilder()
-    .setColor('#6835fe')
-    .setTitle(`░ <@${userId}> 's Properties ░ ✩`)
-    .setDescription(Properties)
-    .setFooter({
-      text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
-    })
-    .setTimestamp();
+    // Split structures into chunks of 2
+    const chunkedStructures = [];
+    const chunkSize = 2; // You want 2 structures per embed
+    for (let i = 0; i < structures.length; i += chunkSize) {
+      chunkedStructures.push(structures.slice(i, i + chunkSize));
+    }
 
-    return message.channel.send({
-      embeds: [embed]
+    // Create embeds from the chunked structures
+    const embeds = chunkedStructures.map((chunk, index) => {
+      const embeds = chunk.map((structure, ChunkIndex) => {
+        const propertyDetails = Object.values(structureItems).filter(item => item.id === structure.id);
+        const embed = new EmbedBuilder()
+        .setColor('#6835fe')
+        .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${propertyDetails[0].image}.png`)
+
+        // Add structure details to embed
+        let description = '';
+        description += `ᯓ★ 𝑵𝑨𝑴𝑬: **${propertyDetails[0].name}**\n**𝑶𝑾𝑵𝑺**: ${structure.items}\n**𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice}\n\n`;
+
+        embed.setDescription(description.trim());
+
+        if (ChunkIndex === 0) {
+          embed.setTitle(`<@${userId}> 's Properties 🏙️`);
+        }
+        // Add footer for page number only on the last embed
+        if (ChunkIndex === chunk.length - 1) {
+          embed.setFooter({
+            text: `Page ${index + 1} of ${chunkedStructures.length}`
+          });
+        }
+        return embed;
+      });
+      return embeds;
     });
+
+    let currentPage = 0;
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId('prev')
+      .setLabel('◀')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true),
+      new ButtonBuilder()
+      .setCustomId('next')
+      .setLabel('▶')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(chunkedStructures.length === 1)
+    );
+
+    const sentMessage = await message.channel.send({
+      embeds: embeds[currentPage], // Send the first embed
+      components: [row]
+    });
+
+    const collector = sentMessage.createMessageComponentCollector({
+      filter: interaction => interaction.user.id === userId, // Only the author can interact
+      time: 60000 // 1 minute timeout
+    });
+
+    collector.on('collect', interaction => {
+      if (interaction.customId === 'next') {
+        currentPage++;
+      } else if (interaction.customId === 'prev') {
+        currentPage--;
+      }
+
+      const updatedRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+        .setCustomId('prev')
+        .setLabel('◀')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(currentPage === 0),
+        new ButtonBuilder()
+        .setCustomId('next')
+        .setLabel('▶')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(currentPage === embeds.length - 1)
+      );
+
+      interaction.update({
+        embeds: embeds[currentPage], // Update to the current page embed
+        components: [updatedRow]
+      });
+    });
+
+    collector.on('end',
+      () => {
+        const disabledRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('prev')
+          .setLabel('◀')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true),
+          new ButtonBuilder()
+          .setCustomId('next')
+          .setLabel('▶')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true)
+        );
+
+        sentMessage.edit({
+          components: [disabledRow]
+        }).catch(() => {});
+      });
+
   } catch (e) {
-    console.error(e)
-    return message.channel.send("⚠️ something went wrong while visiting **User's Properties**");
+    console.error(e);
+    return message.channel.send("⚠️ Something went wrong while visiting **User's Properties**");
   }
 }
 
@@ -331,15 +412,24 @@ function handleStructureCommands(args, message) {
 export default {
   name: "structures",
   description: "View owned structures, check another user's structures, or view details of a specific structure by ID.",
-  aliases: ["buildings", "structure", "houses", "building", "house"],
+  aliases: ["buildings",
+    "structure",
+    "houses",
+    "building",
+    "house"],
   args: "[user] | <structure_id>",
   example: [
-    "structures",               // View the command user's structures
-    "structures @User",         // View structures of a mentioned user
+    "structures",
+    // View the command user's structures
+    "structures @User",
+    // View structures of a mentioned user
     "structures <structure_id>" // View details of a specific structure by ID
   ],
-  related: ["shop", "properties", "market"],
-  cooldown: 4000, //4s
+  related: ["shop",
+    "properties",
+    "market"],
+  cooldown: 4000,
+  //4s
   category: "Shop",
 
   // Execute the function when the command is called

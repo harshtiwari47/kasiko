@@ -212,7 +212,7 @@ export default {
   example: [
     "deposit/dep 500",
     "withdraw/with 200",
-    "bank status",
+    "bank account/status",
     "bank upgrade",
     "bank open (Open your bank account)",
   ],
@@ -250,6 +250,7 @@ export default {
         let subcommand = args[1] ? args[1].toLowerCase(): null;
         switch (subcommand) {
         case "status":
+        case "account":
           // Call a function to display the user's bank status
           return Bank.showStatus(userId, message);
 

@@ -55,7 +55,7 @@ export const createUser = async (userId) => {
       bondXP: 0,
       charity: 0,
       trust: 100,
-      exp: 0,
+      exp: 110,
       level: 1, // Starting level
       verified: false,
       acceptedTerms: true,
@@ -65,7 +65,7 @@ export const createUser = async (userId) => {
       marriedOn: null,
       joined: Date.now(), // Timestamp of joining
       dailyReward: null,
-      rewardStreak: 0,
+      rewardStreak: 1,
       stocks: {},
       cars: [],
       structures: [],
@@ -173,11 +173,11 @@ export const updateUser = async (userId, user) => {
     const updatedUser = await user.save();
 
     await redisClient.del(`user:${userId}`);
-    /*// Update Redis cache
+    // Update Redis cache
     await redisClient.set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
       EX: 180
     });
-    */
+
     return updatedUser; // Return the updated user
   } catch (error) {
     console.error('Error in transaction:', error);

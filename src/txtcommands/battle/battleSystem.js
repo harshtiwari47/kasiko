@@ -197,7 +197,7 @@ function gatherDetails(username, userId, isPlayer = false, message) {
 
       if (isPlayer && userData.cash < 1000) {
         return resolve( {
-          error: true, message: "⚠️ You don't have sufficient cash to start a battle."
+          error: true, message: "⚠️ You don't have sufficient cash to start a battle (min: 1000)."
         });
       }
 

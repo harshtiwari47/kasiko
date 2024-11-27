@@ -2,7 +2,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  ComponentType
 } from 'discord.js';
 import {
   getUserData,
@@ -30,26 +31,7 @@ export const sendConfirmation = async (message, userId, amount, recipient) => {
   )
   .setTimestamp();
 
-  // Action row with buttons
-  const row = new ActionRowBuilder()
-  .addComponents(
-    new ButtonBuilder()
-    .setCustomId('confirmgiving')
-    .setLabel('Yes')
-    .setStyle(ButtonStyle.Success),
-    new ButtonBuilder()
-    .setCustomId('cancelgiving')
-    .setLabel('No')
-    .setStyle(ButtonStyle.Danger)
-  );
-
-  // Send the confirmation message and return it
-  const replyMessage = await message.channel.send({
-    embeds: [embed],
-    components: [row]
-  });
-
-  return replyMessage; // Return the message for use in `give`
+  return embed; // Return the message for use in `give`
 };
 
 export async function give(message, userId, amount, recipientId) {
@@ -61,6 +43,9 @@ export async function give(message, userId, amount, recipientId) {
     }
 
     let userData = await getUserData(userId);
+    let recipientData = await getUserData(recipientId);
+
+    console.log(recipientData, recipientId)
 
     if (userData.cash < amount) {
       return message.channel.send(
@@ -68,23 +53,44 @@ export async function give(message, userId, amount, recipientId) {
       );
     }
 
-    const replyMessage = await sendConfirmation(message, userId, amount, recipientId);
+    const embed = await sendConfirmation(message, userId, amount, recipientId);
 
-    // Create a filter to ensure only the original user interacts
-    const filter = (i) =>
-    i.user.id === message.author.id &&
-    (i.customId === "confirmgiving" || i.customId === "cancelgiving");
+    // Action row with buttons
+    const row = new ActionRowBuilder()
+    .addComponents(
+      new ButtonBuilder()
+      .setCustomId('confirmgiving')
+      .setLabel('Yes')
+      .setStyle(ButtonStyle.Success),
+      new ButtonBuilder()
+      .setCustomId('cancelgiving')
+      .setLabel('No')
+      .setStyle(ButtonStyle.Danger)
+    );
+
+    // Send the confirmation message and return it
+    const replyMessage = await message.channel.send({
+      embeds: [embed],
+      components: [row]
+    });
+
 
     // Create the collector
     const collector = replyMessage.createMessageComponentCollector({
-      filter,
-      time: 15000, // 15 seconds
+      componentType: ComponentType.Button,
+      time: 60000, // 15 seconds
     });
 
     // Handle button interactions
     collector.on("collect", async (interaction) => {
       try {
-        // Disable buttons after a choice
+        if (interaction.user.id !== message.author.id) {
+          return await interaction.reply({
+            content: "⚠️ You cannot interact with this button.",
+            ephemeral: true,
+          });
+        }
+
         const rowDisabled = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
           .setCustomId("confirmgiving")
@@ -99,49 +105,48 @@ export async function give(message, userId, amount, recipientId) {
         );
 
         if (interaction.customId === "confirmgiving") {
-          // Fetch user and recipient data
-          let userData = await getUserData(userId);
-          let recipientData = await getUserData(recipientId);
+          // Defer and then update
+          await interaction.deferUpdate();
 
-          if (userData.cash < amount) {
-            return await interaction.update({
-              content:
-              "⚠️🧾 You no longer have enough <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to complete this transaction.",
-              components: [rowDisabled],
-            });
-          }
-
-          // Update balances
+          // Perform logic for transferring cash
           userData.cash -= Number(amount);
-          userData.charity = (userData.charity || 0) + Number(amount);
-          recipientData.cash = (recipientData.cash || 0) + Number(amount);
-
+          recipientData.cash += Number(amount);
           await updateUser(userId, userData);
           await updateUser(recipientId, recipientData);
 
-          return await interaction.update({
-            content: `🧾 **<@${userId}>** has generously sent <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉 to **<@${recipientId}>**. Your support helps each other level up—keep the teamwork!`,
+          // Send confirmation
+          await interaction.editReply({
+            content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount}** to **<@${recipientId}>**! 💸 Keep spreading the wealth!`,
+            embeds: [embed.setColor('#81f1a6')],
             components: [rowDisabled],
           });
+
+          collector.stop();
         } else if (interaction.customId === "cancelgiving") {
-          return await interaction.update({
-            content: "Cash transfer cancelled!",
+          await interaction.deferUpdate();
+          await interaction.editReply({
+            content: "❌ Transaction cancelled.",
             components: [rowDisabled],
           });
+          collector.stop();
         }
       } catch (err) {
-        console.error("Error handling button interaction:", err);
-        return await interaction.reply({
-          content: "⚠️ Something went wrong. Please try again.",
-          ephemeral: true,
-        });
+        console.error("Error handling interaction:", err);
+        if (interaction.replied || interaction.deferred) {
+          await message.channel.send(`⚠️ An error occurred during the transaction!`)
+        } else {
+          await interaction.update({
+            content: "⚠️ An error occurred. Please try again.",
+            ephemeral: true,
+          });
+        }
       }
     });
 
     // Handle collector end
     collector.on("end",
-      async (_, reason) => {
-        if (reason === "time") {
+      async collected => {
+        if (collected.size === 0) {
           try {
             const rowDisabled = new ActionRowBuilder().addComponents(
               new ButtonBuilder()
@@ -167,7 +172,7 @@ export async function give(message, userId, amount, recipientId) {
   } catch (e) {
     console.error("Error in give function:",
       e);
-    return await message.channel.send(
+    return message.channel.send(
       "⚠️ Something went wrong while processing the transaction. Please try again."
     );
   }

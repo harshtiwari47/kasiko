@@ -21,9 +21,11 @@ import {
 } from '../../../database.js';
 
 import {
-  EmbedBuilder
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
 } from 'discord.js';
-
 
 export const allShips = () => {
   const data = fs.readFileSync(shipsDatabasePath, 'utf-8');
@@ -41,7 +43,7 @@ export const getUserShipsData = async (userId) => {
       return data;
     }
 
-    const userships = await UserShips.findOne({
+    let userships = await UserShips.findOne({
       id: userId
     });
 
@@ -66,8 +68,9 @@ export const modifyUserShips = async (userId, data) => {
   try {
     // Save the updated user document
     const updatedData = await data.save();
-
+    await redisClient.del(`user:${userId}:ships`);
     await redisClient.set(`user:${userId}:ships`, JSON.stringify(updatedData.toObject()));
+
     return updatedData; // Return the updated user
   } catch (error) {
     console.error('Error in transaction while saving user\'s ships data:', error);
@@ -77,12 +80,13 @@ export const modifyUserShips = async (userId, data) => {
 
 export const shipsData = Object.values(allShips());
 
+
 async function showUserShips(userId, message) {
   try {
     const userData = await getUserShipsData(userId);
-    let user = await client.users.fetch(userId) || {
-      "username": "Failed to Fetch"
-    }
+    const user = await message.client.users.fetch(userId).catch(() => ({
+      username: "Failed to Fetch"
+    }));
 
     const ships = userData.ships.map(ship => {
       const shipDetails = shipsData.find(shipInfo => shipInfo.id === ship.id);
@@ -99,27 +103,130 @@ async function showUserShips(userId, message) {
       };
     });
 
-    const sendmessage = ships.map(({
-      id,
-      active,
-      emoji,
-      name,
-      durability,
-      dmg,
-      health,
-      rarity,
-      level
-    }) =>
-      `**<:${id}:${emoji}> ${name}** ${active ? "**⚓ ᗩᑕTIᐯE **": ""}\n` +
-      `> **𝐷𝑢𝑟𝑎𝑏𝑖𝑙𝑖𝑡𝑦:** ${durability} | **𝐷𝑚𝑔:** ${dmg} | **𝐻𝑒𝑎𝑙𝑡ℎ :** ${health} | **𝐿𝑣𝑙**: ${level}\n` +
-      `> **Rarity:** ${rarity} | **ID:** ${id}\n` +
-      ' '
-    ).join('\n');
+    if (!ships.length) {
+      const embed = new EmbedBuilder()
+      .setColor(0x1E90FF)
+      .setTitle(`⚓🏴‍☠️ ${user.username}'s 𝐒𝐡𝐢𝐩𝐬 ⛵`)
+      .setDescription("No ships found! Ships can be found in oceans while catching.\n˙✧˖° 🌊⋆｡˚꩜");
 
-    message.channel.send(`⚓🏴‍☠️ **${user.username}'s 𝐒𝐡𝐢𝐩𝐬** ⛵\n\n${sendmessage || "No ships found! Ships can be found in oceans while catching."} \n˙✧˖° 🌊⋆｡˚꩜`);
+      return message.channel.send({
+        embeds: [embed]
+      });
+    }
+
+    // Split ships into chunks of 3
+    const chunkedShips = [];
+    for (let i = 0; i < ships.length; i += 3) {
+      chunkedShips.push(ships.slice(i, i + 3));
+    }
+
+    const embeds = chunkedShips.map((shipChunk, index) => {
+      const description = shipChunk.map(({
+        id,
+        active,
+        emoji,
+        name,
+        durability,
+        dmg,
+        health,
+        rarity,
+        level
+      }) =>
+        `**<:${id}:${emoji}> ${name}** ${active ? "**⚓ ᗩᑕTIᐯE**": ""}\n` +
+        `> **Durability:** ${durability} | **Dmg:** ${dmg} | **Health:** ${health} | **Lvl:** ${level}\n` +
+        `> **Rarity:** ${rarity} | **ID:** ${id}\n`
+      ).join('\n');
+
+      return new EmbedBuilder()
+      .setColor(0x1e90ff)
+      .setDescription(description.trim())
+      .setFooter({
+        text: `Page ${index + 1} of ${chunkedShips.length} | \`kas help ships\``
+      });
+    });
+
+    let currentPage = 0;
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId('prev')
+      .setLabel('◀')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true),
+      new ButtonBuilder()
+      .setCustomId('next')
+      .setLabel('▶')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(chunkedShips.length === 1)
+    );
+
+    const embedImage = new EmbedBuilder()
+    .setColor(0x1e54ff)
+    .setTitle(`⚓ **${user.username}'**s 𝐒𝐡𝐢𝐩𝐬`)
+    .setDescription('ˢʰⁱᵖˢ ᶜᵃⁿ ᵇᵉ ᶠᵒᵘⁿᵈ ʷʰⁱˡᵉ ᶠⁱˢʰⁱⁿᵍ ⁱⁿ ᵗʰᵉ ᵒᶜᵉᵃⁿ! 🏴‍☠️ ')
+    .setThumbnail('https://cdn.discordapp.com/emojis/1304674341849665626.png');
+
+    const sentMessage = await message.channel.send({
+      embeds: [embedImage, embeds[currentPage]],
+      components: [row]
+    });
+
+    const collector = sentMessage.createMessageComponentCollector({
+      filter: interaction => interaction.user.id === message.author.id,
+      time: 60000 // 1 minute
+    });
+
+    collector.on('collect', interaction => {
+      if (interaction.customId === 'next') {
+        currentPage++;
+      } else if (interaction.customId === 'prev') {
+        currentPage--;
+      }
+
+      const updatedRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+        .setCustomId('prev')
+        .setLabel('◀')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(currentPage === 0),
+        new ButtonBuilder()
+        .setCustomId('next')
+        .setLabel('▶')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(currentPage === embeds.length - 1)
+      );
+
+      interaction.update({
+        embeds: [embedImage, embeds[currentPage]],
+        components: [updatedRow]
+      });
+    });
+
+    collector.on('end',
+      () => {
+        const disabledRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('prev')
+          .setLabel('◀')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true),
+          new ButtonBuilder()
+          .setCustomId('next')
+          .setLabel('▶')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true)
+        );
+
+        sentMessage.edit({
+          components: [disabledRow]
+        }).catch(() => {});
+      });
+
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while fetching user's ships.");
+    message.channel.send({
+      content: "⚠️ Something went wrong while fetching user's ships."
+    });
   }
 }
 

@@ -17,43 +17,150 @@ import {
 
 const aquaData = readAquaticData();
 
+
 export async function viewCollection(userId, channel) {
   try {
     let userData = await getUserData(userId);
     const userCollection = userData.aquaCollection;
 
-    let collection = "";
+    let collection = [];
 
     if (Object.values(userCollection.toJSON()).length === 1) {
-      collection = "⚠️ User doesn't have any 🦦fish!";
+      const embed = new EmbedBuilder()
+      .setColor(0x0099FF)
+      .setDescription("⚠️ User doesn't have any 🦦fish!");
+
+      return channel.send({
+        embeds: [embed]
+      });
     } else {
       Object.values(userCollection.toJSON()).forEach((fish, i) => {
         if (fish.name) {
           let fishDetails = aquaData.filter(item => item.name === fish.name);
-          collection += `\nᯓ★ **${fish.name}** <:${fish.name}_aqua:${fishDetails[0].emoji}> (${fish.animals}) **${fishDetails[0].rarity.substring(0, 1).toUpperCase()}**\n**Lvl**: ${fish.level} **Dmg**: ${fishDetails[0].damage} **CPF**: ${fishDetails[0].feedCost} **CPS**: ${fishDetails[0].sellAmount}\n`;
+          collection.push({
+            name: fish.name,
+            emoji: fishDetails[0].emoji,
+            rarity: fishDetails[0].rarity,
+            level: fish.level,
+            damage: fishDetails[0].damage,
+            feedCost: fishDetails[0].feedCost,
+            sellAmount: fishDetails[0].sellAmount
+          });
         }
-      })
+      });
     }
 
-    const embed = new EmbedBuilder()
-    .setColor('#6835fe')
-    .setTitle(`░ <@${userId}> 's Aquatic Collection░ ✩`)
-    .setDescription(collection)
-    .setFooter({
-      text: `Kasiko`,
-      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
-    })
-    .setTimestamp();
+    // Split the collection into chunks of 3 fishes per embed
+    const chunkedCollection = [];
+    for (let i = 0; i < collection.length; i += 3) {
+      chunkedCollection.push(collection.slice(i, i + 3));
+    }
 
-    return channel.send({
-      embeds: [embed]
+    // Embeds for each chunk of 3 fishes
+    const embeds = chunkedCollection.map((chunk, index) => {
+      let embeds = chunk.map((fish, fishIndex) => {
+        const embed = new EmbedBuilder()
+        .setColor('#6835fe')
+        .setThumbnail(`https://cdn.discordapp.com/emojis/${fish.emoji}.png`)
+
+        // Add fish details to embed description
+        let description = '';
+        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> (${fish.rarity.substring(0, 1).toUpperCase()})\n`;
+        description += `**Lvl**: ${fish.level} **Dmg**: ${fish.damage}\n**CPF**: ${fish.feedCost} **CPS**: ${fish.sellAmount}\n\n`;
+        embed.setDescription(description.trim());
+
+        if (fishIndex === 0) {
+          embed.setTitle(`**<@${userId}>**'s 𝐴𝑞𝑢𝑎𝑡𝑖𝑐 𝐶𝑜𝑙𝑙𝑒𝑐𝑡𝑖𝑜𝑛 🌊`)
+        }
+        // Add the page number to the footer
+        if (fishIndex === chunk.length - 1) {
+          embed.setFooter({
+            text: `Page ${index + 1} of ${chunkedCollection.length}`
+          });
+        }
+
+        return embed
+      });
+
+      return embeds;
     });
+
+    let currentPage = 0;
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId('prev')
+      .setLabel('◀')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true),
+      new ButtonBuilder()
+      .setCustomId('next')
+      .setLabel('▶')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(chunkedCollection.length === 1)
+    );
+
+    const sentMessage = await channel.send({
+      embeds: embeds[currentPage], // Send first embed
+      components: [row]
+    });
+
+    const collector = sentMessage.createMessageComponentCollector({
+      filter: interaction => interaction.user.id === userId, // Only the author can interact
+      time: 60000 // 1 minute timeout
+    });
+
+    collector.on('collect', interaction => {
+      if (interaction.customId === 'next') {
+        currentPage++;
+      } else if (interaction.customId === 'prev') {
+        currentPage--;
+      }
+
+      const updatedRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+        .setCustomId('prev')
+        .setLabel('◀')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(currentPage === 0),
+        new ButtonBuilder()
+        .setCustomId('next')
+        .setLabel('▶')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(currentPage === embeds.length - 1)
+      );
+
+      interaction.update({
+        embeds: embeds[currentPage], // Send updated embed with the current page
+        components: [updatedRow]
+      });
+    });
+
+    collector.on('end',
+      () => {
+        const disabledRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('prev')
+          .setLabel('◀')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true),
+          new ButtonBuilder()
+          .setCustomId('next')
+          .setLabel('▶')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true)
+        );
+
+        sentMessage.edit({
+          components: [disabledRow]
+        }).catch(() => {});
+      });
+
   } catch (e) {
-    console.error(e)
-    return channel.send("⚠️ something went wrong while visiting **User's Collection**");
+    console.error(e);
+    return channel.send("⚠️ Something went wrong while visiting **User's Collection**");
   }
 }
-
 
 export async function viewAquarium(userId, channel) {
   try {
