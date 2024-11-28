@@ -56,7 +56,7 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
 
   try {
     const svgImage = await loadImage('data:image/svg+xml;base64,' + Buffer.from(crown).toString('base64'));
-    ctx.drawImage(svgImage, 220, padding + 100, 50, 50);
+    ctx.drawImage(svgImage, 240, padding + 75, 50, 50);
 
     const profileImage = await loadImage(pfp);
     const imageSize = 130;
@@ -64,7 +64,7 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
     const buffer = canvas.toBuffer('image/png');
 
     const attachment = new AttachmentBuilder(buffer, {
-      name: 'kasiko-level-up-canvas-image-v1.png'
+      name: 'kasiko-level-up-canvas-image-v0.png'
     });
 
     return attachment; // This will now return the attachment correctly
@@ -94,7 +94,7 @@ export async function updateExpPoints(content, user, channel) {
     }
 
     // Calculate experience required for the next level
-    const expRequiredNextLvl = (Math.pow(lvl + 1, 2) - Math.pow(lvl, 2)) * threshold;
+    const expRequiredNextLvl = (Math.pow(lvl + 1, 2) * threshold) - Number(userData.exp);
 
     await updateUser(user.id, userData);
 
