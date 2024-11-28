@@ -54,8 +54,8 @@ export const createUser = async (userId) => {
       roses: 0,
       bondXP: 0,
       charity: 0,
-      trust: 100,
-      exp: 110,
+      trust: 200,
+      exp: 120,
       level: 1, // Starting level
       verified: false,
       acceptedTerms: true,
@@ -120,7 +120,7 @@ export const getUserData = async (userId) => {
     // Cache user data in external Redis
     if (user) {
       await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
-        EX: 180
+        EX: 20
       }); // Cache for 3 min
     }
     return user;
@@ -146,7 +146,7 @@ export const userExists = async (userId) => {
     if (user) {
       // Cache the user data
       await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
-        EX: 180
+        EX: 20
       });
       return true;
     }
@@ -175,7 +175,7 @@ export const updateUser = async (userId, user) => {
     await redisClient.del(`user:${userId}`);
     // Update Redis cache
     await redisClient.set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
-      EX: 180
+      EX: 20
     });
 
     return updatedUser; // Return the updated user
@@ -202,7 +202,7 @@ export const userAcceptedTerms = async (userId) => {
 
     // Cache user data in Redis
     await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
-      EX: 180
+      EX: 20
     });
     return user.acceptedTerms || false;
   } catch (error) {
