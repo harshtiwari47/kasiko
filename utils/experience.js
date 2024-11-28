@@ -85,7 +85,7 @@ function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl) {
     const buffer = canvas.toBuffer('image/png');
 
     const attachment = new AttachmentBuilder(buffer, {
-      name: 'level-up-image.png'
+      name: 'level-up-canvas-image.png'
     });
     return attachment;
   })
@@ -120,13 +120,12 @@ export async function updateExpPoints(content, user, channel) {
     await updateUser(user.id, userData);
 
     if (!lvlUp) {
-      // Generate the image for the level-up
       // const attachment = await generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl);
       const attachment = await generateLevelUpImage(user, 1000, 2, 1000);
 
       // Send the image as an attachment
       if (attachment) {
-        channel.send({
+       return channel.send({
           files: [attachment]
         });
       }
