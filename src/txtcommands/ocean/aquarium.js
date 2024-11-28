@@ -167,7 +167,6 @@ export async function viewAquarium(userId, channel) {
     let userData = await getUserData(userId);
     const aquarium = userData.aquarium || [];
 
-    const decorations = "🌿🐚🌊 ✦⋆  ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖";
     const filledAquarium = aquarium.length
     ? aquarium.map(fish => {
       const fishDetails = aquaData.filter(
@@ -178,13 +177,13 @@ export async function viewAquarium(userId, channel) {
 
     // Create a border around the aquarium content
     const aquariumDisplay = `┌─────────────────────┐\n` +
-    `│ ${filledAquarium} °゜\n` + // Fill the aquarium content
-    `│🪨🌱🪨🪨🌿🌱🪨🪨\n` + // Extra padding line
+    `│ ${filledAquarium} °゜\n\n` + // Fill the aquarium content
+    `│🌊🌊🌊\n` + // Extra padding line
     `└─────────────────────┘`;
 
     const aquariumEmbed = new EmbedBuilder()
     .setTitle(`<:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎`)
-    .setDescription(`${aquariumDisplay}\n\n${decorations}`)
+    .setDescription(`${aquariumDisplay}`)
     .setColor('#00BFFF'); // Choose a color for the embed
 
     // Send the embed

@@ -120,9 +120,10 @@ export const getUserData = async (userId) => {
     // Cache user data in external Redis
     if (user) {
       await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
-        EX: 20
+        EX: 60
       }); // Cache for 3 min
     }
+
     return user;
   } catch (error) {
     console.error('Error fetching user data:', error);
@@ -133,8 +134,8 @@ export const getUserData = async (userId) => {
 // Function to check if a user exists in the database
 export const userExists = async (userId) => {
   try {
-    // Check Redis cache
-    const cachedUser = await redisClient.get(`user:${userId}`);
+    // Check Redis exists cache
+    const cachedUser = await redisClient.get(`user:${userId}:exists`);
     if (cachedUser) {
       return true;
     }
@@ -145,8 +146,8 @@ export const userExists = async (userId) => {
     });
     if (user) {
       // Cache the user data
-      await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
-        EX: 20
+      await redisClient.set(`user:${userId}:exists`, JSON.stringify(true), {
+        EX: 3600
       });
       return true;
     }
@@ -169,45 +170,31 @@ export const updateUser = async (userId, user) => {
     user.cash = Number(user.cash.toFixed(1));
     user.networth = Number(user.networth.toFixed(1));
 
-    // Save updated user to database
-    const updatedUser = await user.save();
+    const updates = {};
+    user.modifiedPaths().forEach((path) => {
+      updates[path] = user[path];
+    });
 
-    await redisClient.del(`user:${userId}`);
+    // Save updated user to database
+    const updatedUser = await User.findByIdAndUpdate(
+      user["_id"],
+      {
+        $set: updates
+      },
+      {
+        new: true
+      }
+    );
+
     // Update Redis cache
     await redisClient.set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
-      EX: 20
+      EX: 60
     });
 
     return updatedUser; // Return the updated user
   } catch (error) {
     console.error('Error in transaction:', error);
     return 'Error in transaction';
-  }
-};
-
-export const userAcceptedTerms = async (userId) => {
-  try {
-    // Check Redis cache
-    const cachedUser = await redisClient.get(`user:${userId}`);
-    if (cachedUser) {
-      const user = JSON.parse(cachedUser);
-      return user.acceptedTerms || false;
-    }
-
-    // Fetch from database
-    const user = await User.findOne({
-      id: userId
-    });
-    if (!user) return false;
-
-    // Cache user data in Redis
-    await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
-      EX: 20
-    });
-    return user.acceptedTerms || false;
-  } catch (error) {
-    console.error('Error checking user accepted terms:', error);
-    return false;
   }
 };
 

@@ -23,11 +23,19 @@ export async function slots(id, amount, channel) {
     }
 
     // Slots symbols
-    const symbols = ['🍒',
+    const allSymbols = ['🍒',
       '🍋',
       '🍊',
       '🍇',
-      '💎'];
+      '💎',
+      '<:kasiko_coin:1300141236841086977>'];
+
+    const symbols = Array.from({
+      length: 3
+    }, () =>
+      allSymbols[Math.floor(Math.random() * allSymbols.length)]
+    );
+
 
     // Initial placeholders and message
     let spinResult = ['❓',
@@ -55,7 +63,7 @@ export async function slots(id, amount, channel) {
 
     // Simulate locking each position one by one
     for (let i = 0; i < spinResult.length; i++) {
-      for (let j = 0; j < 5; j++) {
+      for (let j = 0; j < 6; j++) {
         // Spin animation for this position
         spinResult[i] = symbols[Math.floor(Math.random() * symbols.length)];
         const updatedBackground = `
@@ -69,7 +77,7 @@ export async function slots(id, amount, channel) {
         await spinningMessage.edit(
           `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!`
         );
-        await new Promise(resolve => setTimeout(resolve, 250));
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
       // Lock the current position
       spinResult[i] = finalResult[i];
@@ -96,16 +104,6 @@ export async function slots(id, amount, channel) {
       return spinningMessage.edit(
         `🎰 **${guild.user.username}, you hit a 🏆 JACKPOT!** 🎉\n` +
         `**Congratulations!** You won <:kasiko_coin:1300141236841086977> **${winAmount}** 𝑪𝒂𝒔𝒉. 🎊\n` +
-        `**Final Spin result:** ${finalResult.join(' | ')}\n`
-      );
-    } else if (finalResult[0] === finalResult[1] || finalResult[1] === finalResult[2] || finalResult[0] === finalResult[2]) {
-      // Small win: any two match
-      winAmount = Number(amount * 0.5).toFixed(0);
-      userData.cash += Number(winAmount);
-      await updateUser(id, userData);
-      return spinningMessage.edit(
-        `🎰 **${guild.user.username}, you got a small win!** 🎉\n` +
-        `**Well done!** You won <:kasiko_coin:1300141236841086977> **${winAmount}** 𝑪𝒂𝒔𝒉.\n` +
         `**Final Spin result:** ${finalResult.join(' | ')}\n`
       );
     } else {
