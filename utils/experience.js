@@ -43,9 +43,9 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
   ctx.font = 'bold 55px Tahoma';
   ctx.fillText(`⁠ New Level ${lvl}⁠`, canvas.width / 1.6, padding + 100);
   ctx.font = 'italic 34px Tahoma';
-  ctx.fillText(`✷⁠ You've received $${lvlUpReward} cash!`, canvas.width / 2.48, padding + 240);
+  ctx.fillText(`✓⁠ You've received $${lvlUpReward} cash!`, canvas.width / 2.48, padding + 240);
   ctx.font = 'italic 27px Tahoma';
-  ctx.fillText(`✷⁠ Experience required for next level: ${expRequiredNextLvl}`, canvas.width / 2.4, padding + 300);
+  ctx.fillText(`✓⁠ Experience required for next level: ${expRequiredNextLvl}`, canvas.width / 2.4, padding + 300);
 
   ctx.beginPath();
   ctx.arc(canvas.width - padding - 20, canvas.height - padding - 40, 100, 0, 2 * Math.PI);
@@ -56,7 +56,7 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
 
   try {
     const svgImage = await loadImage('data:image/svg+xml;base64,' + Buffer.from(crown).toString('base64'));
-    ctx.drawImage(svgImage, 160, padding + 75, 50, 50);
+    ctx.drawImage(svgImage, 220, padding + 75, 50, 50);
 
     const profileImage = await loadImage(pfp);
     const imageSize = 130;
@@ -64,7 +64,7 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
     const buffer = canvas.toBuffer('image/png');
 
     const attachment = new AttachmentBuilder(buffer, {
-      name: 'kasik-level-up-canvas-image.png'
+      name: 'kasiko-level-up-canvas-image.png'
     });
 
     return attachment; // This will now return the attachment correctly
@@ -107,7 +107,7 @@ export async function updateExpPoints(content, user, channel) {
       // Send the image as an attachment
       if (attachment) {
         return await channel.send({
-          content: `**${user.username}**, congratulations! You've leveled up! 🎉`,
+          content: `𓇼 **${user.username}**, congratulations! You've leveled up! 🎉`,
           files: [attachment]
         });
       }
