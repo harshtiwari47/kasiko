@@ -3,19 +3,25 @@ import {
   updateUser
 } from '../../../database.js';
 
-import { Helper } from '../../../helper.js';
+import {
+  Helper
+} from '../../../helper.js';
 
 export async function guess(id, amount, number, channel) {
   try {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id)
-    
+
     if (!Number.isInteger(Number(number)) || Number(number) <= 0 || Number(number) > 10) {
       return channel.send("⚠️ Please guess integer number between 1-10.");
-    } else if (userData.cash < 500) {
-      return channel.send("⚠️ You don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **500** to play **Guess The Number**.");
-    } else if (amount < 500) {
-      return channel.send("⚠️ minimum cash to play **Guess The Number** is <:kasiko_coin:1300141236841086977> **500**.");
+    } else if (userData.cash < 1) {
+      return channel.send("⚠️ You don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1** to play **Guess The Number**.");
+    } else if (amount < 1) {
+      return channel.send("⚠️ minimum cash to play **Guess The Number** is <:kasiko_coin:1300141236841086977> **1**.");
+    }
+
+    if (userData.cash < Number(amount)) {
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount}** cash.`);
     }
 
     let random = Math.floor(Math.random() * 10) + 1;
@@ -42,11 +48,15 @@ export async function guess(id, amount, number, channel) {
 export default {
   name: "guess",
   description: "Make a guess in a cash-betting game. Try to guess a number between 1 and 10.",
-  aliases: ["g", "guessno", "gn"],
+  aliases: ["g",
+    "guessno",
+    "gn"],
   args: "<amount> <number>",
   example: "guess 500 7",
-  related: ["tosscoin", "cash"],
-  cooldown: 5000, // 5 seconds cooldown
+  related: ["tosscoin",
+    "cash"],
+  cooldown: 5000,
+  // 5 seconds cooldown
   category: "Games",
 
   // Main function to execute the guessing game logic
@@ -57,9 +67,14 @@ export default {
       const guessedNumber = parseInt(args[2]);
 
       // Ensure amount and guessed number are within valid ranges
-      if (amount < 500) {
-        return message.channel.send("⚠️ Minimum bet amount is 500.");
+      if (amount < 1) {
+        return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
       }
+
+      if (amount > 200000) {
+        return channel.send(`⚠️ **${message.author.username}**, you can't play Guess The Number more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
+      }
+
       if (guessedNumber < 1 || guessedNumber > 10) {
         return message.channel.send("⚠️ Guess a number between 1 and 10.");
       }

@@ -226,8 +226,12 @@ export default {
     const amount = parseInt(args[2]);
 
     // Validate the amount
-    if (amount < 250) {
-      return message.channel.send("⚠️ Minimum bet amount is 250. Please increase your bet.");
+    if (amount < 1) {
+      return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1. Please increase your bet.");
+    }
+
+    if (amount > 200000) {
+      return channel.send(`⚠️ **${message.author.username}**, you can't play diceduel more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
     }
 
     if (message.author.id === opponentId) {

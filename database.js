@@ -170,6 +170,13 @@ export const updateUser = async (userId, user) => {
     user.cash = Number(user.cash.toFixed(1));
     user.networth = Number(user.networth.toFixed(1));
 
+    if (user.cash < 0) {
+      user.cash = 0;
+    }
+    if (user.networth < 0) {
+      user.networth = 0;
+    }
+
     const updates = {};
     user.modifiedPaths().forEach((path) => {
       updates[path] = user[path];

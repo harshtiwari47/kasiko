@@ -12,10 +12,10 @@ export async function slots(id, amount, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
-    if (userData.cash < 250) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.`);
-    } else if (amount < 250) {
-      return channel.send("⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **250**.");
+    if (userData.cash < 1) {
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
+    } else if (amount < 1) {
+      return channel.send("⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **1**.");
     }
 
     if (userData.cash < amount) {
@@ -144,15 +144,19 @@ export default {
       const amount = parseInt(args[1]);
 
       // Ensure amount is within valid range
-      if (amount < 250) {
-        return message.channel.send("⚠️ Minimum bet amount is 250.");
+      if (amount < 1) {
+        return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
+      }
+
+      if (amount > 200000) {
+        return channel.send(`⚠️ **${message.author.username}**, you can't play slots more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
       }
 
       // Call the slots function
       slots(message.author.id, amount, message.channel);
     } else {
       // Send usage error if the amount argument is invalid
-      message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `slots <amount>`, minimum is 250.");
+      message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `slots <amount>`, minimum is 1.");
     }
   }
 };

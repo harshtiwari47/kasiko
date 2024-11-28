@@ -250,6 +250,18 @@ export async function buyStock(stockName, amount, message) {
       return message.channel.send("⚠️ Stock not found.");
     }
 
+    let totalUniqueStocks = Object.keys(userData.stocks.toJSON()).reduce((sum, stock) => {
+      if (stock.shares && stock.shares > 0) {
+        sum += 1
+      }
+      return sum;
+    },
+      0);
+
+    if (userData.stocks && totalUniqueStocks > 5) {
+      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than five companies' stocks!`)
+    }
+
     const stockPrice = stockData[stockName].currentPrice;
     let totalCost = stockPrice * numShares;
     totalCost = Number(totalCost.toFixed(0));

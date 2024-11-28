@@ -13,10 +13,14 @@ export async function toss(id, amount, channel, choice = "head") {
     let userData = await getUserData(id);
 
     // Check if the user has enough cash and if the amount is valid
-    if (userData.cash < 250) {
-      return channel.send("⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **250**.");
-    } else if (amount < 250) {
-      return channel.send("⚠️ Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **250**.");
+    if (userData.cash < 1) {
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
+    } else if (amount < 1) {
+      return channel.send("⚠️ Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **1**.");
+    }
+
+    if (userData.cash < Number(amount)) {
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount}** cash.`);
     }
 
     // Send a suspenseful message
@@ -49,7 +53,7 @@ export async function toss(id, amount, channel, choice = "head") {
     } else if (random === 0 && choice === "tail") {
       await suspenseMessage.edit(`🎉 **${guild.user.username}**, victory is yours! 🪙\nThe coin landed on tails! You won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉! Luck favors you this time!`);
     } else {
-      await suspenseMessage.edit(`🚨 Oops, **${guild.user.username}**, fate wasn't kind! 🪙\nThe coin landed on ${choice === "tail" ? "heads" : "tails"}... You lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. Better luck next time!`);
+      await suspenseMessage.edit(`🚨 Oops, **${guild.user.username}**, fate wasn't kind! 🪙\nThe coin landed on ${choice === "tail" ? "heads": "tails"}... You lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. Better luck next time!`);
     }
 
   } catch (e) {
@@ -78,10 +82,15 @@ export default {
       const amount = parseInt(args[1]);
 
       // Ensure amount is within valid range
-      if (amount < 250) {
-        return message.channel.send("⚠️ Minimum bet amount is 250.");
+      if (amount < 1) {
+        return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
       }
-      let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail" : "head";
+
+      if (amount > 200000) {
+        return channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
+      }
+
+      let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";
       // Call the Gamble module's toss function
       toss(message.author.id, amount, message.channel, choice);
     } else {
