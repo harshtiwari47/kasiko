@@ -43,7 +43,7 @@ import {
   loadImage
 } from '@napi-rs/canvas';
 
-function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl) {
+async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl) {
   const padding = 20;
   const canvas = createCanvas(800 + 2 * padding, 400 + 2 * padding);
   const ctx = canvas.getContext('2d');
@@ -78,8 +78,8 @@ function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl) {
   ctx.strokeStyle = '#879ad0';
   ctx.stroke();
 
-  loadImage('https://www.w3schools.com/w3images/avatar2.png')
-  .then((profileImage) => {
+  try {
+    const profileImage = await loadImage('https://www.w3schools.com/w3images/avatar2.png');
     const imageSize = 130;
     ctx.drawImage(profileImage, padding + 40, padding + 40, imageSize, imageSize);
     const buffer = canvas.toBuffer('image/png');
@@ -87,11 +87,11 @@ function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl) {
     const attachment = new AttachmentBuilder(buffer, {
       name: 'level-up-canvas-image.png'
     });
-    return attachment;
-  })
-  .catch((err) => {
+
+    return attachment; // This will now return the attachment correctly
+  } catch (err) {
     console.error('Error loading profile image:', err);
-  });
+  }
 }
 
 export async function updateExpPoints(content, user, channel) {
@@ -125,7 +125,7 @@ export async function updateExpPoints(content, user, channel) {
 
       // Send the image as an attachment
       if (attachment) {
-       return channel.send({
+        return await channel.send({
           files: [attachment]
         });
       }
