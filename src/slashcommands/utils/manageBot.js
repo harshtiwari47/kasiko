@@ -1,3 +1,4 @@
+/*
 import {
   SlashCommandBuilder
 } from '@discordjs/builders';
@@ -168,3 +169,5 @@ export default {
     }
   }
 };
+
+*/
