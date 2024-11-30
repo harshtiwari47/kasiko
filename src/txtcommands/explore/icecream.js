@@ -79,7 +79,7 @@ const layout = [{
 }];
 
 function getLayout(lvl) {
-  if (lvl > 7) lvl = 7;
+  if (lvl > 1) lvl = 1;
   return layout[lvl - 1].image;
 }
 
@@ -509,7 +509,7 @@ export default {
           });
         } else {
           return message.channel.send(
-            `⚠️ **${message.author.username}**, please provide a valid level (1-7) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
+            `⚠️ **${message.author.username}**, please provide a valid level (1) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
           );
         }
       }

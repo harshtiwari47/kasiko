@@ -47,16 +47,16 @@ export async function guess(id, amount, number, channel) {
 
 export default {
   name: "guess",
-  description: "Make a guess in a cash-betting game. Try to guess a number between 1 and 10.",
+  description: "Make a guess in a cash-betting game and win 2.5x of bet cash. Try to guess a number between 1 and 10.",
   aliases: ["g",
     "guessno",
     "gn"],
   args: "<amount> <number>",
-  example: "guess 500 7",
+  example: ["guess 500 7"],
   related: ["tosscoin",
     "cash"],
-  cooldown: 5000,
-  // 5 seconds cooldown
+  cooldown: 8000,
+  // 8 seconds cooldown
   category: "Games",
 
   // Main function to execute the guessing game logic
@@ -83,7 +83,7 @@ export default {
       guess(message.author.id, amount, guessedNumber, message.channel);
     } else {
       // Send usage error if arguments are invalid
-      message.channel.send("⚠️ Invalid cash amount or number! Cash and number should be integers. Use `guess <amount> <number>`.");
+      return message.channel.send("⚠️ Invalid cash amount or number! Cash and number should be integers. Use `guess <amount> <number>`.");
     }
   }
 };

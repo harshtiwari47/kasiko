@@ -11,7 +11,9 @@ function isUserMention(arg, message) {
     if (message) {
       const targetUser = message.guild.members.cache.get(extractUserId(arg));
 
-      if (!targetUser) return false
+      if (!targetUser) {
+        return false
+      }
     }
 
     return true
@@ -39,28 +41,30 @@ function newsDatabase() {
   }
 }
 
-export function checkTimeGap(startTime, endTime, options = { format: 'hours' }) {
-    // Check if startTime and endTime are numbers (milliseconds)
-    if (typeof startTime !== 'number' || typeof endTime !== 'number') {
-        throw new Error("startTime and endTime must be in milliseconds");
-    }
+export function checkTimeGap(startTime, endTime, options = {
+  format: 'hours'
+}) {
+  // Check if startTime and endTime are numbers (milliseconds)
+  if (typeof startTime !== 'number' || typeof endTime !== 'number') {
+    throw new Error("startTime and endTime must be in milliseconds");
+  }
 
-    // Calculate the difference in milliseconds
-    const timeDifference = endTime - startTime;
+  // Calculate the difference in milliseconds
+  const timeDifference = endTime - startTime;
 
-    // Convert the difference to hours, minutes, or other units based on options
-    let gap;
-    if (options.format === 'hours') {
-        gap = timeDifference / (1000 * 60 * 60); // Convert to hours
-    } else if (options.format === 'minutes') {
-        gap = timeDifference / (1000 * 60); // Convert to minutes
-    } else if (options.format === 'seconds') {
-        gap = timeDifference / 1000; // Convert to seconds
-    } else {
-        throw new Error("Unsupported format option");
-    }
+  // Convert the difference to hours, minutes, or other units based on options
+  let gap;
+  if (options.format === 'hours') {
+    gap = timeDifference / (1000 * 60 * 60); // Convert to hours
+  } else if (options.format === 'minutes') {
+    gap = timeDifference / (1000 * 60); // Convert to minutes
+  } else if (options.format === 'seconds') {
+    gap = timeDifference / 1000; // Convert to seconds
+  } else {
+    throw new Error("Unsupported format option");
+  }
 
-    return gap;
+  return gap;
 }
 export function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;

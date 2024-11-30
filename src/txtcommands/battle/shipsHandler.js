@@ -386,7 +386,7 @@ export const Ship = {
 
 export default {
   name: "ship",
-  description: "View or engage in pirate battles, attack others, check ship stats, weapon stats, and battle messages.",
+  description: "Embark on thrilling pirate battles, attack rivals, activate your ship, upgrade its power, repair damages, and track your ship's stats!",
   aliases: ["ship",
     "ships",
     "active"],
@@ -401,7 +401,7 @@ export default {
   related: ["battle",
     "stat",
     "profile"],
-  cooldown: 5000,
+  cooldown: 8000,
   category: "Battle",
 
   // Execute function based on the command alias

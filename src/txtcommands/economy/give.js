@@ -45,8 +45,6 @@ export async function give(message, userId, amount, recipientId) {
     let userData = await getUserData(userId);
     let recipientData = await getUserData(recipientId);
 
-    console.log(recipientData, recipientId)
-
     if (userData.cash < amount) {
       return message.channel.send(
         "⚠️🧾 You don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!"
@@ -183,16 +181,16 @@ export default {
   description: "Transfer in-game cash to another user.",
   aliases: ["send", "transfer"],
   args: "<amount> <user>",
-  example: "give 100 @username",
+  example: ["give 100 @user"],
   related: ["daily", "cash"],
-  cooldown: 5000,
+  cooldown: 15000,
   category: "Economy",
   execute: (args,
     message) => {
-    if (Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2])) {
+    if (Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2], message)) {
       give(message, message.author.id, args[1], Helper.extractUserId(args[2]));
     } else {
-      message.channel.send("⚠️ Invalid cash amount or no user mentioned! Cash amount should be an integer. `Kas give <amount> <user>`");
+      return message.channel.send("⚠️ Invalid cash amount or no user mentioned! Cash amount should be an integer. `Kas give <amount> <user>`");
     }
   }
 };

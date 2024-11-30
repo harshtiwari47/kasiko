@@ -216,7 +216,11 @@ export default {
     "bank upgrade",
     "bank open (Open your bank account)",
   ],
-  cooldown: 5000,
+  related: ["cash",
+    "withdraw",
+    "rob",
+    "deposit"],
+  cooldown: 10000,
   category: "Economy",
 
   // Execute function based on the command alias

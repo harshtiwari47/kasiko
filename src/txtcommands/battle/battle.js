@@ -108,14 +108,15 @@ export default {
   description: "View or engage in pirate battles, attack others, check ship stats, weapon stats, and battle messages.",
   aliases: ["battle", "b", "fight"],
   // Aliases allow calling the command with different variations for battles or ships
-  args: "<action> [target]",
+  args: "[target]",
   example: [
     "battle",
-    "battle <user (optional but not a friendly battle)> {Note: each battle cost $1000}",
+    "battle logs",
+    "battle <user> (optional but not a friendly battle) {Note: each battle cost $1000 & 25 durability}",
   ],
-  related: ["stat",
+  related: ["ships", "active", "stat",
     "profile"],
-  cooldown: 5000,
+  cooldown: 600000,
   category: "Battle",
 
   // Execute function based on the command alias

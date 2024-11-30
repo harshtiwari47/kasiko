@@ -126,17 +126,17 @@ export default {
     "profile @user",
     // View another user's profile
   ],
-  related: ["userinfo",
-    "profile",
-    "user",
-    "info"],
-  cooldown: 5000,
-  // Cooldown of 5 seconds
+  related: ["leaderboard",
+    "stat",
+    "cash",
+    "bank"],
+  cooldown: 10000,
+  // Cooldown of 10 seconds
   category: "User",
 
   execute: (args, message) => {
     // If the user mentions someone, display their profile
-    if (args[1] && Helper.isUserMention(args[1])) {
+    if (args[1] && Helper.isUserMention(args[1], message)) {
       return profile(Helper.extractUserId(args[1]), message.channel);
     }
     // Otherwise, display the message author's profile

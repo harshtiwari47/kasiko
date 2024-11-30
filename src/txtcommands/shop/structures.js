@@ -405,7 +405,7 @@ export const Structure = {
 
 function handleStructureCommands(args, message) {
   if (!args[1]) return Structure.userstructures(message.author.id, message);
-  if (Helper.isUserMention(args[1])) return Structure.userstructures(Helper.extractUserId(args[1]), message);
+  if (Helper.isUserMention(args[1], message)) return Structure.userstructures(Helper.extractUserId(args[1]), message);
   return Structure.viewStructure(args[1], message);
 }
 

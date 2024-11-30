@@ -11,7 +11,7 @@ export default {
   description: "Provides the bot invite link.",
   aliases: ["inv",
     "botinvite"],
-  cooldown: 4000,
+  cooldown: 8000,
   category: "Utility",
 
   execute: async (args, message) => {
@@ -30,7 +30,7 @@ export default {
       new ButtonBuilder()
       .setLabel("Invite Me")
       .setStyle(ButtonStyle.Link)
-      .setURL("https://discord.com/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=8&scope=bot")
+      .setURL("https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=1135386416761920&scope=bot")
     );
 
     await message.reply({

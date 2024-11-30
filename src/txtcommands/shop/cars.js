@@ -402,7 +402,7 @@ export const Car = {
 
 function handleCarCommands(args, message) {
   if (!args[1]) return usercars(message.author.id, message);
-  if (Helper.isUserMention(args[1])) return usercars(Helper.extractUserId(args[1]), message);
+  if (Helper.isUserMention(args[1], message)) return usercars(Helper.extractUserId(args[1]), message);
   return viewCar(args[1], message);
 }
 

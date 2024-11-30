@@ -39,6 +39,7 @@ export async function viewCollection(userId, channel) {
           let fishDetails = aquaData.filter(item => item.name === fish.name);
           collection.push({
             name: fish.name,
+            animals: fish.animals,
             emoji: fishDetails[0].emoji,
             rarity: fishDetails[0].rarity,
             level: fish.level,
@@ -65,7 +66,7 @@ export async function viewCollection(userId, channel) {
 
         // Add fish details to embed description
         let description = '';
-        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> (${fish.rarity.substring(0, 1).toUpperCase()})\n`;
+        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> **${fish.animals}** (${fish.rarity.substring(0, 1).toUpperCase()})\n`;
         description += `**Lvl**: ${fish.level} **Dmg**: ${fish.damage}\n**CPF**: ${fish.feedCost} **CPS**: ${fish.sellAmount}\n\n`;
         embed.setDescription(description.trim());
 
@@ -420,8 +421,8 @@ export default {
     "aquarium sell <animal> <amount>",
     "aquarium feed <animal> <amount>"
   ],
-  related: ["collection", "catch", "feed"],
-  cooldown: 2000, // 2 seconds cooldown
+  related: ["ocean", "catch"],
+  cooldown: 10000, // 10 seconds cooldown
   category: "Ocean Life",
 
   // Main function to execute aquarium commands

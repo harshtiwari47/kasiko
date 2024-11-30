@@ -82,7 +82,7 @@ async function addToCollection(animal, message, zone = null) {
         // No luck message
         resultEmbed = new EmbedBuilder()
         .setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
-        .setDescription(`**${message.author.username}** 𝑐𝑎𝑠𝑡 𝑡ℎ𝑒𝑖𝑟 𝑙𝑖𝑛𝑒... 𝑏𝑢𝑡 𝑎𝑙𝑙 𝑡ℎ𝑒𝑦 𝑔𝑜𝑡 𝑤𝑎𝑠 𝑎 𝑠𝑜𝑔𝑔𝑦 𝑏𝑜𝑜𝑡 𝑓𝑟𝑜𝑚 <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉. 𝘉𝘦𝘵𝘵𝘦𝘳 𝘭𝘶𝘤𝘬 𝘯𝘦𝘹𝘵 𝘵𝘪𝘮𝘦! 🥾💦`)
+        .setDescription(`**${message.author.username}** 𝖼𝖺𝗌𝗍 𝗍𝗁𝖾𝗂𝗋 𝗅𝗂𝗇𝖾... 𝖻𝗎𝗍 𝖺𝗅𝗅 𝗍𝗁𝖾𝗒 𝗀𝗈𝗍 𝗐𝖺𝗌 𝖺 𝗌𝗈𝗀𝗀𝗒 𝖻𝗈𝗈𝗍 𝖿𝗋𝗈𝗆 <:kasiko_coin:1300141236841086977> ${cost} 𝑪𝒂𝒔𝒉. 𝘉𝘦𝘵𝘵𝘦𝘳 𝘭𝘶𝘤𝘬 𝘯𝘦𝘹𝘵 𝘵𝘪𝘮𝘦! 🥾💦`)
         .setColor('#620a0a')
         .setThumbnail('https://harshtiwari47.github.io/kasiko-public/images/empty-boat.jpg'); // a boot image
       } else {
@@ -272,9 +272,8 @@ export default {
     "ocean collection <@username optional>" // view an animal collection
   ],
   related: ["aquarium",
-    "collection",
-    "explore"],
-  cooldown: 5000,
+    "catch"],
+  cooldown: 10000,
   // Cooldown of 10 seconds
   category: "Ocean Life",
 

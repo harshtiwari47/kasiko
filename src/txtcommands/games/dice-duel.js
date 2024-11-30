@@ -175,10 +175,10 @@ export async function diceDuel(id, opponentId, amount, channel) {
 
       // Final message after the game
       return rollingMessage.edit(
-        `🎲 **ᗪIᑕE ᗪᑌEᒪ  Results**\n` +
-        `✨ **${guild.user.username}** emerges victorious and earns **${winAmount} coins**!\n` +
-        `💔 **${opponent.user.username}** loses **${winAmount} coins**.\n` +
-        `🎲 Rolls:\n` +
+        `🎲 **ᗪIᑕE ᗪᑌEᒪ Results**\n` +
+        `✨ **${winner === id ? guild.user.username: opponent.user.username}** emerges victorious and earns **${winAmount} coins**!\n` +
+        `💔 **${winner === opponentId ? guild.user.username: opponent.user.username}** loses **${winAmount} coins**.\n` +
+        `🎲 **Rolls**:\n` +
         `- **${guild.user.username}**: **${userRoll}**\n` +
         `- **${opponent.user.username}**: **${opponentRoll}**`
       );
@@ -208,19 +208,19 @@ export default {
   aliases: ["dice", "dd", "diceduel"],
   args: "<opponent_id> <amount>",
   example: ["dice @opponent 500"],
-  related: ["gamble", "cash", "games"],
-  cooldown: 3000, // 3 seconds cooldown
+  related: ["slots", "cash", "tosscoin", "guess"],
+  cooldown: 8000, // 8 seconds cooldown
   category: "Games",
 
   // Main function to execute the dice duel logic
   execute: (args,
     message) => {
     // Validate opponent mention or ID
-    const opponentId = args[1].replace(/[<@!>]/g,
-      ''); // Get opponent ID
+    const opponentId = args[1] ? args[1].replace(/[<@!>]/g,
+      '')  : null; // Get opponent ID
 
     if (!opponentId || !/^\d+$/.test(opponentId)) {
-      return message.channel.send("⚠️ Invalid opponent ID or mention. Please mention a valid user or provide their user ID.");
+      return message.channel.send("⚠️ Invalid opponent ID or mention. Please mention a valid user or provide their user ID.`diceduel @user <amount>`");
     }
 
     const amount = parseInt(args[2]);

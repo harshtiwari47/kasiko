@@ -84,7 +84,7 @@ export async function leaderboard(message) {
 }
 
 async function getTopUsersByNetWorth() {
- return new Promise(async (resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const topUsers = await User.find() // Fetch users
       .sort({
@@ -93,7 +93,7 @@ async function getTopUsersByNetWorth() {
       .limit(10) // Limit the result to 10 users
       .select('id networth cash level'); // Select specific fields (optional)
 
-       resolve(topUsers);
+      resolve(topUsers);
     } catch (error) {
       console.error('Error fetching top users by networth:', error);
       throw error;
@@ -104,7 +104,7 @@ async function getTopUsersByNetWorth() {
 
 export default {
   name: "leaderboard",
-  description: "Displays the current leaderboard.",
+  description: "Displays the top 10 current global leaderboard rankings according to users' net worth.",
   aliases: ["top",
     "ranking",
     "lb"],
@@ -114,10 +114,10 @@ export default {
     // View the leaderboard
   ],
   related: ["leaderboard",
-    "top",
-    "ranking"],
-  cooldown: 10000,
-  // Cooldown of 10 seconds
+    "profile",
+    "stat"],
+  cooldown: 30000,
+  // Cooldown of 30 seconds
   category: "Stats",
 
   execute: (args, message) => {

@@ -15,8 +15,8 @@ export default {
     "help shop" // Shows details for the 'shop' command
   ],
   category: "Utility",
-  cooldown: 1000,
-  // 1 second cooldown
+  cooldown: 6000,
+  // 6 second cooldown
 
   execute: (args, message) => {
     // Check if a specific command is requested

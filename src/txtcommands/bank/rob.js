@@ -252,10 +252,11 @@ export default {
   name: "rob",
   description: "Rob another player by attempting to steal currency. If successful, you gain part of their cash.",
   aliases: [],
-  args: "rob <target>",
+  args: "<target>",
   example: ["rob @player"],
-  cooldown: 5000,
+  cooldown: 43200000,
   category: "Economy",
+  related: ["give", "bank"],
   execute: async (args,
     message) => {
     const action = args[0] ? args[0].toLowerCase(): null;

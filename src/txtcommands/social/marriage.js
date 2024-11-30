@@ -270,7 +270,7 @@ export async function roses(message) {
 
     // Check if roses data exists
     if (userData && typeof userData.roses === 'number') {
-      return message.channel.send(`**${message.author.username}**, you currently have **${userData.roses}** roses! 🌹`);
+      return message.channel.send(`**${message.author.username}**, you currently have **${userData.roses}** roses! 🌹\nYou can send roses to your partner & share them with others by using \`roses <amount> <@user>\``);
     } else {
       return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` 🌹`);
     }
@@ -327,7 +327,7 @@ export const Marriage = {
 
 export default {
   name: "marriage",
-  description: "Manage marriages and related actions. A marriage's BondXP can be increased by sending roses to your spouse. After reaching a certain amount of BondXP, you can expect a child.",
+  description: "Manage marriages and related actions. A marriage's BondXP can be increased by sending roses to your spouse. After reaching a certain amount of BondXP, you can expect a child. Married users can enjoy an additional 0.25 boost to their daily rewards.",
   aliases: ["marry",
     "divorce",
     "love",
@@ -345,29 +345,30 @@ export default {
     // Send roses to a user
   ],
   related: ["marriage",
+    "marry",
     "divorce",
     "roses"],
-  cooldown: 5000,
-  // Cooldown of 5 seconds
+  cooldown: 10000,
+  // Cooldown of 10 seconds
   category: "Marriage",
 
   execute: (args, message) => {
     try {
       if (args[0] === "marry") {
-        if (args[1] && Helper.isUserMention(args[1])) {
+        if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.marry(Helper.extractUserId(args[1]), message); // Marry a user
         }
         return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`");
       }
 
       if (args[0] === "divorce") {
-        if (args[1] && Helper.isUserMention(args[1])) {
+        if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.divorce(Helper.extractUserId(args[1]), message); // Divorce a user
         }
         return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`");
       }
       if (args[0] === "roses") {
-        if (args[1] && Helper.isNumber(args[1]) && Helper.isUserMention(args[2])) {
+        if (args[1] && Helper.isNumber(args[1]) && Helper.isUserMention(args[2], message)) {
           return Marriage.sendRoses(Helper.extractUserId(args[2]), parseInt(args[1]), message); // Send roses to a user
         }
         return Marriage.roses(message); // Show the roses system info if no arguments are provided
@@ -379,19 +380,19 @@ export default {
 
       switch (command) {
       case "marry":
-        if (args[2] && Helper.isUserMention(args[2])) {
+        if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.marry(Helper.extractUserId(args[2]), message); // Marry a user
         }
         return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`");
 
       case "divorce":
-        if (args[2] && Helper.isUserMention(args[2])) {
+        if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.divorce(Helper.extractUserId(args[2]), message); // Divorce a user
         }
         return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`");
 
       case "roses":
-        if (args[2] && Helper.isNumber(args[2]) && Helper.isUserMention(args[3])) {
+        if (args[2] && Helper.isNumber(args[2]) && Helper.isUserMention(args[3], message)) {
           return Marriage.sendRoses(Helper.extractUserId(args[3]), parseInt(args[2]), message); // Send roses to a user
         }
         return Marriage.roses(message); // Show the roses system info if no arguments are provided

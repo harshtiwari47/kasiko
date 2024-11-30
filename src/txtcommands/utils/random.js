@@ -9,7 +9,7 @@ export default {
   name: "random",
   description: "Generates a random number between 1 and 10.",
   aliases: ["rand", "number"],
-  cooldown: 4000,
+  cooldown: 6000,
   category: "Utility",
 
   execute: async (args, message) => {

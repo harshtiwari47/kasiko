@@ -5,7 +5,7 @@ export default {
   name: "color",
   description: "Generates a random hex color code and displays it in an embed.",
   aliases: ["randomcolor", "hexcolor"],
-  cooldown: 4000,
+  cooldown: 8000,
   category: "Utility",
 
   execute: async (args, message) => {

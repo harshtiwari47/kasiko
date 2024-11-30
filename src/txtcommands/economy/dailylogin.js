@@ -34,7 +34,12 @@ export async function dailylogin(message) {
       }
 
       // Calculate reward amount
-      let rewardAmount = 1250 + userData.rewardStreak * 400;
+      let rewardAmount = 1250 + userData.rewardStreak * 100;
+
+      if (userData.spouse) {
+        let additionalReward = 0.25 * rewardAmount;
+        rewardAmount += additionalReward;
+      }
       userData.cash = (userData.cash || 0) + rewardAmount;
 
       // Update the dailyReward timestamp
@@ -70,17 +75,17 @@ export async function dailylogin(message) {
 
 export default {
   name: "daily",
-  description: "Claim your daily login reward.",
+  description: "Claim your daily login reward. Married users can enjoy an additional 0.25 boost to their rewards.",
   aliases: ["dailylogin",
     "dlogin",
     "dr",
     "dl"],
   args: "",
-  example: "daily",
+  example: ["daily"],
   related: ["give",
     "cash",
     "profile"],
-  cooldown: 5000,
+  cooldown: 86400000,
   category: "Economy",
 
   // Main function to execute the daily login reward logic

@@ -29,7 +29,13 @@ async function sendUserStat(stat, message) {
     message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** net worth.`);
   }
   if (stat === "level") {
-    message.channel.send(`**${message.author.username}**'s level is 🏆 **${userData[stat]}**.`);
+    // Calculate experience required for the next level
+    const expRequiredNextLvl = (Math.pow(userData["level"] + 1, 2) * 100) - Number(userData["exp"]);
+
+    message.channel.send(
+      `**${message.author.username}**, your level is 🏆 **${userData["level"]}**.\n` +
+      `You need ✴️ **${expRequiredNextLvl}** more experience points to reach the next level!`
+    );
   }
   if (stat === "exp") {
     message.channel.send(`**${message.author.username}**'s current experience points are ✴️ **${userData[stat]}**.`);
@@ -68,14 +74,16 @@ export default {
   args: "<type>",
   example: [
     "cash",
+    "stat cash",
     "networth",
     "charity",
     "trust",
     "level",
     "exp"
   ],
-  related: ["profile"],
-  cooldown: 4000,
+  related: ["leaderboard",
+    "profile"],
+  cooldown: 10000,
   category: "Stats",
 
   // Execute function based on the command alias

@@ -78,8 +78,8 @@ export default {
     "roses",
     "buy",
     "sell"],
-  cooldown: 2000,
-  // Cooldown of 2 seconds
+  cooldown: 8000,
+  // Cooldown of 8 seconds
   category: "Shop",
 
   execute: (args, message) => {

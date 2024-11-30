@@ -12,17 +12,20 @@ const userSchema = new mongoose.Schema({
   cash: {
     type: Number,
     required: true,
-    min: 0
+    min: 0,
+    set: (value) => (value < 0 ? 0: value)
   },
   networth: {
     type: Number,
     required: true,
-    min: 0
+    min: 0,
+    set: (value) => (value < 0 ? 0: value)
   },
   maintenance: {
     type: Number,
     required: true,
-    min: 0
+    min: 0,
+    set: (value) => (value < 0 ? 0: value)
   },
   spouse: {
     type: String,
@@ -31,32 +34,38 @@ const userSchema = new mongoose.Schema({
     roses: {
       type: Number,
     default: 0,
-      min: 0
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
     },
     bondXP: {
       type: Number,
     default: 0,
-      min: 0
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
     },
     charity: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
     },
     trust: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
     },
     exp: {
       type: Number,
       required: true,
-      min: 0
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
     },
     level: {
       type: Number,
       required: true,
-      min: 1
+      min: 1,
+      set: (value) => (value < 1 ? 1: value)
     },
     verified: {
       type: Boolean,
@@ -87,7 +96,8 @@ const userSchema = new mongoose.Schema({
     },
     rewardStreak: {
       type: Number,
-      min: 1
+      min: 1,
+      set: (value) => (value < 1 ? 1: value)
     },
     stocks: {
       type: Stock

@@ -9,10 +9,10 @@ const PetSchema = new mongoose.Schema({
     type: String, required: true
   },
   level: {
-    type: Number, default: 1
+    type: Number, default: 1, set: (value) => (value < 1 ? 1: value)
     },
     feed: {
-      type: Number, default: 0
+      type: Number, default: 0, set: (value) => (value < 0 ? 0: value)
     },
     lastFeed: {
       type: Number, default: null
@@ -27,7 +27,7 @@ const PetSchema = new mongoose.Schema({
       type: Number, default: null
     }, // For tracking play times
     exp: {
-      type: Number, default: 50
+      type: Number, default: 50, set: (value) => (value < 50 ? 50: value)
     }, // Experience points
   });
 
@@ -55,6 +55,7 @@ const PetSchema = new mongoose.Schema({
       },
       food: {
         type: Number,
+        set: (value) => (value < 0 ? 0: value),
       default: 10, // Default food available to the user
       },
       lastFeed: {

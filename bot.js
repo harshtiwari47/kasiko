@@ -10,6 +10,7 @@ import express from 'express';
 import {
   updateExpPoints
 } from './utils/experience.js';
+import redisClient from './redis.js';
 import {
   termsAndcondition
 } from './utils/terms.js';
@@ -60,7 +61,7 @@ client.on('messageCreate', async (message) => {
     if (!message.content.toLowerCase().startsWith(prefix)) return
 
     if (mentionedBots.size > 0) return
-    
+
     let startPer = performance.now();
 
     // check user exist
@@ -69,6 +70,7 @@ client.on('messageCreate', async (message) => {
       return termsAndcondition(message);
     }
 
+    // check other user has accepted terms & conditions
     const firstUserMention = message.mentions.users.first();
 
     if (firstUserMention) {
@@ -78,23 +80,43 @@ client.on('messageCreate', async (message) => {
       }
     }
 
-    updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
-
     // handle all types of text commands started with kas
     const args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
     const commandName = args[0].toLowerCase();
     const command = txtcommands.get(commandName);
 
+    // update experience and level
+    updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
+
     if (!command) return;
 
     try {
+      const userId = message.author.id;
+      const globalCooldownKey = `cooldown:${commandName}:${userId}`;
+      const cooldownDuration = 10; // Cooldown duration in seconds
+      const ttl = await redisClient.ttl(globalCooldownKey);
+      if (ttl > 0) {
+        const coolDownMessage = await message.channel.send(
+          `⏳ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
+        );
+        setTimeout(async () => {
+          await coolDownMessage.delete();
+        }, ttl * 1000);
+        return;
+      }
+
+      // Set a cooldown for the user
+      await redisClient.set(globalCooldownKey, '1', {
+        EX: cooldownDuration
+      });
+
       command.execute(args, message);
     } catch (error) {
       console.error(error);
       message.reply("There was an error executing that command.");
     }
     let endPer = performance.now();
-    
+
     console.log(`Total excecution time for ${commandName} is ${endPer - startPer} ms`);
   } catch (e) {
     console.error(e);

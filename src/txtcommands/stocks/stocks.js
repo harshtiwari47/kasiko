@@ -224,7 +224,7 @@ export async function stockPrice(stockName, message) {
       .setImage('attachment://stock-chart.png')
       .setColor('#007bff')
       .setFooter({
-        text: 'Stock data provided by Heroliq Stocks'
+        text: 'Stock data provided by Kasiko Stocks'
       });
 
       // Send the embed with the attachment
@@ -423,7 +423,7 @@ export async function portfolio(userId, message) {
     // Embed 2: Portfolio Summary
     const embed2 = new EmbedBuilder()
     .addFields([{
-      name: "𝑻𝒐𝒕𝒂𝒍 𝑩𝒓𝒐𝒖𝒈𝒉𝒕 𝑷𝒓𝒊𝒄𝒆",
+      name: "𝑻𝒐𝒕𝒂𝒍 𝑩𝒐𝒖𝒈𝒉𝒕 𝑷𝒓𝒊𝒄𝒆",
       value: `<:kasiko_coin:1300141236841086977>${cost.toFixed(0)} 𝑪𝒂𝒔𝒉`,
     },
       {
@@ -451,7 +451,9 @@ export default {
   name: "stock",
   description: "View and manage stocks in the stock market.",
   aliases: ["stocks",
-    "s"],
+    "s",
+    "portfolio",
+    "pf"],
   args: "<command> [parameters]",
   example: [
     "stock",
@@ -462,21 +464,30 @@ export default {
     // Buy a specific stock
     "stock sell <symbol> <amount>",
     // Sell a specific stock
-    "stock portfolio [@user]",
+    "stock portfolio @user",
+    "portfolio",
+    "pf @user",
     // View a user's portfolio or your own
     "stock news/newspaper",
-    // View a user's portfolio or your own
   ],
   related: ["stocks",
     "portfolio",
     "buy",
     "sell"],
-  cooldown: 2000,
+  cooldown: 10000,
   // Cooldown of 2 seconds
   category: "Stocks",
 
   execute: (args, message) => {
     const command = args[1] ? args[1].toLowerCase(): null;
+
+    if (args[0] === "portfolio" || args[0] === "pf") {
+      if (args[2] && Helper.isUserMention(args[1], message)) {
+        return portfolio(Helper.extractUserId(args[1]), message); // View mentioned user's portfolio
+      }
+      return portfolio(message.author.id, message); // View the user's own Portfolio
+    }
+
     if (!command) return sendPaginatedStocks(message); // Show all available Stocks
     switch (command) {
     case "news":
@@ -506,7 +517,7 @@ export default {
 
     case "portfolio":
     case "pf":
-      if (args[2] && Helper.isUserMention(args[2])) {
+      if (args[2] && Helper.isUserMention(args[2], message)) {
         return portfolio(Helper.extractUserId(args[2]), message); // View mentioned user's portfolio
       }
       return portfolio(message.author.id, message); // View the user's own portfolio

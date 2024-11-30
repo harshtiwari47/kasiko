@@ -6,16 +6,19 @@ const bankAccountSchema = new mongoose.Schema({
     type: Number,
     required: true,
     default: 1,
+      set: (value) => (value < 1 ? 1: value)
     },
     deposit: {
       type: Number,
       required: true,
     default: 0,
+      set: (value) => (value < 0 ? 0: value)
     },
     interest: {
       type: Number,
       required: true,
     default: 1.5,
+      set: (value) => (value < 0.5 ? 0.75: value)
     },
     shield: {
       type: Number,

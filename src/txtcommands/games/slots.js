@@ -129,12 +129,13 @@ export default {
   aliases: ["slotmachine",
     "slot"],
   args: "<amount>",
-  example: "slots 250",
-  related: ["gamble",
+  example: ["slots 250"],
+  related: ["dice",
     "cash",
-    "games"],
-  cooldown: 3000,
-  // 3 seconds cooldown
+    "tosscoin",
+    "guess"],
+  cooldown: 8000,
+  // 8 seconds cooldown
   category: "Games",
 
   // Main function to execute the slots game logic
@@ -156,7 +157,7 @@ export default {
       slots(message.author.id, amount, message.channel);
     } else {
       // Send usage error if the amount argument is invalid
-      message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `slots <amount>`, minimum is 1.");
+      return message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `slots <amount>`, minimum is 1.");
     }
   }
 };

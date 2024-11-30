@@ -67,12 +67,15 @@ export default {
   description: "Play a coin toss game by betting an amount. Win or lose based on the result.",
   aliases: ["tc"],
   args: "<amount>",
-  example: "tosscoin 250",
-  related: ["guess",
-    "gamble",
-    "cash"],
-  cooldown: 2000,
-  // 2 seconds cooldown
+  example: ["tosscoin 250",
+    "tc 250 head",
+    "tc 250 t"],
+  related: ["slots",
+    "cash",
+    "dice",
+    "guess"],
+  cooldown: 8000,
+  // 8 seconds cooldown
   category: "Games",
 
   // Main function to execute the coin toss logic
@@ -95,7 +98,7 @@ export default {
       toss(message.author.id, amount, message.channel, choice);
     } else {
       // Send usage error if the amount argument is invalid
-      message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `tosscoin <amount> <choice heads(h)/tails(t) (optional)>`, default choice is heads.");
+      return message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `tosscoin <amount> <choice heads(h)/tails(t) (optional)>`, default choice is heads.");
     }
   }
 };
