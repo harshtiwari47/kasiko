@@ -128,6 +128,10 @@ const userSchema = new mongoose.Schema({
     bankAccount: {
       type: bankAccountSchema,
     default: () => ({}), // Ensure default sub-document creation
+    },
+    heaven: {
+      type: [String, Number, Number], // heaven id, attempts, success (0/1)
+    default: [null, null, 0]
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields
