@@ -1,7 +1,7 @@
 import {
   EmbedBuilder
-} from "discord.js"; // Updated to v14+ EmbedBuilder
-import UserPet from "../../../models/Pet.js"; // Your UserPet model
+} from "discord.js";
+import UserPet from "../../../models/Pet.js";
 import petImages from "./helpers/petImages.json" with {
   type: "json"
 }; // Pet images JSON
@@ -13,7 +13,7 @@ import {
 // Function to get pet image based on type and level
 function getPetImage(petType, petLevel) {
 
-  petLevel = petLevel > 50 ? 10: petLevel > 45 ? 9: petLevel > 40 ? 8: petLevel > 35 ? 7: petLevel > 30 ? 6: petLevel > 25 ? 5: petLevel > 20 ? 4: petLevel > 15 ? 3: petLevel > 10 ? 2: 1;
+  if (petLevel > 10) petLevel = 10;
 
   if (petImages[petType] && petImages[petType][petLevel]) {
     return petImages[petType][petLevel];
@@ -137,7 +137,7 @@ export default {
     const petId = parseInt(userPetData.active || 0); // Pet index (ID) based on arguments
 
 
-    let threshold = 50;
+    let threshold = 200;
     let lvlUpReward = 10; // foods
     let lvl = Math.floor(Math.sqrt(userPetData.pets[petId].exp / threshold)) || 0;
     let lvlUp = false;

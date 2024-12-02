@@ -49,7 +49,7 @@ export async function playGate(id, channel, message) {
     // Fetch the hourly path
     const hourlyPath = await getHourlyHeavenGates();
 
-    if (!userData.heaven || !userData.heaven[0]) {
+    if (!userData.heaven || !userData.heaven[0] || userData.heaven[0] !== hourlyPath[0]) {
       userData.heaven = [hourlyPath[0],
         0,
         0]

@@ -367,6 +367,26 @@ export async function sellStock(stockName, amount, message) {
   }
 }
 
+export async function boughtPrice(message, stockName) {
+  const userData = await getUserData(message.author.id);
+
+  if (!(userData && userData.stocks && userData.stocks[stockName] && userData.stocks[stockName].shares > 0)) {
+    return message.channel.send(`📊⚠️ **${message.author.username}**, you don't own any stocks of **${stockName}**!`)
+  }
+
+  const stockPrice = stockData[stockName].currentPrice;
+
+  const embed = new EmbedBuilder()
+  .setColor('#f5bbaf')
+  .setDescription(`
+    📊 **${message.author.username}**, you have bought **${userData.stocks[stockName].shares}** of **${stockName}** for price <:kasiko_coin:1300141236841086977> **${userData.stocks[stockName].cost.toFixed(0)}**.\nCurrent Value: <:kasiko_coin:1300141236841086977> **${(Number(stockPrice) * Number(userData.stocks[stockName].shares)).toFixed(1)}**.
+    `);
+
+  return message.channel.send({
+    embeds: [embed]
+  });
+}
+
 export async function portfolio(userId, message) {
   try {
     let userData = await getUserData(userId);
@@ -469,6 +489,9 @@ export default {
     "pf @user",
     // View a user's portfolio or your own
     "stock news/newspaper",
+    // stocks news,
+    "stock bp <symbol>",
+    "stock boughtprice <symbol>"
   ],
   related: ["stocks",
     "portfolio",
@@ -482,7 +505,7 @@ export default {
     const command = args[1] ? args[1].toLowerCase(): null;
 
     if (args[0] === "portfolio" || args[0] === "pf") {
-      if (args[2] && Helper.isUserMention(args[1], message)) {
+      if (args[1] && Helper.isUserMention(args[1], message)) {
         return portfolio(Helper.extractUserId(args[1]), message); // View mentioned user's portfolio
       }
       return portfolio(message.author.id, message); // View the user's own Portfolio
@@ -500,6 +523,19 @@ export default {
         return stockPrice(args[2].toUpperCase(), message); // Show stock price for the given symbol
       }
       return message.channel.send("⚠️ Please specify a stock symbol to check the price.");
+
+    case "boughtprice":
+    case "bp":
+
+      if (args[2]) {
+        if (!stockData[args[2].toUpperCase()]) {
+          return message.channel.send("⚠️ Stock not found.");
+        }
+
+        return boughtPrice(message, args[2].toUpperCase());
+      }
+
+      return message.channel.send("⚠️ Please specify a stock symbol to check it's bought price.");
 
     case "buy":
     case "b":

@@ -6,7 +6,7 @@ const stockDetailSchema = new mongoose.Schema({
   dailySold: [Number, Number],
   cost: {
     type: Number, default: 0, min: 0, set: (value) => (value < 0 ? 0: value)
-    }, // Current cost of the stock
+    }, // Bought cost of the stock
     shares: {
       type: Number, default: 0, min: 0, set: (value) => (value < 0 ? 0: value)
     }, // Current number of shares
