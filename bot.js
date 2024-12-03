@@ -31,9 +31,7 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
-import {
-  DevelopmentStatus
-} from './models/devlopmentStatus.js';
+import DevelopmentStatus from './models/devlopmentStatus.js';
 
 dotenv.config();
 
