@@ -23,7 +23,7 @@ export const sendConfirmation = async (message, userId, amount, recipient) => {
     })
   })
   .setTitle('Confirm Transaction')
-  .setDescription(`Are you sure you want to send <:kasiko_coin:1300141236841086977> **${amount}** to <@${recipient}>?`)
+  .setDescription(`Are you sure you want to send <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to <@${recipient}>?`)
   .addFields(
     {
       name: 'Warning', value: 'We do not allow any form of monetary trade or exchange.'
@@ -108,13 +108,14 @@ export async function give(message, userId, amount, recipientId) {
 
           // Perform logic for transferring cash
           userData.cash -= Number(amount);
+          userData.charity += Number(amount);
           recipientData.cash += Number(amount);
           await updateUser(userId, userData);
           await updateUser(recipientId, recipientData);
 
           // Send confirmation
           await interaction.editReply({
-            content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount}** to **<@${recipientId}>**! 💸 Keep spreading the wealth!`,
+            content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to **<@${recipientId}>**! 💸 Keep spreading the wealth!`,
             embeds: [embed.setColor('#81f1a6')],
             components: [rowDisabled],
           });

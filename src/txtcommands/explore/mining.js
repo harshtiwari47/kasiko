@@ -130,7 +130,7 @@ async function exchangeCoal(message) {
   .setColor(0xf4e500)
   .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
   .setTitle("⛏️💰 𝐄𝐱𝐜𝐡𝐚𝐧𝐠𝐞 𝐂𝐨𝐦𝐩𝐥𝐞𝐭𝐞")
-  .setDescription(`**${message.author.username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned} cash**.`)
+  .setDescription(`**${message.author.username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()} cash**.`)
   .setFooter({
     text: "Keep mining for more resources!"
   });
@@ -203,7 +203,7 @@ async function viewMiningStatus(message) {
       name: "Available to Collect", value: `${availableCoal} ${COAL_EMOJI}`, inline: true
     },
     {
-      name: "Upgrade Cost", value: `<:kasiko_coin:1300141236841086977> ${5000 * userMining.level}`, inline: true
+      name: "Upgrade Cost", value: `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`, inline: true
     }
   )
   .setFooter({
@@ -255,7 +255,7 @@ async function upgradeMine(message) {
     .setColor(0x0f122a)
     .setTitle("⛏️ 𝐌𝐢𝐧𝐞 𝐔𝐩𝐠𝐫𝐚𝐝𝐞𝐝!")
     .setDescription(
-      `Congratulations! **${message.author.username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**. You spent <:kasiko_coin:1300141236841086977> **${upgradeCost} cash** on the upgrade.`
+      `Congratulations! **${message.author.username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**. You spent <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()} cash** on the upgrade.`
     )
     .setFooter({
       text: "Type 'mine collect' to gather your coal."

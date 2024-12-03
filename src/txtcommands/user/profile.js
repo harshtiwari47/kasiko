@@ -57,7 +57,7 @@ async function createUserEmbed(userId, username, userData, avatar) {
       // Financial Information
       {
         name: '💰 Financial Details',
-        value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData.cash.toFixed(1))}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth}\n**Charity:** <:kasiko_coin:1300141236841086977> ${userData.charity}`,
+        value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData.cash.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}\n**Charity:** <:kasiko_coin:1300141236841086977> ${userData.charity.toLocaleString()}`,
         inline: true
       },
 

@@ -26,16 +26,16 @@ export async function attemptRobbery(userId, targetUserId, message) {
     if (userCash < 5000) {
       return message.channel.send("You need at least **5000** cash to attempt a robbery!");
     }
-    
+
     if (userData.lastRobbery && checkTimeGap(userData.lastRobbery, Date.now()) < 12) {
       const remainingTime = 12 - checkTimeGap(userData.lastRobbery, Date.now(), {
         format: 'hours'
       }).toFixed(2);
-     return message.channel.send(`<@${userId}>, you cannot rob again for another ${remainingTime.toFixed(1)} hours.`);
+      return message.channel.send(`<@${userId}>, you cannot rob again for another ${remainingTime.toFixed(1)} hours.`);
     }
 
     userData.lastRobbery = Date.now();
-    
+
     const robberyAmount = Math.floor(targetCash * 0.1); // Victim loses 10% of their cash
     const num1 = Math.floor(Math.random() * 500) + 1; // Random number under 1000 for difficulty
     const num2 = Math.floor(Math.random() * 500) + 1; // Random number under 1000 for difficulty
@@ -79,7 +79,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
       const answer = parseInt(response.content, 10);
       if (answer === correctAnswer) {
 
-      if (response.author.id === targetUserId) {
+        if (response.author.id === targetUserId) {
           const robberyFailedEmbed = new EmbedBuilder()
           .setColor('#ff0000') // Red for failure
           .setTitle('❌ **𝑹𝒐𝒃𝒃𝒆𝒓𝒚 𝑭𝒂𝒊𝒍𝒆𝒅!**')
@@ -131,10 +131,10 @@ export async function attemptRobbery(userId, targetUserId, message) {
           )
           .addFields(
             {
-              name: '💰 **Penalty:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty}** cash.`
+              name: '💰 **Penalty:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
             },
             {
-              name: '💵 **Victim Rewarded:**', value: `${message.mentions.users.first().username} received <:kasiko_coin:1300141236841086977> **${penalty}** cash.`
+              name: '💵 **Victim Rewarded:**', value: `${message.mentions.users.first().username} received <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
             }
           )
           .setFooter({
@@ -161,14 +161,14 @@ export async function attemptRobbery(userId, targetUserId, message) {
           .setColor('#32cd32') // Green for success
           .setTitle('🎉 **𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥 𝐑𝐨𝐛𝐛𝐞𝐫𝐲!**')
           .setDescription(
-            `**${message.author.username}** successfully robbed <:kasiko_coin:1300141236841086977> **${successAmount + bonusReward}** from **${message.mentions.users.first().username}**! 💰💥`
+            `**${message.author.username}** successfully robbed <:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** from **${message.mentions.users.first().username}**! 💰💥`
           )
           .addFields(
             {
-              name: '💰 **You took:**', value: `<:kasiko_coin:1300141236841086977> **${successAmount + bonusReward}** cash`
+              name: '💰 **You took:**', value: `<:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** cash`
             },
             {
-              name: '💵 **Victim lost:**', value: `<:kasiko_coin:1300141236841086977> **${robberyAmount}** cash`
+              name: '💵 **Victim lost:**', value: `<:kasiko_coin:1300141236841086977> **${robberyAmount.toLocaleString()}** cash`
             }
           )
           .setFooter({
@@ -199,10 +199,10 @@ export async function attemptRobbery(userId, targetUserId, message) {
         )
         .addFields(
           {
-            name: '💰 **Penalty:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty}** cash.`
+            name: '💰 **Penalty:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
           },
           {
-            name: '💵 **Victim Rewarded:**', value: `${message.mentions.users.first().username} <:kasiko_coin:1300141236841086977> received **${penalty}** cash.`
+            name: '💵 **Victim Rewarded:**', value: `${message.mentions.users.first().username} <:kasiko_coin:1300141236841086977> received **${penalty.toLocaleString()}** cash.`
           }
         )
         .setFooter({

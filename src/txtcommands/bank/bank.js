@@ -51,7 +51,7 @@ export const Bank = {
       });
 
       return message.channel.send(
-        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount}** successfully.\n**New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit}**,\n**Remaining Cash**: <:kasiko_coin:1300141236841086977> **${userData.cash}**`
+        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** successfully.\n**New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**,\n**Remaining Cash**: <:kasiko_coin:1300141236841086977> **${userData.cash.toLocaleString()}**`
       );
     } catch (err) {
       return message.channel.send(`Error depositing funds: ${err.message}`);
@@ -75,7 +75,7 @@ export const Bank = {
 
       if (totalWithdrawal > account.deposit) {
         return message.channel.send(
-          `**${message.author.username}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount}**. You can withdraw <:kasiko_coin:1300141236841086977> **${account.deposit - charge}**`
+          `**${message.author.username}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit - charge).toLocaleString()}**`
         );
       }
 
@@ -89,7 +89,7 @@ export const Bank = {
       });
 
       message.channel.send(
-        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount}** successfully.\n**Charge**: <:kasiko_coin:1300141236841086977> ${charge},\n**New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit},\n**Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash}`
+        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** successfully.\n**Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()},\n**New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()},\n**Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
       );
     } catch (err) {
       return message.channel.send(`Error withdrawing funds: ${err.message}`);
@@ -114,19 +114,19 @@ export const Bank = {
           name: '𝑳𝒆𝒗𝒆𝒍', value: `${account.level}`, inline: true
         },
         {
-          name: '𝑫𝒆𝒑𝒐𝒔𝒊𝒕 ', value: `<:kasiko_coin:1300141236841086977> ${account.deposit}`, inline: true
+          name: '𝑫𝒆𝒑𝒐𝒔𝒊𝒕 ', value: `<:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`, inline: true
         },
         {
           name: '𝑺𝒉𝒊𝒆𝒍𝒅 ', value: `${account.shield}`, inline: true
         },
         {
-          name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${account.level * BankInfo.storage}`, inline: true
+          name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
         },
         {
           name: '𝑰𝒏𝒕𝒓𝒆𝒔𝒕', value: `${Math.min(BankInfo.charge * account.level * 0.5, 30)}`, inline: true
         },
         {
-          name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash}`, inline: true
+          name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true
         }
       )
       .setTimestamp();
@@ -151,7 +151,7 @@ export const Bank = {
 
       if (account.deposit < upgradeCost) {
         return message.channel.send(
-          `${message.author.username}, you need <:kasiko_coin:1300141236841086977> ${upgradeCost} cash in Bank to upgrade to the next level.`
+          `${message.author.username}, you need <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()} cash in Bank to upgrade to the next level.`
         );
       }
 
@@ -163,7 +163,7 @@ export const Bank = {
       });
 
       return message.channel.send(
-        `**${message.author.username}** upgraded their bank to level ${newLevel} successfully! Remaining bank balance: <:kasiko_coin:1300141236841086977> ${newDeposit}`
+        `**${message.author.username}** upgraded their bank to level ${newLevel} successfully! Remaining bank balance: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
       );
     } catch (err) {
       return message.channel.send(`Error upgrading bank: ${err.message}`);
@@ -187,7 +187,7 @@ export const Bank = {
       await updateUser(userId, userData);
 
       message.channel.send(
-        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash}`
+        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
       );
     } catch (err) {
       if (err.message.includes("already has a bank account")) {

@@ -54,7 +54,7 @@ export async function diceDuel(id, opponentId, amount, channel) {
 
 
     let duelMessage = await channel.send({
-      content: `🎲 **${guild.user.username}** has challenged **<@${opponent.user.id}>** to a Dice Duel for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!\n\nClick the button to roll the dice!`,
+      content: `🎲 **${guild.user.username}** has challenged **<@${opponent.user.id}>** to a Dice Duel for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!\n\nClick the button to roll the dice!`,
       components: [row]
     });
 

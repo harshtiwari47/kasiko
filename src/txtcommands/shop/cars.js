@@ -33,7 +33,7 @@ function createCarEmbed(car) {
     .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${car.image}.png`) // Use image
     .addFields(
       {
-        name: `ᯓ★ Price`, value: `**Price:** <:kasiko_coin:1300141236841086977>${car.price}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${car.maintenance}`, inline: false
+        name: `ᯓ★ Price`, value: `**Price:** <:kasiko_coin:1300141236841086977>${car.price.toLocaleString()}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${car.maintenance.toLocaleString()}`, inline: false
       },
       {
         name: `ᯓ★ Car Details`, value: `**ID:** ${car.id}\n**Category:** ${car.category}\n**Owners:** ${car.owners}\n**Rarity:** ${car.rarity}\n**Color:** ${car.color}\n**Emoji:** <:${car.id}:${car.emoji}>
@@ -175,7 +175,7 @@ export async function usercars(userId, message) {
 
         // Add car details to embed
         let description = '';
-        description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n**Owns**: ${car.items}\n**Car**: <:${car.id}_car:${carDetails.emoji}> \n**Purchased Cost**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice}\n\n`;
+        description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n**Owns**: ${car.items}\n**Car**: <:${car.id}_car:${carDetails.emoji}> \n**Purchased Cost**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n\n`;
 
         embed.setDescription(description.trim());
 
@@ -295,7 +295,7 @@ export async function buycar(message, carId) {
     }
 
     if (car[0].rarity === "Legendary" && userData.networth < 100000) {
-      return message.channel.send(`⚠️ **${message.author.username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 100000).`);
+      return message.channel.send(`⚠️ **${message.author.username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 100,000).`);
     }
 
     if (!userData.cars.some(car => car.id === carId)) {
@@ -326,7 +326,7 @@ export async function buycar(message, carId) {
     const embed = new EmbedBuilder()
     .setColor('#35e955')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
-    .setDescription(`\n✩▓▅▁𝐍𝐞𝐰 𝐂𝐚𝐫▁▅▓✩\n\n Everyone congrats 👏🏻 **${message.author.username}** for purchasing brand-new <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car 🎉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
+    .setDescription(`\n✩▓𝐍𝐞𝐰 𝐂𝐚𝐫▓✩\n\n Everyone congrats 👏🏻 **${message.author.username}** for purchasing brand-new <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car 🎉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
       iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
@@ -375,7 +375,7 @@ export async function sellcar(message, carId) {
     const embed = new EmbedBuilder()
     .setColor('#e93535')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
-    .setDescription(`**${message.author.username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${car[0].price}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that car for <:kasiko_coin:1300141236841086977>${userCar[0].purchasedPrice}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
+    .setDescription(`**${message.author.username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${car[0].price.toLocaleString()}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that car for <:kasiko_coin:1300141236841086977>${userCar[0].purchasedPrice}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
       iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'

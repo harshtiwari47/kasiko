@@ -19,7 +19,7 @@ export async function slots(id, amount, channel) {
     }
 
     if (userData.cash < amount) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount}** cash.`);
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     // Slots symbols
@@ -51,7 +51,7 @@ export async function slots(id, amount, channel) {
     `;
 
     let spinningMessage = await channel.send(
-      `${slotBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!`
+      `${slotBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!`
     );
 
     // Final spin result
@@ -75,7 +75,7 @@ export async function slots(id, amount, channel) {
         ╚══════════╝
         `;
         await spinningMessage.edit(
-          `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!`
+          `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!`
         );
         await new Promise(resolve => setTimeout(resolve, 10));
       }
@@ -90,7 +90,7 @@ export async function slots(id, amount, channel) {
       ╚══════════╝
       `;
       await spinningMessage.edit(
-        `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount}** 𝑪𝒂𝒔𝒉!`
+        `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!`
       );
     }
 
@@ -103,7 +103,7 @@ export async function slots(id, amount, channel) {
       await updateUser(id, userData);
       return spinningMessage.edit(
         `🎰 **${guild.user.username}, you hit a 🏆 JACKPOT!** 🎉\n` +
-        `**Congratulations!** You won <:kasiko_coin:1300141236841086977> **${winAmount}** 𝑪𝒂𝒔𝒉. 🎊\n` +
+        `**Congratulations!** You won <:kasiko_coin:1300141236841086977> **${winAmount.toLocaleString()}** 𝑪𝒂𝒔𝒉. 🎊\n` +
         `**Final Spin result:** ${finalResult.join(' | ')}\n`
       );
     } else {
@@ -113,7 +113,7 @@ export async function slots(id, amount, channel) {
       await updateUser(id, userData);
       return spinningMessage.edit(
         `🎰 **${guild.user.username}, better luck next time!** 😔\n` +
-        `**Oh no!** You lost <:kasiko_coin:1300141236841086977> **${Math.abs(winAmount)}** 𝑪𝒂𝒔𝒉.\n` +
+        `**Oh no!** You lost <:kasiko_coin:1300141236841086977> **${Math.abs(winAmount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\n` +
         `**Final Spin result:** ${finalResult.join(' | ')}\n`
       );
     }

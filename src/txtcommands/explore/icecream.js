@@ -537,7 +537,7 @@ export default {
           await updateUser(userId, user);
           await playerShop.save();
 
-          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${amount * 50} cash!`);
+          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount * 50).toLocaleString()} cash!`);
         } else {
           return message.channel.send(`⚠️ **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``);
         }

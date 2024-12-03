@@ -37,7 +37,7 @@ async function createLeaderboardEmbed(userId) {
           username: 'Failed to Fetch'
         }; // Fallback if fetching fails
       }
-      leaderboard += `**${index + 1}.** **${userDetails.username}** - Networth: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1))}**\n`;
+      leaderboard += `**${index + 1}.** **${userDetails.username}** - Networth: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
     }
 
     // Find the position of the command invoker

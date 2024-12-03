@@ -16,7 +16,7 @@ async function sendUserStat(stat, message) {
   const userData = await getUserData(message.author.id);
 
   if (stat === "cash") {
-    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** 𝑪𝒂𝒔𝒉.`);
+    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
   }
   if (stat === "trust") {
     message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`);
@@ -26,7 +26,7 @@ async function sendUserStat(stat, message) {
     if (newNetWorth) {
       userData[stat] = newNetWorth;
     }
-    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** net worth.`);
+    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** net worth.`);
   }
   if (stat === "level") {
     // Calculate experience required for the next level
@@ -38,10 +38,10 @@ async function sendUserStat(stat, message) {
     );
   }
   if (stat === "exp") {
-    message.channel.send(`**${message.author.username}**'s current experience points are ✴️ **${userData[stat]}**.`);
+    message.channel.send(`**${message.author.username}**'s current experience points are ✴️ **${userData[stat].toLocaleString()}**.`);
   }
   if (stat === "charity") {
-    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat]}** charity.`);
+    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** charity.`);
   }
 }
 

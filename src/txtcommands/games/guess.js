@@ -21,7 +21,7 @@ export async function guess(id, amount, number, channel) {
     }
 
     if (userData.cash < Number(amount)) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount}** cash.`);
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     let random = Math.floor(Math.random() * 10) + 1;
@@ -31,12 +31,12 @@ export async function guess(id, amount, number, channel) {
       winamount = Number(amount * 2.5).toFixed(0) || 0;
       userData.cash += Number(winamount);
       updateUser(id, userData);
-      return channel.send(`𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀  **@${guild.user.username}** 🎉!\nYou have won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You guessed the correct number.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`);
+      return channel.send(`𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀  **@${guild.user.username}** 🎉!\nYou have won <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉. You guessed the correct number.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`);
     } else {
       winamount = Number(-1 * amount) || 0;
       userData.cash += Number(winamount);
       await updateUser(id, userData);
-      return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. You guessed the wrong number. The number is **${random}**.`);
+      return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉. You guessed the wrong number. The number is **${random}**.`);
     }
 
   } catch (e) {

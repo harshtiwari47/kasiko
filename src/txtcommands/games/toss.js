@@ -20,7 +20,7 @@ export async function toss(id, amount, channel, choice = "head") {
     }
 
     if (userData.cash < Number(amount)) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount}** cash.`);
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     // Send a suspenseful message
@@ -49,11 +49,11 @@ export async function toss(id, amount, channel, choice = "head") {
 
     // Edit the initial "thinking" message to the final result
     if (random === 1 && choice === "head") {
-      await suspenseMessage.edit(`🎉 **${guild.user.username}**, you did it! 🪙\nThe coin landed on heads! You won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉! Fortune is on your side today!`);
+      await suspenseMessage.edit(`🎉 **${guild.user.username}**, you did it! 🪙\nThe coin landed on heads! You won <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉! Fortune is on your side today!`);
     } else if (random === 0 && choice === "tail") {
-      await suspenseMessage.edit(`🎉 **${guild.user.username}**, victory is yours! 🪙\nThe coin landed on tails! You won <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉! Luck favors you this time!`);
+      await suspenseMessage.edit(`🎉 **${guild.user.username}**, victory is yours! 🪙\nThe coin landed on tails! You won <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉! Luck favors you this time!`);
     } else {
-      await suspenseMessage.edit(`🚨 Oops, **${guild.user.username}**, fate wasn't kind! 🪙\nThe coin landed on ${choice === "tail" ? "heads": "tails"}... You lost <:kasiko_coin:1300141236841086977>**${winamount}** 𝑪𝒂𝒔𝒉. Better luck next time!`);
+      await suspenseMessage.edit(`🚨 Oops, **${guild.user.username}**, fate wasn't kind! 🪙\nThe coin landed on ${choice === "tail" ? "heads": "tails"}... You lost <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉. Better luck next time!`);
     }
 
   } catch (e) {

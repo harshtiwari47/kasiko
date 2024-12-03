@@ -38,7 +38,7 @@ function createStockEmbed(name, stock) {
   .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${stock.image}.png`) // Use image
   .addFields(
     {
-      name: "ᯓ★ Current Price", value: `<:kasiko_coin:1300141236841086977>${stock.currentPrice}`, inline: true
+      name: "ᯓ★ Current Price", value: `<:kasiko_coin:1300141236841086977>${stock.currentPrice.toLocaleString()}`, inline: true
     },
     {
       name: "ᯓ★  Trend", value: `${stock.trend}`, inline: true
@@ -220,7 +220,7 @@ export async function stockPrice(stockName, message) {
       // Create the embed
       const embed = new EmbedBuilder()
       .setTitle(`📊 Stock Price: ${stockName}`)
-      .setDescription(`**${stockName}** is currently priced at <:kasiko_coin:1300141236841086977> **${stock.currentPrice}** 𝑪𝒂𝒔𝒉.`)
+      .setDescription(`**${stockName}** is currently priced at <:kasiko_coin:1300141236841086977> **${stock.currentPrice.toLocaleString()}** 𝑪𝒂𝒔𝒉.`)
       .setImage('attachment://stock-chart.png')
       .setColor('#007bff')
       .setFooter({
@@ -306,7 +306,7 @@ export async function buyStock(stockName, amount, message) {
       // Update user data
       await updateUser(message.author.id, userData);
 
-      return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
+      return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost.toLocaleString()}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
     } else {
       return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
     }
@@ -360,7 +360,7 @@ export async function sellStock(stockName, amount, message) {
     await updateUser(message.author.id,
       userData);
 
-    message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings.toFixed(1)}** 𝑪𝒂𝒔𝒉.`);
+    message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings.toFixed(1).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
   } catch (e) {
     console.error(e);
     message.channel.send("⚠️ Something went wrong while selling stock(s).");
@@ -379,7 +379,7 @@ export async function boughtPrice(message, stockName) {
   const embed = new EmbedBuilder()
   .setColor('#f5bbaf')
   .setDescription(`
-    📊 **${message.author.username}**, you have bought **${userData.stocks[stockName].shares}** of **${stockName}** for price <:kasiko_coin:1300141236841086977> **${userData.stocks[stockName].cost.toFixed(0)}**.\nCurrent Value: <:kasiko_coin:1300141236841086977> **${(Number(stockPrice) * Number(userData.stocks[stockName].shares)).toFixed(1)}**.
+    📊 **${message.author.username}**, you have bought **${userData.stocks[stockName].shares}** of **${stockName}** for price <:kasiko_coin:1300141236841086977> **${userData.stocks[stockName].cost.toFixed(0).toLocaleString()}**.\nCurrent Value: <:kasiko_coin:1300141236841086977> **${(Number(stockPrice) * Number(userData.stocks[stockName].shares)).toFixed(1).toLocaleString()}**.
     `);
 
   return message.channel.send({
@@ -435,7 +435,7 @@ export async function portfolio(userId, message) {
     .setDescription(portfolioDetails || "No stocks found.")
     .addFields([{
       name: "𝑻𝒐𝒕𝒂𝒍 𝑷𝒐𝒓𝒕𝒇𝒐𝒍𝒊𝒐 𝑽𝒂𝒍𝒖𝒆",
-      value: `<:kasiko_coin:1300141236841086977>${portfolioValue.toFixed(0)} 𝑪𝒂𝒔𝒉`,
+      value: `<:kasiko_coin:1300141236841086977>${portfolioValue.toFixed(0).toLocaleString()} 𝑪𝒂𝒔𝒉`,
     },
     ])
     .setColor("#f2dada");
@@ -444,7 +444,7 @@ export async function portfolio(userId, message) {
     const embed2 = new EmbedBuilder()
     .addFields([{
       name: "𝑻𝒐𝒕𝒂𝒍 𝑩𝒐𝒖𝒈𝒉𝒕 𝑷𝒓𝒊𝒄𝒆",
-      value: `<:kasiko_coin:1300141236841086977>${cost.toFixed(0)} 𝑪𝒂𝒔𝒉`,
+      value: `<:kasiko_coin:1300141236841086977>${cost.toFixed(0).toLocaleString()} 𝑪𝒂𝒔𝒉`,
     },
       {
         name: `𝑁𝑒𝑡 ${profitLossLabel}`,

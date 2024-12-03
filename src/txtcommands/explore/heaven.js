@@ -130,7 +130,7 @@ export async function playGate(id, channel, message) {
       userData.heaven[2] = 1;
       userData.cash += prize;
       await updateUser(id, userData);
-      await channel.send(`🎉 **Congratulations, ${message.author.username}!** You've completed all rounds and won <:kasiko_coin:1300141236841086977> ${prize} cash!`);
+      await channel.send(`🎉 **Congratulations, ${message.author.username}!** You've completed all rounds and won <:kasiko_coin:1300141236841086977> ${prize.toLocaleString()} cash!`);
     } else {
       await channel.send(`🔚 Better luck next time, **${message.author.username}**! You completed ${userWins} round(s).`);
     }

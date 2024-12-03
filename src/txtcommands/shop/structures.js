@@ -35,7 +35,7 @@ function createStructureEmbed(structure) {
     .addFields(
       {
         name: `ᯓ★ Price `, value: `
-        **Price:** <:kasiko_coin:1300141236841086977>${structure.price}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${structure.maintenance}
+        **Price:** <:kasiko_coin:1300141236841086977>${structure.price.toLocaleString()}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${structure.maintenance.toLocaleString()}
         `, inline: false
       },
       {
@@ -189,7 +189,7 @@ export async function userstructures(userId, message) {
 
         // Add structure details to embed
         let description = '';
-        description += `ᯓ★ 𝑵𝑨𝑴𝑬: **${propertyDetails[0].name}**\n**𝑶𝑾𝑵𝑺**: ${structure.items}\n**𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice}\n\n`;
+        description += `ᯓ★ 𝑵𝑨𝑴𝑬: **${propertyDetails[0].name}**\n**𝑶𝑾𝑵𝑺**: ${structure.items}\n**𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice.toLocaleString()}\n\n`;
 
         embed.setDescription(description.trim());
 
@@ -298,7 +298,7 @@ export async function buystructure(message, structureId) {
     }
 
     if (structure[0].rarity === "legendary" && userData.networth < 1000000) {
-      return message.channel.send(`⚠️ **${message.author.username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 1000000).`);
+      return message.channel.send(`⚠️ **${message.author.username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 1,000,000).`);
     }
 
     if (!userData.structures.some(structure => structure.id === structureId)) {
@@ -379,7 +379,7 @@ export async function sellstructure(message, structureId) {
     const embed = new EmbedBuilder()
     .setColor('#e93535')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
-    .setDescription(`**${message.author.username}** successfully sold a **${structure[0].name}** structure for <:kasiko_coin:1300141236841086977> **${structure[0].price}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that structure for <:kasiko_coin:1300141236841086977>${userStructure[0].purchasedPrice}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
+    .setDescription(`**${message.author.username}** successfully sold a **${structure[0].name}** structure for <:kasiko_coin:1300141236841086977> **${structure[0].price.toLocaleString()}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that structure for <:kasiko_coin:1300141236841086977>${userStructure[0].purchasedPrice.toLocaleString()}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     .setFooter({
       text: `Kasiko`,
       iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
