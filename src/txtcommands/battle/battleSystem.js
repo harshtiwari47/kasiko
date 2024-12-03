@@ -30,17 +30,18 @@ export async function battle(message, player1, player2, friendly = false) {
   let battleStarted = false;
 
   // Function to generate embed message
+
+  const embedTop = new EmbedBuilder()
+  .setTitle('⚔️ Battle Arena 🏴‍☠️⚓')
+  .setDescription(`An intense duel between **${player1.name}**'s \`${player1.shipName} (${player1.shipLvl})\` and **${player2.name}**'s \`${player2.shipName}(${player2.shipLvl})\`!`)
+  .setColor(`#65b6df`);
+
   const generateEmbed = () => {
     const embed = new EmbedBuilder()
-    .setTitle('⚔️ Battle Arena 🏴‍☠️⚓')
-    .setDescription(`An intense duel between **${player1.name}**'s \`${player1.shipName} (${player1.shipLvl})\` and **${player2.name}**'s \`${player2.shipName}(${player2.shipLvl})\`!`)
     .setColor(player1.health > player2.health ? 0x68f79b: 0xf83636) // Change color based on player1's health (winner will be in green)
     .addFields(
       {
-        name: '🌟 Players', value: `**${player1.name}** vs **${player2.name}**`, inline: false
-      },
-      {
-        name: '🩺 Health Stat', value: `${player1.name}: **${player1.health}** ✷ ${player2.name}: **${player2.health}**`, inline: false
+        name: '🏥 Health Stat', value: `${player1.name}: **${player1.health}** ✷ ${player2.name}: **${player2.health}**`, inline: false
       },
       {
         name: '⏱️ Current Status', value: battleStarted ? `**${currentPlayer.name}'s turn!**`: 'The battle is about to start!', inline: false
@@ -72,7 +73,7 @@ export async function battle(message, player1, player2, friendly = false) {
   const channel = message.channel;
 
   const battleMessage = await channel.send({
-    embeds: [generateEmbed()]
+    embeds: [embedTop, generateEmbed()]
   });
 
   // Battle loop - we will simulate the battle for 10 turns (or until one player loses all health)
@@ -83,7 +84,7 @@ export async function battle(message, player1, player2, friendly = false) {
       battleStarted = true;
       battleLog.push(`The battle has started!`);
       await battleMessage.edit({
-        embeds: [generateEmbed()]
+        embeds: [embedTop, generateEmbed()]
       });
 
       let firstAttack = Math.floor(Math.random() * 2);
@@ -106,7 +107,7 @@ export async function battle(message, player1, player2, friendly = false) {
 
     // Update the embed with the latest action
     await battleMessage.edit({
-      embeds: [generateEmbed()]
+      embeds: [embedTop, generateEmbed()]
     });
 
     // Check if someone is defeated
@@ -185,7 +186,7 @@ export async function battle(message, player1, player2, friendly = false) {
 
   battleLog.push(`\n\n🎖️ **${winner.name}** emerges victorious, defeating **${loser.name}** with ${winner.health} health left. ${otherMessage}`);
   await battleMessage.edit({
-    embeds: [generateEmbed()]
+    embeds: [embedTop, generateEmbed()]
   });
 }
 
@@ -206,11 +207,11 @@ function gatherDetails(username, userId, isPlayer = false, message) {
         const currentTime = new Date();
         const timeDifferenceInMinutes = (10 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
 
-        if (timeDifferenceInMinutes > 0) {
+        /* timeLimit   if (timeDifferenceInMinutes > 0) {
           return resolve( {
             error: true, message: `⚠️ You can come back again for battle after ${timeDifferenceInMinutes} minutes.`
           });
-        }
+        } */
       }
 
       if (!isPlayer && userShips.ships.length === 0) {

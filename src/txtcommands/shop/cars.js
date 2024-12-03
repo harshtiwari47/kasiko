@@ -294,8 +294,8 @@ export async function buycar(message, carId) {
       return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
     }
 
-    if (car[0].rarity === "Legendary" && userData.networth < 100000) {
-      return message.channel.send(`⚠️ **${message.author.username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 100,000).`);
+    if (car[0].rarity === "legendary" && userData.networth < 500000) {
+      return message.channel.send(`⚠️ **${message.author.username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 500,000).`);
     }
 
     if (!userData.cars.some(car => car.id === carId)) {
