@@ -4,7 +4,7 @@ export default {
   aliases: ["rage",
     "table"],
   cooldown: 4000,
-  category: "Fun",
+  category: "🧩 Fun",
   execute: async (args, message) => {
     const actions = {
       flip: [

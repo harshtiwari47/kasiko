@@ -118,7 +118,7 @@ export default {
     "stat"],
   cooldown: 30000,
   // Cooldown of 30 seconds
-  category: "Stats",
+  category: "🧮 Stats",
 
   execute: (args, message) => {
     // Call the leaderboard function to display the current leaderboard

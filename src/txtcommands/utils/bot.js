@@ -8,7 +8,7 @@ export default {
   aliases: ["binfo",
     "bot"],
   cooldown: 10000,
-  category: "Utility",
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
     const {

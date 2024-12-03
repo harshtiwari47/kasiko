@@ -57,7 +57,7 @@ export default {
     "cash"],
   cooldown: 8000,
   // 8 seconds cooldown
-  category: "Games",
+  category: "🎲 Games",
 
   // Main function to execute the guessing game logic
   execute: (args, message) => {

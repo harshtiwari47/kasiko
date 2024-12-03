@@ -80,7 +80,7 @@ export default {
     "sell"],
   cooldown: 8000,
   // Cooldown of 8 seconds
-  category: "Shop",
+  category: "🛍️ Shop",
 
   execute: (args, message) => {
     const category = args[1] ? args[1].toLowerCase(): null;

@@ -423,7 +423,7 @@ export default {
   ],
   related: ["ocean", "catch"],
   cooldown: 10000, // 10 seconds cooldown
-  category: "Ocean Life",
+  category: "🌊 Ocean Life",
 
   // Main function to execute aquarium commands
   execute: (args,

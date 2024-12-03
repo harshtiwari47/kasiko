@@ -4,7 +4,7 @@ export default {
   aliases: ["burn",
     "insult"],
   cooldown: 4000,
-  category: "Fun",
+  category: "🧩 Fun",
   execute: async (args, message) => {
     const roasts = [
       "You're like a cloud. When you disappear, it’s a beautiful day.",

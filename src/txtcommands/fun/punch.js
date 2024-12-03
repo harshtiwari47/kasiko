@@ -8,7 +8,7 @@ export default {
   aliases: ["hit",
     "smack"],
   cooldown: 4000,
-  category: "Fun",
+  category: "🧩 Fun",
   execute: async (args, message) => {
     try {
       if (!args[1]) {

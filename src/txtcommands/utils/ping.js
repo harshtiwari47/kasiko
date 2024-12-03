@@ -11,7 +11,7 @@ export default {
   aliases: ["latency",
     "pong"],
   cooldown: 6000,
-  category: "Utility",
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
     const start = Date.now();

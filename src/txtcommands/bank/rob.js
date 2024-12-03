@@ -255,7 +255,7 @@ export default {
   args: "<target>",
   example: ["rob @player"],
   cooldown: 43200000,
-  category: "Economy",
+  category: "🏦 Economy",
   related: ["give", "bank"],
   execute: async (args,
     message) => {

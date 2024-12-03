@@ -10,7 +10,7 @@ export default {
   description: "Provides a bot's support link and donation link.",
   aliases: ["assist"],
   cooldown: 8000,
-  category: "Utility",
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
     const embed = new EmbedBuilder()

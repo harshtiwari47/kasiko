@@ -499,7 +499,7 @@ export default {
     "sell"],
   cooldown: 10000,
   // Cooldown of 2 seconds
-  category: "Stocks",
+  category: "📊 Stocks",
 
   execute: (args, message) => {
     const command = args[1] ? args[1].toLowerCase(): null;

@@ -221,7 +221,7 @@ export default {
     "rob",
     "deposit"],
   cooldown: 10000,
-  category: "Economy",
+  category: "🏦 Economy",
 
   // Execute function based on the command alias
   execute: async (args, message) => {

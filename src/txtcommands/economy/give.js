@@ -23,7 +23,7 @@ export const sendConfirmation = async (message, userId, amount, recipient) => {
     })
   })
   .setTitle('Confirm Transaction')
-  .setDescription(`Are you sure you want to send <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to <@${recipient}>?`)
+  .setDescription(`Are you sure you want to send <:kasiko_coin:1300141236841086977> **${Number(amount).toLocaleString()}** to <@${recipient}>?`)
   .addFields(
     {
       name: 'Warning', value: 'We do not allow any form of monetary trade or exchange.'
@@ -185,7 +185,7 @@ export default {
   example: ["give 100 @user"],
   related: ["daily", "cash"],
   cooldown: 15000,
-  category: "Economy",
+  category: "🏦 Economy",
   execute: (args,
     message) => {
     if (Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2], message)) {

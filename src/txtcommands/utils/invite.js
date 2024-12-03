@@ -12,7 +12,7 @@ export default {
   aliases: ["inv",
     "botinvite"],
   cooldown: 8000,
-  category: "Utility",
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
     const embed = new EmbedBuilder()
@@ -20,7 +20,7 @@ export default {
     .setDescription("Bring me to your server and enjoy amazing features!")
     .setColor(0x5865f2)
     .addFields({
-      name: "Invite Link", value: "[Click Here to Invite](https://discord.com/oauth2/authorize?client_id=YOUR_BOT_ID&permissions=8&scope=bot)"
+      name: "Invite Link", value: "[Click Here to Invite](https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=1135386416761920&scope=bot)"
     })
     .setFooter({
       text: "Thanks for inviting me!"

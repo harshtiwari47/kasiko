@@ -95,21 +95,45 @@ async function createUserEmbed(userId, username, userData, avatar) {
   }
 }
 
-export async function profile(id, channel) {
+export async function profile(userId, context) {
   try {
-    const user = await channel.guild.members.fetch(id);
-    let userData = await getUserData(id);
-    userData.networth = updateNetWorth(id);
+    const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
+    const user = await context.client.users.fetch(userId);
 
-    let userProfile = await createUserEmbed(id, user.username, userData, user.displayAvatarURL({
-      dynamic: true, size: 256
-    }));
-    return await channel.send({
-      embeds: userProfile
-    });
+    const userData = await getUserData(userId);
+    userData.networth = updateNetWorth(userId);
+
+    const userProfile = await createUserEmbed(
+      userId,
+      user.username,
+      userData,
+      user.displayAvatarURL({
+        dynamic: true, size: 256
+      })
+    );
+
+    if (isInteraction) {
+      // If the context is an interaction
+      if (!context.deferred) await context.deferReply();
+      return await context.editReply({
+        embeds: userProfile
+      });
+    } else {
+      // If the context is a text-based message
+      return await context.channel.send({
+        embeds: userProfile
+      });
+    }
   } catch (e) {
-    console.error(e)
-    return channel.send("Oops! something went wrong while exploring user's profile!");
+    console.error("Error generating profile:", e);
+
+    const errorMessage = "Oops! Something went wrong while exploring the user's profile!";
+    if (context.isCommand) {
+      if (!context.deferred) await context.deferReply();
+      return await context.editReply(errorMessage);
+    } else {
+      return context.channel.send(errorMessage);
+    }
   }
 }
 
@@ -132,14 +156,16 @@ export default {
     "bank"],
   cooldown: 10000,
   // Cooldown of 10 seconds
-  category: "User",
-
+  category: "👤 User",
+  intract: (interaction) => {
+    return profile(interaction.user.id, interaction);
+  },
   execute: (args, message) => {
     // If the user mentions someone, display their profile
     if (args[1] && Helper.isUserMention(args[1], message)) {
-      return profile(Helper.extractUserId(args[1]), message.channel);
+      return profile(Helper.extractUserId(args[1]), message);
     }
     // Otherwise, display the message author's profile
-    return profile(message.author.id, message.channel);
+    return profile(message.author.id, message);
   }
 };

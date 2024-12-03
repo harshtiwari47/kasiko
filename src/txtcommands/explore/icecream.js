@@ -119,7 +119,7 @@ export default {
     "help",
     "cash"],
   cooldown: 5000,
-  category: "Explore",
+  category: "🌱 Explore",
   async execute(args, message) {
     try {
       const userId = message.author.id;

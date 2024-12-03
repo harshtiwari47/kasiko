@@ -8,7 +8,7 @@ export default {
   aliases: ["joy",
     "smile"],
   cooldown: 4000,
-  category: "Fun",
+  category: "🧩 Fun",
   execute: async (args, message) => {
     try {
       // List of random happy GIF URLs

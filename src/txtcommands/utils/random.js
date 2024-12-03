@@ -10,7 +10,7 @@ export default {
   description: "Generates a random number between 1 and 10.",
   aliases: ["rand", "number"],
   cooldown: 6000,
-  category: "Utility",
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
     const randomNumber = Math.floor(Math.random() * 10) + 1;

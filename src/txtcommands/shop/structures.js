@@ -90,14 +90,6 @@ export async function sendPaginatedStructures(context) {
     });
 
     collector.on("collect", async (buttonInteraction) => {
-      if (buttonInteraction.user.id !== user.id) {
-        await buttonInteraction.reply({
-          content: "You can't interact with this button.",
-          ephemeral: true,
-        });
-        return; // Stop further handling for unauthorized users
-      }
-
       try {
         // Defer the interaction
         await buttonInteraction.deferUpdate();
@@ -430,7 +422,7 @@ export default {
     "market"],
   cooldown: 4000,
   //4s
-  category: "Shop",
+  category: "🛍️ Shop",
 
   // Execute the function when the command is called
   execute: (args, message) => handleStructureCommands(args, message)

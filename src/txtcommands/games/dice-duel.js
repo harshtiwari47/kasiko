@@ -210,7 +210,7 @@ export default {
   example: ["dice @opponent 500"],
   related: ["slots", "cash", "tosscoin", "guess"],
   cooldown: 8000, // 8 seconds cooldown
-  category: "Games",
+  category: "🎲 Games",
 
   // Main function to execute the dice duel logic
   execute: (args,

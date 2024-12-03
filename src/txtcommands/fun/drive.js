@@ -8,7 +8,7 @@ export default {
   aliases: ["car",
     "ride"],
   cooldown: 4000,
-  category: "Fun",
+  category: "🧩 Fun",
   execute: async (args, message) => {
     try {
       const actions = [{

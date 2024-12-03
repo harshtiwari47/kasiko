@@ -4,7 +4,7 @@ export default {
   aliases: ["praise",
     "nice"],
   cooldown: 4000,
-  category: "Fun",
+  category: "🧩 Fun",
   execute: async (args, message) => {
     const compliments = [
       "You're like a software update; you make everything better!",

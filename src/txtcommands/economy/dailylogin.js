@@ -86,7 +86,7 @@ export default {
     "cash",
     "profile"],
   cooldown: 86400000,
-  category: "Economy",
+  category: "🏦 Economy",
 
   // Main function to execute the daily login reward logic
   execute: (args, message) => {

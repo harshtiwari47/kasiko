@@ -14,7 +14,7 @@ export default {
     // Lists all commands
     "help shop" // Shows details for the 'shop' command
   ],
-  category: "Utility",
+  category: "🔧 Utility",
   cooldown: 6000,
   // 6 second cooldown
 

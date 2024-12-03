@@ -274,7 +274,7 @@ export default {
   name: "mine",
   description: "Start mining, collect resources, or exchange coal for cash. Type `mine help` for more info!",
   aliases: [],
-  category: "Explore",
+  category: "🌱 Explore",
   cooldown: 100000,
   execute: async (args, message) => {
     try {

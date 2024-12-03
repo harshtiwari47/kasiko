@@ -82,14 +82,6 @@ export async function sendPaginatedCars(context) {
     });
 
     collector.on("collect", async (buttonInteraction) => {
-      if (buttonInteraction.user.id !== user.id) {
-        await buttonInteraction.reply({
-          content: "You can't interact with this button.",
-          ephemeral: true,
-        });
-        return; // Stop further processing
-      }
-
       await buttonInteraction.deferUpdate();
 
       if (buttonInteraction.customId === "nextCar") {
@@ -223,13 +215,6 @@ export async function usercars(userId, message) {
 
     collector.on('collect',
       interaction => {
-        if (interaction.user.id !== userId) {
-          return interaction.reply({
-            content: "⚠️ Only the original user can interact with these buttons!",
-            ephemeral: true // Private reply
-          });
-        }
-
         if (interaction.customId === 'next') {
           currentPage++;
         } else if (interaction.customId === 'prev') {
@@ -425,7 +410,7 @@ export default {
     "buildings",
     "houses"],
   cooldown: 4000,
-  category: "Shop",
+  category: "🛍️ Shop",
 
   // Execute the function when the command is called
   execute: (args, message) => handleCarCommands(args, message)

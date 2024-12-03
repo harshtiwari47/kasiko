@@ -8,7 +8,7 @@ export default {
   aliases: ["avatarinfo",
     "avinfo"],
   cooldown: 8000,
-  category: "Utility",
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
     const target = message.mentions.users.first() || message.author;

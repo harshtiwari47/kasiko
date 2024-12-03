@@ -275,7 +275,7 @@ export default {
     "catch"],
   cooldown: 10000,
   // Cooldown of 10 seconds
-  category: "Ocean Life",
+  category: "🌊 Ocean Life",
 
   execute: (args, message) => {
     // Extract the subcommand from the user's input

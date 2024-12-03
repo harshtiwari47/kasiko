@@ -8,7 +8,7 @@ export default {
   aliases: ["survey"],
   example: ["poll How many users agree with mod?"],
   cooldown: 6000,
-  category: "Utility",
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
     args.shift();

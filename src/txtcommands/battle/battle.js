@@ -117,7 +117,7 @@ export default {
   related: ["ships", "active", "stat",
     "profile"],
   cooldown: 600000,
-  category: "Battle",
+  category: "⚓ Battle",
 
   // Execute function based on the command alias
   execute: (args,

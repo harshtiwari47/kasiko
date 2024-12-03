@@ -7,7 +7,7 @@ export default {
   cooldown: 4000,
   args: "<question>",
   example: ["magicball Will I win the lottery?", "8ball Is it a good idea?"],
-  category: "Fun",
+  category: "🧩 Fun",
 
   execute: async (args, message) => {
     // Check if a question is provided

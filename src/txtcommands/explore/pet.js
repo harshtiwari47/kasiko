@@ -57,7 +57,7 @@ export default {
     "pet view Fluffy",
     "pet talk"
   ],
-  category: "Explore",
+  category: "🌱 Explore",
   cooldown: 5000,
 
   // Main function for executing pet commands
