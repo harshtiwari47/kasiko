@@ -34,7 +34,7 @@
     "levelUpCost": 2100,
     "rarity": "epic",
     "health": 490,
-    "probability": 8,
+    "probability": 5,
     "emoji": "1304674506648064081",
     "type": "battleship"
   },
@@ -72,7 +72,7 @@
     "repairCost": 200,
     "levelUpCost": 2000,
     "rarity": "epic",
-    "health": 480,
+    "health": 520,
     "probability": 12,
     "emoji": "1304674360660852807",
     "type": "pirate ship"

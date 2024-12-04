@@ -30,8 +30,18 @@ async function startMining(message) {
 
     // If the user is already mining, check time elapsed and potential overflow
     if (userMining && userMining.startTime) {
-      const timeElapsed = Math.floor((Date.now() - new Date(userMining.startTime)) / 60000);
-      return message.channel.send(`⛏️ **${message.author.username}**, you are already mining! Time elapsed: ${timeElapsed} minutes.`);
+      const timeElapsedMillis = Date.now() - new Date(userMining.startTime);
+
+      const days = Math.floor(timeElapsedMillis / (1000 * 60 * 60 * 24)); // Days
+      const hours = Math.floor((timeElapsedMillis % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // Hours
+      const minutes = Math.floor((timeElapsedMillis % (1000 * 60 * 60)) / (1000 * 60)); // Minutes
+
+      let timeElapsed = '';
+      if (days > 0) timeElapsed += `${days} day${days > 1 ? 's': ''} `;
+      if (hours > 0) timeElapsed += `${hours} hour${hours > 1 ? 's': ''} `;
+      if (minutes > 0) timeElapsed += `${minutes} minute${minutes > 1 ? 's': ''}`;
+
+      return message.channel.send(`⛏️ **${message.author.username}**, you are already mining! Time elapsed: ${timeElapsed}.`);
     }
 
     // If no mining session exists, create a new one

@@ -15,6 +15,7 @@ import {
   termsAndcondition
 } from './utils/terms.js';
 import WelcomeMsg from './utils/welcome.js';
+import Server from './models/Server.js';
 
 import txtcommands from './src/textCommandHandler.js';
 import {
@@ -160,12 +161,33 @@ client.on('messageCreate', async (message) => {
 
 client.on('interactionCreate', async (interaction) => {
   try {
-    await handleSlashCommand(interaction); // Handle slash command interactions
+    let userExistence = await userExists(interaction.user.id);
+    if (!userExistence) {
+      await interaction.reply({
+        content: `You haven't accepted our terms and conditions! Type \`kas terms\` in a server where the bot is available to create an account.`,
+        ephemeral: true, // Only visible to the user
+      });
+      return;
+    }
+    if (interaction.isCommand()) {
+      await handleSlashCommand(interaction); // Handle slash command interactions
+    }
   } catch (e) {
     console.error(e);
   }
 });
 
 client.on('guildCreate', WelcomeMsg.execute);
+
+bot.on('guildDelete', async (guild) => {
+  const serverId = guild.id;
+
+  // Find and delete the server record from the database
+  await Server.findOneAndDelete({
+    id: serverId
+  });
+
+  console.log(`Bot was removed from the server with ID: ${serverId}`);
+});
 
 client.login(TOKEN);

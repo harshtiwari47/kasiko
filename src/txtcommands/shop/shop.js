@@ -155,7 +155,25 @@ export default {
       return Structure.sendPaginatedStructures(message); // Show paginated structures in the shop
 
     default:
-      return message.channel.send("🛒 𝑺𝑯𝑶𝑷\nUse `shop car` or `shop structure` to view items.\n𝑃𝑢𝑟𝑐ℎ𝑎𝑠𝑒 :\n- `buy car <id>` to buy a car.\n- `buy structure <id>` to buy house or building.\n- `buy roses <amount>` to buy roses.\n𝑆𝑒𝑙𝑙:\n- `sell car <id>`, or `sell structure <id>`, to sell items.");
+      const embed = new EmbedBuilder()
+      .setColor(0x1F8B4C) // Sets the embed color
+      .setTitle("🛒 𝑺𝑯𝑶𝑷")
+      .setDescription("Use `shop car` or `shop structure` to view items.")
+      .addFields(
+        {
+          name: "𝑃𝑢𝑟𝑐ℎ𝑎𝑠𝑒", value: "- `buy car <id>` to buy a car.\n- `buy structure <id>` to buy a house or building.\n- `buy roses <amount>` to buy roses.", inline: false
+        },
+        {
+          name: "𝑆𝑒𝑙𝑙", value: "- `sell car <id>` to sell a car.\n- `sell structure <id>` to sell a house or building.", inline: false
+        }
+      )
+      .setFooter({
+        text: "Happy shopping!"
+      }); // Adds a footer
+
+      message.channel.send({
+        embeds: [embed]
+      });
     }
   }
 };

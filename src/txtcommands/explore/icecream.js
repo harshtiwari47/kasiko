@@ -499,9 +499,16 @@ export default {
 
           let level = parseInt(args[1]);
 
+          if (level > 1 || level < 0) {
+            return message.channel.send(`⚠️ Currently, only the \`level 1\` layout is available!`)
+          }
+
           const embed = new EmbedBuilder()
           .setColor(layout[level - 1].color)
           .setDescription(`**LEVEL ${level} LAYOUT**\n${layout[level - 1].decoration}`)
+          .setFooter({
+            text: `icecream layout <level>`
+          })
           .setImage(layout[level - 1].image);
 
           return message.channel.send({
@@ -581,6 +588,39 @@ export default {
             embeds: [bonusEmbed], content: null
           });
         }, 2000); // Adding suspense with a 2-second delay
+      }
+
+      // help
+
+      if (args[0] === "help") {
+        const embed = new EmbedBuilder()
+        .setTitle("🍦 Ice Cream Shop Commands")
+        .setColor("#f5bbaf")
+        .setDescription("Here are the available commands for managing your Ice Cream Shop:")
+        .addFields(
+          {
+            name: "💢 General", value: "`status`, `shop`, `layout`"
+          },
+          {
+            name: "🍧 Flavours",
+            value: "`flavours` (all available), `flavours my` (your shop flavours)"
+          },
+          {
+            name: "🍨 Shop Actions",
+            value: "`make <flavour>` (create a new flavour), `upgrade machine/layout` (upgrade shop), `share @user <flavour>` (share ice cream)"
+          },
+          {
+            name: "💰 Economy",
+            value: "`exchange <amount>` (convert loyalty points into cash), `daily` (claim your daily bonus)"
+          }
+        )
+        .setFooter({
+          text: "Use `ice <command>` to interact with your shop!"
+        });
+
+        return message.channel.send({
+          embeds: [embed]
+        });
       }
     } catch (e) {
       console.error(e);
