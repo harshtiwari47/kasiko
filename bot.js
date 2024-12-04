@@ -179,7 +179,7 @@ client.on('interactionCreate', async (interaction) => {
 
 client.on('guildCreate', WelcomeMsg.execute);
 
-bot.on('guildDelete', async (guild) => {
+client.on('guildDelete', async (guild) => {
   const serverId = guild.id;
 
   // Find and delete the server record from the database
