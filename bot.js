@@ -32,8 +32,6 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
-import DevelopmentStatus from './models/devlopmentStatus.js';
-
 dotenv.config();
 
 // Bind to port
@@ -70,35 +68,6 @@ client.on('messageCreate', async (message) => {
     if (mentionedBots.size > 0) return
 
     let startPer = performance.now();
-
-    const activeStatus = await DevelopmentStatus.isActive();
-
-    if (activeStatus) {
-      // Define the start and end times
-      const developmentStartTime = activeStatus.startTime;
-      const developmentEndTime = activeStatus.endTime;
-
-      const embed = new EmbedBuilder()
-      .setColor('#ff0000') // Set a red color to indicate development
-      .setTitle('🚧 Bot Under Development 🚧')
-      .setDescription('Our bot is currently undergoing improvements to enhance your experience. Please bear with us during this time.')
-      .addFields(
-        {
-          name: 'Start Time', value: developmentStartTime, inline: true
-        },
-        {
-          name: 'End Time', value: developmentEndTime, inline: true
-        },
-      )
-      .setFooter({
-        text: 'Thank you for your patience!'
-      })
-      .setTimestamp();
-
-      message.channel.send({
-        embeds: [embed]
-      });
-    }
 
     // check user exist
     let userExistence = await userExists(message.author.id);

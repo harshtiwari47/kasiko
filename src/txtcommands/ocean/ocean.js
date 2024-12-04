@@ -173,6 +173,13 @@ export async function exploreZone(userId, zoneName, message) {
 }
 
 async function collect(userId, message) {
+
+  const userData = await getUserData(userId);
+
+  if (userData.cash < 1500) {
+    return message.channel.send(`⚠️ **${message.author.username}**, you have insufficient cash for fishing.\nMinimum Cash: <:kasiko_coin:1300141236841086977> 1500 𝑪𝒂𝒔𝒉.`);
+  }
+
   collectAnimal(userId, message);
 
   let randomProb = Math.floor(Math.random() * 100);

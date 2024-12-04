@@ -1,9 +1,7 @@
 {
   "TECHCORP": {
-    "currentPrice": 793.36,
+    "currentPrice": 834.65,
     "last10Prices": [
-      799.02,
-      809.29,
       779.29,
       765.39,
       758.1,
@@ -11,13 +9,15 @@
       787.89,
       804.14,
       833.13,
-      793.36
+      793.36,
+      804.04,
+      834.65
     ],
     "maxmin": [
       1110,
       300
     ],
-    "trend": "stable",
+    "trend": "up",
     "sector": "Technology",
     "marketCap": "1.5B",
     "volatility": 1,
@@ -25,10 +25,8 @@
     "image": "techcorp"
   },
   "AUTOWORKS": {
-    "currentPrice": 27.75,
+    "currentPrice": 27.38,
     "last10Prices": [
-      28.38,
-      28.22,
       28.52,
       28.11,
       28.09,
@@ -36,7 +34,9 @@
       27.41,
       27.95,
       28.6,
-      27.75
+      27.75,
+      27.8,
+      27.38
     ],
     "trend": "stable",
     "maxmin": [
@@ -50,10 +50,8 @@
     "image": "autoworks"
   },
   "ECOENERGY": {
-    "currentPrice": 971.24,
+    "currentPrice": 986.19,
     "last10Prices": [
-      925.34,
-      958.24,
       960.49,
       984.34,
       962.79,
@@ -61,7 +59,9 @@
       993.4,
       968.32,
       936.26,
-      971.24
+      971.24,
+      992.46,
+      986.19
     ],
     "maxmin": [
       1300,
@@ -75,10 +75,8 @@
     "image": "ecoenergy"
   },
   "FOODIE": {
-    "currentPrice": 493.07,
+    "currentPrice": 482.52,
     "last10Prices": [
-      526.74,
-      556.66,
       552.66,
       545.84,
       537.74,
@@ -86,13 +84,15 @@
       530.67,
       546.55,
       515.5,
-      493.07
+      493.07,
+      498.25,
+      482.52
     ],
     "maxmin": [
       665,
       180
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Food & Beverage",
     "marketCap": "300M",
     "volatility": 1.2,
@@ -100,10 +100,8 @@
     "image": "foodie"
   },
   "MEDICAL": {
-    "currentPrice": 335,
+    "currentPrice": 335.38,
     "last10Prices": [
-      382.29,
-      392.1,
       366.24,
       389.98,
       370.55,
@@ -111,13 +109,15 @@
       330.05,
       316.04,
       323.51,
-      335
+      335,
+      328.65,
+      335.38
     ],
     "maxmin": [
       775,
       285
     ],
-    "trend": "up",
+    "trend": "stable",
     "sector": "Healthcare",
     "marketCap": "2B",
     "volatility": 1.4,
@@ -125,10 +125,8 @@
     "image": "medical"
   },
   "RETAILER": {
-    "currentPrice": 65.68,
+    "currentPrice": 64.02,
     "last10Prices": [
-      67.66,
-      65.65,
       64.34,
       64.75,
       64.65,
@@ -136,7 +134,9 @@
       64.87,
       66.69,
       67.01,
-      65.68
+      65.68,
+      65.98,
+      64.02
     ],
     "maxmin": [
       190,
@@ -150,10 +150,8 @@
     "image": "retailer"
   },
   "FINTECH": {
-    "currentPrice": 960.09,
+    "currentPrice": 949.46,
     "last10Prices": [
-      1029.5,
-      983.51,
       1011.36,
       1023.39,
       1068.85,
@@ -161,13 +159,15 @@
       1070.8,
       1021.47,
       964.32,
-      960.09
+      960.09,
+      927.98,
+      949.46
     ],
     "maxmin": [
       1320,
       270
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Finance",
     "marketCap": "1.8B",
     "volatility": 1.3,
@@ -175,10 +175,8 @@
     "image": "fintech"
   },
   "TRAVEL": {
-    "currentPrice": 53.47,
+    "currentPrice": 50.97,
     "last10Prices": [
-      57.04,
-      58.98,
       58.09,
       56.5,
       56.77,
@@ -186,7 +184,9 @@
       57.72,
       55.73,
       53.57,
-      53.47
+      53.47,
+      51.35,
+      50.97
     ],
     "maxmin": [
       300,
@@ -200,10 +200,8 @@
     "image": "travel"
   },
   "EDUCATECH": {
-    "currentPrice": 107.73,
+    "currentPrice": 110.55,
     "last10Prices": [
-      111.87,
-      112.47,
       117.31,
       110.87,
       113.4,
@@ -211,7 +209,9 @@
       109.23,
       113.14,
       107.72,
-      107.73
+      107.73,
+      112,
+      110.55
     ],
     "maxmin": [
       670,
@@ -225,10 +225,8 @@
     "image": "educatech"
   },
   "CLEANENERGY": {
-    "currentPrice": 716.63,
+    "currentPrice": 765.52,
     "last10Prices": [
-      644.96,
-      677.6,
       672.43,
       682.26,
       696,
@@ -236,7 +234,9 @@
       713.19,
       695.55,
       706.22,
-      716.63
+      716.63,
+      724.16,
+      765.52
     ],
     "maxmin": [
       1600,
@@ -250,10 +250,8 @@
     "image": "cleanenergy"
   },
   "BIOGENICS": {
-    "currentPrice": 381.16,
+    "currentPrice": 385.48,
     "last10Prices": [
-      379.91,
-      359.31,
       361.08,
       368.27,
       350.98,
@@ -261,7 +259,9 @@
       373.31,
       373.04,
       371.69,
-      381.16
+      381.16,
+      388.45,
+      385.48
     ],
     "maxmin": [
       550,
@@ -275,10 +275,8 @@
     "image": "biogenics"
   },
   "AEROSPACE": {
-    "currentPrice": 884.99,
+    "currentPrice": 785.45,
     "last10Prices": [
-      900,
-      846.07,
       849.59,
       864.17,
       826.28,
@@ -286,13 +284,15 @@
       776.66,
       786.21,
       834.63,
-      884.99
+      884.99,
+      834.65,
+      785.45
     ],
     "maxmin": [
       900,
       430
     ],
-    "trend": "up",
+    "trend": "down",
     "sector": "Aerospace & Defense",
     "marketCap": "2B",
     "volatility": 1.3,
@@ -300,10 +300,8 @@
     "image": "aerospace"
   },
   "CYBERPROTECT": {
-    "currentPrice": 120.49,
+    "currentPrice": 120.82,
     "last10Prices": [
-      123.42,
-      128.93,
       126.61,
       126.33,
       128.64,
@@ -311,7 +309,9 @@
       120.72,
       122.58,
       124.69,
-      120.49
+      120.49,
+      125.99,
+      120.82
     ],
     "maxmin": [
       300,
@@ -325,10 +325,8 @@
     "image": "cyberprotect"
   },
   "GREENSCAPE": {
-    "currentPrice": 38.45,
+    "currentPrice": 37.71,
     "last10Prices": [
-      37.44,
-      37.42,
       37.3,
       36.21,
       36.46,
@@ -336,13 +334,15 @@
       37.6,
       37.62,
       38.63,
-      38.45
+      38.45,
+      38.07,
+      37.71
     ],
     "maxmin": [
       95,
       30
     ],
-    "trend": "stable",
+    "trend": "down",
     "sector": "Agriculture",
     "marketCap": "300M",
     "volatility": 0.7,
@@ -350,10 +350,8 @@
     "image": "greenscape"
   },
   "WATERWORKS": {
-    "currentPrice": 67.7,
+    "currentPrice": 70.18,
     "last10Prices": [
-      71.88,
-      69.88,
       67.93,
       66.96,
       66.68,
@@ -361,13 +359,15 @@
       64.54,
       66.35,
       65.91,
-      67.7
+      67.7,
+      68.72,
+      70.18
     ],
     "maxmin": [
       120,
       50
     ],
-    "trend": "stable",
+    "trend": "up",
     "sector": "Utilities",
     "marketCap": "450M",
     "volatility": 0.6,
@@ -375,10 +375,8 @@
     "image": "waterworks"
   },
   "NEWMEDIA": {
-    "currentPrice": 132.39,
+    "currentPrice": 142.83,
     "last10Prices": [
-      153.84,
-      161.06,
       154.12,
       153.14,
       147.85,
@@ -386,13 +384,15 @@
       145.17,
       138.5,
       134.88,
-      132.39
+      132.39,
+      136.08,
+      142.83
     ],
     "maxmin": [
       220,
       90
     ],
-    "trend": "down",
+    "trend": "up",
     "sector": "Media",
     "marketCap": "1.1B",
     "volatility": 1,
@@ -400,10 +400,8 @@
     "image": "newmedia"
   },
   "GLOBALTRADE": {
-    "currentPrice": 112.21,
+    "currentPrice": 118.79,
     "last10Prices": [
-      115.46,
-      113.61,
       114.92,
       111.77,
       114.93,
@@ -411,13 +409,15 @@
       119.51,
       115.68,
       114.63,
-      112.21
+      112.21,
+      116.26,
+      118.79
     ],
     "maxmin": [
       150,
       50
     ],
-    "trend": "down",
+    "trend": "up",
     "sector": "Logistics",
     "marketCap": "650M",
     "volatility": 0.8,
