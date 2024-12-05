@@ -154,7 +154,6 @@ async function mineHelp(message) {
   const embed = new EmbedBuilder()
   .setColor(0x0099ff)
   .setTitle("⛏️ Mining Help")
-  .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
   .setDescription("Here are the commands to help you with mining:")
   .addFields(
     {

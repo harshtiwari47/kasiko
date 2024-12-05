@@ -24,7 +24,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
     // The robber needs more than 5000 cash to attempt a robbery
     if (userCash < 5000) {
-      return message.channel.send("You need at least **5000** cash to attempt a robbery!");
+      return message.channel.send("You need at least <:kasiko_coin:1300141236841086977> **5000** cash to attempt a robbery!");
     }
 
     if (userData.lastRobbery && checkTimeGap(userData.lastRobbery, Date.now()) < 12) {
