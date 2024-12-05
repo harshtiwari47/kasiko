@@ -105,7 +105,7 @@ async function startRace(amount, betOn, teammateId, userData, teammateData, chan
 
       // Determine the winner
       const winner = (horse1Pos >= trackLength && horse1Pos > horse2Pos) ? "horse1": "horse2";
-      const winAmount = Math.floor(amount * 2);
+      const winAmount = Math.floor(amount * 1);
       const teammateSplit = teammateId ? Math.floor(winAmount / 2): winAmount;
 
       if (winner === betOn) {
