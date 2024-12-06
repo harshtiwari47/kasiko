@@ -135,7 +135,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
           winner = "horse3";
         }
       }
-      const winAmount = Math.floor(amount * 2);
+      const winAmount = Math.floor(amount * 1.5);
       const teammateSplit = teammateId ? Math.floor(winAmount / 2): winAmount;
 
       if (winner === betOn) {
@@ -165,7 +165,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
 
         const embed = new EmbedBuilder()
         .setColor(0xFF0000) // Red color for loss
-        .setTitle(`🚨 ${guild.user.username}${teammateData && winner !== opponentBetOn ? " & <@" + teammateId + ">" : ""}, better luck next time!`)
+        .setTitle(`🚨 ${guild.user.username}${teammateData && winner !== opponentBetOn ? " & <@" + teammateId + ">": ""}, better luck next time!`)
         .setDescription(
           `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** didn't win...\n` +
           `${teammateId && winner !== opponentBetOn ? `**<@${teammateId}>** bet on **${opponentBetOn}** didn't win too!`: ""}` +

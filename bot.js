@@ -18,6 +18,11 @@ import WelcomeMsg from './utils/welcome.js';
 import Server from './models/Server.js';
 
 import txtcommands from './src/textCommandHandler.js';
+
+import {
+  getUserPassTask,
+  setUserPassTask
+} from './src/txtcommands/explore/pass.js';
 import {
   loadSlashCommands,
   handleSlashCommand
@@ -114,6 +119,20 @@ client.on('messageCreate', async (message) => {
       await redisClient.set(globalCooldownKey, '1', {
         EX: cooldownDuration
       });
+
+      /* Pass
+      try {
+        let passTask = await getUserPassTask(message.author.id);
+        if (passTask?.tasks.get("command")) {
+          passTask.tasks.get("command").exp = passTask.tasks.get("command").exp + 1 > passTask.tasks.get("command").required ? passTask.tasks.get("command").required: passTask.tasks.get("command").exp + 1;
+          console.log("cccc" + passTask.tasks.get("command"))
+          await setUserPassTask(message.author.id, passTask)
+        }
+      } catch (e) {
+        console.error(`error in pass tasks: ${e}`)
+      }
+*/
+
 
       command.execute(args, message);
     } catch (error) {

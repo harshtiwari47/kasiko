@@ -82,7 +82,7 @@ export async function blackjack(id, amount, channel) {
     });
 
     const embedTitle = new EmbedBuilder()
-    .setTitle('𝗕𝗹𝗮𝗰𝗸𝗷𝗮𝗰𝗸 𝗚𝗮𝗺𝗲 🃏')
+    .setTitle(`🃏𝗕𝗹𝗮𝗰𝗸𝗷𝗮𝗰𝗸 𝗚𝗮𝗺𝗲`)
     .setAuthor({
       name: `${guild.user.username}'s`, iconURL: avatarUrl
     })
@@ -90,22 +90,23 @@ export async function blackjack(id, amount, channel) {
 
     // Create embed for the game state
     const embed = new EmbedBuilder()
-    .setColor('#8d69f2')
     .setDescription(`> **${guild.user.username}**, you are playing Blackjack!\n\n` +
-      `**Your cards** :\n${playerHand.join(" ")} (**${playerHandValue}**)\n` +
-      `**Bot's cards**:\n${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
-      `Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+      `**Your cards** :\n` +
+      `## ${playerHand.join(" ")} (**${playerHandValue}**)\n` +
+      `**Bot's cards**:\n` +
+      `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
+      `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
     // Create buttons for hit and stand
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
       .setCustomId('hit')
       .setLabel('Hit')
-      .setStyle(ButtonStyle.Success),
+      .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
       .setCustomId('stand')
       .setLabel('Stand')
-      .setStyle(ButtonStyle.Danger)
+      .setStyle(ButtonStyle.Primary)
     );
 
     // Send the embed with buttons
@@ -116,7 +117,7 @@ export async function blackjack(id, amount, channel) {
     // Button interaction handler
     const filter = (interaction) => interaction.user.id === id;
     const collector = gameMessage.createMessageComponentCollector({
-      filter, time: 40000
+      filter, time: 120000
     });
 
     collector.on('collect', async (interaction) => {
@@ -128,9 +129,11 @@ export async function blackjack(id, amount, channel) {
           const bustEmbed = new EmbedBuilder(embed)
           .setColor("#f43d3d")
           .setDescription(`> 🚨 **${guild.user.username}**, you busted! Your hand value is over 21.\n\n` +
-            `**Your cards :**\n${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-            `**Bot's cards:**\n${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
-            `Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+            `**Your cards :**\n` +
+            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+            `**Bot's cards:**\n` +
+            `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
+            `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
           await interaction.update({
             embeds: [embedTitle, bustEmbed], components: []
@@ -141,9 +144,11 @@ export async function blackjack(id, amount, channel) {
           // Update the embed with new player hand
           const newEmbed = new EmbedBuilder(embed)
           .setDescription(`> **${guild.user.username}**, you hit!\n\n` +
-            `**Your cards :**\n${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-            `**Bot's cards:**\n${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
-            `Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+            `**Your cards :**\n` +
+            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+            `**Bot's cards:**\n` +
+            `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
+            `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
           await interaction.update({
             embeds: [embedTitle, newEmbed], components: [row]
@@ -185,9 +190,11 @@ export async function blackjack(id, amount, channel) {
         const finalEmbed = new EmbedBuilder(embed)
         .setColor(color)
         .setDescription(`> ${resultMessage}\n\n` +
-          `**Your cards :**\n${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
-          `**Bot's cards:**\n${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
-          `Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+          `**Your cards :**\n` +
+          `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
+          `**Bot's cards:**\n` +
+          `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
+          `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
         await interaction.update({
           embeds: [embedTitle, finalEmbed], components: []

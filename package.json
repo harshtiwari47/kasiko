@@ -33,6 +33,7 @@
     "express": "^4.21.1",
     "fs": "^0.0.1-security",
     "list": "^2.0.19",
+    "lodash": "^4.17.21",
     "mongodb": "^6.10.0",
     "mongoose": "^8.8.1",
     "nodejs": "^0.0.0",
