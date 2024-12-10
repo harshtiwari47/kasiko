@@ -314,7 +314,7 @@ if (Array.isArray(dailyPurchased)) {
   // Convert array [date, count] to object { date, count }
   dailyPurchased = {
     date: dailyPurchased[0] ? new Date(dailyPurchased[0]).toISOString().split('T')[0] : null,
-    count: dailyPurchased[1] ? dailyPurchased[1] : 0;
+    count: dailyPurchased[1] ? dailyPurchased[1] : 0
   };
   userData.stocks[stockName].dailyPurchased = dailyPurchased;
 } else if (dailyPurchased === null || dailyPurchased === undefined) {
