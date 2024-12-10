@@ -17,7 +17,7 @@ import {
 } from '../../../helper.js';
 
 const COAL_EMOJI = '<:coal:1312372037058170950>';
-const COAL_VALUE = 25; // 1 coal = 25 cash
+const COAL_VALUE = 100; // 1 coal = 100 cash
 
 async function startMining(message) {
   const userId = message.author.id;

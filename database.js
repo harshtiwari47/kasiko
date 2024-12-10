@@ -14,40 +14,65 @@ import {
 
 dotenv.config();
 
+// Configure Mongoose connection with pooling and optimized settings
 export const connectDB = async () => {
-  mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      maxPoolSize: 50, // Increased pool size for higher concurrency
+      serverSelectionTimeoutMS: 5000, // Shorter timeout for faster failover
+      socketTimeoutMS: 45000, // Socket timeout
+      // Consider enabling other optimizations based on your use case
+    });
     console.log('MongoDB connected successfully to Atlas!');
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error('Error connecting to MongoDB:', error);
-  });
+    process.exit(1); // Exit process if DB connection fails
+  }
 };
 
 connectDB();
 
+// Cache static JSON data in memory to reduce file I/O operations
 const shopDatabasePath = path.join(process.cwd(), 'database', 'shop.json');
 const stockDatabasePath = path.join(process.cwd(), 'database', 'stocks.json');
 const aquaticDatabasePath = path.join(process.cwd(), 'database', 'aquatic.json');
 
-// Function to create a new user in the database
+let shopData = {};
+let stockData = {};
+let aquaticData = {};
+
+// Function to load JSON data into memory
+const loadStaticData = () => {
+  try {
+    shopData = JSON.parse(fs.readFileSync(shopDatabasePath, 'utf-8'));
+    stockData = JSON.parse(fs.readFileSync(stockDatabasePath, 'utf-8'));
+    aquaticData = JSON.parse(fs.readFileSync(aquaticDatabasePath, 'utf-8'));
+    console.log('Static data loaded into memory.');
+  } catch (error) {
+    console.error('Error loading static data:', error);
+  }
+};
+
+// Initial load
+loadStaticData();
+
+// Watch for changes in JSON files and reload
+fs.watchFile(shopDatabasePath, (curr, prev) => {
+  loadStaticData();
+});
+fs.watchFile(stockDatabasePath, (curr, prev) => {
+  loadStaticData();
+});
+fs.watchFile(aquaticDatabasePath, (curr, prev) => {
+  loadStaticData();
+});
+
+// Function to create a new user in the database using upsert to prevent duplicates
 export const createUser = async (userId) => {
   try {
-    // Check if the user already exists
-    const existingUser = await User.findOne({
-      id: userId
-    });
-    if (existingUser) {
-      return {
-        success: false,
-        message: 'User already exists.'
-      };
-    }
-
-    // Create a new user if not found
     const newUser = new User( {
       id: userId,
-      cash: 0, // Default values
+      cash: 0,
       networth: 0,
       maintenance: 0,
       spouse: null,
@@ -56,14 +81,14 @@ export const createUser = async (userId) => {
       charity: 0,
       trust: 200,
       exp: 120,
-      level: 1, // Starting level
+      level: 1,
       verified: false,
       acceptedTerms: true,
       lastBattle: null,
       lastRobbery: null,
       aquariumCollectionTime: null,
       marriedOn: null,
-      joined: Date.now(), // Timestamp of joining
+      joined: Date.now(),
       dailyReward: null,
       rewardStreak: 1,
       stocks: {},
@@ -75,79 +100,95 @@ export const createUser = async (userId) => {
       battleLog: [],
     });
 
-    await newUser.save(); // Save to the database
+    const savedUser = await newUser.save();
+
+    // Cache the new user in Redis
+    await redisClient.set(`user:${userId}`, JSON.stringify(savedUser.toObject()), {
+      EX: 60, // Cache for 1 minute
+    });
+
     return {
       success: true,
-      message: 'User created successfully.'
+      message: 'User created successfully.',
+      user: savedUser,
     };
   } catch (error) {
+    // Handle duplicate key error (E11000) gracefully
+    if (error.code === 11000) {
+      const existingUser = await User.findOne({
+        id: userId
+      });
+      return {
+        success: true,
+        message: 'User already exists.',
+        user: existingUser,
+      };
+    }
     console.error('Error creating user:', error);
     return {
       success: false,
-      message: 'Failed to create user.'
+      message: 'Failed to create user.',
     };
   }
 };
 
-// Function to retrieve user data from the database
+// Function to retrieve user data with improved caching and maintain Mongoose documents
 export const getUserData = async (userId) => {
   try {
-    // Check external Redis cache
+    // Attempt to retrieve from Redis cache
     const cachedUser = await redisClient.get(`user:${userId}`);
 
     if (cachedUser) {
-      const user = User.hydrate(JSON.parse(cachedUser));
+      // Return a Mongoose document from the cached data
+      const userObject = JSON.parse(cachedUser);
+      const user = new User(userObject);
       return user;
     }
 
-    // Fetch from the database
+    // Fetch from MongoDB
     const user = await User.findOne({
       id: userId
     });
-    let createdUserData = {
-      success: true
-    };
 
-    if (!user) {
-      createdUserData = await createUser(userId);
-    }
-
-    if (!createdUserData.success) {
-      console.error('Failed creating new user');
-      return null;
-    }
-
-    // Cache user data in external Redis
     if (user) {
+      // Cache the user data in Redis
       await redisClient.set(`user:${userId}`, JSON.stringify(user.toObject()), {
-        EX: 60
-      }); // Cache for 3 min
+        EX: 60, // Cache for 1 minute
+      });
+      return user;
     }
 
-    return user;
+    // If user doesn't exist, create a new one
+    const createdUserData = await createUser(userId);
+    if (createdUserData.success) {
+      return createdUserData.user;
+    }
+
+    return null;
   } catch (error) {
     console.error('Error fetching user data:', error);
     return null;
   }
 };
 
-// Function to check if a user exists in the database
+// Function to check if a user exists using Redis cache and lean query
 export const userExists = async (userId) => {
   try {
     // Check Redis exists cache
-    const cachedUser = await redisClient.get(`user:${userId}:exists`);
-    if (cachedUser) {
-      return true;
+    const cachedExists = await redisClient.get(`user:${userId}:exists`);
+    if (cachedExists) {
+      return JSON.parse(cachedExists);
     }
 
-    // Fetch from database
-    const user = await User.findOne({
+    // Fetch from MongoDB
+    const exists = await User.exists({
       id: userId
     });
-    if (user) {
-      // Cache the user data
+
+    if (exists) {
+      // Cache the existence in Redis
       await redisClient.set(`user:${userId}:exists`, JSON.stringify(true), {
-        EX: 3600
+        EX: 3600, // Cache for 1 hour
       });
       return true;
     }
@@ -159,32 +200,39 @@ export const userExists = async (userId) => {
   }
 };
 
-// Function to update user data
-export const updateUser = async (userId, user) => {
+// Function to update user data using Mongoose documents and modifiedPaths
+export const updateUser = async (userId, userData) => {
   try {
-    // Update net worth
-    let newNetWorth = await updateNetWorth(userId);
-
-    user.networth = newNetWorth && (newNetWorth > 0) ? newNetWorth: user.networth;
-
-    user.cash = Number(user.cash.toFixed(1));
-    user.networth = Number(user.networth.toFixed(1));
-
-    if (user.cash < 0) {
-      user.cash = 0;
-    }
-    if (user.networth < 0) {
-      user.networth = 0;
+    if (!userData || !userData.isModified) {
+      console.error('Invalid user data provided for update.');
+      return null;
     }
 
+    // Calculate new net worth
+    const newNetWorth = await updateNetWorth(userId);
+
+    if (newNetWorth && newNetWorth > 0) {
+      userData.networth = newNetWorth;
+    }
+
+    // Ensure cash and networth don't drop below zero
+    userData.cash = Math.max(Number(userData.cash.toFixed(1)), 0);
+    userData.networth = Math.max(Number(userData.networth.toFixed(1)), 0);
+
+    // Collect modified fields
     const updates = {};
-    user.modifiedPaths().forEach((path) => {
-      updates[path] = user[path];
+    userData.modifiedPaths().forEach((path) => {
+      updates[path] = userData[path];
     });
 
-    // Save updated user to database
+    if (Object.keys(updates).length === 0) {
+      // No changes to update
+      return userData;
+    }
+
+    // Perform atomic update using $set
     const updatedUser = await User.findByIdAndUpdate(
-      user["_id"],
+      userData._id,
       {
         $set: updates
       },
@@ -193,91 +241,100 @@ export const updateUser = async (userId, user) => {
       }
     );
 
-    // Update Redis cache
-    await redisClient.set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
-      EX: 60
-    });
+    if (updatedUser) {
+      // Update Redis cache
+      await redisClient.set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
+        EX: 60, // Cache for 1 minute
+      });
+    }
 
     return updatedUser; // Return the updated user
   } catch (error) {
-    console.error('Error in transaction:', error);
-    return 'Error in transaction';
+    console.error('Error updating user:', error);
+    return null;
   }
 };
 
 // Function to delete a user from the database
 export const deleteUser = async (userId) => {
   try {
-    const user = await User.findOne({
+    const result = await User.deleteOne({
       id: userId
     });
-    if (!user) {
-      return null
+
+    if (result.deletedCount === 1) {
+      // Remove user from Redis cache
+      await redisClient.del(`user:${userId}`);
+      await redisClient.del(`user:${userId}:exists`);
+      return {
+        success: true,
+        message: 'User deleted successfully.',
+      };
     }
 
-    await user.remove(); // Delete the user from the database
     return {
-      success: true,
-      message: 'User deleted successfully.'
+      success: false,
+      message: 'User not found.',
     };
   } catch (error) {
     console.error('Error deleting user:', error);
-    return null
+    return {
+      success: false,
+      message: 'Failed to delete user.',
+    };
   }
 };
 
-// other
+// Static data handling with in-memory cache
 export const itemExists = (itemId) => {
-  const data = readShopData();
-  return data.hasOwnProperty(itemId);
+  return shopData.hasOwnProperty(itemId);
 };
 
 export const updateShop = (itemId, newData) => {
-  const data = readShopData();
-
-  if (!data[itemId]) {
-    return {}
+  if (!shopData[itemId]) {
+    return {};
   }
 
-  const updatedData = {
-    ...data[itemId],
+  shopData[itemId] = {
+    ...shopData[itemId],
     ...newData
   };
-  data[itemId] = updatedData;
-  writeShopData(data);
-  return updatedData;
+  fs.writeFile(shopDatabasePath, JSON.stringify(shopData, null, 2), (err) => {
+    if (err) console.error('Error writing shop data:', err);
+  });
+  return shopData[itemId];
 };
 
 export const getShopData = (itemId) => {
-  const data = readShopData();
-
-  if (!data[itemId]) {
-    return {}
-  }
-
-  return data[itemId];
+  return shopData[itemId] || {};
 };
 
-
 export const writeShopData = (data) => {
-  fs.writeFileSync(shopDatabasePath, JSON.stringify(data, null, 2));
+  shopData = data;
+  fs.writeFile(shopDatabasePath,
+    JSON.stringify(shopData, null, 2),
+    (err) => {
+      if (err) console.error('Error writing shop data:', err);
+    });
 };
 
 export const writeStockData = (data) => {
-  fs.writeFileSync(stockDatabasePath, JSON.stringify(data, null, 2));
+  stockData = data;
+  fs.writeFile(stockDatabasePath,
+    JSON.stringify(stockData, null, 2),
+    (err) => {
+      if (err) console.error('Error writing stock data:', err);
+    });
 };
 
 export const readShopData = () => {
-  const data = fs.readFileSync(shopDatabasePath, 'utf-8');
-  return JSON.parse(data);
+  return shopData;
 };
 
 export const readStockData = () => {
-  const data = fs.readFileSync(stockDatabasePath, 'utf-8');
-  return JSON.parse(data);
+  return stockData;
 };
 
 export const readAquaticData = () => {
-  const data = fs.readFileSync(aquaticDatabasePath, 'utf-8');
-  return JSON.parse(data);
+  return aquaticData;
 };

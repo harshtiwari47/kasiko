@@ -2,10 +2,24 @@ import mongoose from 'mongoose';
 
 // StockDetail Schema (for individual stock tracking)
 const stockDetailSchema = new mongoose.Schema({
-  dailyPurchased: [Number, Number],
-  dailySold: [Number, Number],
-  cost: {
-    type: Number, default: 0, min: 0, set: (value) => (value < 0 ? 0: value)
+  dailyPurchased: {
+    type: Object,
+    required: true,
+    default: {
+      date: null,
+      count: 0
+    },
+    },
+    dailySold: {
+      type: Object,
+      required: true,
+    default: {
+        date: null,
+        count: 0
+      },
+    },
+    cost: {
+      type: Number, default: 0, min: 0, set: (value) => (value < 0 ? 0: value)
     }, // Bought cost of the stock
     shares: {
       type: Number, default: 0, min: 0, set: (value) => (value < 0 ? 0: value)

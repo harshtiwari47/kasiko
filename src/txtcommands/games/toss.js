@@ -90,7 +90,7 @@ export async function toss(id, amount, channel, choice = "head") {
         }
 
         if (amount > 200000) {
-          return channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
+          return message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
         }
 
         let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";

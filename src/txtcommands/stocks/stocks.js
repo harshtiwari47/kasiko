@@ -33,36 +33,67 @@ const APPTOKEN = process.env.APP_ID;
 const stockData = readStockData();
 
 function createStockEmbed(name, stock) {
-  return new EmbedBuilder()
-  .setTitle(String(name))
-  .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${stock.image}.png`) // Use image
-  .addFields(
-    {
-      name: "ᯓ★ Current Price", value: `<:kasiko_coin:1300141236841086977>${stock.currentPrice.toLocaleString()}`, inline: true
-    },
-    {
-      name: "ᯓ★  Trend", value: `${stock.trend}`, inline: true
-    },
-    {
-      name: "ᯓ★ Sector", value: `${stock.sector}`, inline: true
-    },
-    {
-      name: "ᯓ★ Market", value: `<:kasiko_coin:1300141236841086977>${stock.marketCap}`, inline: true
-    },
-    {
-      name: "ᯓ★ Volatility", value: `${stock.volatility}`, inline: true
-    },
-    {
-      name: "ᯓ★  High (last 10)", value: `${Math.max(...stock.last10Prices)}`, inline: true
-    },
-    {
-      name: "ᯓ★ Low (last 10)", value: `${Math.min(...stock.last10Prices)}`, inline: true
-    }
-  )
-  .setFooter({
-    text: `Stock Information`
-  })
-  .setColor("#e20b65");
+  let embedColor;
+  switch (stock.trend.toLowerCase()) {
+    case 'up':
+      embedColor = '#28a745'; // Green
+      break;
+    case 'down':
+      embedColor = '#dc3545'; // Red
+      break;
+    case 'stable':
+    default:
+      embedColor = '#007bff'; // Blue
+      break;
+  }
+
+  // First Embed: General Overview
+  const generalInfoEmbed = new EmbedBuilder()
+    .setTitle(`${name}`)
+    .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${stock.image}.png`)
+    .setColor(embedColor)
+    .addFields(
+      {
+        name: "General Overview",
+        value: `**Description**: ${stock.description}\n` +
+               `**Sector**: ${stock.sector}\n` +
+               `**CEO**: ${stock.CEO}`,
+        inline: false
+      },
+      {
+        name: "Current Status",
+        value: `**Current Price**: <:kasiko_coin:1300141236841086977> ${stock.currentPrice.toLocaleString()}\n` +
+               `**Trend**: ${capitalizeFirstLetter(stock.trend)}\n` +
+               `**Volatility**: ${stock.volatility}`,
+        inline: false
+      }
+    );
+
+  // Second Embed: Financial & Performance Metrics
+  const financialDetailsEmbed = new EmbedBuilder()
+    .setColor(embedColor)
+    .addFields(
+      {
+        name: "Financial Details",
+        value: `**P/E Ratio**: ${stock.PEratio}\n` +
+               `**Dividend Yield**: ${stock.dividendYield}\n` +
+               `**Market Cap**: <:kasiko_coin:1300141236841086977> ${stock.marketCap}`,
+        inline: false
+      },
+      {
+        name: "Performance Metrics (Last 10)",
+        value: `**High**: ${Math.max(...stock.last10Prices).toLocaleString()}\n` +
+               `**Low**: ${Math.min(...stock.last10Prices).toLocaleString()}`,
+        inline: false
+      }
+    );
+
+  return [generalInfoEmbed, financialDetailsEmbed];
+}
+
+// Helper function to capitalize the first letter
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 export async function sendPaginatedStocks(context) {
@@ -82,13 +113,13 @@ export async function sendPaginatedStocks(context) {
 
     // Send initial message
     const message = await context.channel.send({
-      embeds: [stockEmbed],
+      embeds: stockEmbed,
       components: [buttons],
       fetchReply: true,
     });
 
     const collector = message.createMessageComponentCollector({
-      time: 3 * 60 * 1000, // 3 minutes
+      time: 6 * 60 * 1000, // 6 minutes
     });
 
 
@@ -114,7 +145,7 @@ export async function sendPaginatedStocks(context) {
         buttons.components[1].setDisabled(currentIndex === stockDataArray.length - 1);
 
         return await buttonInteraction.editReply({
-          embeds: [newStockEmbed],
+          embeds: newStockEmbed,
           components: [buttons],
         });
       } catch (err) {
@@ -244,22 +275,17 @@ export async function buyStock(stockName, amount, message) {
   try {
     const userId = message.author.id;
     let userData = await getUserData(userId);
-    const numShares = parseInt(amount);
+    const numShares = parseInt(amount, 10);
 
     if (!stockData[stockName]) {
       return message.channel.send("⚠️ Stock not found.");
     }
 
-    let totalUniqueStocks = Object.keys(userData.stocks.toJSON()).reduce((sum, stock) => {
-      if (stock.shares && stock.shares > 0) {
-        sum += 1
-      }
-      return sum;
-    },
-      0);
+    // Calculate total unique stocks with shares > 0
+    const totalUniqueStocks = Object.values(userData.stocks || {}).filter(stock => stock.shares > 0).length;
 
-    if (userData.stocks && totalUniqueStocks > 5) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than five companies' stocks!`)
+    if (totalUniqueStocks >= 5) {
+      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than five companies' stocks!`);
     }
 
     const stockPrice = stockData[stockName].currentPrice;
@@ -267,50 +293,77 @@ export async function buyStock(stockName, amount, message) {
     totalCost = Number(totalCost.toFixed(0));
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayDateString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
 
-    // Calculate total shares owned by the user across all stocks
-    const totalSharesOwned = Object.values(userData.stocks.toJSON()).reduce((sum, stock) => stock.name ? sum + stock.shares: 0, 0);
-
-    // Check limits before processing purchase
-    if (userData.stocks[stockName] && numShares > 100 - userData.stocks[stockName].dailyPurchased[1]) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you can't buy more than 100 shares of **${stockName}** today.`);
-    } else if (totalSharesOwned + numShares > 200) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than 200 shares in total.`);
-    } else if ((userData.cash || 0) >= totalCost) {
-      // Process the purchase
-      userData.cash = Number(((userData.cash || 0) - totalCost).toFixed(1));
-
-      if (userData.stocks[stockName]) {
-        userData.stocks[stockName].shares += numShares;
-        userData.stocks[stockName].cost += totalCost;
-
-
-        // Initialize or update daily purchased shares count
-        if (userData.stocks[stockName] && !userData.stocks[stockName]?.dailyPurchased || userData.stocks[stockName].dailyPurchased[0] !== today.getTime()) {
-          userData.stocks[stockName].dailyPurchased = [today.getTime(),
-            0];
+    // Initialize stock data if it doesn't exist
+    if (!userData.stocks[stockName]) {
+      userData.stocks[stockName] = {
+        shares: 0,
+        cost: 0,
+        dailySold: [],
+        dailyPurchased: {
+          date: todayDateString,
+          count: 0
         }
+      };
+    }
 
-        userData.stocks[stockName].dailyPurchased[1] += numShares; // Update daily purchased count
-      } else {
-        userData.stocks[stockName] = {
-          shares: numShares,
-          cost: totalCost,
-          dailySold: [],
-          dailyPurchased: [today.getTime(),
-            numShares] // Track daily purchased count for new stock
-        };
-      }
+// Handle existing data structures
+let dailyPurchased = userData.stocks[stockName].dailyPurchased;
+if (Array.isArray(dailyPurchased)) {
+  // Convert array [date, count] to object { date, count }
+  dailyPurchased = {
+    date: dailyPurchased[0] ? new Date(dailyPurchased[0]).toISOString().split('T')[0] : null,
+    count: dailyPurchased[1] ? dailyPurchased[1] : 0;
+  };
+  userData.stocks[stockName].dailyPurchased = dailyPurchased;
+} else if (dailyPurchased === null || dailyPurchased === undefined) {
+  // Initialize if undefined or invalid
+  dailyPurchased = {
+    date: todayDateString,
+    count: 0
+  };
+  userData.stocks[stockName].dailyPurchased = dailyPurchased;
+}
+   
+    // Reset dailyPurchased if it's a new day
+    console.log(userData.stocks[stockName].dailyPurchased.date, todayDateString)
+    if (userData.stocks[stockName].dailyPurchased.date !== todayDateString) {
+      userData.stocks[stockName].dailyPurchased = {
+        date: todayDateString,
+        count: 0
+      };
+    }
+    
+    // Calculate total shares owned by the user across all stocks
+    const totalSharesOwned = Object.values(userData.stocks).reduce((sum, stock) => sum + (stock.shares || 0), 0);
 
-      // Update user data
-      await updateUser(message.author.id, userData);
+    // Check purchase limits
+    const dailyPurchasedCount = userData.stocks[stockName].dailyPurchased.count;
+    if (dailyPurchasedCount + numShares > 100) {
+      return message.channel.send(`⚠️ **${message.author.username}**, you can't buy more than 100 shares of **${stockName}** today.`);
+    }
 
-      return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost.toLocaleString()}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
-    } else {
+    if (totalSharesOwned + numShares > 200) {
+      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than 200 shares in total.`);
+    }
+
+    if ((userData.cash || 0) < totalCost) {
       return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
     }
-  } catch(e) {
+
+    // Process the purchase
+    userData.cash = Number(((userData.cash || 0) - totalCost).toFixed(1));
+
+    userData.stocks[stockName].shares += numShares;
+    userData.stocks[stockName].cost += totalCost;
+    userData.stocks[stockName].dailyPurchased.count += numShares;
+
+    // Update user data
+    await updateUser(userId, userData);
+
+    return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost.toLocaleString()}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
+  } catch (e) {
     console.error(e);
     message.channel.send("⚠️ Something went wrong while buying stock(s).");
   }
@@ -320,7 +373,7 @@ export async function sellStock(stockName, amount, message) {
   try {
     const userId = message.author.id;
     let userData = await getUserData(userId);
-    const numShares = parseInt(amount);
+    const numShares = parseInt(amount, 10);
     stockName = stockName.toUpperCase().trim();
 
     if (!stockData[stockName] || !userData.stocks || !userData.stocks[stockName] || userData.stocks[stockName].shares < numShares) {
@@ -332,15 +385,15 @@ export async function sellStock(stockName, amount, message) {
 
     userData.cash = Number(((userData.cash || 0) + earnings).toFixed(1));
 
-    // average weighted cost
+    // Average weighted cost
     if (
-      userData.stocks[stockName] &&
       typeof userData.stocks[stockName].cost === 'number' &&
       typeof userData.stocks[stockName].shares === 'number' &&
       userData.stocks[stockName].shares !== 0 &&
       typeof numShares === 'number'
     ) {
-      userData.stocks[stockName].cost -= Number(((userData.stocks[stockName].cost / userData.stocks[stockName].shares) * numShares).toFixed(1));
+      const averageCostPerShare = userData.stocks[stockName].cost / userData.stocks[stockName].shares;
+      userData.stocks[stockName].cost -= Number((averageCostPerShare * numShares).toFixed(1));
     } else {
       console.error("Invalid data for cost calculation:", userData.stocks[stockName]);
     }
@@ -348,17 +401,19 @@ export async function sellStock(stockName, amount, message) {
     userData.stocks[stockName].shares -= numShares;
 
     if (userData.stocks[stockName].shares === 0) {
-      let dailyPurchased = userData.stocks[stockName].dailyPurchased;
+      // Preserve dailyPurchased data
+      const dailyPurchased = userData.stocks[stockName].dailyPurchased;
       delete userData.stocks[stockName];
-      userData.stocks[stockName] = {};
-      userData.stocks[stockName].dailyPurchased = dailyPurchased;
-      userData.stocks[stockName].cost = 0;
-      userData.stocks[stockName].shares = 0;
+      userData.stocks[stockName] = {
+        dailyPurchased: dailyPurchased,
+        shares: 0,
+        cost: 0,
+        dailySold: []
+      };
     }
 
-    // update user data
-    await updateUser(message.author.id,
-      userData);
+    // Update user data
+    await updateUser(userId, userData);
 
     message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings.toFixed(1).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
   } catch (e) {

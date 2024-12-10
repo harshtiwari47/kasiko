@@ -15,15 +15,15 @@ async function createLeaderboardEmbed(userId) {
 
     const users = await getTopUsersByNetWorth();
     if (users.length === 0) {
-      return new EmbedBuilder()
-      .setColor('#ed971e')
-      .setTitle('✩▓▅▁🏆𝐋𝐞𝐚𝐝𝐞𝐫𝐛𝐨𝐚𝐫𝐝▁▅▓✩')
-      .setDescription('No users found!')
-      .setFooter({
-        text: `Your position is: Not ranked`,
-        iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
-      })
-      .setTimestamp();
+      return [new EmbedBuilder()
+        .setColor('#ed971e')
+        .setTitle(`🏆 𝐋𝐞𝐚𝐝𝐞𝐫𝐛𝐨𝐚𝐫𝐝 ✧`)
+        .setDescription('No users found!')
+        .setFooter({
+          text: `Your position is: Not ranked`,
+          iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
+        })
+        .setTimestamp()]
     }
 
     // Build the leaderboard string
@@ -37,31 +37,33 @@ async function createLeaderboardEmbed(userId) {
           username: 'Failed to Fetch'
         }; // Fallback if fetching fails
       }
-      leaderboard += `**${index + 1}.** **${userDetails.username}** - Networth: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
+      leaderboard += `**\`#${index + 1}.\`** **${userDetails.username}** - NW: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
     }
 
     // Find the position of the command invoker
     const userPosition = users.findIndex(user => user.id === userId) + 1 || "Unranked";
-
+    const embedHead = new EmbedBuilder()
+    .setColor('#ed971e')
+    .setTitle(`🏆 𝐋𝐞𝐚𝐝𝐞𝐫𝐛𝐨𝐚𝐫𝐝 ✧`);
+   
+    
     // Create and return the embed message
     const embed = new EmbedBuilder()
     .setColor('#ed971e')
-    .setTitle('✩▓▅▁🏆𝐋𝐞𝐚𝐝𝐞𝐫𝐛𝐨𝐚𝐫𝐝▁▅▓✩')
     .setDescription(leaderboard)
     .setFooter({
       text: `Your position is: ${userPosition > 0 ? userPosition: 'Not ranked'}`,
-      iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
-    return embed;
+    return [embedHead, embed];
   } catch (error) {
     console.error('Oops! An error occurred while generating the leaderboard', error);
-    return new EmbedBuilder()
+    return [new EmbedBuilder()
     .setColor('#ed971e')
     .setTitle('Error')
     .setDescription('An error occurred while generating the leaderboard.')
-    .setTimestamp();
+    .setTimestamp()]
   }
 }
 
@@ -75,7 +77,7 @@ export async function leaderboard(message) {
 
     // Send the embed in response to the interaction
     return await message.reply({
-      embeds: [leaderboardEmbed]
+      embeds: leaderboardEmbed
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);

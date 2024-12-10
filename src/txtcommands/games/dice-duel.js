@@ -231,7 +231,7 @@ export default {
     }
 
     if (amount > 200000) {
-      return channel.send(`⚠️ **${message.author.username}**, you can't play diceduel more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
+      return message.channel.send(`⚠️ **${message.author.username}**, you can't play diceduel more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
     }
 
     if (message.author.id === opponentId) {

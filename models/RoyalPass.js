@@ -1,33 +1,59 @@
 import mongoose from 'mongoose';
 
-const royalPassSchema = new mongoose.Schema({
+const {
+  Schema
+} = mongoose;
+
+const rewardSchema = new Schema( {
+  type: {
+    type: String,
+    required: true,
+    enum: ['cash', 'badge', 'pet'], // other types as necessary
+  },
+  name: {
+    type: String, // e.g., 'Royal Starter' for badges
+  },
+  amount: {
+    type: Number, // Applicable for rewards like 'cash'
+  },
+}, {
+  _id: false
+}); // Disable _id for subdocuments to save space
+
+const royalPassSchema = new Schema( {
   userId: {
     type: String,
     required: true,
-    unique: true, // Ensure each user has only one Royal Pass
   },
   level: {
     type: Number,
-    default: 1,
+    default: 0,
+      min: 0,
     },
     progress: {
       type: Number,
     default: 0,
+      min: 0,
     },
     month: {
       type: Number,
-      required: true, // Store the current month to reset progress each month
+      required: true, // Store the current month (0-11)
+      min: 0,
+      max: 11,
     },
-    rewardsClaimed: [{
-      type: {
-        type: String, // The type of reward ('cash', 'badge', 'pet', etc.)
-        required: true,
-      },
-      name: String, // The name of the reward (e.g., 'Royal Starter' for badges)
-      amount: Number, // The amount for rewards like 'cash'
-    }]
+    rewardsClaimed: [rewardSchema],
+    isPremium: {
+      type: Boolean, default: false
+    },
   }, {
     timestamps: true,
+  });
+
+  // Create a compound index to ensure one RoyalPass per user per month
+  royalPassSchema.index({
+    userId: 1, month: 1
+  }, {
+    unique: true
   });
 
   const RoyalPass = mongoose.model('RoyalPass', royalPassSchema);

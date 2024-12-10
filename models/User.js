@@ -136,7 +136,7 @@ const userSchema = new mongoose.Schema({
     orca: {
       type: [String, Number], // orca id, prayed (0/1)
     default: [null, 0]
-    }
+    },
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields
   });

@@ -82,7 +82,7 @@ export async function blackjack(id, amount, channel) {
     });
 
     const embedTitle = new EmbedBuilder()
-    .setTitle(`🃏𝗕𝗹𝗮𝗰𝗸𝗷𝗮𝗰𝗸 𝗚𝗮𝗺𝗲`)
+    .setTitle(`🃏 𝗕𝗹𝗮𝗰𝗸𝗷𝗮𝗰𝗸 𝗚𝗮𝗺𝗲`)
     .setAuthor({
       name: `${guild.user.username}'s`, iconURL: avatarUrl
     })

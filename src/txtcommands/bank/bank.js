@@ -267,10 +267,26 @@ export default {
           return Bank.upgrade(userId, message);
 
         default:
-          return message.channel.send("🏦 𝐁𝐀𝐍𝐊\nUse `deposit <amount>`, `withdraw <amount>`, `bank status`, `bank open` or `bank upgrade`.");
-        }
-      default:
-        return message.channel.send("🏦 𝐁𝐀𝐍𝐊\nUse `deposit <amount>`, `withdraw <amount>`, `bank status`, `bank open` or `bank upgrade`.");
+
+          const bankEmbed = new EmbedBuilder()
+          .setColor('#d4e6f6')
+          .setTitle('🏦 **Welcome to Bank**')
+          .setDescription(
+            'Manage your bank using the following commands:\n\n' +
+            '`deposit <amount>` - Deposit funds into your bank.\n' +
+            '`withdraw <amount>` - Withdraw funds from your bank.\n' +
+            '`bank status` - Check your bank status.\n' +
+            '`bank open` - Open a bank account.\n' +
+            '`bank upgrade` - Upgrade your bank level.'
+          )
+          .setFooter({
+            text: 'Use your bank wisely!'
+          })
+
+          message.channel.send({
+            embeds: [bankEmbed]
+          });
+        };
       }
     } catch (e) {
       console.error(e);

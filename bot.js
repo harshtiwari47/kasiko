@@ -20,8 +20,7 @@ import Server from './models/Server.js';
 import txtcommands from './src/textCommandHandler.js';
 
 import {
-  getUserPassTask,
-  setUserPassTask
+  incrementTaskExp
 } from './src/txtcommands/explore/pass.js';
 import {
   loadSlashCommands,
@@ -120,19 +119,7 @@ client.on('messageCreate', async (message) => {
         EX: cooldownDuration
       });
 
-      /* Pass
-      try {
-        let passTask = await getUserPassTask(message.author.id);
-        if (passTask?.tasks.get("command")) {
-          passTask.tasks.get("command").exp = passTask.tasks.get("command").exp + 1 > passTask.tasks.get("command").required ? passTask.tasks.get("command").required: passTask.tasks.get("command").exp + 1;
-          console.log("cccc" + passTask.tasks.get("command"))
-          await setUserPassTask(message.author.id, passTask)
-        }
-      } catch (e) {
-        console.error(`error in pass tasks: ${e}`)
-      }
-*/
-
+     // await incrementTaskExp(message.author.id, "command", message);
 
       command.execute(args, message);
     } catch (error) {

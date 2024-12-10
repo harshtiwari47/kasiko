@@ -1,92 +1,101 @@
 {
   "TECHCORP": {
-    "currentPrice": 843.18,
+    "currentPrice": 515.7,
     "last10Prices": [
-      877.58,
-      893.45,
-      908.79,
-      891.25,
-      866.24,
-      831.58,
-      798.49,
-      827.53,
-      815.92,
-      843.18
+      462.97,
+      475.55,
+      462.99,
+      479.45,
+      456.48,
+      474.55,
+      490.37,
+      503.58,
+      506.74,
+      515.7
     ],
     "maxmin": [
       1110,
       300
     ],
-    "trend": "stable",
+    "trend": "up",
     "sector": "Technology",
     "marketCap": "1.5B",
     "volatility": 1,
+    "PEratio": 25.4,
+    "dividendYield": "1.2%",
     "CEO": "Alice Smith",
-    "image": "techcorp"
+    "image": "techcorp",
+    "description": "Leading technology firm specializing in innovative software solutions."
   },
   "AUTOWORKS": {
-    "currentPrice": 35.72,
+    "currentPrice": 66.28,
     "last10Prices": [
-      33.86,
-      34.35,
-      33.27,
-      33.21,
-      33.6,
-      33.93,
-      33.95,
-      34.26,
-      34.9,
-      35.72
+      63,
+      62.98,
+      64.45,
+      62.33,
+      63,
+      63.92,
+      65,
+      64.44,
+      66.54,
+      66.28
     ],
-    "trend": "up",
     "maxmin": [
       90,
       20
     ],
+    "trend": "stable",
     "sector": "Automotive",
     "marketCap": "850M",
     "volatility": 0.75,
+    "PEratio": 18.3,
+    "dividendYield": "2.0%",
     "CEO": "John Doe",
-    "image": "autoworks"
+    "image": "autoworks",
+    "description": "Automotive manufacturer known for reliable and affordable vehicles."
   },
   "ECOENERGY": {
-    "currentPrice": 757.01,
+    "currentPrice": 887.49,
     "last10Prices": [
-      750.46,
-      767.13,
-      776.64,
-      779.31,
-      771.53,
-      746.36,
-      745.72,
-      718.38,
-      728.03,
-      757.01
+      866.95,
+      901.5,
+      900.13,
+      898.61,
+      883.66,
+      888.8,
+      897.28,
+      876.53,
+      904.01,
+      887.49
     ],
     "maxmin": [
       1300,
       700
     ],
-    "trend": "up",
+    "trend": "stable",
     "sector": "Energy",
     "marketCap": "500M",
     "volatility": 0.8,
+    "PEratio": 22.1,
+    "dividendYield": "1.5%",
     "CEO": "Jane Doe",
-    "image": "ecoenergy"
+    "image": "ecoenergy",
+    "description": "Sustainable energy provider focused on renewable resources."
   },
   "FOODIE": {
-    "currentPrice": 551.69,
+    "currentPrice": 239.61,
     "last10Prices": [
-      520.68,
-      547.54,
-      528.69,
-      559.44,
-      581.19,
-      560.61,
-      562.58,
-      530.8,
-      555.82,
-      551.69
+      241.68,
+      234.53,
+      245.35,
+      238.01,
+      247.19,
+      259.34,
+      263.65,
+      248.45,
+      248.56,
+      239.61
     ],
     "maxmin": [
       665,
@@ -96,147 +105,165 @@
     "sector": "Food & Beverage",
     "marketCap": "300M",
     "volatility": 1.2,
+    "PEratio": 15.6,
+    "dividendYield": "2.5%",
     "CEO": "Emily Green",
-    "image": "foodie"
+    "image": "foodie",
+    "description": "Popular food and beverage company with diverse product lines."
   },
   "MEDICAL": {
-    "currentPrice": 297.72,
+    "currentPrice": 497.89,
     "last10Prices": [
-      311.53,
-      306.62,
-      304.23,
-      294.19,
-      288.03,
-      289.91,
-      293.28,
-      308.58,
-      317.03,
-      297.72
+      438.13,
+      434.35,
+      458.88,
+      435.99,
+      439.71,
+      454.58,
+      451.6,
+      470.25,
+      486.55,
+      497.89
     ],
     "maxmin": [
       775,
       285
     ],
-    "trend": "stable",
+    "trend": "up",
     "sector": "Healthcare",
     "marketCap": "2B",
     "volatility": 1.4,
+    "PEratio": 30.2,
+    "dividendYield": "1.0%",
     "CEO": "Michael Brown",
-    "image": "medical"
+    "image": "medical",
+    "description": "Innovative healthcare provider specializing in medical devices."
   },
   "RETAILER": {
-    "currentPrice": 55,
+    "currentPrice": 103.12,
     "last10Prices": [
-      58.94,
-      59.84,
-      59.55,
-      56.88,
-      55,
-      56.84,
-      59.16,
-      59.33,
-      56.94,
-      55
+      97.79,
+      96.31,
+      96.54,
+      94.56,
+      93.09,
+      97.05,
+      101.33,
+      98.89,
+      98.78,
+      103.12
     ],
     "maxmin": [
       190,
       55
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Retail",
     "marketCap": "750M",
     "volatility": 0.9,
+    "PEratio": 20.5,
+    "dividendYield": "1.8%",
     "CEO": "Laura Wilson",
-    "image": "retailer"
+    "image": "retailer",
+    "description": "Leading retail chain with a strong online presence."
   },
   "FINTECH": {
-    "currentPrice": 1204.59,
+    "currentPrice": 750.29,
     "last10Prices": [
-      1317.24,
-      1320,
-      1300.93,
-      1292.73,
-      1278.97,
-      1240.88,
-      1296.75,
-      1317.58,
-      1277.68,
-      1204.59
+      812.31,
+      783.03,
+      823.9,
+      843.88,
+      798.44,
+      761.61,
+      747.71,
+      728.26,
+      774.69,
+      750.29
     ],
     "maxmin": [
       1320,
       270
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Finance",
     "marketCap": "1.8B",
     "volatility": 1.3,
+    "PEratio": 28.7,
+    "dividendYield": "1.4%",
     "CEO": "Chris Johnson",
-    "image": "fintech"
+    "image": "fintech",
+    "description": "Innovative financial technology solutions for modern banking."
   },
   "TRAVEL": {
-    "currentPrice": 113.29,
+    "currentPrice": 70.11,
     "last10Prices": [
-      104.77,
-      106.92,
-      104.17,
-      105.25,
-      102.39,
-      103.16,
-      105.76,
-      107.7,
-      111.57,
-      113.29
+      72.55,
+      70.61,
+      68.17,
+      70.26,
+      71.91,
+      71.5,
+      72.46,
+      72.8,
+      70.57,
+      70.11
     ],
     "maxmin": [
       300,
       35
     ],
-    "trend": "up",
+    "trend": "down",
     "sector": "Travel & Leisure",
     "marketCap": "400M",
     "volatility": 0.8,
+    "PEratio": 19.8,
+    "dividendYield": "2.2%",
     "CEO": "Sarah Lee",
-    "image": "travel"
+    "image": "travel",
+    "description": "Expansive travel and leisure company offering diverse services."
   },
   "EDUCATECH": {
-    "currentPrice": 124.43,
+    "currentPrice": 142.48,
     "last10Prices": [
-      123.7,
-      123.48,
-      119.33,
-      116.71,
-      121.66,
-      119.57,
-      123.85,
-      117.63,
-      118.66,
-      124.43
+      158.58,
+      150.29,
+      144.29,
+      151.67,
+      154.78,
+      149.32,
+      142.25,
+      143.67,
+      140.16,
+      142.48
     ],
     "maxmin": [
       670,
       100
     ],
-    "trend": "up",
+    "trend": "stable",
     "sector": "Education",
     "marketCap": "600M",
     "volatility": 1.1,
+    "PEratio": 24.5,
+    "dividendYield": "1.3%",
     "CEO": "Thomas Moore",
-    "image": "educatech"
+    "image": "educatech",
+    "description": "Educational technology firm enhancing learning experiences globally."
   },
   "CLEANENERGY": {
-    "currentPrice": 842.27,
+    "currentPrice": 530.91,
     "last10Prices": [
-      820.98,
-      802.88,
-      834.23,
-      831.66,
-      851.29,
-      857.68,
-      841.01,
-      797.13,
-      833.69,
-      842.27
+      536.48,
+      568.06,
+      593.84,
+      591.73,
+      561.05,
+      537.66,
+      512.08,
+      500,
+      521.78,
+      530.91
     ],
     "maxmin": [
       1600,
@@ -246,22 +273,25 @@
     "sector": "Clean Energy",
     "marketCap": "500M",
     "volatility": 1.2,
+    "PEratio": 27.3,
+    "dividendYield": "1.1%",
     "CEO": "Karen White",
-    "image": "cleanenergy"
+    "image": "cleanenergy",
+    "description": "Pioneering clean energy solutions for a sustainable future."
   },
   "BIOGENICS": {
-    "currentPrice": 275.04,
+    "currentPrice": 247.37,
     "last10Prices": [
-      243.63,
-      251.78,
-      260.94,
-      259.59,
-      245.82,
-      256.6,
-      249.86,
-      257.19,
-      265.46,
-      275.04
+      259.86,
+      256.36,
+      244.64,
+      242.6,
+      231.06,
+      239.76,
+      234.16,
+      232.73,
+      243.37,
+      247.37
     ],
     "maxmin": [
       550,
@@ -271,47 +301,53 @@
     "sector": "Biotechnology",
     "marketCap": "1.2B",
     "volatility": 1.1,
+    "PEratio": 26.8,
+    "dividendYield": "1.0%",
     "CEO": "Anna Russell",
-    "image": "biogenics"
+    "image": "biogenics",
+    "description": "Biotech company focused on cutting-edge medical research and solutions."
   },
   "AEROSPACE": {
-    "currentPrice": 595.17,
+    "currentPrice": 813.51,
     "last10Prices": [
-      686.48,
-      646.63,
-      679.16,
-      682.41,
-      711.4,
-      703.77,
-      677.04,
-      637.75,
-      627.72,
-      595.17
+      771.77,
+      787.5,
+      835.9,
+      803,
+      780.8,
+      787.95,
+      737.1,
+      775.85,
+      772.91,
+      813.51
     ],
     "maxmin": [
       900,
       430
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Aerospace & Defense",
     "marketCap": "2B",
     "volatility": 1.3,
+    "PEratio": 29.5,
+    "dividendYield": "1.5%",
     "CEO": "Robert King",
-    "image": "aerospace"
+    "image": "aerospace",
+    "description": "Leading aerospace and defense manufacturer with global reach."
   },
   "CYBERPROTECT": {
-    "currentPrice": 141.26,
+    "currentPrice": 271.99,
     "last10Prices": [
-      153.35,
-      147.14,
-      140.92,
-      143.47,
-      147.14,
-      151.98,
-      146.52,
-      141.46,
-      139.14,
-      141.26
+      254.51,
+      266.42,
+      253.19,
+      264.96,
+      261.34,
+      269.41,
+      272.57,
+      273.24,
+      281.48,
+      271.99
     ],
     "maxmin": [
       300,
@@ -321,22 +357,25 @@
     "sector": "Cybersecurity",
     "marketCap": "750M",
     "volatility": 1,
+    "PEratio": 23.7,
+    "dividendYield": "1.4%",
     "CEO": "Samantha Richards",
-    "image": "cyberprotect"
+    "image": "cyberprotect",
+    "description": "Top-tier cybersecurity firm safeguarding digital assets globally."
   },
   "GREENSCAPE": {
-    "currentPrice": 36.18,
+    "currentPrice": 33.57,
     "last10Prices": [
-      35.28,
-      35.58,
-      36.33,
-      35.08,
-      36.07,
-      36.92,
-      36.3,
-      37.39,
-      37.45,
-      36.18
+      34.26,
+      33.83,
+      33.37,
+      33.64,
+      33.5,
+      33.83,
+      32.69,
+      33.46,
+      34.49,
+      33.57
     ],
     "maxmin": [
       95,
@@ -346,22 +385,25 @@
     "sector": "Agriculture",
     "marketCap": "300M",
     "volatility": 0.7,
+    "PEratio": 19.2,
+    "dividendYield": "2.1%",
     "CEO": "Matthew Ellis",
-    "image": "greenscape"
+    "image": "greenscape",
+    "description": "Agricultural company committed to sustainable farming practices."
   },
   "WATERWORKS": {
-    "currentPrice": 72.43,
+    "currentPrice": 81.49,
     "last10Prices": [
-      76.14,
-      74.49,
-      72.8,
-      73.24,
-      73.19,
-      72.45,
-      71.25,
-      71.06,
-      71.49,
-      72.43
+      74.6,
+      75.38,
+      74.19,
+      72.55,
+      74.17,
+      75.89,
+      78.03,
+      78.83,
+      80.35,
+      81.49
     ],
     "maxmin": [
       120,
@@ -371,22 +413,25 @@
     "sector": "Utilities",
     "marketCap": "450M",
     "volatility": 0.6,
+    "PEratio": 17.8,
+    "dividendYield": "2.3%",
     "CEO": "Ethan Wallace",
-    "image": "waterworks"
+    "image": "waterworks",
+    "description": "Utility provider ensuring reliable water services to communities."
   },
   "NEWMEDIA": {
-    "currentPrice": 220,
+    "currentPrice": 171.82,
     "last10Prices": [
-      220,
-      214.89,
-      218.25,
-      220,
-      213.13,
-      215.74,
-      220,
-      220,
-      220,
-      220
+      151.5,
+      156.75,
+      159.98,
+      165.67,
+      164.83,
+      167.9,
+      168.77,
+      174.8,
+      170.26,
+      171.82
     ],
     "maxmin": [
       220,
@@ -396,22 +441,25 @@
     "sector": "Media",
     "marketCap": "1.1B",
     "volatility": 1,
+    "PEratio": 21.5,
+    "dividendYield": "1.6%",
     "CEO": "Mark Foster",
-    "image": "newmedia"
+    "image": "newmedia",
+    "description": "Dynamic media company producing diverse content across platforms."
   },
   "GLOBALTRADE": {
-    "currentPrice": 70.86,
+    "currentPrice": 113.43,
     "last10Prices": [
-      76.3,
-      78.73,
-      81.74,
-      81.13,
-      77.97,
-      75.21,
-      74.58,
-      71.63,
-      71.43,
-      70.86
+      119.11,
+      117.55,
+      120.65,
+      122.71,
+      117.85,
+      114.9,
+      118.59,
+      117.83,
+      116.3,
+      113.43
     ],
     "maxmin": [
       150,
@@ -421,7 +469,66 @@
     "sector": "Logistics",
     "marketCap": "650M",
     "volatility": 0.8,
+    "PEratio": 20.9,
+    "dividendYield": "2.0%",
     "CEO": "Daniel Kim",
-    "image": "globaltrade"
+    "image": "globaltrade",
+    "description": "Global logistics provider ensuring efficient supply chain solutions."
+  },
+  "CVIDIA": {
+    "currentPrice": 956.47,
+    "last10Prices": [
+      1004.35,
+      1058.02,
+      1070.59,
+      1033.91,
+      989.56,
+      948.41,
+      1017.94,
+      951.08,
+      989.88,
+      956.47
+    ],
+    "maxmin": [
+      1500,
+      500
+    ],
+    "trend": "stable",
+    "sector": "Technology",
+    "marketCap": "3B",
+    "volatility": 1.5,
+    "PEratio": 35,
+    "dividendYield": "0.8%",
+    "CEO": "Ray Andreas",
+    "image": "cvidia",
+    "description": "Leading GPU manufacturer driving advancements in graphics technology."
+  },
+  "HEALTHPLUS": {
+    "currentPrice": 123.1,
+    "last10Prices": [
+      112.41,
+      108.45,
+      111.2,
+      112.12,
+      113.72,
+      119.13,
+      119.09,
+      123,
+      120.82,
+      123.1
+    ],
+    "maxmin": [
+      250,
+      100
+    ],
+    "trend": "stable",
+    "sector": "Healthcare",
+    "marketCap": "900M",
+    "volatility": 1,
+    "PEratio": 22.5,
+    "dividendYield": "1.7%",
+    "CEO": "Dr. Olivia Turner",
+    "image": "healthplus",
+    "description": "Healthcare provider offering comprehensive medical services and solutions."
   }
 }

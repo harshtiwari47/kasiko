@@ -2,7 +2,8 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  ComponentType
 } from 'discord.js';
 
 import {
@@ -22,295 +23,576 @@ import {
   Bot
 } from './req/botPlayer.js';
 
-export async function battle(message, player1, player2, friendly = false) {
-  // Initializing battle state
+import {
+  getActionButtons
+} from './actions.js';
+
+/**
+* Starts a battle between two players or a player and a bot.
+* @param {Object} interaction - The Discord message object.
+* @param {Object} player1 - The initiating player.
+* @param {Object} player2 - The opponent player.
+* @param {boolean} friendly - Whether the battle is friendly.
+*/
+export async function battle(interaction, player1, player2, friendly = false) {
+  // Initialize battle state
   let battleLog = [];
   let currentPlayer = player1;
   let opponent = player2;
   let battleStarted = false;
+  let battleEnded = false;
 
-  // Function to generate embed message
+  player1.specialAbilitiesUsed = 0;
+  player2.specialAbilitiesUsed = 0;
 
+  // Define special abilities
+  const specialAbilities = ['Double Attack',
+    'Heal',
+    'Shield'];
+
+  // Function to assign special abilities directly within battle.js
+  const assignSpecialAbility = (player) => {
+    player.special = specialAbilities[Math.floor(Math.random() * specialAbilities.length)];
+  };
+
+  // Assign special abilities to both players
+  assignSpecialAbility(player1);
+  assignSpecialAbility(player2);
+
+  // Function to generate the top embed
   const embedTop = new EmbedBuilder()
-  .setTitle('⚔️ Battle Arena 🏴‍☠️⚓')
-  .setDescription(`An intense duel between **${player1.name}**'s \`${player1.shipName} (${player1.shipLvl})\` and **${player2.name}**'s \`${player2.shipName}(${player2.shipLvl})\`!`)
-  .setColor(`#65b6df`);
+  .setDescription(`## ⚔️ Battle Arena 🏴‍☠️🌊\nAn intense duel between **${player1.name}**'s ***${player1.shipName}*** (Lvl ${player1.shipLvl}) and **${player2.name}**'s ***${player2.shipName}*** (Lvl ${player2.shipLvl})!`)
+  .addFields(
+    {
+      name: '🪝 Special Abilities',
+      value: `${player1.name}: **${player1.special}** ✷ ${player2.name}: **${player2.special}**`,
+      inline: false,
+    })
+  .setColor('#698ff1');
 
+  // Function to generate the battle state embed
   const generateEmbed = () => {
     const embed = new EmbedBuilder()
-    .setColor(player1.health > player2.health ? 0x68f79b: 0xf83636) // Change color based on player1's health (winner will be in green)
+    .setColor(player1.health > player2.health ? 0x68f79b: 0xf83636) // Green if player1 has more health, red otherwise
     .addFields(
       {
-        name: '🏥 Health Stat', value: `${player1.name}: **${player1.health}** ✷ ${player2.name}: **${player2.health}**`, inline: false
+        name: '❤️ Health Stat',
+        value: `${player1.name}: **${player1.health}** ✷ ${player2.name}: **${player2.health}**`,
+        inline: false,
       },
       {
-        name: '⏱️ Current Status', value: battleStarted ? `**${currentPlayer.name}'s turn!**`: 'The battle is about to start!', inline: false
+        name: '⏱️ Current Status',
+        value: battleStarted ? `**${currentPlayer.name}'s turn!**`: 'The battle is about to start!',
+        inline: false,
       },
       {
-        name: '⚔️ Action Log', value: battleLog.length > 0 ? battleLog.join('\n'): 'Let the fight begin! Each action will appear here in real-time.', inline: false
-      }
+        name: '⚔️ Action Log',
+        value: battleLog.length > 0 ? battleLog.join('\n'): 'Let the fight begin! Each action will appear here in real-time.',
+        inline: false,
+      },
     )
     .setFooter({
-      text: 'Prepare for glory!'
+      text: 'Prepare for glory!',
     });
 
     return embed;
   };
 
-  // Function to simulate a player's attack
+  // Function to simulate an attack
   const attack = (attacker, defender) => {
-    const damage = Math.floor((attacker.dmg/3) + Math.random() * attacker.dmg); // Random damage
+    const damage = Math.floor(attacker.dmg / 3 + Math.random() * attacker.dmg + (attacker.user === "bot" ? Math.random() * 100: 0)); // Random damage between dmg/3 and dmg*1.33
     defender.health -= damage;
-    battleLog.push(`**${attacker.name}** strikes, dealing ${damage} damage to **${defender.name}**!`);
-
+    battleLog.push(`**${attacker.name}** strikes, dealing **${damage}** damage to **${defender.name}**!`);
+    if (battleLog.length > 3) {
+      battleLog.shift();
+    }
     // Limit battle log to the last 5 entries
     if (battleLog.length > 3) {
-      battleLog.shift(); // Remove the oldest log
+      battleLog.shift();
     }
   };
 
-  // Start the battle
-  const channel = message.channel;
+  // Function to simulate defense
+  const defend = (player) => {
+    const shield = Math.floor(player.dmg / 3 + Math.random() * (player.dmg/2)); // Random shield between dmg/2 and dmg*1.5
+    player.health += shield;
+    battleLog.push(`**${player.name}** defends and gains **${shield}** health!`);
+    if (battleLog.length > 3) {
+      battleLog.shift();
+    }
+    // Limit battle log to the last 5 entries
+    if (battleLog.length > 3) {
+      battleLog.shift();
+    }
+  };
 
-  const battleMessage = await channel.send({
-    embeds: [embedTop, generateEmbed()]
-  });
-
-  // Battle loop - we will simulate the battle for 10 turns (or until one player loses all health)
-  let turnCount = 0;
-
-  while (player1.health > 0 && player2.health > 0 && turnCount < 10) {
-    if (!battleStarted) {
-      battleStarted = true;
-      battleLog.push(`The battle has started!`);
-      await battleMessage.edit({
-        embeds: [embedTop, generateEmbed()]
-      });
-
-      let firstAttack = Math.floor(Math.random() * 2);
-      if (firstAttack === 0) {
-        [currentPlayer,
-          opponent] = [opponent,
-          currentPlayer];
-      }
-
-      turnCount++;
+  // Function to simulate special ability
+  const special = (player, opponent) => {
+    player.specialAbilitiesUsed += 1;
+    switch (player.special) {
+      case 'Double Attack':
+        attack(player, opponent);
+        attack(player, opponent);
+        battleLog.push(`**${player.name}** uses **Double Attack**!`);
+        break;
+      case 'Heal':
+        const healAmount = Math.floor(player.dmg * 1.5);
+        player.health += healAmount;
+        battleLog.push(`**${player.name}** uses **Heal** and recovers **${healAmount}** health!`);
+        break;
+      case 'Shield':
+        const shieldAmount = Math.floor(player.dmg / 2);
+        player.health += shieldAmount;
+        battleLog.push(`**${player.name}** uses **Shield** and gains **${shieldAmount}** health!`);
+        break;
+      default:
+        attack(player, opponent);
+        break;
     }
 
-    // Perform the attack
-    attack(currentPlayer, opponent);
+    // Limit battle log to the last 5 entries
+    if (battleLog.length > 3) {
+      battleLog.shift();
+    }
+  };
 
-    // Swap players after each turn
+  // Send the initial battle message
+  const battleMessage = await interaction.reply({
+    embeds: [embedTop, generateEmbed()],
+    components: [getActionButtons(true)],
+    fetchReply: true
+  });
+
+  // Function to handle the end of the battle
+  const endBattle = async (timeUp = false) => {
+    if (battleEnded) return;
+    battleEnded = true;
+
+    const winner = player1.health > player2.health ? player1: player2;
+    const loser = player1.health > player2.health ? player2: player1;
+
+    battleLog.push(`\n🎖️ **${winner.name}** emerges victorious, defeating **${loser.name}** ${timeUp ? "within the 1.3 minutes time limit": ""}!`);
+
+    // Disable all buttons
+    await battleMessage.edit({
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(true)],
+    });
+
+    // Handle rewards and updates
+    await handleRewards(winner, loser, friendly, interaction);
+  };
+
+  // finish battle within 1.3 minutes
+  setTimeout(async () => await endBattle(true), 90000);
+
+  // Function to handle rewards and updates after battle ends
+  const handleRewards = async (winner, loser, friendly, interaction) => {
+    const channel = interaction.channel;
+
+    const userData1 = await getUserData(player1.id);
+    let userData2 = null;
+    let userShips = await Ship.getUserShipsData(player1.id);
+    let currentShipIndex = userShips.ships.findIndex(ship => ship.name === player1.shipName);
+
+    let reward = Math.floor(5000 + Math.random() * 10000); // Random reward between 5000 and 10000
+
+    if (friendly) {
+      reward = 1000;
+    }
+
+    let otherMessage = '';
+    if (player2.user !== "bot") {
+      userData2 = await getUserData(player2.id);
+    }
+
+    const dateinMillis = Date.now();
+    if (userData1.lastBattle) userData1.lastBattle = dateinMillis;
+
+    if (userData2 && player2.user !== "bot" && winner.id === player1.id) {
+      userData1.cash += reward;
+      userData2.cash -= userData2.cash > 1000 ? 1000: userData2.cash;
+      userShips.ships[currentShipIndex].durability -= 25;
+
+      if (!userData2.battleLog) userData2.battleLog = [];
+      userData2.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
+      if (userData2.battleLog.length > 3) {
+        userData2.battleLog.shift(); // Remove the oldest log
+      }
+
+      otherMessage = `**${player1.name}**, you have won <:kasiko_coin:1300141236841086977>${reward} 𝒄𝒂𝒔𝒉, and your **durability** has **decreased by 25**. Also, **${player2.name}** has lost <:kasiko_coin:1300141236841086977>1000 of their 𝒄𝒂𝒔𝒉.`;
+
+    } else if (userData2 && player2.user !== "bot" && winner.id !== player1.id) {
+      userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
+      userData2.cash += userData2.cash > 1000 ? 1000: userData2.cash;
+
+      if (!userData2.battleLog) userData2.battleLog = [];
+      userData2.battleLog.push(`**${player2.name}**, congratulations! You have successfully defended in battle against **${player1.name}** and won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
+      if (userData2.battleLog.length > 3) {
+        userData2.battleLog.shift(); // Remove the oldest log
+      }
+
+      otherMessage = `**${player1.name}**, you have lost your **100 durability**, and **${player2.name}** has won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉.`;
+
+    } else if (winner.id !== player1.id) {
+      userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
+      otherMessage = `**${player1.name}**, you have lost **100** durability.`;
+    } else {
+      userShips.ships[currentShipIndex].durability -= 25;
+      userData1.cash += reward;
+      otherMessage = `**${player1.name}**, you have won <:kasiko_coin:1300141236841086977>${reward} 𝒄𝒂𝒔𝒉 and your **durability has decreased by 25**.`;
+    }
+
+    await updateUser(player1.id, userData1);
+    await Ship.modifyUserShips(player1.id, userShips);
+
+    if (userData2) await updateUser(player2.id, userData2);
+
+    battleLog.push(otherMessage);
+    if (battleLog.length > 3) {
+      battleLog.shift();
+    }
+    await battleMessage.edit({
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(true)],
+    });
+
+  };
+
+  // Function to handle player actions via button interactions
+  const handlePlayerAction = async (action) => {
+    if (action === 'attack') {
+      attack(currentPlayer, opponent);
+    } else if (action === 'defend') {
+      defend(currentPlayer);
+    } else if (action === 'special') {
+      special(currentPlayer, opponent);
+    }
+
+    await battleMessage.edit({
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(true)], // Disable buttons after action
+    });
+
+    // Check for battle end
+    if (opponent.health <= 0 || currentPlayer.health <= 0) {
+      endBattle();
+      return;
+    }
+
+    // Swap turns
     [currentPlayer,
       opponent] = [opponent,
       currentPlayer];
 
-    // Update the embed with the latest action
+    // Update embed and buttons based on the next player
     await battleMessage.edit({
-      embeds: [embedTop, generateEmbed()]
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(currentPlayer.user !== "player", currentPlayer.specialAbilitiesUsed > 1 ? true: false)], // Disable if bot's turn
     });
 
-    // Check if someone is defeated
-    if (player1.health <= 0 || player2.health <= 0) {
-      break;
+    // If it's bot's turn, perform bot action after a delay
+    if (currentPlayer.user === "bot") {
+      setTimeout(botAction, 2000); // 2-second delay
+    }
+  };
+
+  // Function to handle bot actions
+  const botAction = async () => {
+    if (battleEnded) return;
+
+    // Simple bot logic: randomly choose an action
+    const actions = ['attack',
+      'defend',
+      'special'];
+
+    if (currentPlayer.specialAbilitiesUsed > 1) {
+      actions.pop()
     }
 
-    // Delay for a moment before the next action (simulate turn duration)
-    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 seconds per turn
-    turnCount++;
-  }
+    const action = actions[Math.floor(Math.random() * actions.length)];
 
-  // End of battle, display result
-  const winner = player1.health > player2.health ? player1: player2;
-  const loser = player1.health > player2.health ? player2: player1;
-
-  const userData1 = await getUserData(player1.id);
-  let userData2 = ``;
-  let userShips = await Ship.getUserShipsData(player1.id);
-  let currentShipIndex = userShips.ships.findIndex(ship => ship.name === player1.shipName);
-
-  let reward = Number(5000 + Math.floor(Math.random() * 5000));
-
-  if (friendly) {
-    reward = 1000;
-  }
-
-  let otherMessage = ``;
-  if (player2.user === "bot") {} else {
-    userData2 = await getUserData(player2.id);
-  }
-
-  const date = new Date().toLocaleDateString();
-  const dateinMillis = Date.now();
-
-  userData1.lastBattle = dateinMillis;
-
-  if (userData2 && player2.user !== "bot" && winner.id === player1.id) {
-    userData1.cash += reward;
-    userData2.cash -= userData2.cash > 1000 ? 1000: userData2.cash;
-    userShips.ships[currentShipIndex].durability -= 25;
-
-    if (!userData2.battleLog) userData2.battleLog = [];
-    userData2.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on ${date}.`);
-    if (userData2.battleLog.length > 5) {
-      userData2.battleLog.shift(); // Remove the oldest log
+    // Execute bot's action
+    if (action === 'attack') {
+      attack(currentPlayer, opponent);
+      battleLog.push(`**${currentPlayer.name}** attacks!`);
+    } else if (action === 'defend') {
+      defend(currentPlayer);
+      battleLog.push(`**${currentPlayer.name}** defends!`);
+    } else if (action === 'special') {
+      special(currentPlayer, opponent);
+      battleLog.push(`**${currentPlayer.name}** uses **${currentPlayer.special}**!`);
+    }
+    if (battleLog.length > 3) {
+      battleLog.shift();
     }
 
-    otherMessage = `**${player1.name}**, you have won <:coin:1304675604171460728>${reward} 𝒄𝒂𝒔𝒉, and your **durability** has **decreased by 25**. Also, **${player2.name}** has lost <:coin:1304675604171460728>1000 of their 𝒄𝒂𝒔𝒉.`;
+    await battleMessage.edit({
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(true)],
+    });
 
-  } else if (userData2 && player2.user !== "bot" && winner.id !== player1.id) {
-    userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
-    userData2.cash += userData2.cash > 1000 ? 1000: userData2.cash;
-
-    if (!userData2.battleLog) userData2.battleLog = [];
-    userData2.battleLog.push(`**${player2.name}**, congratulations! You have successfully defended in battle against **${player1.name}** and won <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉 on ${date}.`);
-    if (userData2.battleLog.length > 5) {
-      userData2.battleLog.shift(); // Remove the oldest log
+    // Check for battle end
+    if (opponent.health <= 0 || currentPlayer.health <= 0) {
+      endBattle();
+      return;
     }
 
-    otherMessage = `**${player1.name}**, you have lost your **100 durability**, and **${player2.name}** has won <:coin:1304675604171460728>1000 𝒄𝒂𝒔𝒉.`;
-    // if other player is bot
-  } else if (winner.id !== player1.id) {
-    userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
-    otherMessage = `**${player1.name}**, you have lost **100** durability.`;
-  } else {
-    userShips.ships[currentShipIndex].durability -= 25;
-    userData1.cash += reward;
-    otherMessage = `**${player1.name}**, you have won <:coin:1304675604171460728>${reward} 𝒄𝒂𝒔𝒉 and your **durability has decreased by 25**.`;
-  }
+    // Swap turns
+    [currentPlayer,
+      opponent] = [opponent,
+      currentPlayer];
 
-  await updateUser(player1.id, userData1);
-  await Ship.modifyUserShips(player1.id, userShips);
+    // Update embed and buttons based on the next player
+    await battleMessage.edit({
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(currentPlayer.user !== "player", currentPlayer.specialAbilitiesUsed > 1 ? true: false)],
+    });
 
-  if (userData2) await updateUser(player2.id, userData2);
+    // If next turn is bot's, perform bot action after a delay
+    if (currentPlayer.user === "bot") {
+      setTimeout(botAction, 2000); // 2-second delay
+    }
+  };
 
-  battleLog.push(`\n\n🎖️ **${winner.name}** emerges victorious, defeating **${loser.name}** with ${winner.health} health left. ${otherMessage}`);
-  await battleMessage.edit({
-    embeds: [embedTop, generateEmbed()]
-  });
-}
+  // Function to handle battle interactions
+  const handleInteractions = async () => {
+    if (battleEnded) return;
 
-function gatherDetails(username, userId, isPlayer = false, message) {
-  return new Promise(async (resolve) => {
+    const filter = (i) => i.isButton() && i.user.id === currentPlayer.id;
+
     try {
-      const userData = await getUserData(userId);
-      const userShips = await Ship.getUserShipsData(userId);
-
-      if (isPlayer && userData.cash < 1000) {
-        return resolve( {
-          error: true, message: "⚠️ You don't have sufficient cash to start a battle (min: 1000)."
-        });
-      }
-
-      if (isPlayer) {
-        const lastBattleTime = new Date(userData.lastBattle || Date.now() - (1000 * 60 * 60));
-        const currentTime = new Date();
-        const timeDifferenceInMinutes = (10 - ((currentTime - lastBattleTime) / (1000 * 60))).toFixed(0);
-
-        /* timeLimit   if (timeDifferenceInMinutes > 0) {
-          return resolve( {
-            error: true, message: `⚠️ You can come back again for battle after ${timeDifferenceInMinutes} minutes.`
-          });
-        } */
-      }
-
-      if (!isPlayer && userShips.ships.length === 0) {
-        return resolve( {
-          error: true, message: "⚠️ Opponent has no ships."
-        });
-      }
-
-      if (isPlayer && userShips.ships.length === 0) {
-        return resolve( {
-          error: true, message: "⚠️ You don't have any ships for battle. Ships can be found while catching fish."
-        });
-      }
-
-      const activeShip = userShips.ships.find(ship => ship.active);
-
-      if (!activeShip) {
-        const noActiveShipMessage = isPlayer
-        ? "⚠️ No active ship found in your ship collection. For help, use the command `Kas help battle`.": "⚠️ Opponent doesn't have any active ships for battle. What's the point of a battle?";
-        return resolve( {
-          error: true, message: noActiveShipMessage
-        });
-      }
-
-      const shipDetails = await Ship.shipsData.find(ship => ship.id === activeShip.id);
-
-      if (!shipDetails) {
-        return resolve( {
-          error: true, message: `⚠️ No such ship exists in ${isPlayer ? "your": "opponent"} active ship collection in our database! Battle start failed.`
-        });
-      }
-
-      if (activeShip.durability < 100 && isPlayer) {
-        return resolve( {
-          error: true, message: "⚠️ Your ship is not ready for battle. Minimum durability required: 100"
-        });
-      }
-
-      if (isPlayer) {
-        userData.cash -= 1000;
-        await updateUser(userId, userData);
-      }
-
-      resolve( {
-        name: username,
-        health: activeShip.level * shipDetails.health,
-        dmg: activeShip.level * shipDetails.dmg,
-        shipName: activeShip.name,
-        shipLvl: activeShip.level,
-        id: userId,
-        user: "player"
+      const interactionCollected = await battleMessage.awaitMessageComponent({
+        filter,
+        componentType: ComponentType.Button,
+        time: 10000, // 10 seconds to respond
       });
+
+      const action = interactionCollected.customId;
+
+      // Defer the interaction to acknowledge it
+      await interactionCollected.deferUpdate();
+
+      // Handle the player's action
+      await handlePlayerAction(action);
     } catch (error) {
-      console.error("Error in gatherDetails:", error);
-      resolve( {
-        error: true, message: "An error occurred while gathering details. Please try again later."
+      // Handle timeout or errors
+      if (battleEnded) return;
+
+      battleLog.push(`**${currentPlayer.name}** did not respond in time and loses **100** health!`);
+      currentPlayer.health -= 100;
+
+      await battleMessage.edit({
+        embeds: [embedTop, generateEmbed()],
+        components: [getActionButtons(true)],
       });
+
+      // Check for battle end
+      if (opponent.health <= 0 || currentPlayer.health <= 0) {
+        endBattle();
+        return;
+      }
+
+      // Swap turns
+      [currentPlayer,
+        opponent] = [opponent,
+        currentPlayer];
+
+      // Update embed and buttons based on the next player
+      await battleMessage.edit({
+        embeds: [embedTop, generateEmbed()],
+        components: [getActionButtons(currentPlayer.user !== "player", currentPlayer.specialAbilitiesUsed > 1 ? true: false)],
+      });
+
+      // If it's bot's turn, perform bot action after a delay
+      if (currentPlayer.user === "bot") {
+        setTimeout(botAction, 2000);
+      }
     }
-  });
+  };
+
+  // Start the battle loop
+  const startBattleLoop = async () => {
+    if (battleStarted) return;
+    battleStarted = true;
+    battleLog.push(`The battle has started!`);
+    await battleMessage.edit({
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(false)],
+    });
+
+    // Randomly decide who goes first
+    let firstAttack = Math.floor(Math.random() * 2);
+    if (firstAttack === 0) {
+      [currentPlayer,
+        opponent] = [opponent,
+        currentPlayer];
+    }
+
+    battleLog.push(`**${currentPlayer.name}** will take the first turn!`);
+    await battleMessage.edit({
+      embeds: [embedTop, generateEmbed()],
+      components: [getActionButtons(currentPlayer.user !== "player", currentPlayer.specialAbilitiesUsed > 1 ? true: false)],
+    });
+
+    // If bot starts first, perform bot action
+    if (currentPlayer.user === "bot") {
+      setTimeout(botAction, 2000);
+    } else {
+      // Await player's action
+      await handleInteractions();
+    }
+  };
+
+  // Initiate the battle
+  await startBattleLoop();
+
+  // Continuously handle interactions until battle ends
+  while (!battleEnded) {
+    if (currentPlayer.user === "player") {
+      await handleInteractions();
+    } else {
+      // Bot actions are handled via setTimeout in botAction
+      // No need to await here
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
 }
 
-export async function startBattle(opponent, message) {
+async function gatherDetails(username, userId, isPlayer, interaction) {
+  try {
+    const userData = await getUserData(userId);
+    const userShips = await Ship.getUserShipsData(userId);
+
+    if (isPlayer && userData.cash < 1000) {
+      return {
+        error: true,
+        message: "⚠️ You don't have sufficient cash to start a battle (min: 1000)."
+      };
+    }
+
+    // Time limit between battles (e.g., 10 minutes)
+    if (isPlayer) {
+      const lastBattleTime = new Date(userData.lastBattle || Date.now() - (1000 * 60 * 60));
+      const currentTime = new Date();
+      const timeDifferenceInMinutes = Math.floor((currentTime - lastBattleTime) / (1000 * 60));
+
+      const cooldown = 10; // 10 minutes cooldown
+
+      if (timeDifferenceInMinutes < cooldown) {
+        const timeLeft = cooldown - timeDifferenceInMinutes;
+        /*   return {
+          error: true,
+          message: `⚠️ You can come back again for battle after **${timeLeft}** more minute(s).`
+        }; */
+      }
+    }
+
+    if (!isPlayer && userShips.ships.length === 0) {
+      return {
+        error: true,
+        message: "⚠️ Opponent has no ships."
+      };
+    }
+
+    if (isPlayer && userShips.ships.length === 0) {
+      return {
+        error: true,
+        message: "⚠️ You don't have any ships for battle. Ships can be found while catching fish."
+      };
+    }
+
+    const activeShip = userShips.ships.find(ship => ship.active);
+
+    if (!activeShip) {
+      const noActiveShipMessage = isPlayer
+      ? "⚠️ No active ship found in your ship collection. For help, use the command `/help battle`.": "⚠️ Opponent doesn't have any active ships for battle. What's the point of a battle?";
+      return {
+        error: true,
+        message: noActiveShipMessage
+      };
+    }
+
+    const shipDetails = Ship.shipsData.find(ship => ship.id === activeShip.id);
+    if (!shipDetails) {
+      return {
+        error: true,
+        message: `⚠️ No such ship exists in ${isPlayer ? "your": "opponent's"} active ship collection in our database! Battle start failed.`
+      };
+    }
+
+    if (activeShip.durability < 100 && isPlayer) {
+      return {
+        error: true,
+        message: "⚠️ Your ship is not ready for battle. Minimum durability required: **100**."
+      };
+    }
+
+    if (isPlayer) {
+      userData.cash -= 1000; // Deduct battle cost
+      await updateUser(userId, userData);
+    }
+
+    return {
+      name: username,
+      health: activeShip.level * shipDetails.health,
+      dmg: activeShip.level * shipDetails.dmg,
+      shipName: activeShip.name,
+      shipLvl: activeShip.level,
+      id: userId,
+      user: "player"
+    };
+  } catch (error) {
+    console.error("Error in gatherDetails:", error);
+    return {
+      error: true,
+      message: "⚠️ An error occurred while gathering details. Please try again later."
+    };
+  }
+}
+
+/**
+* Initiates the battle between two players or a player and a bot.
+* @param {string} opponentId - The opponent's user ID.
+* @param {Object} interaction - The Discord interaction object.
+*/
+export async function startBattle(opponentId, interaction) {
   let opponentPlayer;
   let player;
   let friendly = false;
-  let usernamePlayer = await client.users.fetch(message.author.id) || {
-    "username": "unknown"
-  }
 
-  player = await gatherDetails(usernamePlayer,
-    message.author.id,
-    true,
-    message);
+  const usernamePlayer = interaction.author.username;
 
-  if (player.error) return message.channel.send(player.message);
+  player = await gatherDetails(usernamePlayer, interaction.author.id, true, interaction);
 
-  if (!opponent) {
+  if (player.error) return interaction.reply(player.message);
+
+  if (!opponentId) {
+    // Opponent is a bot
     opponentPlayer = Bot.createRandomPlayer(player);
   } else {
     friendly = true;
-    let usernameOpponent = await client.users.fetch(opponent) || {
-      "username": "unknown"
+    const opponentUser = await interaction.guild.members.fetch(opponentId).then(member => member.user).catch(() => null);
+
+    if (!opponentUser) {
+      return interaction.reply("⚠️ Opponent not found.");
     }
-    opponentPlayer = await gatherDetails(usernameOpponent, opponent, false, message);
+
+    opponentPlayer = await gatherDetails(opponentUser.username, opponentId, false, interaction);
   }
 
-  if (opponentPlayer.error) return message.channel.send(opponentPlayer.message);
+  if (opponentPlayer.error) return interaction.reply(opponentPlayer.message);
 
   if (!player.name || !opponentPlayer.name) {
-    return
+    return interaction.reply("⚠️ Battle could not be initiated due to missing player information.");
   }
 
-  if (player && opponentPlayer) {
-    try {
-      return battle(message, player, opponentPlayer, friendly);
-    } catch (e) {
-      console.error(e);
-      return message.channel.send("⚠️ Something went wrong during battle.")
-    }
+  // Start the battle
+  try {
+    return battle(interaction, player, opponentPlayer, friendly);
+  } catch (e) {
+    console.error(e);
+    return interaction.reply("⚠️ Something went wrong during the battle.");
   }
 }
 
