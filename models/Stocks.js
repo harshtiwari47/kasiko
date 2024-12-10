@@ -91,6 +91,12 @@ const stockDetailSchema = new mongoose.Schema({
     },
     GLOBALTRADE: {
       type: stockDetailSchema
+    },
+    CVIDIA: {
+      type: stockDetailSchema
+    },
+    HEALTHPLUS: {
+      type: stockDetailSchema
     }
   });
 
