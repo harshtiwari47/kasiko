@@ -50,7 +50,7 @@ export const client = new Client( {
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-const TOKEN = process.env.BOT_TOKEN;
+const TOKEN = process.env.BOT_TOKENDEV;
 const clientId = process.env.APP_ID;
 
 client.once('ready', async () => {
@@ -65,7 +65,7 @@ client.on('messageCreate', async (message) => {
 
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 
-    let prefix = "kas";
+    let prefix = "ks";
 
     if (!message.content.toLowerCase().startsWith(prefix)) return
 

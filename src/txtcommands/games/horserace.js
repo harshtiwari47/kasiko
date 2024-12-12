@@ -101,6 +101,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
   const horse1 = "<:horse_brown:1314077268447985725>";
   const horse2 = "<:horse_red:1314077243881820241>";
   const horse3 = "<:horse_grey:1316729191202558003>";
+
   const trackLength = 20; // Length of the race track
   let horse1Pos = 0;
   let horse2Pos = 0;
@@ -109,7 +110,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
   const raceInterval = setInterval(async () => {
     horse1Pos += Math.floor(Math.random() * 8); // Random step for horse 1
     horse2Pos += Math.floor(Math.random() * 8); // Random step for horse 2
-    horse3Pos += Math.floor(Math.random() * 8); // Random step for horse 2
+    horse3Pos += Math.floor(Math.random() * 8); // Random step for horse 3
 
     // Update the track
     let track1 = `${' '.repeat(horse1Pos)}${horse1}${' '.repeat(Math.max(0, trackLength - horse1Pos))}|`;
@@ -121,7 +122,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
       `${teammateId ? `\n**<@${teammateId}>** is teaming up with the same bet on **${opponentBetOn}**!`: ""}`);
 
     await suspenseMessage.edit({
-      content: `\n\n## ${track1}\n## ${track2}\n## ${track3}\n`,
+      content: `\`\`\`Cheers for your horse 🐎\`\`\`\n`+`${track1}\n`+`${track2}\n`+`${track3}\n`,
       embeds: [embedTitle]
     });
 
@@ -159,7 +160,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
           text: 'Congratulations on your win!'
         });
 
-        await channel.send({
+        await suspenseMessage.edit({
           embeds: [embed]
         });
       } else {
@@ -178,9 +179,8 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
         )
         .setFooter({
           text: 'Keep trying, your big win is just around the corner!'
-        }); // Footer text
-
-        await channel.send({
+        });
+        await suspenseMessage.edit({
           embeds: [embed]
         });
       }
