@@ -509,7 +509,7 @@ async function showRoyalPass(userId, username, channel, author) {
       const levelNum = parseInt(lvl);
       return levelNum > newLevel && (!royalPass?.rewardsClaimed.some(r => r.name === reward.name));
     })
-    .map(([level, reward]) => `- **Level ${level}**: ${reward.emoji} ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.type + " (" + reward.amount + ")"} ${reward.isPremium ? "<:royalpass_premium:1316397608603881543>": ""}`)
+    .map(([level, reward]) => `- **Level ${level}**: ${reward.isPremium ? "<:royalpass_premium:1316397608603881543>": ""} ${reward.emoji} ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.type + " (" + reward.amount + ")"}`)
     .join('\n') || 'No more rewards for this month!';
 
     const avatarUrl = author.displayAvatarURL({

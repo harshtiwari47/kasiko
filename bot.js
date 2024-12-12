@@ -65,7 +65,7 @@ client.on('messageCreate', async (message) => {
 
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 
-    let prefix = "ks";
+    let prefix = "kas";
 
     if (!message.content.toLowerCase().startsWith(prefix)) return
 
@@ -119,7 +119,7 @@ client.on('messageCreate', async (message) => {
         EX: cooldownDuration
       });
 
-     // await incrementTaskExp(message.author.id, "command", message);
+      // await incrementTaskExp(message.author.id, "command", message);
 
       command.execute(args, message);
     } catch (error) {

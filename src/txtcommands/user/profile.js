@@ -35,7 +35,7 @@ export async function badges(userData) {
   } else if (userData.pass && userData.pass[0] === currentMonth) {
     badges += `<:royal:1316681043301892168> `
   }
-  return badges;
+  return `# ${badges}`;
 }
 
 // create an embed card based on user data
@@ -75,7 +75,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     const embed1 = new EmbedBuilder()
     .setColor('#f6e59a')
     .setTitle(`⌞ ⌝  <@${userId.toString()}>'s Profile ✨`)
-    .setDescription(`${ badges ? "# " + badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
+    .setDescription(`${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
     .addFields(
       // Financial Information
       {
