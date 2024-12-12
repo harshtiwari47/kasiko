@@ -105,6 +105,11 @@ async function initRoyalPass(userId, currentMonth) {
       EX: REDIS_EXPIRY
     });
 
+    const userData = await getUserData(userId);
+    userData.pass.type = "basic";
+    userData.pass.month = currentMonth;
+    await updateUser(userId, userData);
+
     return royalPass;
   } catch (error) {
     logger.error(`Error initializing Royal Pass for user ${userId}: ${error.message}`);
@@ -509,7 +514,7 @@ async function showRoyalPass(userId, username, channel, author) {
       const levelNum = parseInt(lvl);
       return levelNum > newLevel && (!royalPass?.rewardsClaimed.some(r => r.name === reward.name));
     })
-    .map(([level, reward]) => `- **Level ${level}**: ${reward.isPremium ? "<:royalpass_premium:1316397608603881543>": ""} ${reward.emoji} ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.type + " (" + reward.amount + ")"}`)
+    .map(([level, reward]) => `- **Level ${level}**: ${reward.isPremium ? "<:royalpass_premium:1316397608603881543>": ""} ${reward.emoji} ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.name + " (" + reward.amount + ")"}`)
     .join('\n') || 'No more rewards for this month!';
 
     const avatarUrl = author.displayAvatarURL({
@@ -713,6 +718,11 @@ export async function execute(args, message, client) {
         }
       );
 
+      const userData = await getUserData(userId);
+      userData.pass.type = "premium";
+      userData.pass.month = currentMonth;
+      await updateUser(userId, userData);
+
       await redisClient.set(`user:${userId}:royalpass`, JSON.stringify(updatedRoyalPass), {
         EX: REDIS_EXPIRY
       });
@@ -740,7 +750,7 @@ export async function execute(args, message, client) {
 
     const secondEmbed = new EmbedBuilder()
     .setDescription(
-      `> Use the following commands:\n` +
+      `> \`Use the following commands:\`\n` +
       `- **\`pass status\`**: View your Royal Pass status.\n` +
       `- **\`pass task\`**: See your tasks.\n` +
       `- **\`pass activate\`**: Activate your Royal Pass.\n` +

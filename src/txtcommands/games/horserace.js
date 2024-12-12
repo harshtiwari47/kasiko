@@ -116,9 +116,14 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
     let track2 = `${' '.repeat(horse2Pos)}${horse2}${' '.repeat(Math.max(0, trackLength - horse2Pos))}|`;
     let track3 = `${' '.repeat(horse2Pos)}${horse2}${' '.repeat(Math.max(0, trackLength - horse2Pos))}|`;
 
-    await suspenseMessage.edit(`🏁 𝑻𝒉𝒆 𝒓𝒂𝒄𝒆 𝒊𝒔 𝒐𝒏!\n\n${track1}\n${track2}\n${track3}\n` + `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!` +
-      `${teammateId ? `\n**<@${teammateId}>** is teaming up with the same bet on **${opponentBetOn}**!`: ""}`
-    );
+    const embedTitle = new EmbedBuilder()
+    .setDescription(`🏁 𝑻𝒉𝒆 𝒓𝒂𝒄𝒆 𝒊𝒔 𝒐𝒏!\n\n` + `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!` +
+      `${teammateId ? `\n**<@${teammateId}>** is teaming up with the same bet on **${opponentBetOn}**!`: ""}`);
+
+    await suspenseMessage.edit({
+      content: `${track1}\n${track2}\n${track3}`,
+      embeds: [embedTitle]
+    });
 
     // Check if any horse has finished
     if (horse1Pos >= trackLength || horse2Pos >= trackLength || horse3Pos >= trackLength) {
@@ -209,6 +214,6 @@ export default {
       return message.channel.send("⚠️ Invalid amount! Use `horserace <amount> <horse1/horse2> [teammate (optional)]`.");
     }
 
-    await horseRace(message.author.id, amount, message.channel, betOn, teammateId);
+    await horseRace(message.author.id, amount, message.channel, betOn, "horse2", teammateId);
   }
 };

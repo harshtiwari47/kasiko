@@ -18,21 +18,21 @@ import {
 export async function badges(userData) {
   let badges = "";
 
-  if (userData.networth > 1000000) {
-    badges += `<:mills:1316678507450863637> `
-  } else if (userData.networth > 5000000) {
-    badges += `<:bills:1316679142263230466> `
+  if (userData.networth > 15000000) {
+    badges += `<:chills:1316680306039984128> `
   } else if (userData.networth > 10000000) {
     badges += `<:trills:1316679914346381332> `
-  } else if (userData.networth > 15000000) {
-    badges += `<:chills:1316680306039984128> `
+  } else if (userData.networth > 5000000) {
+    badges += `<:bills:1316679142263230466> `
+  } else if (userData.networth > 1000000) {
+    badges += `<:mills:1316678507450863637> `
   }
 
   const currentMonth = new Date().getMonth();
 
-  if (userData.pass && userData.pass[0] === currentMonth && userData.pass[1] === "premium") {
+  if (userData.pass && userData.pass.month === currentMonth && userData.pass.type === "premium") {
     badges += `<:premis:1316681065439559680> `
-  } else if (userData.pass && userData.pass[0] === currentMonth) {
+  } else if (userData.pass && userData.pass.month === currentMonth) {
     badges += `<:royal:1316681043301892168> `
   }
   return `# ${badges}`;
