@@ -100,7 +100,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
   // Race details
   const horse1 = "<:horse_brown:1314077268447985725>";
   const horse2 = "<:horse_red:1314077243881820241>";
-  const horse3 = "<:horse_red:1314077243881820241>";
+  const horse3 = "<:horse_grey:1316729191202558003>";
   const trackLength = 20; // Length of the race track
   let horse1Pos = 0;
   let horse2Pos = 0;
@@ -114,14 +114,14 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
     // Update the track
     let track1 = `${' '.repeat(horse1Pos)}${horse1}${' '.repeat(Math.max(0, trackLength - horse1Pos))}|`;
     let track2 = `${' '.repeat(horse2Pos)}${horse2}${' '.repeat(Math.max(0, trackLength - horse2Pos))}|`;
-    let track3 = `${' '.repeat(horse2Pos)}${horse2}${' '.repeat(Math.max(0, trackLength - horse2Pos))}|`;
+    let track3 = `${' '.repeat(horse3Pos)}${horse3}${' '.repeat(Math.max(0, trackLength - horse3Pos))}|`;
 
     const embedTitle = new EmbedBuilder()
     .setDescription(`🏁 𝑻𝒉𝒆 𝒓𝒂𝒄𝒆 𝒊𝒔 𝒐𝒏!\n\n` + `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!` +
       `${teammateId ? `\n**<@${teammateId}>** is teaming up with the same bet on **${opponentBetOn}**!`: ""}`);
 
     await suspenseMessage.edit({
-      content: `${track1}\n${track2}\n${track3}`,
+      content: `\n\n## ${track1}\n## ${track2}\n## ${track3}\n`,
       embeds: [embedTitle]
     });
 
