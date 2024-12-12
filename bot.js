@@ -65,7 +65,7 @@ client.on('messageCreate', async (message) => {
 
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 
-    let prefix = "kas";
+    let prefix = "ks";
 
     if (!message.content.toLowerCase().startsWith(prefix)) return
 

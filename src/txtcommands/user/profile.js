@@ -75,7 +75,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     const embed1 = new EmbedBuilder()
     .setColor('#f6e59a')
     .setTitle(`⌞ ⌝  <@${userId.toString()}>'s Profile ✨`)
-    .setDescription(`${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
+    .setDescription(`${ badges ? "# " + badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
     .addFields(
       // Financial Information
       {
