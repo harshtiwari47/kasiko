@@ -105,19 +105,16 @@ export const Bank = {
 
       const userData = await getUserData(userId);
 
+      const emebedHeader = new EmbedBuilder()
+      .setColor("#a4bef2")
+      .setDescription("## 🏦 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** \`${account.level}\` **𝑺𝒉𝒊𝒆𝒍𝒅**: \`${account.shield}\``)
+
       const embed = new EmbedBuilder()
       .setColor('#dfe9fd') // Choose a color for the embed
-      .setTitle('🏦 𝐁𝐀𝐍𝐊')
-      .setDescription(`**Bank Status for ${message.author.username}:**`)
+      .setImage(`https://harshtiwari47.github.io/kasiko-public/images/bank.jpg`)
       .addFields(
         {
-          name: '𝑳𝒆𝒗𝒆𝒍', value: `${account.level}`, inline: true
-        },
-        {
           name: '𝑫𝒆𝒑𝒐𝒔𝒊𝒕 ', value: `<:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`, inline: true
-        },
-        {
-          name: '𝑺𝒉𝒊𝒆𝒍𝒅 ', value: `${account.shield}`, inline: true
         },
         {
           name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
@@ -129,10 +126,9 @@ export const Bank = {
           name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true
         }
       )
-      .setTimestamp();
 
       return message.channel.send({
-        embeds: [embed]
+        embeds: [emebedHeader, embed]
       });
     } catch (err) {
       return message.channel.send(`Error fetching bank status: ${err.message}`);

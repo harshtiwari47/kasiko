@@ -15,8 +15,31 @@ import {
   Helper
 } from '../../../helper.js';
 
+export async function badges(userData) {
+  let badges = "";
+
+  if (userData.networth > 1000000) {
+    badges += `<:mills:1316678507450863637> `
+  } else if (userData.networth > 5000000) {
+    badges += `<:bills:1316679142263230466> `
+  } else if (userData.networth > 10000000) {
+    badges += `<:trills:1316679914346381332> `
+  } else if (userData.networth > 15000000) {
+    badges += `<:chills:1316680306039984128> `
+  }
+
+  const currentMonth = new Date().getMonth();
+
+  if (userData.pass && userData.pass[0] === currentMonth && userData.pass[1] === "premium") {
+    badges += `<:premis:1316681065439559680> `
+  } else if (userData.pass && userData.pass[0] === currentMonth) {
+    badges += `<:royal:1316681043301892168> `
+  }
+  return badges;
+}
+
 // create an embed card based on user data
-async function createUserEmbed(userId, username, userData, avatar) {
+async function createUserEmbed(userId, username, userData, avatar, badges) {
   try {
     const joinDate = new Date(userData.joined);
     const isToday = joinDate.toDateString() === new Date().toDateString();
@@ -52,7 +75,7 @@ async function createUserEmbed(userId, username, userData, avatar) {
     const embed1 = new EmbedBuilder()
     .setColor('#f6e59a')
     .setTitle(`⌞ ⌝  <@${userId.toString()}>'s Profile ✨`)
-    .setDescription('Building wealth, trust, and empires starts from zero! 💸')
+    .setDescription(`${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
     .addFields(
       // Financial Information
       {
@@ -103,13 +126,15 @@ export async function profile(userId, context) {
     const userData = await getUserData(userId);
     userData.networth = updateNetWorth(userId);
 
+    let userBadges = await badges(userData);
+
     const userProfile = await createUserEmbed(
       userId,
       user.username,
       userData,
       user.displayAvatarURL({
         dynamic: true, size: 256
-      })
+      }), userBadges
     );
 
     if (isInteraction) {

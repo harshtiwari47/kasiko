@@ -13,7 +13,7 @@ export const openBankAccount = async (userId) => {
       userData.cash -= 1000;
       userData.bankAccount.open = true;
 
-      await userData.save();
+      await updateUser(userId, userData);
     }
   }
 };
@@ -48,7 +48,7 @@ export const updateBankDetails = async (userId, fields = {}) => {
     }
   }
 
-  await userData.save();
+  await updateUser(userId, userData);
 
   // Return the updated bank account
   return userData.bankAccount;

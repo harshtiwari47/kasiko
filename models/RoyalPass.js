@@ -16,6 +16,9 @@ const rewardSchema = new Schema( {
   amount: {
     type: Number, // Applicable for rewards like 'cash'
   },
+  emoji: {
+    type: String
+  }
 }, {
   _id: false
 }); // Disable _id for subdocuments to save space

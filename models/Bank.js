@@ -28,6 +28,8 @@ const bankAccountSchema = new mongoose.Schema({
       type: Boolean,
     default: false
     }
+  }, {
+    timestamps: true
   });
 
   export default bankAccountSchema

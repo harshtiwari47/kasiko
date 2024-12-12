@@ -350,7 +350,7 @@ export default {
     "roses"],
   cooldown: 10000,
   // Cooldown of 10 seconds
-  category: "👰🏻 Marriage",
+  category: "👤 User",
 
   execute: (args, message) => {
     try {

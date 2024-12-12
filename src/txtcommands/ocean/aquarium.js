@@ -168,28 +168,47 @@ export async function viewAquarium(userId, channel) {
     let userData = await getUserData(userId);
     const aquarium = userData.aquarium || [];
 
+    let totalReward = 0;
+    aquarium.forEach(fish => {
+      let fishDetails = aquaData.find(fishData => fishData.name.toLowerCase() === fish.toLowerCase());
+      let userfishDetails = Object.values(userData.aquaCollection.toJSON()).find(fishData => fishData.name && fishData.name.toLowerCase() === fish.toLowerCase());
+      let rarityAmount = 10;
+
+      if (fishDetails.rarity === "lengendary") {
+        rarityAmount = 25;
+      } else if (fishDetails.rarity === "rare") {
+        rarityAmount = 18;
+      } else if (fishDetails.rarity === "uncommon") {
+        rarityAmount = 14;
+      }
+      totalReward += (userfishDetails.level * 10 * rarityAmount);
+    });
+
     const filledAquarium = aquarium.length
     ? aquarium.map(fish => {
       const fishDetails = aquaData.filter(
         fishCollection => fishCollection.name === fish);
       return fishDetails.length
       ? `**${fish}** <:${fish}_aqua:${fishDetails[0].emoji}>`: `**${fish}** (no emoji)`;
-    }).join(" °゜\n│  "): "Nothing here yet 🐟";
+    }).join("°゜\n## │  "): "Nothing here yet 🐟";
 
     // Create a border around the aquarium content
     const aquariumDisplay = `┌─────────────────────┐\n` +
-    `│ ${filledAquarium} °゜\n\n` + // Fill the aquarium content
+    `## │ ${filledAquarium} °゜\n\n` + // Fill the aquarium content
     `│🌊🌊🌊\n` + // Extra padding line
     `└─────────────────────┘`;
+    
+    const aquariumEmbedTitle = new EmbedBuilder()
+    .setDescription(`## <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎`)
+    .setColor("#0a4c63")
 
     const aquariumEmbed = new EmbedBuilder()
-    .setTitle(`<:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎`)
-    .setDescription(`${aquariumDisplay}`)
+    .setDescription(`${aquariumDisplay}\n Minimum Collection: <:kasiko_coin:1300141236841086977> ${totalReward}`)
     .setColor('#00BFFF'); // Choose a color for the embed
 
     // Send the embed
     return channel.send({
-      embeds: [aquariumEmbed]
+      embeds: [aquariumEmbedTitle, aquariumEmbed]
     });
   } catch (e) {
     console.error(e);
@@ -279,6 +298,12 @@ export async function feedAnimals(animal, amount, message) {
     let remainder = currentFoodAmount % foodReqToLvlUp;
     let level = (currentFoodAmount - remainder) / foodReqToLvlUp;
 
+    if (userData.aquaCollection[capitalizedName].level + level > 100) {
+      return message.channel.send(
+        `⚠️ **${message.author.username}**, fishes can reach a maximum level of 100. You can't feed them beyond this level. Please reduce the feed amount if your fish is not yet at level 100.`
+      );
+    }
+
     userData.aquaCollection[capitalizedName].food += remainder;
     userData.aquaCollection[capitalizedName].level += level;
     userData.cash -= feedCost;
@@ -358,16 +383,16 @@ export async function collectAquariumReward(message) {
     aquarium.forEach(fish => {
       let fishDetails = aquaData.find(fishData => fishData.name.toLowerCase() === fish.toLowerCase());
       let userfishDetails = Object.values(userData.aquaCollection.toJSON()).find(fishData => fishData.name && fishData.name.toLowerCase() === fish.toLowerCase());
-      let rarityAmount = 15;
+      let rarityAmount = 10;
 
       if (fishDetails.rarity === "lengendary") {
-        rarityAmount = 50;
-      } else if (fishDetails.rarity === "rare") {
-        rarityAmount = 35;
-      } else if (fishDetails.rarity === "uncommon") {
         rarityAmount = 25;
+      } else if (fishDetails.rarity === "rare") {
+        rarityAmount = 18;
+      } else if (fishDetails.rarity === "uncommon") {
+        rarityAmount = 14;
       }
-      totalReward += (userfishDetails.level * 15 * rarityAmount) + numVisitors;
+      totalReward += (userfishDetails.level * 15 * rarityAmount) + (numVisitors * 10);
     });
 
     // Update user's cash and last collection time

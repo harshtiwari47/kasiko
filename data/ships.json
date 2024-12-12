@@ -89,5 +89,18 @@
     "probability": 18,
     "emoji": "1304674341849665626",
     "type": "airship"
+  },
+  "ship8" : {
+    "id": "ship8",
+    "name": "Drago",
+    "dmg": 115,
+    "durability": 280,
+    "repairCost": 260,
+    "levelUpCost": 2800,
+    "rarity": "legendary",
+    "health": 520,
+    "probability": -1,
+    "emoji": "1316615694996996096",
+    "type": "sailing ship"
   }
 }

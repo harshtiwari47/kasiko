@@ -359,7 +359,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
   const handleInteractions = async () => {
     if (battleEnded) return;
 
-    const filter = (i) => i.isButton() && i.user.id === currentPlayer.id;
+    const filter = (i) => i.isButton() && ((i.user.id === player1.id) || (player2 && i.user.id === player2.id));
 
     try {
       const interactionCollected = await battleMessage.awaitMessageComponent({
