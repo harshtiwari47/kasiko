@@ -372,7 +372,6 @@ async function flushPendingUpdates() {
 
 // Schedule the background worker
 cron.schedule(BULK_UPDATE_INTERVAL, () => {
-  console.log(`[${new Date().toISOString()}] 🔄 Running scheduled bulk update...`);
   flushPendingUpdates();
 });
 
