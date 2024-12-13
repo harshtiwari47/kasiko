@@ -82,6 +82,7 @@ async function initRoyalPass(userId, currentMonth) {
 
       if (userCash < FIRST_PASS_COST) {
         throw new Error(`You need at least ${FIRST_PASS_COST} cash to activate your first Royal Pass.`);
+        return;
       }
 
       userData.cash -= FIRST_PASS_COST;
@@ -798,6 +799,14 @@ export async function execute(args, message, client) {
 
       await deductUserCash(userId, FIRST_PASS_COST);
       const currentMonth = new Date().getMonth();
+
+      const userData = await getUserData(userId);
+      let userCash = userData.cash;
+
+      if (userCash < FIRST_PASS_COST) {
+        return channel.reply(`You need at least ${FIRST_PASS_COST} cash to activate your first Royal Pass.`);
+      }
+
       const royalPass = await initRoyalPass(userId, currentMonth);
 
       if (royalPass instanceof Error) {
