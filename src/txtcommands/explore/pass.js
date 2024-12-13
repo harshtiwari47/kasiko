@@ -797,15 +797,7 @@ export async function execute(args, message, client) {
         return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`);
       }
 
-      await deductUserCash(userId, FIRST_PASS_COST);
       const currentMonth = new Date().getMonth();
-
-      const userData = await getUserData(userId);
-      let userCash = userData.cash;
-
-      if (userCash < FIRST_PASS_COST) {
-        return channel.reply(`You need at least ${FIRST_PASS_COST} cash to activate your first Royal Pass.`);
-      }
 
       const royalPass = await initRoyalPass(userId, currentMonth);
 
