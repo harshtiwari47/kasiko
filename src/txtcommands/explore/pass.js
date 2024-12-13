@@ -41,7 +41,7 @@ const logger = winston.createLogger({
 // Constants
 const BASE_REQUIRED_XP_PER_LEVEL = Math.floor(TASKEXP / Object.keys(Rewards).length);
 const REDIS_EXPIRY = 300; // Cache for 5 minutes
-const FIRST_PASS_COST = 1000;
+const FIRST_PASS_COST = 1000000;
 const PREMIUM_COST = 500;
 
 // Batching Constants
@@ -850,6 +850,7 @@ export async function execute(args, message, client) {
 
       const userData = await getUserData(userId);
 
+      const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
 
       userData.pass.type = "premium";
