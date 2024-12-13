@@ -101,6 +101,7 @@
     "health": 520,
     "probability": -1,
     "emoji": "1316615694996996096",
-    "type": "sailing ship"
+    "type": "sailing ship",
+    "pass": true
   }
 }

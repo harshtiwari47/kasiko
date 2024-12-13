@@ -10,6 +10,10 @@ import {
   Helper
 } from '../../../helper.js';
 
+import {
+  incrementTaskExp
+} from './pass.js';
+
 // Function to get pet image based on type and level
 function getPetImage(petType, petLevel) {
 
@@ -58,7 +62,7 @@ export default {
     "pet talk"
   ],
   category: "🌱 Explore",
-  cooldown: 5000,
+  cooldown: 10000,
 
   // Main function for executing pet commands
   execute: async (args, interaction) => {
@@ -117,8 +121,8 @@ export default {
           value: "View a list of all your pets, including their names, levels, and types.",
         },
         {
-          name: "**pet view <pet_name>**",
-          value: "View detailed information and an image of a specific pet.",
+          name: "**pet view**",
+          value: "View detailed information and an image of a current pet.",
         },
         {
           name: "**pet help**",
@@ -176,8 +180,10 @@ export default {
 
         const embed = new EmbedBuilder()
         .setColor('#ff69b4') // A cute pink color
-        .setDescription(`**Yummy, yay!** 😻🎉\n**${interaction.author.username}**, **${pet.name}** has been fed and is purring with joy! 🐾💖\n\nYou can feed ${pet.name} again after 1 hour! 🍽️`)
+        .setDescription(`**Yummy, yay!** 😻🎉\n**${interaction.author.username}**, **${pet.name}** has been fed and is purring with joy! 🐾💖\n\nYou can feed ${pet.name} again after 3 hour! 🍽️`)
         .setThumbnail(petImageUrls ? petImageUrls[0]: null);
+
+        await incrementTaskExp(interaction.author.id, "feed", interaction);
 
         return interaction.channel.send({
           embeds: [embed]
@@ -337,7 +343,7 @@ export default {
     }
 
     // View command
-    if (args.length === 1) {
+    if (args.length === 1 || args[1] === "view") {
       const pet = userPetData.pets[petId];
       const petImageUrls = getPetImage(pet.type, pet.level);
 

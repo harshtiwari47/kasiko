@@ -140,9 +140,18 @@ const userSchema = new mongoose.Schema({
     pass: {
       type: Object,
     default: {
-        month: null, // number 0-11
+        month: -1, // number 0-11
+        year: -1, // number
         type: null // premium/basic
       }
+    },
+    color: {
+      type: String,
+    default: "#f6e59a"
+    },
+    seasonalPasses: {
+      type: Array,
+    default: []
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

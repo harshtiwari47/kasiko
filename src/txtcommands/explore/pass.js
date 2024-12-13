@@ -18,6 +18,13 @@ import {
 import cron from 'node-cron';
 import winston from 'winston';
 
+import IceCreamShop from "../../../models/IceCream.js";
+import UserPet from "../../../models/Pet.js";
+import {
+  Ship
+} from '../battle/shipsHandler.js';
+
+
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
@@ -105,9 +112,16 @@ async function initRoyalPass(userId, currentMonth) {
       EX: REDIS_EXPIRY
     });
 
+    const currentYear = new Date().getFullYear();
+
     const userData = await getUserData(userId);
     userData.pass.type = "basic";
     userData.pass.month = currentMonth;
+    userData.pass.year = currentYear;
+    userData.seasonalPasses.push("<:royalpass1224:1317027306253844520>");
+    if (userData.seasonalPasses.length > 5) {
+      userData.seasonalPasses.shift();
+    }
     await updateUser(userId, userData);
 
     return royalPass;
@@ -512,7 +526,7 @@ async function showRoyalPass(userId, username, channel, author) {
     const upcomingRewards = Object.entries(Rewards)
     .filter(([lvl, reward]) => {
       const levelNum = parseInt(lvl);
-      return levelNum > newLevel && (!royalPass?.rewardsClaimed.some(r => r.name === reward.name));
+      return levelNum > newLevel && (!royalPass?.rewardsClaimed.some(r => r.id === reward.id));
     })
     .map(([level, reward]) => `- **Level ${level}**: ${reward.isPremium ? "<:royalpass_premium:1316397608603881543>": ""} ${reward.emoji} ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.name + " (" + reward.amount + ")"}`)
     .join('\n') || 'No more rewards for this month!';
@@ -594,34 +608,140 @@ async function claimReward(userId, level, message) {
   try {
     const royalPass = await getRoyalPass(userId);
     if (!royalPass) {
-      return message.reply('No Royal Pass found. Activate one using `pass activate`.');
+      return message.reply('⚠️ No Royal Pass found. Activate one using `pass activate`.');
     }
 
     const reward = Rewards[level];
     if (!reward) {
-      return message.reply('Invalid reward level.');
+      return message.reply('⚠️ Invalid reward level.');
     }
 
     if (reward.isPremium && !royalPass.isPremium) {
-      return message.reply('This reward is exclusive to Premium Royal Pass holders.');
+      return message.reply('⚠️ This reward is exclusive to Premium Royal Pass holders.');
+    }
+
+    if (level > royalPass.level) {
+      return message.reply('⚠️ Your Royal Pass level is too low to claim this reward.');
     }
 
     const alreadyClaimed = royalPass.rewardsClaimed.find(r =>
-      (r.name && r.name === reward.name) ||
-      (r.amount && r.amount === reward.amount && r.type === reward.type)
-    );
+      (r.id && r.id === reward.id));
+
     if (alreadyClaimed) {
-      return message.reply('You have already claimed this reward.');
+      return message.reply('⚠️ You have already claimed this reward.');
     }
 
+    // cash
     if (reward.type === 'cash') {
       await updateUserCash(userId, reward.amount);
+    }
+
+    // creamcash
+    if (reward.type === 'creamcash') {
+      const playerShop = await IceCreamShop.findOne({
+        userId
+      });
+
+      if (!playerShop) {
+        return message.reply("❌ Shop name not found! Please create your ice cream shop first. For guidance, use `icecream|ice help`! 🍧");
+      }
+
+      playerShop.cash += reward.amount;
+
+      await playerShop.save();
+    }
+
+    // pet
+    if (reward.type === 'pet') {
+      let userPetData = await UserPet.findOne({
+        id: userId
+      });
+
+      if (!userPetData) {
+        userPetData = await new UserPet( {
+          id: userId,
+        })
+      }
+
+      if (userPetData.pets.some(pet => pet.petId === reward.details[0].petId)) {
+        return message.reply(`⚠️ You are already own this adorable pet!`)
+      }
+
+      userPetData.pets.push(reward.details[0]);
+
+      await userPetData.save();
+    }
+
+    // petfood
+    if (reward.type === 'petfood') {
+      let userPetData = await UserPet.findOne({
+        id: userId
+      });
+
+      if (!userPetData) {
+        userPetData = await new UserPet( {
+          id: userId,
+        })
+      }
+
+      userPetData.food += parseInt(reward.amount);
+
+      await userPetData.save();
+    }
+
+    // ship
+    if (reward.type === 'ship') {
+      let userShips = await Ship.getUserShipsData(userId);
+      if (userShips.ships && userShips.ships.some(shipDetails => shipDetails.id && shipDetails.id === ships[i].id)) {
+        return message.reply("⚠️ You already own this ship, Captain!")
+      }
+      userShips.ships.push(reward.details[0]);
+      await Ship.modifyUserShips(userId, userShips);
+    }
+
+    // car
+    if (reward.type === 'car') {
+      const userData = await getUserData(userId);
+      if (!userData.cars.some(car => car.id === reward.details[0].id)) {
+        reward.details[0].purchasedDate = new Date().toISOString(),
+        userData.cars.push(reward.details[0]);
+      } else {
+        userData.cars = userData.cars.map(car => {
+          if (car.id === reward.details[0].id) {
+            car.items += 1;
+          }
+          return car;
+        });
+      }
+
+      await updateUser(userId,
+        userData);
+    }
+
+    // structure
+    if (reward.type === 'structure') {
+      const userData = await getUserData(userId);
+      if (!userData.structures.some(structure => structure.id === reward.details[0].id)) {
+        reward.details[0].purchasedDate = new Date().toISOString(),
+        userData.structures.push(reward.details[0]);
+      } else {
+        userData.structures = userData.structures.map(structure => {
+          if (structure.id === reward.details[0].id) {
+            structure.items += 1;
+          }
+          return structure;
+        });
+      }
+
+      await updateUser(userId,
+        userData);
     }
 
     royalPass.rewardsClaimed.push(reward);
     await RoyalPass.findOneAndUpdate(
       {
-        userId, month: new Date().getMonth()
+        userId,
+        month: new Date().getMonth()
       },
       {
         rewardsClaimed: royalPass.rewardsClaimed
@@ -631,11 +751,14 @@ async function claimReward(userId, level, message) {
       }
     );
 
-    await redisClient.set(`user:${userId}:royalpass`, JSON.stringify(royalPass), {
-      EX: REDIS_EXPIRY
-    });
+    await redisClient.set(`user:${userId}:royalpass`,
+      JSON.stringify(royalPass),
+      {
+        EX: REDIS_EXPIRY
+      });
 
-    return message.reply(`✅ You have successfully claimed the reward: ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.name}.`);
+    return message.reply(`✅ You have successfully claimed the reward: **${reward.emoji} ${reward.amount} ${(reward.name || "")}**.`);
+
   } catch (error) {
     logger.error(`[${new Date().toISOString()}] Error in claimReward for user ${userId}: ${error.message}`);
     return message.reply(`❌ An error occurred while claiming your reward.`);
@@ -682,7 +805,14 @@ export async function execute(args, message, client) {
         return channel.send(`❌ **${username}**, you have insufficient cash to purchase your Royal Pass.`);
       }
 
-      return channel.send(`✅ Your Royal Pass has been activated! You have been charged <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash.`);
+      const embed = new EmbedBuilder()
+      .setDescription(`
+        **🎉 Congratulations!** Your <:royalpass1224:1317027306253844520> **Royal Pass** has been successfully activated. We have graciously charged you <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash for this privilege.\n-# Enjoy your enhanced experience!
+        `);
+
+      return message.reply({
+        embeds: [embed]
+      })
     } catch (error) {
       logger.error(`[${new Date().toISOString()}] Error activating Royal Pass for user ${userId}: ${error.message}`);
       return channel.send(`❌ An error occurred while activating your Royal Pass.`);
@@ -719,8 +849,12 @@ export async function execute(args, message, client) {
       );
 
       const userData = await getUserData(userId);
+
+      const currentYear = new Date().getFullYear();
+
       userData.pass.type = "premium";
       userData.pass.month = currentMonth;
+      userData.pass.year = currentYear;
       await updateUser(userId, userData);
 
       await redisClient.set(`user:${userId}:royalpass`, JSON.stringify(updatedRoyalPass), {
@@ -731,6 +865,102 @@ export async function execute(args, message, client) {
       logger.error(`[${new Date().toISOString()}] Error upgrading to Premium Royal Pass for user ${userId}: ${error.message}`);
       return channel.send(`❌ An error occurred while upgrading your Royal Pass.`);
     }
+  } else if (args[1] === 'special') {
+
+    const shipData = {
+      type: "ship",
+      name: "Drago",
+      amount: 1,
+      details: [{
+        level: 1,
+        id: "ship8",
+        name: "Drago",
+        durability: 400,
+        dmg: 115,
+        health: 520,
+      }],
+      emoji: "<:ship8:1316615694996996096>"
+    };
+
+    const shipEmbed = new EmbedBuilder()
+    .setColor("#9cb5e9")
+    .setDescription(`# ${shipData.emoji} ${shipData.name}\nA mighty ship with impressive durability and capabilities.`)
+    .addFields(
+      {
+        name: '🛠️ Type', value: shipData.type.charAt(0).toUpperCase() + shipData.type.slice(1), inline: true
+      },
+      {
+        name: '🔢 Quantity', value: `${shipData.amount}`, inline: true
+      },
+      {
+        name: '⚙️ Level', value: `${shipData.details[0].level}`, inline: true
+      },
+      {
+        name: '🛡️ Durability', value: `${shipData.details[0].durability}`, inline: true
+      },
+      {
+        name: '🗡️ Damage', value: `${shipData.details[0].dmg}`, inline: true
+      },
+      {
+        name: '❤️ Health', value: `${shipData.details[0].health}`, inline: true
+      }
+    )
+    .setFooter({
+      text: 'Navigate the seas with confidence aboard Drago!'
+    });
+
+    message.channel.send({
+      embeds: [shipEmbed]
+    });
+
+  } else if (args[1] === 'exclusive') {
+    const premiumEmbed = new EmbedBuilder()
+    .setColor("#6989ff")
+    .setTitle('💠 Premium Pass Benefits')
+    .setDescription('-# Unlock exclusive perks and rewards with our premium membership!')
+    .addFields(
+      {
+        name: '🏦 Bank Perk', value: '20% discount on bank transactions', inline: true
+      },
+      {
+        name: '🎁 Daily Rewards', value: '25% extra daily rewards', inline: true
+      },
+      {
+        name: '🐟 Aquarium Collection', value: '10% extra collection bonus', inline: true
+      },
+      {
+        name: '💰 Creamcash', value: '25% extra on daily Creamcash rewards', inline: true
+      },
+      {
+        name: '🎨 Special Perk', value: 'Exclusive profile color', inline: true
+      },
+      {
+        name: '🏅 Premium Badge', value: 'Show off your exclusive **Premis** badge', inline: true
+      }
+    )
+
+    // Basics Embed
+    const basicsEmbed = new EmbedBuilder()
+    .setColor("#FFD700")
+    .setTitle('✨ Basics Pass Benefits')
+    .setDescription('-# Enjoy enhanced rewards and a royal badge with our basics membership!')
+    .addFields(
+      {
+        name: '🎁 Daily Rewards', value: '20% extra daily rewards', inline: true
+      },
+      {
+        name: '🐟 Aquarium Collection', value: '5% extra collection bonus', inline: true
+      },
+      {
+        name: '🏅 Royal Badge', value: 'Show off your **Royal** badge', inline: true
+      }
+    )
+
+    // Send embeds
+    message.channel.send({
+      embeds: [premiumEmbed, basicsEmbed]
+    });
+
   } else if (args[1] === 'claim') {
     const level = args[2];
     if (!level) {
@@ -744,18 +974,20 @@ export async function execute(args, message, client) {
     }
   } else {
     const firstEmbed = new EmbedBuilder()
-    .setDescription('### Royal Pass 🎖\n```Season 1```')
+    .setDescription('### Royal Pass 🎖\n```Season 1```\n-# Feel Different')
     .setThumbnail('https://harshtiwari47.github.io/kasiko-public/images/royalpass_gold.png')
     .setColor('#FFD700')
 
     const secondEmbed = new EmbedBuilder()
     .setDescription(
-      `> \`Use the following commands:\`\n` +
+      `-# \`Use the following commands:\`\n` +
       `- **\`pass status\`**: View your Royal Pass status.\n` +
       `- **\`pass task\`**: See your tasks.\n` +
-      `- **\`pass activate\`**: Activate your Royal Pass.\n` +
-      `- **\`pass premium\`**: Upgrade to Premium Pass.\n` +
-      `- **\`pass claim <level>\`**: Claim a reward.`
+      `- **\`pass activate\`**: Activate your Royal Pass (<:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash).\n` +
+      `- **\`pass premium\`**: Upgrade to Premium Pass (<:kasiko_coin:1300141236841086977> ${PREMIUM_COST.toLocaleString()} cash).\n` +
+      `- **\`pass claim <level>\`**: Claim a reward.\n` +
+      `- **\`pass exclusive\`**: Access exclusive pass-only perks.\n` +
+      `- **\`pass special\`**: Special **Premium Reward**.`
     )
     .setColor('#FFD700')
     .setImage("https://harshtiwari47.github.io/kasiko-public/images/kas_royalpass_s1.jpg")

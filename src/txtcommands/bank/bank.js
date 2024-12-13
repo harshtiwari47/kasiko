@@ -69,7 +69,16 @@ export const Bank = {
         );
       }
 
-      const intrest = Math.min(BankInfo.charge * account.level * 0.5, 30);
+      let intrest = Math.min(BankInfo.charge * account.level * 0.5, 30);
+
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+
+      if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+        let additionalReward = 0.20 * intrest;
+        intrest -= additionalReward;
+      }
+
       const charge = Math.ceil((amount * intrest) / 100);
       const totalWithdrawal = amount + charge;
 
@@ -105,6 +114,17 @@ export const Bank = {
 
       const userData = await getUserData(userId);
 
+      let intrest = Math.min(BankInfo.charge * account.level * 0.5, 30);
+      let specialIntrest = 0;
+
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+
+      if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+        let additionalReward = 0.20 * intrest;
+        specialIntrest -= additionalReward;
+      }
+
       const emebedHeader = new EmbedBuilder()
       .setColor("#a4bef2")
       .setDescription("## 🏦 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** \`${account.level}\` **𝑺𝒉𝒊𝒆𝒍𝒅**: \`${account.shield}\``)
@@ -120,7 +140,7 @@ export const Bank = {
           name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
         },
         {
-          name: '𝑰𝒏𝒕𝒓𝒆𝒔𝒕', value: `${Math.min(BankInfo.charge * account.level * 0.5, 30)}`, inline: true
+          name: '𝑰𝒏𝒕𝒓𝒆𝒔𝒕', value: `${intrest} (-${specialIntrest.toFixed(1)})`, inline: true
         },
         {
           name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true

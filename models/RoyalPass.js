@@ -18,6 +18,10 @@ const rewardSchema = new Schema( {
   },
   emoji: {
     type: String
+  },
+  id: {
+    type: String,
+    required: true
   }
 }, {
   _id: false

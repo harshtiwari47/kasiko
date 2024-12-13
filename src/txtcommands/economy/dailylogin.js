@@ -40,6 +40,18 @@ export async function dailylogin(message) {
         let additionalReward = 0.25 * rewardAmount;
         rewardAmount += additionalReward;
       }
+
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+
+      if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+        let additionalReward = 0.25 * rewardAmount;
+        rewardAmount += additionalReward;
+      } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
+        let additionalReward = 0.20 * rewardAmount;
+        rewardAmount += additionalReward;
+      }
+
       userData.cash = (userData.cash || 0) + rewardAmount;
 
       // Update the dailyReward timestamp

@@ -184,6 +184,17 @@ export async function viewAquarium(userId, channel) {
       totalReward += (userfishDetails.level * 10 * rarityAmount);
     });
 
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+      let additionalReward = 0.10 * totalReward;
+      totalReward += additionalReward;
+    } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
+      let additionalReward = 0.05 * totalReward;
+      totalReward += additionalReward;
+    }
+
     const filledAquarium = aquarium.length
     ? aquarium.map(fish => {
       const fishDetails = aquaData.filter(
@@ -197,7 +208,7 @@ export async function viewAquarium(userId, channel) {
     `## │ ${filledAquarium} °゜\n\n` + // Fill the aquarium content
     `│🌊🌊🌊\n` + // Extra padding line
     `└─────────────────────┘`;
-    
+
     const aquariumEmbedTitle = new EmbedBuilder()
     .setDescription(`## <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎`)
     .setColor("#0a4c63")
@@ -392,8 +403,20 @@ export async function collectAquariumReward(message) {
       } else if (fishDetails.rarity === "uncommon") {
         rarityAmount = 14;
       }
-      totalReward += (userfishDetails.level * 15 * rarityAmount) + (numVisitors * 10);
+      totalReward += (userfishDetails.level * 10 * rarityAmount) + (numVisitors * 10);
     });
+
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+
+    if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+      let additionalReward = 0.10 * totalReward;
+      totalReward += additionalReward;
+    } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
+      let additionalReward = 0.05 * totalReward;
+      totalReward += additionalReward;
+    }
 
     // Update user's cash and last collection time
     userData.cash += totalReward;
@@ -437,7 +460,8 @@ export async function collectAquariumReward(message) {
 export default {
   name: "aquarium",
   description: "Manage your aquarium by collecting, adding, removing, selling, feeding animals, or viewing your collection.",
-  aliases: ["aqua", "aq"],
+  aliases: ["aqua",
+    "aq"],
   args: "<action> <animal> <amount>",
   example: [
     "aquarium collect",
@@ -446,8 +470,10 @@ export default {
     "aquarium sell <animal> <amount>",
     "aquarium feed <animal> <amount>"
   ],
-  related: ["ocean", "catch"],
-  cooldown: 10000, // 10 seconds cooldown
+  related: ["ocean",
+    "catch"],
+  cooldown: 10000,
+  // 10 seconds cooldown
   category: "🌊 Ocean Life",
 
   // Main function to execute aquarium commands

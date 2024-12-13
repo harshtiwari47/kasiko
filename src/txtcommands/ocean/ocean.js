@@ -10,11 +10,13 @@ import {
   Helper
 } from '../../../helper.js';
 
-
 import {
   EmbedBuilder
 } from 'discord.js';
 
+import {
+  incrementTaskExp
+} from '../explore/pass.js';
 
 import {
   Ship
@@ -48,10 +50,10 @@ async function addToCollection(animal, message, zone = null) {
       probability = 6;
       cost = 1500;
     } else if (fish[0].rarity === "rare") {
-      probability = 12;
+      probability = 16;
       cost = 1000;
     } else {
-      probability = 40;
+      probability = 50;
     }
 
     // First embed - show the fishing attempt with suspense
@@ -108,7 +110,9 @@ async function addToCollection(animal, message, zone = null) {
         .setColor('#58dbf7')
         .setThumbnail(`https://cdn.discordapp.com/emojis/${fish[0].emoji}.png`); // Replace with actual image of the fish
       }
-
+      
+      await incrementTaskExp(message.author.id, "catch", message);
+            
       // Send the second embed with the result after the delay
       return await fishingMessage.edit({
         embeds: [initialEmbed, resultEmbed]

@@ -1,15 +1,15 @@
 /*
-@Reward type: pet | cash | creamcash | ship | car | house | badge | pet food | fish
+@Reward type: pet | cash | creamcash | ship | car | structure | petfood
 */
 
 const Rewards = {
   2: {
     id: "cash01",
     type: "cash",
-    amount: 10000,
+    amount: 5000,
     name: "Cash",
     details: [{
-      value: 10000
+      value: 5000
     }],
     emoji: "<:kasiko_coin:1300141236841086977>",
     isPremium: false,
@@ -18,9 +18,9 @@ const Rewards = {
     id: "premium_cash01",
     type: "cash",
     name: "Cash",
-    amount: 40000,
+    amount: 20000,
     details: [{
-      value: 40000
+      value: 20000
     }],
     emoji: "<:kasiko_coin:1300141236841086977>",
     isPremium: true,
@@ -37,7 +37,7 @@ const Rewards = {
     isPremium: false,
   },
   5: {
-    id: "creamcash100",
+    id: "premium_creamcash100",
     type: "creamcash",
     name: "Creamcash",
     amount: 150,
@@ -59,7 +59,7 @@ const Rewards = {
     isPremium: false,
   },
   7: {
-    id: "food100",
+    id: "premium_food100",
     type: "petfood",
     name: "Pet Food",
     amount: 20,

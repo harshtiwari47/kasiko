@@ -5,6 +5,9 @@ const PetSchema = new mongoose.Schema({
   name: {
     type: String, required: true
   },
+  petId: {
+    type: String, required: true, unique: true
+  },
   type: {
     type: String, required: true
   },
@@ -49,6 +52,7 @@ const PetSchema = new mongoose.Schema({
           lastWalkTime: null,
           lastPatTime: null,
           lastExercise: null,
+          petId: "cat1",
           exp: 50, // Initial experience points
         },
         ],

@@ -8,6 +8,10 @@ import {
   updateUser
 } from '../../../database.js';
 
+import {
+  incrementTaskExp
+} from './pass.js';
+
 const flavors = [{
   level: 1,
   name: "Kulfi",
@@ -106,13 +110,22 @@ export default {
     "ice"],
   args: "<action> [target]",
   example: [
-    "create <shopName> [startingFlavor]",
-    "serve [customer]",
-    "share <targetUser>",
-    "createFlavor <newFlavor>",
-    "upgrade <type (machine/layout)>",
-    "status",
-    "dailyBonus",
+    "ice create <shopname (no space)>",
+    "ice status/shop",
+    "ice layout <level>",
+    "ice flavours",
+    // Show all available flavours
+    "ice flavours my",
+    // Show your shop's flavours
+    "ice make <flavour>",
+    // Create a new flavour
+    "ice upgrade machine/layout",
+    // Upgrade your shop's machine or layout
+    "ice share @user <flavour>",
+    // Share an ice cream with another user
+    "ice exchange <amount>",
+    // Convert loyalty points into cash
+    "ice daily" // Claim your daily bonus
   ],
   related: ["stat",
     "profile",
@@ -203,6 +216,8 @@ export default {
 
         const customerPreference = getRandomFlavor();
         const suspenseMessage = await message.channel.send("🍨 A customer is approaching... Let's see what they want!");
+
+        await incrementTaskExp(message.author.id, "serve", message);
 
         setTimeout(async () => {
           const servedSuccessfully = playerShop.flavors.some(
@@ -558,10 +573,23 @@ export default {
           return message.channel.send(`🕒 **${message.author.username}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`);
         }
 
+        const userData = await getUserData(message.author.id);
+
         const suspenseMessage = await message.channel.send("🎁 Claiming your daily bonus... Please wait! 🎉");
         setTimeout(async () => {
+
+          let reward = 100;
+
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+
+          if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+            let additionalReward = Math.floor(0.25 * reward);
+            reward += additionalReward;
+          }
+
           playerShop.dailyBonusClaimed = true;
-          playerShop.money += 100;
+          playerShop.money += reward;
           let loyaltyPointsGained = playerShop.reputation > 150 ? 20 * Math.floor(playerShop.reputation/150): 20;
           playerShop.loyaltyPoints += loyaltyPointsGained;
           playerShop.reputation += 1;
@@ -573,7 +601,7 @@ export default {
           .setDescription(`**${message.author.username}** received today's reward, including +1 reputation points!\nYou can claim 20 loyalty points, plus 20 for every 150 reputation!`)
           .addFields(
             {
-              name: "<:creamcash:1309495440030302282> cash", value: "+100 cash"
+              name: "<:creamcash:1309495440030302282> cash", value: `+${reward} cash`
             },
             {
               name: "✪⁠ Loyalty Points", value: `+${loyaltyPointsGained} Points`
@@ -587,7 +615,8 @@ export default {
           return suspenseMessage.edit({
             embeds: [bonusEmbed], content: null
           });
-        }, 2000); // Adding suspense with a 2-second delay
+        },
+          2000); // Adding suspense with a 2-second delay
       }
 
       // help
@@ -599,7 +628,7 @@ export default {
         .setDescription("Here are the available commands for managing your Ice Cream Shop:")
         .addFields(
           {
-            name: "💢 General", value: "`status`, `shop`, `layout`"
+            name: "💢 General", value: "`ice create <shopname (no space)>`, status`, `shop`, `layout`"
           },
           {
             name: "🍧 Flavours",

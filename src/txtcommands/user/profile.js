@@ -29,10 +29,11 @@ export async function badges(userData) {
   }
 
   const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
 
-  if (userData.pass && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+  if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
     badges += `<:premis:1316681065439559680> `
-  } else if (userData.pass && userData.pass.month === currentMonth) {
+  } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
     badges += `<:royal:1316681043301892168> `
   }
   return `# ${badges}`;
@@ -71,9 +72,17 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
       };
     }
 
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    let EmbedColor = "#f6e59a";
+
+    if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+      EmbedColor = `#85acfa`;
+    }
+
     // Embed 1: Personal Info & Wealth Stats
     const embed1 = new EmbedBuilder()
-    .setColor('#f6e59a')
+    .setColor(EmbedColor || "#f6e59a")
     .setTitle(`⌞ ⌝  <@${userId.toString()}>'s Profile ✨`)
     .setDescription(`${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
     .addFields(
@@ -107,6 +116,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
       `Investing & securing assets is life's ultimate game. 💰\n\n` +
       `**ᯓ★𝐂𝐚𝐫𝐬**: ${totalCars}\n` +
       `**ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬**: ${totalStructures}\n`+
+      `**ᯓ★𝐏𝐚𝐬𝐬𝐞𝐬**: ${userData.seasonalPasses.length ? userData.seasonalPasses.join(" "): "No Pass Found"}\n`+
       `⟡ ₊ .⋆ ✦⋆𓂁﹏ 𓂃⋆.˚⟡\n`
     );
 

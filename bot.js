@@ -119,7 +119,11 @@ client.on('messageCreate', async (message) => {
         EX: cooldownDuration
       });
 
-      // await incrementTaskExp(message.author.id, "command", message);
+      await incrementTaskExp(message.author.id, "command", message);
+
+      if (command.category = "🧩 Fun") {
+        await incrementTaskExp(message.author.id, "fun", message);
+      }
 
       command.execute(args, message);
     } catch (error) {
