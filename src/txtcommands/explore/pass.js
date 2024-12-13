@@ -42,7 +42,7 @@ const logger = winston.createLogger({
 const BASE_REQUIRED_XP_PER_LEVEL = Math.floor(TASKEXP / Object.keys(Rewards).length);
 const REDIS_EXPIRY = 300; // Cache for 5 minutes
 const FIRST_PASS_COST = 1000000;
-const PREMIUM_COST = 1800000;
+const PREMIUM_COST = 900000;
 
 // Batching Constants
 let BULK_UPDATE_THRESHOLD = 10; // Set to 10 for production
@@ -526,7 +526,7 @@ async function showRoyalPass(userId, username, channel, author) {
     const upcomingRewards = Object.entries(Rewards)
     .filter(([lvl, reward]) => {
       const levelNum = parseInt(lvl);
-      return levelNum > newLevel && (!royalPass?.rewardsClaimed.some(r => r.id === reward.id));
+      return (!(royalPass.rewardsClaimed.some(r => r.id === reward.id)) || levelNum > newLevel) && (!royalPass?.rewardsClaimed.some(r => r.id === reward.id));
     })
     .map(([level, reward]) => `- **Level ${level}**: ${reward.isPremium ? "<:royalpass_premium:1316397608603881543>": ""} ${reward.emoji} ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.name + " (" + reward.amount + ")"}`)
     .join('\n') || 'No more rewards for this month!';
@@ -568,9 +568,8 @@ async function showRoyalPass(userId, username, channel, author) {
       }
     )
     .setFooter({
-      text: `Keep progressing to unlock more rewards!`
+      text: `Keep progressing to unlock more rewards! | Use \`kas pass claim <level>\` to claim ☄️`
     })
-    .setTimestamp();
 
     // If level up due to pending updates, notify the user
     if (levelUp && message && message.channel) {

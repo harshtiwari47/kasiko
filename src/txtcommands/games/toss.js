@@ -34,10 +34,10 @@ export async function toss(id, amount, channel, choice = "head") {
     let winamount = 0;
 
     if (random === 1 && choice === "head") {
-      winamount = Number(amount * 1.2).toFixed(0) || 0;
+      winamount = Number(amount * 1.5).toFixed(0) || 0;
       userData.cash += Number(winamount);
     } else if (random === 0 && choice === "tail") {
-      winamount = Number(amount * 1.2).toFixed(0) || 0;
+      winamount = Number(amount * 1.5).toFixed(0) || 0;
       userData.cash += Number(winamount);
     } else {
       winamount = Number(-1 * amount) || 0;

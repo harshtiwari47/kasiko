@@ -152,6 +152,13 @@ const userSchema = new mongoose.Schema({
     seasonalPasses: {
       type: Array,
     default: []
+    },
+    dungeon: {
+      type: Object,
+    default: {
+        battling: false,
+        time: null
+      }
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

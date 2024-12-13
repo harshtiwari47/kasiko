@@ -32,10 +32,10 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
 
     if (teammateData) {
       gameMessage = await channel.send(
-        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**! Type **participate <horse (optional)>** (horse1, horse2, horse3) to join the race.**<@${teammateId}>**, you have 25 seconds!`
+        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**! Type **participate <horse (optional)>** (horse1, horse2, horse3) to join the race. **<@${teammateId}>**, you have 25 seconds!`
       );
 
-      const filter = (m) => m.content.toLowerCase().startsWith() === "participate" && m.author.id === teammateId;
+      const filter = (m) => m.content.toLowerCase().startsWith("participate") && m.author.id === teammateId;
       const collector = channel.createMessageCollector({
         filter, time: 25000
       });
@@ -43,9 +43,9 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
       collector.on("collect", async (msg) => {
         const opponent = msg.author;
 
-        const msgArgs = msg.slice(prefix.toLowerCase().length).trim().split(/ +/);
+        const msgArgs = msg.slice("participate".toLowerCase().length).trim().split(/ +/);
 
-        if (msgArgs && msgArgs[1] && (msgArgs[1] === "horse1" || msgArgs[1] === "horse2" || msgArgs[1] === "horse3")) {
+        if (msgArgs && msgArgs[0] && (msgArgs[0] === "horse1" || msgArgs[0] === "horse2" || msgArgs[0] === "horse3")) {
           if (msgArgs === betOn) {
             if (betOn === "horse1") opponentBetOn = "horse2"
             if (betOn === "horse2") opponentBetOn = "horse3"
@@ -141,7 +141,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
           winner = "horse3";
         }
       }
-      const winAmount = Math.floor(amount * 1.5);
+      const winAmount = Math.floor(amount * 2);
       const teammateSplit = teammateId ? Math.floor(winAmount / 2): winAmount;
 
       if (winner === betOn) {
