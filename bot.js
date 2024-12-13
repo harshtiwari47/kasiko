@@ -121,7 +121,7 @@ client.on('messageCreate', async (message) => {
 
       await incrementTaskExp(message.author.id, "command", message);
 
-      if (command.category = "🧩 Fun") {
+      if (command.category === "🧩 Fun") {
         await incrementTaskExp(message.author.id, "fun", message);
       }
 

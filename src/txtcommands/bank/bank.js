@@ -140,7 +140,7 @@ export const Bank = {
           name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
         },
         {
-          name: '𝑰𝒏𝒕𝒓𝒆𝒔𝒕', value: `${intrest} (-${specialIntrest.toFixed(1)})`, inline: true
+          name: '𝑰𝒏𝒕𝒓𝒆𝒔𝒕', value: `${intrest} ${specialIntrest ? "(" + specialIntrest.toFixed(1) + ")": ''}`, inline: true
         },
         {
           name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true

@@ -42,7 +42,7 @@ const logger = winston.createLogger({
 const BASE_REQUIRED_XP_PER_LEVEL = Math.floor(TASKEXP / Object.keys(Rewards).length);
 const REDIS_EXPIRY = 300; // Cache for 5 minutes
 const FIRST_PASS_COST = 1000000;
-const PREMIUM_COST = 500;
+const PREMIUM_COST = 1800000;
 
 // Batching Constants
 let BULK_UPDATE_THRESHOLD = 10; // Set to 10 for production
