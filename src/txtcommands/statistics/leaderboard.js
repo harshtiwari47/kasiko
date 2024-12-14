@@ -37,7 +37,7 @@ async function createLeaderboardEmbed(userId) {
           username: 'Failed to Fetch'
         }; // Fallback if fetching fails
       }
-      leaderboard += `**\`#${index + 1}.\`** **${userDetails.username}** - NW: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
+      leaderboard += `**\`#${index === 0 ? "<:crown:1317444012600197191>": index === 1 ? "❷": index === 2 ? "❸": index + 1}.\`** **${userDetails.username}** - NW: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
     }
 
     // Find the position of the command invoker
@@ -45,8 +45,8 @@ async function createLeaderboardEmbed(userId) {
     const embedHead = new EmbedBuilder()
     .setColor('#ed971e')
     .setTitle(`🏆 𝐋𝐞𝐚𝐝𝐞𝐫𝐛𝐨𝐚𝐫𝐝 ✧`);
-   
-    
+
+
     // Create and return the embed message
     const embed = new EmbedBuilder()
     .setColor('#ed971e')
@@ -56,14 +56,15 @@ async function createLeaderboardEmbed(userId) {
     })
     .setTimestamp();
 
-    return [embedHead, embed];
+    return [embedHead,
+      embed];
   } catch (error) {
     console.error('Oops! An error occurred while generating the leaderboard', error);
     return [new EmbedBuilder()
-    .setColor('#ed971e')
-    .setTitle('Error')
-    .setDescription('An error occurred while generating the leaderboard.')
-    .setTimestamp()]
+      .setColor('#ed971e')
+      .setTitle('Error')
+      .setDescription('An error occurred while generating the leaderboard.')
+      .setTimestamp()]
   }
 }
 
