@@ -49,9 +49,9 @@ const WelcomeMsg = {
         id: serverId
       });
 
-      let newServer;
+   //   let newServer;
 
-      if (!existingServer) {
+   //   if (!existingServer) {
         newServer = new Server( {
           id: serverId,
           name: serverName,

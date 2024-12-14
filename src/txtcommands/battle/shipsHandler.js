@@ -36,7 +36,7 @@ export const allShips = () => {
 export const getUserShipsData = async (userId) => {
   try {
     const cachedData = await redisClient.get(`user:${userId}:ships`);
-    if (cachedData) {
+    if (cachedData && cachedData.ships) {
       // If data is in cache, parse and return it
       let data = UserShips.hydrate(JSON.parse(cachedData));
       return data;
@@ -52,7 +52,7 @@ export const getUserShipsData = async (userId) => {
         ships: []
       })
     }
-    
+
     await redisClient.set(`user:${userId}:ships`, JSON.stringify(userships.toObject()), {
       EX: 60, // Cache for 1 minute
     });
@@ -69,7 +69,6 @@ export const modifyUserShips = async (userId, data) => {
   try {
     // Save the updated user document
     const updatedData = await data.save();
-    await redisClient.del(`user:${userId}:ships`);
     await redisClient.set(`user:${userId}:ships`, JSON.stringify(updatedData.toObject()), {
       EX: 60, // Cache for 1 minute
     });
