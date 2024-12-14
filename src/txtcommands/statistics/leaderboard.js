@@ -37,7 +37,7 @@ async function createLeaderboardEmbed(userId) {
           username: 'Failed to Fetch'
         }; // Fallback if fetching fails
       }
-      leaderboard += `**\`#${index === 0 ? "<:crown:1317444012600197191>": index === 1 ? "❷": index === 2 ? "❸": index + 1}.\`** **${userDetails.username}** - NW: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
+      leaderboard += `**${index === 0 ? "<:crown:1317444012600197191>": index === 1 ? "❷": index === 2 ? "❸":  "#\`"index + 1+ "\`."}** **${userDetails.username}** - NW: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
     }
 
     // Find the position of the command invoker
