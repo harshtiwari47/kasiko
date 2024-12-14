@@ -15,7 +15,6 @@ import {
   ButtonBuilder,
   ActionRowBuilder
 } from 'discord.js';
-import cron from 'node-cron';
 import winston from 'winston';
 
 import IceCreamShop from "../../../models/IceCream.js";
@@ -46,7 +45,6 @@ const PREMIUM_COST = 900000;
 
 // Batching Constants
 let BULK_UPDATE_THRESHOLD = 10; // Set to 10 for production
-const BULK_UPDATE_INTERVAL = '*/1 * * * *'; // Every minute
 
 const getUpdateKey = (userId) => `user:${userId}:updateQueue`;
 const getCountKey = (userId) => `user:${userId}:updateCount`;
@@ -335,46 +333,6 @@ async function flushPendingUpdatesForUser(userId, message) {
     logger.error(`[${new Date().toISOString()}] Error bulk updating user tasks for user ${userId}: ${error.message}`);
   }
 }
-
-// Flush updates for all users (cron-based)
-async function flushPendingUpdates() {
-  try {
-    let cursor = '0';
-    const pattern = 'user:*:updateQueue';
-    const pendingUsers = new Set();
-
-    do {
-      const reply = await redisClient.scan(cursor, {
-        MATCH: pattern, COUNT: 100
-      });
-      cursor = reply.cursor;
-      // Removed excessive logging here
-      reply.keys.forEach(key => {
-        const userIdMatch = key.match(/^user:(.*):updateQueue$/);
-        if (userIdMatch) {
-          pendingUsers.add(userIdMatch[1]);
-        }
-      });
-    } while (cursor !== '0');
-
-    if (pendingUsers.size === 0) {
-      return;
-    }
-
-    for (const userId of pendingUsers) {
-      await flushPendingUpdatesForUser(userId);
-    }
-
-    console.log(`[${new Date().toISOString()}] ✅ flushPendingUpdates completed.`);
-  } catch (error) {
-    logger.error(`[${new Date().toISOString()}] Error in flushPendingUpdates: ${error.message}`);
-  }
-}
-
-// Schedule the background worker
-cron.schedule(BULK_UPDATE_INTERVAL, () => {
-  flushPendingUpdates();
-});
 
 // Function to send task list as an embed with pagination
 async function sendTaskListEmbed(author, message) {

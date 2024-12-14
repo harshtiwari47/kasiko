@@ -29,9 +29,8 @@ const WelcomeMsg = {
         {
           name: '**Important Links**',
           value:
-          `[Terms and Conditions](https://your-link.com/terms) | ` +
-          `[Help](https://your-link.com/help) | ` +
-          `[Support](https://your-link.com/support)`
+          `[Terms and Conditions](https://kasiko-bot.vercel.app/terms.html) | ` +
+          `[Support](https://kasiko-bot.vercel.app/contact.html)`
         },
         {
           name: '**Getting Started**',

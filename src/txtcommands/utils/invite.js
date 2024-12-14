@@ -30,7 +30,7 @@ export default {
       new ButtonBuilder()
       .setLabel("Invite Me")
       .setStyle(ButtonStyle.Link)
-      .setURL("https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=1135386416761920&scope=bot")
+      .setURL("https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=139855784000&integration_type=0&scope=bot")
     );
 
     await message.reply({

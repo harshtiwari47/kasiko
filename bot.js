@@ -71,8 +71,6 @@ client.on('messageCreate', async (message) => {
 
     if (mentionedBots.size > 0) return
 
-    let startPer = performance.now();
-
     // check user exist
     let userExistence = await userExists(message.author.id);
     if (!userExistence) {
@@ -130,9 +128,6 @@ client.on('messageCreate', async (message) => {
       console.error(error);
       message.reply("There was an error executing that command.");
     }
-    let endPer = performance.now();
-
-    console.log(`Total excecution time for ${commandName} is ${endPer - startPer} ms`);
   } catch (e) {
     console.error(e);
   }

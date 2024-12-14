@@ -9,26 +9,30 @@ const userSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  cash: {
-    type: Number,
-    required: true,
-    min: 0,
-    set: (value) => (value < 0 ? 0: value)
-  },
-  networth: {
-    type: Number,
-    required: true,
-    min: 0,
-    set: (value) => (value < 0 ? 0: value)
-  },
-  maintenance: {
-    type: Number,
-    required: true,
-    min: 0,
-    set: (value) => (value < 0 ? 0: value)
-  },
-  spouse: {
-    type: String,
+  isBan: {
+    type: Boolean,
+    default: false
+    },
+    cash: {
+      type: Number,
+      required: true,
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
+    },
+    networth: {
+      type: Number,
+      required: true,
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
+    },
+    maintenance: {
+      type: Number,
+      required: true,
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
+    },
+    spouse: {
+      type: String,
     default: null
     },
     roses: {
