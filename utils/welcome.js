@@ -51,7 +51,7 @@ const WelcomeMsg = {
 
    //   let newServer;
 
-   //   if (!existingServer) {
+   /*   if (!existingServer) {
         newServer = new Server( {
           id: serverId,
           name: serverName,
@@ -62,6 +62,7 @@ const WelcomeMsg = {
 
         await newServer.save()
       }
+      */
 
       welcomeChannel.send({
         embeds: [embed]
