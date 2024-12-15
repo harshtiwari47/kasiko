@@ -49,7 +49,6 @@ export default {
       .setTitle(`Command Help: ${command.name}`)
       .setDescription(response)
       .setColor(0x3498db)
-      .setTimestamp();
 
       // Check if the response length exceeds Discord's limit
       if (embed.data.description.length > 6000) {
@@ -59,7 +58,6 @@ export default {
           .setTitle(`Command Help: ${command.name} (Part ${index + 1})`)
           .setDescription(part)
           .setColor(0x3498db)
-          .setTimestamp();
           message.channel.send({
             embeds: [embedPart]
           });
@@ -102,7 +100,6 @@ export default {
     .setTitle('Command List')
     .setDescription(response)
     .setColor(0x491ab9)
-    .setTimestamp();
 
     // Check if the response length exceeds Discord's limit
     if (embed.data.description.length > 6000) {
@@ -112,7 +109,6 @@ export default {
         .setTitle(`Available Commands (Part ${index + 1})`)
         .setDescription(part)
         .setColor(0x491ab9)
-        .setTimestamp();
         message.channel.send({
           embeds: [embedPart]
         });

@@ -13,7 +13,11 @@ import {
 async function createLeaderboardEmbed(userId) {
   try {
 
-    const users = await getTopUsersByNetWorth();
+    const {
+      users,
+      userRank
+    } = await getTopUsersAndRank(userId);
+    
     if (users.length === 0) {
       return [new EmbedBuilder()
         .setColor('#ed971e')
@@ -38,6 +42,7 @@ async function createLeaderboardEmbed(userId) {
 
     // Build the leaderboard string
     let leaderboard = '';
+    let leaderboardTopThree = '';
     for (const [index, user] of users.entries()) {
       let userDetails;
       try {
@@ -47,19 +52,28 @@ async function createLeaderboardEmbed(userId) {
           username: 'Failed to Fetch'
         }; // Fallback if fetching fails
       }
-      leaderboard += `**${index === 0 ? "<:crown:1317444012600197191>": index === 1 ? "❷": index === 2 ? "❸": "\`" + circledNumbers[(index)] + "\`."}** **${userDetails.username}** - NW: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
+      if (index < 3) {
+        leaderboardTopThree += `**${index === 0 ? "<:crown:1317444012600197191>": index === 1 ? "❷": index === 2 ? "❸": ""}** **${userDetails.username}** \n- *Networth*: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
+      } else {
+        leaderboard += `**${"\`" + circledNumbers[(index)] + "\`."}** **${userDetails.username}** - NW: <:kasiko_coin:1300141236841086977> **${Number(user.networth.toFixed(1)).toLocaleString()}**\n`;
+      }
     }
 
     // Find the position of the command invoker
-    const userPosition = users.findIndex(user => user.id === userId) + 1 || "Unranked";
+    const userPosition = userRank ? userRank: users.findIndex(user => user.id === userId) + 1 || "Unranked";
     const embedHead = new EmbedBuilder()
     .setColor('#ed971e')
     .setTitle(`🏆 𝐋𝐞𝐚𝐝𝐞𝐫𝐛𝐨𝐚𝐫𝐝 ✧`);
 
 
     // Create and return the embed message
-    const embed = new EmbedBuilder()
+    const embedThree = new EmbedBuilder()
     .setColor('#ed971e')
+    .setDescription(leaderboardTopThree)
+
+
+    const embed = new EmbedBuilder()
+    .setColor('#b16e0e')
     .setDescription(leaderboard)
     .setFooter({
       text: `Your position is: ${userPosition > 0 ? userPosition: 'Not ranked'}`,
@@ -67,6 +81,7 @@ async function createLeaderboardEmbed(userId) {
     .setTimestamp();
 
     return [embedHead,
+      embedThree,
       embed];
   } catch (error) {
     console.error('Oops! An error occurred while generating the leaderboard', error);
@@ -96,23 +111,38 @@ export async function leaderboard(message) {
   }
 }
 
-async function getTopUsersByNetWorth() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const topUsers = await User.find() // Fetch users
-      .sort({
-        networth: -1
-      }) // Sort by networth in descending order
-      .limit(10) // Limit the result to 10 users
-      .select('id networth cash level'); // Select specific fields (optional)
+async function getTopUsersAndRank(userId) {
+  try {
+    // Fetch the top 10 users by net worth
+    const users = await User.find()
+    .sort({
+      networth: -1
+    })
+    .limit(10)
+    .select('id networth cash level');
 
-      resolve(topUsers);
-    } catch (error) {
-      console.error('Error fetching top users by networth:', error);
-      throw error;
-      reject([]);
+    // Fetch the specific user's net worth
+    const user = await User.findOne({id: userId}).select('networth');
+
+    if (!user) {
+      throw new Error('User not found');
     }
-  });
+
+    // Determine the user's rank
+    const userRank = await User.countDocuments({
+      networth: {
+        $gt: user.networth
+      }
+    }) + 1;
+
+    return {
+      users,
+      userRank,
+    };
+  } catch (error) {
+    console.error('Error fetching top users and rank:', error);
+    throw error;
+  }
 }
 
 export default {

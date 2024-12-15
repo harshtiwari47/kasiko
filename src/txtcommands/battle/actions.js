@@ -15,17 +15,17 @@ export function getActionButtons(disabled = false, disableSpecial = false) {
   .addComponents(
     new ButtonBuilder()
     .setCustomId('attack')
-    .setLabel('Attack')
+    .setLabel('💥 𝘼𝙏𝙏𝘼𝘾𝙆')
     .setStyle(ButtonStyle.Danger)
     .setDisabled(disabled),
     new ButtonBuilder()
     .setCustomId('defend')
-    .setLabel('Defend')
+    .setLabel('🛡️ 𝘿𝙀𝙁𝙀𝙉𝘿')
     .setStyle(ButtonStyle.Primary)
     .setDisabled(disabled),
     new ButtonBuilder()
     .setCustomId('special')
-    .setLabel('Special')
+    .setLabel('🪝 𝙎𝙋𝙀𝘾𝙄𝘼𝙇')
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(disabled ? disabled: disableSpecial),
   );
