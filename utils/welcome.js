@@ -49,20 +49,24 @@ const WelcomeMsg = {
         id: serverId
       });
 
-   //   let newServer;
+      try {
+        let newServer;
 
-   /*   if (!existingServer) {
-        newServer = new Server( {
-          id: serverId,
-          name: serverName,
-          ownerId: serverOwnerId,
-          allChannelsAllowed: true,
-          channels: [],
-        });
+        if (!existingServer) {
+          newServer = new Server( {
+            id: serverId,
+            name: serverName,
+            ownerId: serverOwnerId,
+            allChannelsAllowed: true,
+            channels: [],
+          });
 
-        await newServer.save()
+          await newServer.save()
+        }
+
+      } catch (e) {
+        console.error(e);
       }
-      */
 
       welcomeChannel.send({
         embeds: [embed]

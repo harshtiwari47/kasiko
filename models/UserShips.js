@@ -26,10 +26,11 @@ const userShipsSchema = new mongoose.Schema({
   }, // The userId for each user
   ships: {
     type: [shipSchema],
-  }
-});
+    default: []
+    }
+  });
 
-// Create the model for user ships
-const UserShips = mongoose.model('UserShips', userShipsSchema);
+  // Create the model for user ships
+  const UserShips = mongoose.model('UserShips', userShipsSchema);
 
-export default UserShips;
+  export default UserShips;

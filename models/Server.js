@@ -3,12 +3,12 @@ import mongoose from 'mongoose';
 const channelSchema = new mongoose.Schema({
   id: {
     type: String,
-    required: true,
-    unique: true, // Unique identifier for the channel
+    required: false,
+    sparse: true,
   },
   name: {
     type: String,
-    required: true, // Name of the channel
+    required: false, // Name of the channel
   },
   isAllowed: {
     type: Boolean,
@@ -17,7 +17,6 @@ const channelSchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ['text', 'voice', 'category'], // Type of the channel
-      required: true,
     },
     categoryId: {
       type: String, // Optional: Category ID for better organization
@@ -76,7 +75,10 @@ const channelSchema = new mongoose.Schema({
       type: String,
     default: 'en', // Preferred language for bot messages in this server
     },
-    channels: [channelSchema], // Embedded array of channels
+    channels: {
+      type: [channelSchema], // Embedded array of channels
+      default: [],
+    }
   });
 
   serverSchema.pre('save', function (next) {
