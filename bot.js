@@ -88,7 +88,7 @@ client.on('messageCreate', async (message) => {
 
     // check user exist
     let userExistence = await userExists(message.author.id);
-    if (userExistence) {
+    if (!userExistence) {
       return termsAndcondition(message);
     }
 
