@@ -61,6 +61,7 @@ export const termsAndcondition = async (message) => {
     });
 
     collector.on('collect', async (interaction) => {
+      try {
       if (interaction.customId === 'accept_terms') {
 
         let user = await createUser(message.author.id);
@@ -83,6 +84,9 @@ export const termsAndcondition = async (message) => {
           });
         }
         collector.stop();
+      }
+      } catch(e) {
+        console.error(e)
       }
     });
 
