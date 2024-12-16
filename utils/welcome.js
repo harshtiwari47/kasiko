@@ -68,9 +68,13 @@ const WelcomeMsg = {
         console.error(e);
       }
 
-      welcomeChannel.send({
-        embeds: [embed]
-      });
+      try {
+        welcomeChannel.send({
+          embeds: [embed]
+        });
+      } catch (e) {
+        console.error(e);
+      }
     }
   },
 };
