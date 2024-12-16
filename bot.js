@@ -90,12 +90,11 @@ client.on('messageCreate', async (message) => {
     let userExistence = await userExists(message.author.id);
     if (!userExistence) {
       try {
-      return termsAndcondition(message);
+        return termsAndcondition(message);
       } catch (e) {
         return;
       }
     }
-
 
     // check other user has accepted terms & conditions
     const firstUserMention = message.mentions.users.first();
@@ -155,19 +154,23 @@ client.on('messageCreate', async (message) => {
 
 client.on('interactionCreate', async (interaction) => {
   try {
-    let userExistence = await userExists(interaction.user.id);
-    if (!userExistence) {
-      await interaction.reply({
-        content: `You haven't accepted our terms and conditions! Type \`kas terms\` in a server where the bot is available to create an account.`,
-        ephemeral: true, // Only visible to the user
-      });
-      return;
-    }
     if (interaction.isCommand()) {
       await handleSlashCommand(interaction); // Handle slash command interactions
     }
   } catch (e) {
     console.error(e);
+
+    if (interaction.replied || interaction.deferred) {
+      return; // Do nothing if already responded
+    }
+
+    try {
+      await interaction.reply({
+        content: 'An error occurred while processing your command.', ephemeral: true
+      });
+    } catch (replyError) {
+      console.error('Failed to send error reply:', replyError);
+    }
   }
 });
 

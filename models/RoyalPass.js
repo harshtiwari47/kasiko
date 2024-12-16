@@ -8,7 +8,7 @@ const rewardSchema = new Schema( {
   type: {
     type: String,
     required: true,
-    enum: ['cash', 'badge', 'pet'], // other types as necessary
+    enum: ['cash', 'badge', 'pet', 'creamcash', 'petfood', 'ship', 'car', 'structure'], // other types as necessary
   },
   name: {
     type: String, // e.g., 'Royal Starter' for badges

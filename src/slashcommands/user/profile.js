@@ -2,6 +2,10 @@ import {
   SlashCommandBuilder
 } from '@discordjs/builders';
 
+import {
+  userExists
+} from '../../../database.js';
+
 import txtcommands from '../../textCommandHandler.js';
 
 export default {
@@ -10,7 +14,17 @@ export default {
   .setDescription('Displays your profile information!'),
   async execute(interaction) {
     try {
+
       await interaction.deferReply();
+
+      let userExistence = await userExists(interaction.user.id);
+      if (!userExistence) {
+        await interaction.editReply({
+          content: `You haven't accepted our terms and conditions! Type \`kas terms\` in a server where the bot is available to create an account.`,
+          ephemeral: true, // Only visible to the user
+        });
+        return;
+      }
 
       if (txtcommands.get("profile")) {
         return await txtcommands.get("profile").intract(interaction);

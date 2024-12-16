@@ -603,7 +603,7 @@ async function claimReward(userId, level, message) {
         return message.reply("❌ Shop name not found! Please create your ice cream shop first. For guidance, use `icecream|ice help`! 🍧");
       }
 
-      playerShop.cash += reward.amount;
+      playerShop.money += reward.amount;
 
       await playerShop.save();
     }
