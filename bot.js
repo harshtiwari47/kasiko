@@ -1,7 +1,8 @@
 import {
   Client,
   GatewayIntentBits,
-  InteractionType
+  InteractionType,
+  PermissionsBitField
 } from 'discord.js';
 import dotenv from 'dotenv';
 
@@ -14,6 +15,9 @@ import redisClient from './redis.js';
 import {
   termsAndcondition
 } from './utils/terms.js';
+import {
+  checkPerms
+} from './utils/permission.js';
 import WelcomeMsg from './utils/welcome.js';
 import Server from './models/Server.js';
 
@@ -69,13 +73,25 @@ client.on('messageCreate', async (message) => {
 
     if (!message.content.toLowerCase().startsWith(prefix)) return
 
-    if (mentionedBots.size > 0) return
+    if (mentionedBots.size > 0) return;
+
+    try {
+      let notAllowed = await checkPerms(message);
+      if (notAllowed) {
+        return await message.channel.send({
+          content: `I am missing the following permissions: ${notAllowed}`,
+        });
+      }
+    } catch (e) {
+      console.error("There is an error while checking bot permissions!");
+    }
 
     // check user exist
     let userExistence = await userExists(message.author.id);
-    if (!userExistence) {
+    if (userExistence) {
       return termsAndcondition(message);
     }
+
 
     // check other user has accepted terms & conditions
     const firstUserMention = message.mentions.users.first();
