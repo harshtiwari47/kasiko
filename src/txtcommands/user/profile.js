@@ -38,7 +38,7 @@ export async function badges(userData) {
   }
 
   if (badges) {
-    badges += `> # ${badges}`;
+    badges = `> # ${badges}`;
   }
 
   return `${badges}`;
