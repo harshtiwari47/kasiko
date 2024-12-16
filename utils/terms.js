@@ -99,6 +99,15 @@ export const termsAndcondition = async (message) => {
   } catch (error) {
     console.error('Error in termsAndcondition:',
       error);
-    return await message.channel.send('An error occurred while processing your request. Please try again later.');
+    return await message.channel.send(
+      'Your channel is missing the following permissions that the bot needs:\n' +
+      '1. **Send Messages**\n' +
+      '2. **Embed Links**\n' +
+      '3. **Manage Messages**\n' +
+      '4. **Read Message History**\n' +
+      '5. **View Channel**\n' +
+      '6. **Message Components (Buttons)**\n' +
+      'Please update the bot permissions and try again!'
+    );
   }
 };
