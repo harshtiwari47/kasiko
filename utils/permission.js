@@ -48,7 +48,6 @@ export async function checkPerms(message) {
     PermissionsBitField.Flags.EmbedLinks,
     PermissionsBitField.Flags.UseExternalEmojis,
     PermissionsBitField.Flags.UseExternalStickers,
-    PermissionsBitField.Flags.ManageMessages,
     PermissionsBitField.Flags.AddReactions,
     PermissionsBitField.Flags.UseApplicationCommands,
     PermissionsBitField.Flags.AttachFiles,
