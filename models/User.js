@@ -17,11 +17,13 @@ const userSchema = new mongoose.Schema({
       type: Number,
       required: true,
       min: 0,
+    default: 1000,
       set: (value) => (value < 0 ? 0: value)
     },
     networth: {
       type: Number,
       required: true,
+    default: 1000,
       min: 0,
       set: (value) => (value < 0 ? 0: value)
     },

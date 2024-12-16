@@ -506,7 +506,7 @@ async function gatherDetails(username, userId, isPlayer, interaction) {
 
     if (!activeShip) {
       const noActiveShipMessage = isPlayer
-      ? "⚠️ No active ship found in your ship collection. For help, use the command `/help battle`.": "⚠️ Opponent doesn't have any active ships for battle. What's the point of a battle?";
+      ? "⚠️ No active ship found in your ship collection. For help, use the command `/help ship`.": "⚠️ Opponent doesn't have any active ships for battle. What's the point of a battle?";
       return {
         error: true,
         message: noActiveShipMessage

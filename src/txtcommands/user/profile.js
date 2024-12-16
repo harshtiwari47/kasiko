@@ -36,7 +36,12 @@ export async function badges(userData) {
   } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
     badges += `<:royal:1316681043301892168> `
   }
-  return `> # ${badges}`;
+
+  if (badges) {
+    badges += `> # ${badges}`;
+  }
+
+  return `${badges}`;
 }
 
 // create an embed card based on user data
