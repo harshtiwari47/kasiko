@@ -64,9 +64,6 @@ const passTasksSchema = new Schema({
   timestamps: true,
 });
 
-// Create an index on the 'id' field for faster queries
-passTasksSchema.index({ id: 1 });
-
 const PassTasks = mongoose.model('PassTasks', passTasksSchema);
 
 export default PassTasks;

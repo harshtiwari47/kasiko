@@ -103,7 +103,7 @@ export async function slots(id, amount, channel) {
       await updateUser(id, userData);
       return spinningMessage.edit(
         `🎰 **${guild.user.username}, you hit a 🏆 JACKPOT!** 🎉\n` +
-        `**Congratulations!** You won <:kasiko_coin:1300141236841086977> **${winAmount.toLocaleString()}** 𝑪𝒂𝒔𝒉. 🎊\n` +
+        `**Congratulations!** You won extra <:kasiko_coin:1300141236841086977> **${winAmount.toLocaleString()}** 𝑪𝒂𝒔𝒉. 🎊\n` +
         `**Final Spin result:** ${finalResult.join(' | ')}\n`
       );
     } else {
