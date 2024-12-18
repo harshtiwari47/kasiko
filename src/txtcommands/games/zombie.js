@@ -762,17 +762,17 @@ export default {
         let newWeapon = weaponsStats.find(weapon => weapon.unlockAt === playerInfo.level);
         let newWeaponMessage = "";
 
-        playerInfo.weapons.push({
-          name: newWeapon.name,
-          weapon: newWeapon.weapon,
-          maxHunt: newWeapon.name,
-          minHunt: newWeapon.name,
-          level: 1,
-        })
-
         if (!playerInfo.weapons.some(weapon => weapon.name === newWeapon.name)) {
           newWeaponMessage = `New weapon unlocked: ${newWeapon.weapon} **${newWeapon.name}**`
         }
+
+        playerInfo.weapons.push({
+          name: newWeapon.name,
+          weapon: newWeapon.weapon,
+          maxHunt: newWeapon.maxHunt,
+          minHunt: newWeapon.minHunt,
+          level: 1,
+        })
 
         await playerInfo.save();
         return message.channel.send(`🏠 **${message.author.username}**, you have successfully upgraded your shelter to Level **${playerInfo.level}** using 🪵 **${woodReq}** wood!\n${newWeaponMessage}`);
