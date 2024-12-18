@@ -196,20 +196,26 @@ const zombieSurvivalBadges = [{
     rarity: 'legendary'
   }];
 
+function getShelterImg(level) {
+  if (level > 15) level = 15;
+
+  return `https://harshtiwari47.github.io/kasiko-public/images/zombie/shelter${level}.png`
+}
+
 function createZombieEmbed(gameData) {
   const TitleEmbed = new EmbedBuilder()
-  .setDescription(`### <@${gameData.id}>'s Apocalypse Stats`)
+  .setDescription(`### <:lily:1318792945343791214> <@${gameData.id}>'s Apocalypse Stats`)
   .setColor("#301414")
-  .setThumbnail("https://harshtiwari47.github.io/kasiko-public/images/zmb2.png");
 
   const zombieStatsEmbed = new EmbedBuilder()
   .setColor('#141c30') // Background color
+  .setImage(getShelterImg(gameData.level))
   .setDescription(
     `**❤️ Health:** ${gameData.health} HP\n` +
     `**🏚️ Level:** Level ${gameData.level}\n` +
     `**🧟 Kills:** ${gameData.kill} kills\n` +
     `**🪓 Active Weapon:**\n` +
-    `-# ${gameData.activeWeapon.weapon} ${gameData.activeWeapon.name} (Lvl: **${gameData.activeWeapon.level}**)\n` +
+    `-# **${gameData.activeWeapon.weapon} ${gameData.activeWeapon.name}** (Lvl: **${gameData.activeWeapon.level}**)\n` +
     `**⚔️ Last Battle:** ${
     gameData.lastBattle.time
     ? `${new Date(gameData.lastBattle.time).toLocaleString("en-US", {
@@ -268,8 +274,8 @@ export async function zombieSurvival(id, playerInfo, channel) {
     const introEmbed = new EmbedBuilder()
     .setDescription(
       `## 🧟 ᤁᴏ꧑ხıɛ ᥉ᤙɾ᥎ı᥎ɑꝇ\n**${guild.user.username}**, you find yourself surrounded in a zombie-infested world. Your goal: **SURVIVE**!\n\n` +
-      "You can take actions like **Search**, **Fight**, **Hide**, **Craft Weapon**, or **Run**. Choose wisely to manage your **Health**, **Stamina**, and **Supplies**.\n" +
-      "Good luck!"
+      "You can take actions like **Search**, **Fight**, **Hide**, **Craft Weapon**, or **Special Weapon**. Choose wisely to manage your **Health**, **Stamina**, and **Supplies**.\n" +
+      "Good luck! You have 1 minute and 30 seconds."
     )
     .setImage("https://harshtiwari47.github.io/kasiko-public/images/zmb2.png")
     .setColor("DarkRed")
@@ -329,7 +335,19 @@ export async function zombieSurvival(id, playerInfo, channel) {
       let outcome = "";
       let embedColor = "DarkRed";
       let image = null;
-      let statusTitle = "🧟 Zombie Survival Update";
+      let statusTitle = "Zombie Survival Update `🧟`";
+      let lilyHelp = `Best of luck, Survivor!`;
+
+      let zombies = {
+        1: "1318799726283460630",
+        2: "1318799737176064000",
+        3: "1318799748139974689",
+        4: "1318799778410139719",
+        5: "1318799826086793297",
+        6: "1318799841979138048"
+      }
+
+      let zombieThumb = null;
 
       // Handle Player Actions
       if (choice === "search") {
@@ -337,7 +355,9 @@ export async function zombieSurvival(id, playerInfo, channel) {
         gameData.supplies += supplies;
         gameData.stamina -= 10;
         outcome = `🔍 **${guild.user.username}** scavenged the area and found **${supplies} supplies**!\n- Stamina reduced by 10.`;
-        embedColor = "Green";
+        embedColor = "Blue";
+        image = "https://harshtiwari47.github.io/kasiko-public/images/zmb6.jpg";
+        lilyHelp = "Use 'search' to gather supplies to craft your weapon 🛠, but lose stamina! ⚡";
       } else if (choice === "fight") {
         const damage = Math.floor(Math.random() * 30) + 20;
         const zombieDamage = Math.floor(Math.random() * 15) + 10;
@@ -346,9 +366,12 @@ export async function zombieSurvival(id, playerInfo, channel) {
         gameData.weaponDurability -= Math.floor(Math.random() * 20) + 10;
         gameData.health -= zombieDamage;
 
+        zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
+
         outcome = `⚔️ **${guild.user.username}** bravely fought a zombie!\n` +
         `- Damage dealt: **${damage}**\n- Health lost: **${zombieDamage}**\n- Weapon durability reduced by 10.`;
-        embedColor = "Orange";
+        embedColor = "Red";
+        lilyHelp = "Use 'fight' to battle zombies, but it risks your HP and weapon durability! 🪤";
       } else if (choice === "hide") {
         const success = Math.random() < 0.7;
         if (success) {
@@ -358,8 +381,13 @@ export async function zombieSurvival(id, playerInfo, channel) {
           gameData.health -= 15;
           outcome = `🧟 A zombie spotted you while hiding! You lost **15 health**.`;
         }
+        image = "https://harshtiwari47.github.io/kasiko-public/images/zmb3.jpg";
         embedColor = "Yellow";
+        lilyHelp = "Use 'hide' to regain some ⚡ stamina, helping you in your search 🔍!";
+
       } else if (choice === "craft") {
+        image = "https://harshtiwari47.github.io/kasiko-public/images/zmb5.jpg";
+
         if (gameData.supplies >= 50) {
           gameData.supplies -= 50;
           gameData.weaponDurability += 30;
@@ -367,8 +395,10 @@ export async function zombieSurvival(id, playerInfo, channel) {
           embedColor = "Blue";
         } else {
           outcome = `❌ Not enough supplies to craft! You need at least **50 supplies**.`;
-          embedColor = "Red";
+          embedColor = "Green";
         }
+
+        lilyHelp = "Using 'craft weapon' enhances your defense and boosts weapon durability for fight! 🛠";
       } else if (choice === "weapon") {
         image = "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg";
         let killedZombies = Math.min((playerInfo.activeWeapon.minHunt + Math.floor(Math.random() * playerInfo.activeWeapon.maxHunt)), playerInfo.activeWeapon.maxHunt);
@@ -377,7 +407,10 @@ export async function zombieSurvival(id, playerInfo, channel) {
         outcome = `⚔️ **${guild.user.username}** used their weapon ${playerInfo.activeWeapon.weapon} and killed ${killedZombies} zombie${killedZombies === 1 ? '': 's'}!\n`;
 
         disableOptions.push("weapon");
-        embedColor = "#2f3fea";
+        embedColor = "#822fea";
+        zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
+
+        lilyHelp = "Your special weapon can be used once for maximum impact! 💥";
       }
 
       if (gameData.stamina < 1) {
@@ -411,7 +444,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
       }
 
       const statusTitleEmbed = new EmbedBuilder()
-      .setDescription(`## ${statusTitle}`)
+      .setDescription(`### ${statusTitle}\n-# <:lily:1318792945343791214> ${lilyHelp}`)
 
       // Update Game Status
       const statusEmbed = new EmbedBuilder()
@@ -426,6 +459,10 @@ export async function zombieSurvival(id, playerInfo, channel) {
         statusTitleEmbed.setThumbnail(image)
       } else {
         statusTitleEmbed.setThumbnail("https://harshtiwari47.github.io/kasiko-public/images/zmb2.png")
+      }
+
+      if (zombieThumb) {
+        statusEmbed.setThumbnail(zombieThumb)
       }
 
       await interaction.update({
