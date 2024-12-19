@@ -14,8 +14,11 @@ export const openBankAccount = async (userId) => {
       userData.bankAccount.open = true;
 
       await updateUser(userId, userData);
+
+      return true;
     }
   }
+  return null;
 };
 
 // Function to get a user's bank account details

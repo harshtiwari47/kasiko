@@ -43,7 +43,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
       collector.on("collect", async (msg) => {
         const opponent = msg.author;
 
-        const msgArgs = msg.slice("participate".toLowerCase().length).trim().split(/ +/);
+        const msgArgs = msg.content.slice("participate".toLowerCase().length).trim().split(/ +/);
 
         if (msgArgs && msgArgs[0] && (msgArgs[0] === "horse1" || msgArgs[0] === "horse2" || msgArgs[0] === "horse3")) {
           if (msgArgs === betOn) {

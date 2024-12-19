@@ -196,15 +196,15 @@ export const Bank = {
         );
       }
 
-      await openBankAccount(userId);
+      let isOpened = await openBankAccount(userId);
 
-      // Deduct the account opening cost
-      userData.cash = userData.cash - 1000;
-      await updateUser(userId, userData);
-
-      message.channel.send(
-        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
-      );
+      if (isOpened) {
+        message.channel.send(
+          `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+        );
+      } else {
+        message.channel.send(`**${message.author.username}**, you already have a bank account.`);
+      }
     } catch (err) {
       if (err.message.includes("already has a bank account")) {
         message.channel.send(`**${message.author.username}**, you already have a bank account.`);

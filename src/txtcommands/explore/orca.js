@@ -20,7 +20,7 @@ async function findOrca(serverId) {
   // If no active orca, create a new one with a 1% spawn chance
   if (!orca) {
     const spawnChance = Math.random() * 100; // 8% chance
-    if (spawnChance <= 8) {
+    if (spawnChance <= 9) {
       const expiryTime = new Date(currentTime.getTime() + 60 * 60 * 1000); // 1-hour expiry
       orca = new Orca( {
         serverId,
@@ -59,7 +59,7 @@ async function claimOrca(serverId, userId, username, channel, guildName) {
   }
 
   // Reward logic
-  const hunterReward = 10000;
+  const hunterReward = 30000;
   const serverReward = 2500;
   const otherReward = 1000;
 
@@ -163,7 +163,7 @@ export async function execute(args, message) {
 
 export default {
   name: 'orca',
-  description: 'Hunt and claim the Legendary Orca in your server! The Discoverer will receive 10k cash, while other members in the server will receive 2500, and the rest will get 1000 upon praying.',
+  description: 'Hunt and claim the Legendary Orca in your server! The Discoverer will receive 30k cash, while other members in the server will receive 2500, and the rest will get 1000 upon praying.',
   aliases: ['orcahunt'],
   args: '<hunt|pray>',
   example: ['orca hunt',
