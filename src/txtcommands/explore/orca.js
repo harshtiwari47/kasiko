@@ -139,7 +139,7 @@ export async function execute(args, message) {
         .setDescription(`# <:orca:1313094374921605172> **The Legendary Orca** is lurking!\nBe the first to discover it by using \`orca pray\`.`)
 
         return channel.send({
-          embeds: OrcaEmbed
+          embeds: [OrcaEmbed]
         });
       } if (orca) {
 
