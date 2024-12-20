@@ -140,8 +140,12 @@ const userSchema = new mongoose.Schema({
     default: [null, null, 0]
     },
     orca: {
-      type: [String, Number], // orca id, prayed (0/1)
-    default: [null, 0]
+      type: Object,
+      default: {
+        id: null,
+        prayed: false,
+        count: 0
+      }
     },
     pass: {
       type: Object,

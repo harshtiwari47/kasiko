@@ -73,26 +73,33 @@ async function claimOrca(serverId, userId, username, channel, guildName) {
   }
   const isHunter = userId === orca.hunterId;
 
-  if (!userData.orca) {
-    userData.orca = [orca["_id"].toString(),
-      0];
+  if (!userData.orca || Array.isArray(userData.orca)) {
+    userData.orca = {
+      id: orca["_id"].toString(),
+      prayed: false,
+      count: 0
+    }
   }
 
-  if (orca["_id"].toString() === userData.orca[0] && (userData.orca[1] === "1" || userData.orca[1] === 1)) {
+  if (orca["_id"].toString() === userData.orca["id"] && (userData.orca["prayed"] === true || userData.orca["prayed"] === "true")) {
     return channel.send(
       `<:orca:1313094374921605172> **You have already prayed for the current Orca!** Please wait until a new Orca is discovered or use \`orca hunt\` to search for a new one yourself once the current Orca disappears.`
     );
   } else {
-    userData.orca[1] = 1;
-    userData.orca[0] = orca["_id"].toString();
+    userData.orca["prayed"] = true;
+    userData.orca["id"] = orca["_id"].toString();
   }
+
+  let userDiscovery = `\n-# Your total Orca's discovery: **${userData.orca["count"]}**`;
 
   // Award points
   if (isHunter) {
     userData.cash = (userData.cash || 0) + hunterReward;
+    userData.orca["count"] += 1;
+
     await updateUser(userId, userData);
     return channel.send(
-      `🎉 **${username}** prayed and received <:kasiko_coin:1300141236841086977> **${hunterReward} cash** as the discoverer of the Legendary Orca! <:orca:1313094374921605172>`
+      `🎉 **${username}** prayed and received <:kasiko_coin:1300141236841086977> **${hunterReward} cash** as the discoverer of the Legendary Orca! <:orca:1313094374921605172>${userDiscovery}`
     );
   }
 
@@ -100,13 +107,13 @@ async function claimOrca(serverId, userId, username, channel, guildName) {
     userData.cash = (userData.cash || 0) + serverReward;
     await updateUser(userId, userData);
     return channel.send(
-      `🙏 **${username}** prayed and received <:kasiko_coin:1300141236841086977> **${serverReward} cash** as a member of the server where the <:orca:1313094374921605172> Orca was found!`
+      `🙏 **${username}** prayed and received <:kasiko_coin:1300141236841086977> **${serverReward} cash** as a member of the server where the <:orca:1313094374921605172> Orca was found!${userDiscovery}`
     );
   } else {
     userData.cash = (userData.cash || 0) + otherReward;
     await updateUser(userId, userData);
     return channel.send(
-      `🙏 **${username}** prayed and received <:kasiko_coin:1300141236841086977> **${otherReward} cash**! The <:orca:1313094374921605172> Orca was found by **${orca.hunter}** in **${guildName}**.`
+      `🙏 **${username}** prayed and received <:kasiko_coin:1300141236841086977> **${otherReward} cash**! The <:orca:1313094374921605172> Orca was found by **${orca.hunter}** in **${guildName}**.${userDiscovery}`
     );
   }
 }

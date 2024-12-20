@@ -37,6 +37,11 @@ export async function badges(userData) {
     badges += `<:royal:1316681043301892168> `
   }
 
+
+  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 30)) badges += `<:paramount_cultist:1319670623508631694> `
+  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 15)) badges += `<:supreme_cultist:1319670550871670895> `
+  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 5)) badges += `<:novice_cultist:1319670415194587189> `
+
   if (badges) {
     badges = `> # ${badges}`;
   }
