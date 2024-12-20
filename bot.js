@@ -78,7 +78,14 @@ client.on('messageCreate', async (message) => {
     try {
       let notAllowed = await checkPerms(message);
       if (notAllowed) {
-        if (message.channel.permissionsFor(message.client.user).has(PermissionsBitField.Flags.SendMessages)) {
+        if (!message.channel) {
+          console.log("No channel found.");
+          return;
+        }
+
+        if (!message.client.user) return;
+
+        if (!notAllowed.includes("SEND_MESSAGES")) {
           return await message.channel.send({
             content: `I am missing the following permissions: ${notAllowed}`,
           });
