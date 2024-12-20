@@ -30,7 +30,6 @@ const WelcomeMsg = {
         const serverName = guild.name;
         const serverOwnerId = guild.ownerId;
 
-
         const embed = new EmbedBuilder()
         .setColor('#0099ff')
         .setTitle('Thank you for inviting me!')

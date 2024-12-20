@@ -78,9 +78,13 @@ client.on('messageCreate', async (message) => {
     try {
       let notAllowed = await checkPerms(message);
       if (notAllowed) {
-        return await message.channel.send({
-          content: `I am missing the following permissions: ${notAllowed}`,
-        });
+        if (message.channel.permissionsFor(message.client.user).has(PermissionsBitField.Flags.SendMessages)) {
+          return await message.channel.send({
+            content: `I am missing the following permissions: ${notAllowed}`,
+          });
+        }
+
+        return;
       }
     } catch (e) {
       console.error("There is an error while checking bot permissions!");
