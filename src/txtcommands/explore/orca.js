@@ -59,7 +59,7 @@ async function claimOrca(serverId, userId, username, channel, guildName) {
   }
 
   // Reward logic
-  const hunterReward = 30000;
+  const hunterReward = 50000;
   const serverReward = 2500;
   const otherReward = 1000;
 
@@ -126,9 +126,14 @@ export async function execute(args, message) {
     try {
       const orca = await findOrca(serverId);
       if (orca && !orca.hunter) {
-        return channel.send(
-          `<:orca:1313094374921605172> **The Legendary Orca** is lurking! Be the first to discover it by using \`orca pray\`.`
-        );
+
+        const OrcaEmbed = new EmbedBuilder()
+        .setImage("https://harshtiwari47.github.io/kasiko-public/images/orca.jpg")
+        .setDescription(`# <:orca:1313094374921605172> **The Legendary Orca** is lurking!\nBe the first to discover it by using \`orca pray\`.`)
+
+        return channel.send({
+          embeds: OrcaEmbed
+        });
       } if (orca) {
 
         const serverName = await client.guilds.fetch(orca.serverId);
@@ -163,7 +168,7 @@ export async function execute(args, message) {
 
 export default {
   name: 'orca',
-  description: 'Hunt and claim the Legendary Orca in your server! The Discoverer will receive 30k cash, while other members in the server will receive 2500, and the rest will get 1000 upon praying.',
+  description: 'Hunt and claim the Legendary Orca in your server! The Discoverer will receive 50k cash, while other members in the server will receive 2500, and the rest will get 1000 upon praying.',
   aliases: ['orcahunt'],
   args: '<hunt|pray>',
   example: ['orca hunt',
