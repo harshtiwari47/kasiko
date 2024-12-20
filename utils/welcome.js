@@ -3,13 +3,18 @@ import {
 } from 'discord.js';
 import Server from '../models/Server.js';
 
+import {
+  InteractionType,
+  PermissionsBitField
+} from 'discord.js';
+
 const WelcomeMsg = {
   name: 'guildCreate',
   async execute(guild) {
     const welcomeChannel = guild.channels.cache.find(
       channel =>
       channel.type === 0 &&
-      channel.permissionsFor(guild.members.me).has('SendMessages')
+      channel.permissionsFor(guild.members.me).has(PermissionsBitField.Flags.SendMessages)
     );
 
     if (welcomeChannel) {
