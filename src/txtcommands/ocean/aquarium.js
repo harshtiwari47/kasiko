@@ -175,7 +175,7 @@ export async function viewAquarium(userId, channel) {
       let rarityAmount = 10;
 
       if (fishDetails.rarity === "lengendary") {
-        rarityAmount = 25;
+        rarityAmount = 30;
       } else if (fishDetails.rarity === "rare") {
         rarityAmount = 18;
       } else if (fishDetails.rarity === "uncommon") {
@@ -397,7 +397,7 @@ export async function collectAquariumReward(message) {
       let rarityAmount = 10;
 
       if (fishDetails.rarity === "lengendary") {
-        rarityAmount = 25;
+        rarityAmount = 30;
       } else if (fishDetails.rarity === "rare") {
         rarityAmount = 18;
       } else if (fishDetails.rarity === "uncommon") {
