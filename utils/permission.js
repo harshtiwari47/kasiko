@@ -69,13 +69,9 @@ export async function checkPerms(message) {
 
   console.log(`Bot is missing these permissions: ${missingPermissions.map(perm => (permissionNames[perm] || "Unknown")).join(', ')} \n in server ${message.guild.id}`);
 
-  if (botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
-    return "\n- " + missingPermissions.map(perm => {
-      if (permissionNames[perm]) {
-        return permissionNames[perm]
-      }
-    }).join(',\n- ')
-  }
-
-  return;
+  return "\n- " + missingPermissions.map(perm => {
+    if (permissionNames[perm]) {
+      return permissionNames[perm]
+    }
+  }).join(',\n- ')
 }
