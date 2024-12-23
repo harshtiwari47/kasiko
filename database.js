@@ -72,8 +72,8 @@ export const createUser = async (userId) => {
   try {
     const newUser = new User( {
       id: userId,
-      cash: 0,
-      networth: 0,
+      cash: 4000,
+      networth: 4000,
       maintenance: 0,
       spouse: null,
       roses: 0,

@@ -54,11 +54,13 @@ export const client = new Client( {
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-const TOKEN = process.env.BOT_TOKEN;
+const TOKEN = process.env.BOT_TOKENDEV;
 const clientId = process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  client.user.setActivity('1000 servers', { type: 'WATCHING' });
+  
   await loadSlashCommands('./src/slashcommands', clientId, TOKEN);
 });
 
@@ -69,7 +71,7 @@ client.on('messageCreate', async (message) => {
 
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 
-    let prefix = "kas";
+    let prefix = "ks";
 
     if (!message.content.toLowerCase().startsWith(prefix)) return
 

@@ -60,7 +60,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
         monsterChance: 0.8,
         trapChance: 0.6,
         puzzleChance: 0.5,
-        hpLoss: 50
+        hpLoss: 40
       },
     };
 

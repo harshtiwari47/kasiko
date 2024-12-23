@@ -110,9 +110,9 @@ async function addToCollection(animal, message, zone = null) {
         .setColor('#58dbf7')
         .setThumbnail(`https://cdn.discordapp.com/emojis/${fish[0].emoji}.png`); // Replace with actual image of the fish
       }
-      
+
       await incrementTaskExp(message.author.id, "catch", message);
-            
+
       // Send the second embed with the result after the delay
       return await fishingMessage.edit({
         embeds: [initialEmbed, resultEmbed]
@@ -320,7 +320,31 @@ export default {
       return collect(message.author.id, message); // Catch an animal in the Ocean
 
     default:
-      return message.channel.send("⚠️ 🌊🐚 ocean subcommand.\nUse `ocean zone`, `ocean explore <zone>`, `ocean collection <@username (optional)>`, `catch` for fishing 🎣 or `ocean catch`.");
+      const oceanEmbed = new EmbedBuilder()
+      .setColor('#1E90FF') // Ocean-like color
+      .setTitle('🌊🐚 Ocean Command')
+      .setDescription('Explore the vast ocean with these commands:')
+      .addFields(
+        {
+          name: '`ocean zone`', value: 'View available ocean zones.', inline: true
+        },
+        {
+          name: '`ocean explore <zone>`', value: 'Explore a specific ocean zone.', inline: true
+        },
+        {
+          name: '`ocean collection <@username (optional)>`', value: 'View your or someone else\'s ocean collection.', inline: false
+        },
+        {
+          name: '`ocatch` or `ocean catch`', value: 'Start fishing 🎣 and catch unique items!', inline: false
+        }
+      )
+      .setFooter({
+        text: 'Happy fishing! 🎣'
+      })
+
+      return message.channel.send({
+        embeds: [oceanEmbed]
+      });
     }
   }
 };

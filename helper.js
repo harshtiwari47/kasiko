@@ -70,13 +70,25 @@ export function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+export function pickDragonType(dragonTypes) {
+    const rand = Math.random();
+    dragonTypes = dragonTypes.sort((a,b) => b.rarity - a.rarity);
+    for (let i = 0; i < dragonTypes.length; i++) {
+      if (rand > dragonTypes[i].rarity) {
+        return dragonTypes[i];
+      }
+    }
+    return dragonTypes[dragonTypes.length - 1]; 
+}
+
 export const Helper = {
   isUserMention,
   extractUserId,
   isNumber,
   newsDatabase,
   checkTimeGap,
-  randomInt
+  randomInt,
+  pickDragonType
 }
 
 export default Helper;

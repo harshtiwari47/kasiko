@@ -32,7 +32,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
 
     if (teammateData) {
       gameMessage = await channel.send(
-        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**! Type **participate <horse (optional)>** (horse1, horse2, horse3) to join the race. **<@${teammateId}>**, you have 25 seconds!`
+        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\nType **participate <horse (optional)>** (horse1, horse2, horse3) to join the race. **<@${teammateId}>**, you have 25 seconds!`
       );
 
       const filter = (m) => m.content.toLowerCase().startsWith("participate") && m.author.id === teammateId;
@@ -51,7 +51,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
             if (betOn === "horse2") opponentBetOn = "horse3"
             if (betOn === "horse3") opponentBetOn = "horse1"
           } else {
-            opponentBetOn = msgArgs[1];
+            opponentBetOn = msgArgs[0];
           }
         } else {
           if (betOn === "horse1") opponentBetOn = "horse2"
