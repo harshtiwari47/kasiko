@@ -2,7 +2,8 @@ import {
   Client,
   GatewayIntentBits,
   InteractionType,
-  PermissionsBitField
+  PermissionsBitField,
+  ActivityType
 } from 'discord.js';
 import dotenv from 'dotenv';
 
