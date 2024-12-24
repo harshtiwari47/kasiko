@@ -1,12 +1,26 @@
 import mongoose from 'mongoose';
 
-const dragonSubSchema = new mongoose.Schema({
+const powerSubSchema = new mongoose.Schema({
   typeId: {
-    type: String, // e.g., "fire", "water"
+    type: String, // e.g., "Glacial Barrier", "Inferno Roar"
     required: true
   },
-  customName: {
-    type: String,
+  level: {
+    type: Number,
+    default: 1
+    }
+  },
+  {
+    _id: false
+  });
+
+  const dragonSubSchema = new mongoose.Schema({
+    typeId: {
+      type: String,
+      required: true
+    },
+    customName: {
+      type: String,
     default: null,
     },
     stage: {
@@ -56,11 +70,29 @@ const dragonSubSchema = new mongoose.Schema({
     sigils: {
       type: Number,
     default: 0,
-      set: (value) => value < 0 ? 0: value
+      set: (value) => (value < 0 ? 0: value)
     },
     createdAt: {
       type: Date,
     default: Date.now
+    },
+    metals: {
+      gold: {
+        type: Number,
+      default: 0
+      },
+      silver: {
+        type: Number,
+      default: 0
+      },
+      bronze: {
+        type: Number,
+      default: 0
+      }
+    },
+    powers: {
+      type: [powerSubSchema],
+    default: []
     }
   });
 

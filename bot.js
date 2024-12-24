@@ -59,8 +59,12 @@ const clientId = process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  client.user.setActivity('32 servers', { type: 'WATCHING' });
-  
+  client.user.presence.set({
+    activities: [{
+      name: '32 servers', type: ActivityType.Watching
+    }],
+  });
+
   await loadSlashCommands('./src/slashcommands', clientId, TOKEN);
 });
 

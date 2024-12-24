@@ -92,7 +92,7 @@ export async function marry(user, message) {
     }
 
     if (userData.spouse && userData.spouse !== user) {
-      return message.channel.send(`⚠️ You are already married to **<@${userData.spouse}>**.`);
+      return message.channel.send(`⚠️ You are already married! 🔫`);
     } else if (userData.spouse && userData.spouse === user) {
       return message.channel.send(`⚠️ You are __already married__ to each other.`);
     } else {

@@ -13,6 +13,8 @@ import {
   client
 } from "../../../bot.js";
 
+import Powers from "./dragon/powers.js"
+
 import Dragon from '../../../models/Dragon.js';
 import redisClient from '../../../redis.js';
 import Helper from '../../../helper.js';
@@ -49,8 +51,8 @@ export default {
         \n***list***\n- Show all your dragons
         \n***leaderboard***\n- Show top players by total gems
         \n***battle <@mention> <yourDragonIndex> <theirDragonIndex>***\n- Battle another user if both have dragons
-        \n***gems***\n- Check your current gem balance
-        \n***sigils***\n- Check your current mythical sigils
+        \n***gems | sigils | metals***\n- Check your stats for Gems, Sigils and Metals
+        \n***powers***\n- Check all your dragons' powers
         \n***pat | walk | play <index?>***\n- Enjoy your time with dragon
         `)
 
@@ -93,6 +95,25 @@ export default {
     case 'gems':
     case 'g':
       return checkGems(message);
+    case 'metal':
+    case 'metals':
+    case 'm':
+      return Powers.myMetals(message);
+    case 'power':
+    case 'powers':
+    case 'strengths':
+    case 'strength':
+    case 'p':
+      if (args[1] && (args[1] === "upgrade" || args[1] === "up")) {
+        let pId = args[2];
+
+        if (!pId) {
+          return message.channel.send(`❗ Please mention the ID of the power you want to upgrade!\nUse \`dragon power upgrade <id>\``);
+        }
+
+        return Powers.upgradePower(pId, message);
+      }
+      return Powers.myPowers(message);
     case 's':
     case 'sigil':
     case 'sigils':
@@ -110,7 +131,7 @@ export default {
   /**
   * Retrieve user data from Redis or MongoDB
   */
-  async function getUserData(userId) {
+  export async function getUserDataDragon(userId) {
     const cacheKey = `user:${userId}:dragons`;
     let userData = await redisClient.get(cacheKey);
 
@@ -131,7 +152,8 @@ export default {
           dragons: [],
           lastDaily: null,
           createdAt: new Date(),
-          sigils: 0
+          sigils: 0,
+          powers: []
         };
       }
 
@@ -146,7 +168,7 @@ export default {
   /**
   * Save user data to Redis
   */
-  async function saveUserData(userId, userData) {
+  export async function saveUserData(userId, userData) {
     const cacheKey = `user:${userId}:dragons`;
 
     await Dragon.findOneAndUpdate(
@@ -155,7 +177,7 @@ export default {
       },
       userData,
       {
-        upsert: true, new: true
+        upsert: true, new: true, runValidators: true
       }
     );
 
@@ -213,7 +235,7 @@ export default {
   */
   async function summonDragon(message) {
     const userId = message.author.id;
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     // Summon cost and gems deduction
     const summonCost = 10;
@@ -288,7 +310,7 @@ export default {
   async function hatchDragon(args, message) {
     const index = parseInt(args[1]) || 1; // default to the first egg
     const userId = message.author.id;
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     // Filter only unhatched
     const unhatched = userData.dragons.filter(d => !d.isHatched);
@@ -391,7 +413,7 @@ export default {
     const index = parseInt(args[1]) || 1;
     const userId = message.author.id;
 
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     if (userData.dragons.length === 0) {
       return message.channel.send(`❗ You have no dragons to send for adventure! Summon one with \`dragon summon\`.`);
@@ -465,14 +487,32 @@ export default {
     let outcome = {};
     let type = "success";
     let result = ``;
+    let goldIcon = `<:gold:1320978185084473365>`
+    let silverIcon = `<:silver:1320978175563661352>`
+    let bronzeIcon = `<:bronze:1320978165702725714>`
 
     if (probability > (0.5 - targetDragon.stage/70)) {
       type = "success";
       let winningGems = Helper.randomInt(10, probability > 0.85 ? 50: 30);
       userData.sigils += 2;
       userData.gems += winningGems;
+      let winningMetals = Helper.randomInt(5, probability > 0.85 ? 25: 15);
 
-      result = `-# ***REWARDS*** — ${gemIcon} : **+${winningGems}**, ${sigilsIcon} : **+2**, 🍽️ : **+${hunger}**`
+      let metalWinMessage = ``;
+      let metalWinProb = Math.random();
+
+      if (metalWinProb > 0.75) {
+        userData.metals.gold += winningMetals;
+        metalWinMessage = ` ${goldIcon} : **+${winningMetals}**`;
+      } else if (metalWinProb > 0.40) {
+        userData.metals.silver += winningMetals;
+        metalWinMessage = ` ${silverIcon} : **+${winningMetals}**`;
+      } else {
+        userData.metals.bronze += winningMetals;
+        metalWinMessage = ` ${bronzeIcon} : **+${winningMetals}**`;
+      }
+
+      result = `-# ***REWARDS*** — ${gemIcon} : **+${winningGems}**, ${sigilsIcon} : **+2**, 🍽️ : **+${hunger}**, ${metalWinMessage}`;
     } else {
       userData.sigils -= 1;
       type = "fail";
@@ -500,7 +540,7 @@ export default {
     await new Promise(resolve => setTimeout(resolve, 4000));
 
     return suspenseMessage.edit({
-      embeds: [embed.setDescription(`## Adventure <:${chosenType.id}2:${chosenType.emoji}>\n${outcome.message}\n\n${result}`).setColor(type === "fail" ? "#000000": chosenType.color)]
+      embeds: [embed.setDescription(`## Adventure <:${chosenType.id}2:${chosenType.emoji}>\n${outcome.message}\n\n${result}`).setColor(type === "fail" ? "#000000": chosenType.color).setImage(`https://harshtiwari47.github.io/kasiko-public/images/dragons/adv-loc${1 + Math.floor(Math.random() * 5)}.jpg`)]
     })
   }
 
@@ -516,7 +556,7 @@ export default {
       return message.channel.send(`⚠️ **${message.author.username}**, you must use at least 1 gem to feed your dragon.`);
     }
 
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     if (userData.dragons.length === 0) {
       return message.channel.send(`❗ You have no dragons to feed! Summon one with \`dragon summon\`.`);
@@ -575,7 +615,7 @@ export default {
       return message.channel.send(`⏳ You must wait **${Math.ceil(secondsLeft/60)}** more minutes before training again.`);
     }
 
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     if (userData.dragons.length === 0) {
       return message.channel.send(`❗ You have no dragons to train!`);
@@ -650,7 +690,7 @@ export default {
     await saveUserData(userId, userData);
 
     // Set cooldown (e.g., 5 minutes)
-    const fiveMinsFromNow = Date.now() + 5 * 60_000;
+    const fiveMinsFromNow = Date.now() + 3 * 60_000;
     await redisClient.set(cooldownKey, fiveMinsFromNow);
 
     return;
@@ -661,7 +701,7 @@ export default {
   */
   async function dailyReward(message) {
     const userId = message.author.id;
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
     const now = new Date();
     const cooldown = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -695,7 +735,7 @@ export default {
   */
   async function listDragons(message) {
     const userId = message.author.id;
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     if (!userData || userData.dragons.length === 0) {
       return message.channel.send(`❗ You have no dragons. Use \`dragon summon\` to get started!`);
@@ -886,8 +926,8 @@ export default {
     const userId = message.author.id;
     const enemyId = enemy.id;
 
-    let userData = await getUserData(userId);
-    let enemyData = await getUserData(enemyId);
+    let userData = await getUserDataDragon(userId);
+    let enemyData = await getUserDataDragon(enemyId);
 
     if (!userData.dragons.length) {
       return message.channel.send(`❗ You have no dragons to battle with! Use \`dragon summon\` first.`);
@@ -997,7 +1037,7 @@ export default {
   */
   async function checkGems(message) {
     const userId = message.author.id;
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     return message.channel.send(`${gemIcon} **${message.author.username}**, you currently have **${userData.gems}** gems.`);
   }
@@ -1007,7 +1047,7 @@ export default {
   */
   async function checkSigils(message) {
     const userId = message.author.id;
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     return message.channel.send(`${sigilsIcon} **${message.author.username}**, you currently have **${userData.sigils}** mythical sigils.`);
   }
@@ -1045,7 +1085,7 @@ export default {
     const index = parseInt(args[1]) || 1;
     const userId = message.author.id;
 
-    let userData = await getUserData(userId);
+    let userData = await getUserDataDragon(userId);
 
     if (userData.dragons.length === 0) {
       return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);

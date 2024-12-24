@@ -30,7 +30,7 @@ const PetSchema = new mongoose.Schema({
       type: Number, default: null
     }, // For tracking play times
     exp: {
-      type: Number, default: 50, set: (value) => (value < 50 ? 50: value)
+      type: Number, default: 201, set: (value) => (value < 50 ? 50: value)
     }, // Experience points
   });
 

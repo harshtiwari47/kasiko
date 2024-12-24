@@ -1,0 +1,110 @@
+[{
+  "id": "p1",
+  "name": "Wind Slash",
+  "description": "A swift attack that cuts through the air to damage enemies.",
+  "emoji": "<:WindSlash:1321043197136474152>",
+  "dmg": 50,
+  "heal": 0,
+  "defence": 10,
+  "cost": 20,
+  "costType": "silver"
+},
+  {
+    "id": "p2",
+    "name": "Gleaming Dash",
+    "description": "A dazzling move that boosts evasion and attacks swiftly.",
+    "emoji": "<:GleamingDash:1321044607475253302>",
+    "dmg": 40,
+    "heal": 0,
+    "defence": 20,
+    "cost": 25,
+    "costType": "gold"
+  },
+  {
+    "id": "p3",
+    "name": "Flame Surge",
+    "description": "A fiery blast that scorches enemies in its path.",
+    "emoji": "<:FlameSurge:1321043035227815946>",
+    "dmg": 60,
+    "heal": 0,
+    "defence": 5,
+    "cost": 30,
+    "costType": "gold"
+  },
+  {
+    "id": "p4",
+    "name": "Molten Shield",
+    "description": "A shield of lava that defends against attacks.",
+    "emoji": "<:MoltenShield:1321044955900416083>",
+    "dmg": 10,
+    "heal": 0,
+    "defence": 50,
+    "cost": 35,
+    "costType": "bronze"
+  },
+  {
+    "id": "p5",
+    "name": "Lunar Strike",
+    "description": "A powerful strike imbued with lunar energy.",
+    "emoji": "<:LunarStrike:1321043117356613643>",
+    "dmg": 55,
+    "heal": 0,
+    "defence": 15,
+    "cost": 28,
+    "costType": "gold"
+  },
+  {
+    "id": "p6",
+    "name": "Arcane Shield",
+    "description": "A magical shield that absorbs damage.",
+    "emoji": "<:ArcaneShield:1321045348617027627>",
+    "dmg": 0,
+    "heal": 0,
+    "defence": 60,
+    "cost": 40,
+    "costType": "bronze"
+  },
+  {
+    "id": "p7",
+    "name": "Inferno Roar",
+    "description": "A ferocious roar that engulfs enemies in flames.",
+    "emoji": "<:InfernoRoar:1321045570818674718>",
+    "dmg": 65,
+    "heal": 0,
+    "defence": 5,
+    "cost": 35,
+    "costType": "gold"
+  },
+  {
+    "id": "p8",
+    "name": "Frozen Shield",
+    "description": "A shield of ice that blocks attacks.",
+    "emoji": "<:FrozenShield:1321045760732565541>",
+    "dmg": 0,
+    "heal": 0,
+    "defence": 55,
+    "cost": 33,
+    "costType": "silver"
+  },
+  {
+    "id": "p9",
+    "name": "Frost Barrage",
+    "description": "An icy assault that slows and damages enemies.",
+    "emoji": "<:FrostBarrage:1321046217584672810>",
+    "dmg": 45,
+    "heal": 0,
+    "defence": 10,
+    "cost": 25,
+    "costType": "gold"
+  },
+  {
+    "id": "p10",
+    "name": "Glacial Barrier",
+    "description": "A barrier of frost that reduces incoming damage.",
+    "emoji": "<:GlacialBarrier:1321045989074669568>",
+    "dmg": 0,
+    "heal": 0,
+    "defence": 65,
+    "cost": 38,
+    "costType": "bronze"
+  }]
