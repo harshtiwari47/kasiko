@@ -83,6 +83,7 @@ export default {
       return listDragons(message);
     case 'adventure':
     case 'adv':
+    case 'a':
       return adventure(args, message)
     case 'leaderboard':
     case 'lb':
@@ -431,9 +432,9 @@ export default {
     }
 
     // Check hunger before training
-    /* if (targetDragon.hunger >= 60) {
+    if (targetDragon.hunger >= 60) {
       return message.channel.send(`🍽️ Your dragon (#${index}) is too hungry to train. Please feed it!\n-# ${randomHungerMessage()}`);
-    } */
+    }
 
     let outcomeMessage = {
       "success": [{

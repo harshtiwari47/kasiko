@@ -60,9 +60,10 @@ const clientId = process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  const guildCount = client.guilds.cache.size || 32;
   client.user.presence.set({
     activities: [{
-      name: '32 servers', type: ActivityType.Watching
+      name: `${guildCount} servers`, type: ActivityType.Watching
     }],
   });
 

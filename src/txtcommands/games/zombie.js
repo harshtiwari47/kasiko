@@ -3,13 +3,23 @@ import {
   updateUser
 } from "../../../database.js";
 
+import fs from 'fs';
+import path from 'path';
+
 import Zombie from "../../../models/Zombie.js";
+
+// Load all dragon types from JSON
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const storyPath = path.join(__dirname, './zombie/story.json');
+const Chapters = JSON.parse(fs.readFileSync(storyPath, 'utf-8'));
+
 
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  ComponentType
 } from "discord.js";
 
 import redisClient from "../../../redis.js";
@@ -199,7 +209,7 @@ const zombieSurvivalBadges = [{
 function getShelterImg(level) {
   if (level > 15) level = 15;
 
-  return `https://harshtiwari47.github.io/kasiko-public/images/zombie/shelter${level}.png`
+  return `https://harshtiwari47.github.io/kasiko-public/images/zombie/shelterimg${level}.png`
 }
 
 function createZombieEmbed(gameData) {
@@ -211,24 +221,14 @@ function createZombieEmbed(gameData) {
   .setColor('#141c30') // Background color
   .setImage(getShelterImg(gameData.level))
   .setDescription(
+    `### <:lily:1318792945343791214> <@${gameData.id}>'s Apocalypse Stats\n` +
     `**❤️ Health:** ${gameData.health} HP\n` +
     `**🏚️ Level:** Level ${gameData.level}\n` +
     `**🧟 Kills:** ${gameData.kill} kills\n` +
-    `**🪓 Active Weapon:**\n` +
-    `-# **${gameData.activeWeapon.weapon} ${gameData.activeWeapon.name}** (Lvl: **${gameData.activeWeapon.level}**)\n` +
-    `**⚔️ Last Battle:** ${
-    gameData.lastBattle.time
-    ? `${new Date(gameData.lastBattle.time).toLocaleString("en-US", {
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "numeric",
-      hour12: true,
-    })}`: 'No active battle'
-    }`
+    `**🪓 Active Weapon:** ***${gameData.activeWeapon.weapon} ${gameData.activeWeapon.name}*** (Lvl: **${gameData.activeWeapon.level}**)`
   )
   .setFooter({
-    text: 'Zombie Battle Stats'
+    text: `📖 zombie story ${gameData.level}`
   });
 
   const zombieResourcesEmbed = new EmbedBuilder()
@@ -245,9 +245,116 @@ function createZombieEmbed(gameData) {
     text: 'Zombie Resources Information'
   });
 
-  return [TitleEmbed,
+  return [
     zombieStatsEmbed,
     zombieResourcesEmbed];
+}
+
+export async function readStory(chapter, message) {
+  try {
+    let Pages = Chapters[`chapter${chapter}`].pages;
+    if (!Pages) {
+      return message.channel.send(`❗Chapter ${chapter} not found.`)
+    }
+    let title = Chapters[`chapter${chapter}`].title;
+
+    let currentPage = 0;
+    let totalPages = 4;
+
+    const generateEmbed = (page) => {
+      return new EmbedBuilder()
+      .setTitle(title)
+      .setDescription(Pages[page].replace("$_username_", message.author.username))
+      .setAuthor({
+        name: message.author.username, iconURL: message.author.displayAvatarURL({
+          dynamic: true
+        })
+      })
+      .setColor("#173221")
+      .setImage(getShelterImg(chapter))
+      .setFooter({
+        text: `PAGE: ${page + 1}`
+      });
+    }
+
+    const embedMessage = await message.channel.send({
+      embeds: [generateEmbed(currentPage)],
+      components: [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('prevPage')
+          .setLabel('Previous')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(currentPage === 0),
+          new ButtonBuilder()
+          .setCustomId('nextPage')
+          .setLabel('Next')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(currentPage === totalPages)
+        )
+      ]
+    });
+
+    const filter = (interaction) => {
+      return interaction.user.id === message.author.id && ['prevPage',
+        'nextPage'].includes(interaction.customId);
+    };
+
+    const collector = embedMessage.createMessageComponentCollector({
+      filter,
+      time: 60000,
+      componentType: ComponentType.Button
+    });
+
+    collector.on('collect',
+      async (interaction) => {
+        if (interaction.customId === 'prevPage') {
+          currentPage--;
+        } else if (interaction.customId === 'nextPage') {
+          currentPage++;
+        }
+
+        await interaction.update({
+          embeds: [generateEmbed(currentPage)],
+          components: [
+            new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+              .setCustomId('prevPage')
+              .setLabel('Previous')
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(currentPage === 0),
+              new ButtonBuilder()
+              .setCustomId('nextPage')
+              .setLabel('Next')
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(currentPage === totalPages)
+            )
+          ]
+        });
+      });
+
+    collector.on('end',
+      async () => {
+        await embedMessage.edit({
+          components: [
+            new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+              .setCustomId('prevPage')
+              .setLabel('Previous')
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(true),
+              new ButtonBuilder()
+              .setCustomId('nextPage')
+              .setLabel('Next')
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(true)
+            )
+          ]
+        });
+      });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 export async function zombieSurvival(id, playerInfo, channel) {
@@ -259,9 +366,12 @@ export async function zombieSurvival(id, playerInfo, channel) {
     playerInfo.lastBattle.time = new Date();
     playerInfo.lastBattle.active = true;
 
-    await redisClient.set(`user:${id}:zombieBattle`, JSON.stringify(true), {
-      EX: 120, // Cache for 2 min
-    });
+    await redisClient.set(`user:${id}:zombieBattle`,
+      JSON.stringify(true),
+      {
+        EX: 120,
+        // Cache for 2 min
+      });
 
     // Initialize player data if missing
     if (!gameData.health) gameData.health = 100; // Default health: 100
@@ -809,6 +919,13 @@ export default {
       } else {
         return message.channel.send(`⚠️ **${message.author.username}**, you don't have enough food in your apocalypse resources to eat!`);
       }
+    }
+
+    if (subCommand === "story") {
+      let chapter = args[2] ? parseInt(Number(args[2])): 1;
+      if (chapter < 1) chapter = 1;
+      if (chapter > 15) return message.channel.send(`❗Only 15 chapters are available.`);
+      return readStory(chapter, message);
     }
 
     if (subCommand === "heal") {

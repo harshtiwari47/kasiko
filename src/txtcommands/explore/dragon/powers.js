@@ -249,7 +249,7 @@ async function upgradePower(pid, message) {
 
   await saveUserData(id, userData);
 
-  return message.channel.send(`🎉 Congratulations, **${username}**! Your **${chosenType.emoji} ${chosenType}** has been upgraded to level ${powerSelected.level}!`);
+  return message.channel.send(`🎉 Congratulations, **${username}**! Your **${chosenType.emoji} ${chosenType.name}** has been upgraded to level ${powerSelected.level}!`);
 }
 
 export async function randomMetalsReward(userId) {

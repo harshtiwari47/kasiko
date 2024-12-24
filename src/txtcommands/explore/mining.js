@@ -132,9 +132,7 @@ async function exchangeCoal(message) {
   const userData = await getUserData(userId);
 
   if (!userMining || userMining.collected <= 0) {
-    return message.channel.send(`⛏️ **$ {
-      message.author.username
-      }**,
+    return message.channel.send(`⛏️ **${message.author.username}**,
       you have no coal to exchange.`);
   }
 
@@ -150,7 +148,7 @@ async function exchangeCoal(message) {
 
   const embed = new EmbedBuilder()
   .setColor(0xf4e500)
-  .setThumbnail(`https: //harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
+  .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
   .setTitle("⛏️💰 𝐄𝐱𝐜𝐡𝐚𝐧𝐠𝐞 𝐂𝐨𝐦𝐩𝐥𝐞𝐭𝐞")
   .setDescription(`**${message.author.username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()} cash**.`)
   .setFooter({
@@ -178,7 +176,7 @@ async function mineHelp(message) {
       name: "**`mine status`**", value: "Check your current mining status, including level, storage capacity, and collected coal."
     },
     {
-      name: "**`mine exchange`**", value: `Convert your coal into cash. One coal is equivalent to $ {
+      name: "**`mine exchange`**", value: `Convert your coal into cash. One coal is equivalent to ${
       COAL_VALUE
       } cash`
     },
@@ -202,7 +200,7 @@ async function viewMiningStatus(message) {
   });
 
   if (!userMining) {
-    return message.channel.send(`⛏️ **$ {
+    return message.channel.send(`⛏️ **${
       message.author.username
       }**,
       you haven't started mining yet. Start mining with \`mine\`.`);
