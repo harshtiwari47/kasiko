@@ -6,6 +6,8 @@ import {
   Helper
 } from "../../../helper.js";
 
+import redisClient from "../../../redis.js";
+
 import {
   EmbedBuilder,
   ButtonBuilder,
@@ -52,7 +54,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
         monsterChance: 0.8,
         trapChance: 0.5,
         puzzleChance: 0.4,
-        hpLoss: 40
+        hpLoss: 35
       },
       legendary: {
         reward: [5000,
@@ -76,28 +78,12 @@ export async function mysteryDungeon(id, difficulty, channel) {
       hpLoss
     } = dungeons[difficulty];
 
-    const TEN_MINUTES = 10 * 60 * 1000; // 10 minutes in milliseconds
-    const now = Date.now();
-    const dungeonTime = userData.dungeon.time || 0;
-
-    // Calculate the difference
-    const timeDiff = now - dungeonTime;
-
-    if (userData.dungeon && userData.dungeon.battling && timeDiff < TEN_MINUTES) {
-      return channel.send(
-        `🕯️ **${guild.user.username}**, you are already in the dungeon. Please wait until the current dungeon ends or try again after 10 minutes!`
-      );
-    }
-
-    if (userData.dungeon) {
-      userData.dungeon.battling = true;
-      userData.dungeon.time = Date.now();
-      userData = await updateUser(id, userData);
-    } else {
-      userData.dungeon = {};
-      userData.dungeon.time = Date.now();
-      userData = await updateUser(id, userData);
-    }
+    await redisClient.set(`user:${id}:dungeonBattle`,
+      JSON.stringify(true),
+      {
+        EX: 120,
+        // Cache for 2 min
+      });
 
     if (!userData.hp) userData.hp = 100; // Default health
     if (userData.hp <= 0) {
@@ -122,9 +108,9 @@ export async function mysteryDungeon(id, difficulty, channel) {
 
       if (encounterRoll < trapChance) {
         // Trap Encounter
-        const traps = ["flaming arrows",
-          "poisoned spikes",
-          "falling boulders"];
+        const traps = ["🪤 flaming arrows",
+          "🪤 poisoned spikes",
+          "🪤 falling boulders"];
         const trap = traps[Math.floor(Math.random() * traps.length)];
         userData.hp -= hpLoss;
 
@@ -136,9 +122,18 @@ export async function mysteryDungeon(id, difficulty, channel) {
         }
       } else if (encounterRoll < monsterChance + trapChance) {
         // Monster Encounter
-        const monsters = ["Orc Warrior",
-          "Cursed Sorcerer",
-          "Shadow Beast"];
+        const monsters = ["👹 Orc Warrior",
+          "🧟 Cursed Sorcerer",
+          "🎃 Shadow Beast",
+          "🧛🏻 Vampire",
+          "🧜🏻 Mermaid",
+          "🐗 Boary",
+          "🦈 Sharko",
+          "🐉 Dragik",
+          "😈 Dark Devil",
+          "💀 Dread Nexus",
+          "👁️ Abyss Warden",
+          "🐍 Serpent King"];
         const monster = monsters[Math.floor(Math.random() * monsters.length)];
 
         const monsterEmbed = new EmbedBuilder()
@@ -196,14 +191,12 @@ export async function mysteryDungeon(id, difficulty, channel) {
         content: outcomeMessage, embeds: [updateHealthEmbed(userData.hp, difficulty)]});
     }
 
-    userData.dungeon.battling = false;
     await updateUser(id, userData);
     channel.send(`⌛ **${guild.user.username}**, your dungeon adventure is complete! 🗡️`);
   } catch (e) {
     console.error(e);
     try {
       let userData = await getUserData(id);
-      userData.dungeon.battling = false;
       await updateUser(id, userData);
     } catch (err) {}
     return channel.send("Oops! Something went wrong during your dungeon adventure. Please try again!");
@@ -226,11 +219,17 @@ export default {
   // 20 seconds cooldown
   category: "🎲 Games",
 
-  execute: (args, message) => {
+  execute: async (args, message) => {
     if (!args[1]) {
       return message.channel.send(
         "⚠️ You need to specify a difficulty! Example: `dungeon <difficulty>`. Available difficulties: easy, medium, hard, legendary."
       );
+    }
+
+    const cachedBattle = await redisClient.get(`user:${message.author.id}:dungeonBattle`);
+
+    if (cachedBattle) {
+      return message.channel.send(`🕯️ **${message.author.username}**, please wait until the current dungeon ends or try again after 2 minutes!`);
     }
 
     const difficulty = args[1].toLowerCase();

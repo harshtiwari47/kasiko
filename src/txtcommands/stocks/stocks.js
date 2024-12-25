@@ -225,8 +225,14 @@ export async function sendNewspaper(message) {
   newspaperJSON.forEach((news, i) => {
     newspaper += `📰 **${i+1}. ** **${news.headline}**\n${news.description}\n\n`
   });
-
-  return message.channel.send(newspaper)
+  
+  const newsEmbed = new EmbedBuilder()
+  .setDescription(newspaper)
+  .setColor("#e0e6ed");
+    
+  return message.channel.send({
+      embeds: [newsEmbed]
+  })
 }
 
 // Update stock prices every server start
@@ -473,10 +479,14 @@ export async function portfolio(userId, message) {
 
       portfolioValue += stockValue;
       cost += userData.stocks[stockName].cost;
+      
+      let isProfit = false;
+      
+      if (stockValue > userData.stocks[stockName].cost) isProfit = true;
 
       portfolioDetails += `ᯓ★ **${stockName}**: **${numShares}** shares worth <:kasiko_coin:1300141236841086977>**${stockValue.toFixed(
         0
-      )}** 𝑪𝒂𝒔𝒉\n`;
+      )}** 𝑪𝒂𝒔𝒉 ${isProfit ? "<:stocks_profit:1321342107574599691>": "<:stocks_loss:1321342088020885525>"}\n`;
     }
 
     const profitLossPercent = ((portfolioValue - cost) / cost) * 100;

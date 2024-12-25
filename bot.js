@@ -21,6 +21,7 @@ import {
 } from './utils/permission.js';
 import WelcomeMsg from './utils/welcome.js';
 import Server from './models/Server.js';
+import ServerRemoved from './models/ServerRemoved.js';
 
 import txtcommands from './src/textCommandHandler.js';
 
@@ -197,13 +198,26 @@ client.on('guildCreate', WelcomeMsg.execute);
 
 client.on('guildDelete', async (guild) => {
   const serverId = guild.id;
+  const serverName = guild.name;
 
   // Find and delete the server record from the database
   await Server.findOneAndDelete({
     id: serverId
   });
 
-  console.log(`Bot was removed from the server with ID: ${serverId}`);
+  try {
+    const removedServer = new ServerRemoved( {
+      id: serverId,
+      name: serverName,
+      removedAt: new Date()
+    });
+
+    await removedServer.save();
+  } catch (e) {
+    console.error(e)
+  }
+
+  console.log(`Bot was removed from the server with ID: ${serverId} & NAME: ${serverName}`);
 });
 
 client.login(TOKEN);

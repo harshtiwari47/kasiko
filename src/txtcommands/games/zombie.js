@@ -703,15 +703,12 @@ async function viewUserWeaponCollection(playerInfo, message) {
       const start = currentPage * itemsPerPage;
       const end = Math.min(start + itemsPerPage, playerInfo.weapons.length);
 
+
       playerInfo.weapons.slice(start, end).forEach((weapon, index) => {
+        let weaponData = weaponsStats.find(weaponDetails => weaponDetails.name.toLowerCase() === weapon.name.toLowerCase());
         embed.addFields({
-          name: `Weapon ${start + index + 1}: ${weapon.name}`,
-          value: `
-          **Type**: ${weapon.weapon}
-          **Min Hunt**: ${weapon.minHunt}
-          **Max Hunt**: ${weapon.maxHunt}
-          **Level**: ${weapon.level}
-          `,
+          name: `Weapon ${start + index + 1}: ${weapon.name} ${weapon.weapon}`,
+          value: `- **Min Hunt**: ${weapon.minHunt}\n- **Max Hunt**: ${weapon.maxHunt}\n- **Level**: ${weapon.level}\n- **Cost**: ⚙️ ${weaponData.cost}`,
           inline: true,
         });
       });
@@ -836,29 +833,45 @@ export default {
         return message.channel.send(`⚠️ **${message.author.username}**, please provide the weapon name from your collection that you want to use currently!\nExample: \`zombie modify glove\``);
       }
 
-      let WeaponInCollection = playerInfo.weapons.find(weapon => weapon.name.toLowerCase() === weaponName);
+      // Find the weapon in the player's collection
+      let WeaponIndex = playerInfo.weapons.findIndex(weapon => weapon.name.toLowerCase() === weaponName);
 
-      if (!WeaponInCollection) {
+      if (WeaponIndex === -1) {
         return message.channel.send(`⚠️ **${message.author.username}**, no such weapon found in your apocalypse inventory!`);
       }
 
-      let WeaponDetails = weaponsStats.find(weapon => weapon.name.toLowerCase() === weaponName);
+      let WeaponInCollection = playerInfo.weapons[WeaponIndex];
 
-      if (WeaponDetails.cost && playerInfo.resources.metal <= WeaponDetails.cost) {
+      // Check if the player has enough resources
+      let WeaponDetails = weaponsStats.find(weapon => weapon.name.toLowerCase() === weaponName);
+      if (WeaponDetails.cost && playerInfo.resources.metal < WeaponDetails.cost) {
         return message.channel.send(`⚠️ **${message.author.username}**, you don't have enough ⚙️ Metal to level up **${weaponName}**!\nRequired: ⚙️ ${WeaponDetails.cost}`);
       }
 
+      // Update the weapon in the collection
       WeaponInCollection.level += 1;
       WeaponInCollection.maxHunt += 1;
 
+      // Reassign the updated weapon back into the array
+      playerInfo.weapons[WeaponIndex] = WeaponInCollection;
+
+      // Update the active weapon if it matches the upgraded weapon
       if (playerInfo.activeWeapon.name.toLowerCase() === weaponName) {
         playerInfo.activeWeapon.level += 1;
         playerInfo.activeWeapon.maxHunt += 1;
       }
 
-      await playerInfo.save();
+      // Deduct the resource cost
+      playerInfo.resources.metal -= WeaponDetails.cost;
 
-      return message.channel.send(`🧟🪓 **${message.author.username}**, you have upgraded your **${playerInfo.activeWeapon.weapon} ${playerInfo.activeWeapon.name}** to level ${WeaponInCollection.level}!`);
+      // Save the changes to the database
+      try {
+        await playerInfo.save();
+        return message.channel.send(`🧟🪓 **${message.author.username}**, you have upgraded your **${WeaponInCollection.weapon} ${WeaponInCollection.name}** to level ${WeaponInCollection.level}!`);
+      } catch (error) {
+        console.error("Error saving playerInfo:", error);
+        return message.channel.send(`❌ An error occurred while saving your data. Please try again.`);
+      }
     }
 
     if (subCommand === "upgrade") {

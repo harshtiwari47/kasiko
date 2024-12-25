@@ -84,6 +84,24 @@ const userSchema = new mongoose.Schema({
     lastBattle: {
       type: Number
     },
+    shipBattle: {
+      lastBattle: {
+        type: Number,
+      default: null
+      },
+      win: {
+        type: Number,
+      default: 0
+      },
+      lost: {
+        type: Number,
+      default: 0
+      },
+      battleLog: {
+        type: [String],
+      default: []
+      }
+    },
     lastRobbery: {
       type: Number
     },
@@ -127,10 +145,6 @@ const userSchema = new mongoose.Schema({
       type: [String],
     default: []
     },
-    battleLog: {
-      type: [String],
-    default: []
-    },
     bankAccount: {
       type: bankAccountSchema,
     default: () => ({}), // Ensure default sub-document creation
@@ -141,7 +155,7 @@ const userSchema = new mongoose.Schema({
     },
     orca: {
       type: Object,
-      default: {
+    default: {
         id: null,
         prayed: false,
         count: 0
@@ -162,13 +176,6 @@ const userSchema = new mongoose.Schema({
     seasonalPasses: {
       type: Array,
     default: []
-    },
-    dungeon: {
-      type: Object,
-    default: {
-        battling: false,
-        time: null
-      }
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

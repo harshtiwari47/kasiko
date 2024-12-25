@@ -63,7 +63,7 @@ export async function slots(id, amount, channel) {
 
     // Simulate locking each position one by one
     for (let i = 0; i < spinResult.length; i++) {
-      for (let j = 0; j < 6; j++) {
+      for (let j = 0; j < 4; j++) {
         // Spin animation for this position
         spinResult[i] = symbols[Math.floor(Math.random() * symbols.length)];
         const updatedBackground = `

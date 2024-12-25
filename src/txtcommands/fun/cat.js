@@ -62,7 +62,7 @@ export default {
         text: `Requested by ${message.author.tag} |  | Gif: gipher`
       });
 
-      await message.reply({
+      await message.channel.send({
         embeds: [embed]
       });
     } catch (e) {

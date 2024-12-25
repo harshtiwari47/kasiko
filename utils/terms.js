@@ -62,29 +62,29 @@ export const termsAndcondition = async (message) => {
 
     collector.on('collect', async (interaction) => {
       try {
-      if (interaction.customId === 'accept_terms') {
+        if (interaction.customId === 'accept_terms') {
 
-        let user = await createUser(message.author.id);
-        if (user) {
-          await interaction.reply({
-            content: 'Thank you for accepting the Terms and Conditions!',
-            ephemeral: true
-          });
+          let user = await createUser(message.author.id);
+          if (user) {
+            await interaction.reply({
+              content: 'Thank you for accepting the Terms and Conditions!',
+              ephemeral: true
+            });
 
-          // Disable the button after interaction
-          const updatedButton = ButtonBuilder.from(button).setDisabled(true);
-          const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
-          return await sentMessage.edit({
-            components: [updatedRow]
-          });
-        } else {
-          return message.reply({
-            content: '⚠️ Something went wrong! Please contact the support or try again',
-            ephemeral: true
-          });
+            // Disable the button after interaction
+            const updatedButton = ButtonBuilder.from(button).setDisabled(true);
+            const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
+            return await sentMessage.edit({
+              components: [updatedRow]
+            });
+          } else {
+            return message.reply({
+              content: '⚠️ Something went wrong! Please contact the support or try again',
+              ephemeral: true
+            });
+          }
+          collector.stop();
         }
-        collector.stop();
-      }
       } catch(e) {
         console.error(e)
       }
@@ -92,12 +92,16 @@ export const termsAndcondition = async (message) => {
 
     collector.on('end',
       async () => {
-        // Disable the button when the collector times out
-        const updatedButton = ButtonBuilder.from(button).setDisabled(true);
-        const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
-        return await sentMessage.edit({
-          components: [updatedRow]
-        });
+        try {
+          // Disable the button when the collector times out
+          const updatedButton = ButtonBuilder.from(button).setDisabled(true);
+          const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
+          return await sentMessage.edit({
+            components: [updatedRow]
+          });
+        } catch (e) {
+          console.error(e);
+        }
       });
 
   } catch (error) {
@@ -107,10 +111,9 @@ export const termsAndcondition = async (message) => {
       'Your channel is missing the following permissions that the bot needs:\n' +
       '1. **Send Messages**\n' +
       '2. **Embed Links**\n' +
-      '3. **Manage Messages**\n' +
-      '4. **Read Message History**\n' +
-      '5. **View Channel**\n' +
-      '6. **Message Components (Buttons)**\n' +
+      '3. **Read Message History**\n' +
+      '4. **View Channel**\n' +
+      '5. **Message Components (Buttons)**\n' +
       'Please update the bot permissions and try again!'
     );
   }

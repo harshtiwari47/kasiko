@@ -20,7 +20,7 @@ async function findOrca(serverId) {
   // If no active orca, create a new one with a 1% spawn chance
   if (!orca) {
     const spawnChance = Math.random() * 100; // 8% chance
-    if (spawnChance <= 9) {
+    if (spawnChance <= 15) {
       const expiryTime = new Date(currentTime.getTime() + 60 * 60 * 1000); // 1-hour expiry
       orca = new Orca( {
         serverId,

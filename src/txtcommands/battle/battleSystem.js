@@ -205,19 +205,23 @@ export async function battle(interaction, player1, player2, friendly = false) {
     if (player2.user !== "bot") {
       userData2 = await getUserData(player2.id);
     }
+    
+    userData1.shipBattle.lastBattle = Date.now();
 
     const dateinMillis = Date.now();
-    if (userData1.lastBattle) userData1.lastBattle = dateinMillis;
+    if (userData1.shipBattle.lastBattle) userData1.shipBattle.lastBattle = dateinMillis;
 
     if (userData2 && player2.user !== "bot" && winner.id === player1.id) {
       userData1.cash += reward;
+      userData1.shipBattle.win += 1;
+      userData2.shipBattle.lost += 1;
       userData2.cash -= userData2.cash > 1000 ? 1000: userData2.cash;
       userShips.ships[currentShipIndex].durability -= 25;
 
-      if (!userData2.battleLog) userData2.battleLog = [];
-      userData2.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
-      if (userData2.battleLog.length > 3) {
-        userData2.battleLog.shift(); // Remove the oldest log
+      if (!userData2.shipBattle.battleLog) userData2.shipBattle.battleLog = [];
+      userData2.shipBattle.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
+      if (userData2.shipBattle.battleLog.length > 3) {
+        userData2.shipBattle.battleLog.shift(); // Remove the oldest log
       }
 
       otherMessage = `**${player1.name}**, you have won <:kasiko_coin:1300141236841086977>${reward} 𝒄𝒂𝒔𝒉, and your **durability** has **decreased by 25**. Also, **${player2.name}** has lost <:kasiko_coin:1300141236841086977>1000 of their 𝒄𝒂𝒔𝒉.`;
@@ -225,21 +229,25 @@ export async function battle(interaction, player1, player2, friendly = false) {
     } else if (userData2 && player2.user !== "bot" && winner.id !== player1.id) {
       userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
       userData2.cash += userData2.cash > 1000 ? 1000: userData2.cash;
+      userData2.shipBattle.win += 1;
+      userData1.shipBattle.lost += 1;
 
-      if (!userData2.battleLog) userData2.battleLog = [];
-      userData2.battleLog.push(`**${player2.name}**, congratulations! You have successfully defended in battle against **${player1.name}** and won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
-      if (userData2.battleLog.length > 3) {
-        userData2.battleLog.shift(); // Remove the oldest log
+      if (!userData2.shipBattle.battleLog) userData2.shipBattle.battleLog = [];
+      userData2.shipBattle.battleLog.push(`**${player2.name}**, congratulations! You have successfully defended in battle against **${player1.name}** and won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
+      if (userData2.shipBattle.battleLog.length > 3) {
+        userData2.shipBattle.battleLog.shift(); // Remove the oldest log
       }
 
       otherMessage = `**${player1.name}**, you have lost your **100 durability**, and **${player2.name}** has won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉.`;
 
     } else if (winner.id !== player1.id) {
+      userData1.shipBattle.lost += 1;
       userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
       otherMessage = `**${player1.name}**, you have lost **100** durability.`;
     } else {
       userShips.ships[currentShipIndex].durability -= 25;
       userData1.cash += reward;
+      userData1.shipBattle.win += 1;
       otherMessage = `**${player1.name}**, you have won <:kasiko_coin:1300141236841086977>${reward} 𝒄𝒂𝒔𝒉 and your **durability has decreased by 25**.`;
     }
 
@@ -473,7 +481,7 @@ async function gatherDetails(username, userId, isPlayer, interaction) {
 
     // Time limit between battles (e.g., 10 minutes)
     if (isPlayer) {
-      const lastBattleTime = new Date(userData.lastBattle || Date.now() - (1000 * 60 * 60));
+      const lastBattleTime = new Date(userData.shipBattle.lastBattle || Date.now() - (1000 * 60 * 60));
       const currentTime = new Date();
       const timeDifferenceInMinutes = Math.floor((currentTime - lastBattleTime) / (1000 * 60));
 
@@ -600,8 +608,80 @@ export async function battleLog(message) {
   let userData = await getUserData(message.author.id);
   let logs;
 
-  if (userData.battleLog && userData.battleLog.length > 0) {
-    logs = "- " + userData.battleLog.join('\n- ');
+  if (userData.shipBattle.battleLog && userData.shipBattle.battleLog.length > 0) {
+    logs = "- " + userData.shipBattle.battleLog.join('\n- ');
   }
-  return message.channel.send(`ᗷᗩTTᒪE IᑎᗷO᙭ ✉️\n${logs || "No battle logs found! Comeback later ⏳"}`);
+
+  let battleEmbed = new EmbedBuilder()
+  .setDescription(`ᗷᗩTTᒪE IᑎᗷO᙭ ✉️\n${logs || "No battle logs found! Comeback later ⏳"}`)
+  .setColor("#c6daf2")
+  .setAuthor({
+    name: message.author.username + "'s ship battle logs", iconURL: message.author.displayAvatarURL({
+      dynamic: true
+    })
+  })
+
+  return message.channel.send({
+    embeds: [battleEmbed]
+  })
+}
+
+export async function battleStats(message) {
+  let userData = await getUserData(message.author.id);
+  const userShips = await Ship.getUserShipsData(message.author.id);
+
+  let activeShip = userShips.ships.find(ship => ship.active);
+
+  let activeShipDetails = "NO ACTIVE SHIP";
+  let stats;
+
+  const lastBattleMillis = userData.shipBattle.lastBattle;
+  let battleLastDate;
+
+  if (lastBattleMillis) {
+    const now = new Date();
+    const lastBattleDate = new Date(lastBattleMillis);
+
+    const isToday = lastBattleDate.toDateString() === now.toDateString();
+
+
+    if (isToday) {
+      battleLastDate = "Today";
+    } else {
+      const diffInMillis = now - lastBattleDate;
+      const diffInDays = Math.floor(diffInMillis / (1000 * 60 * 60 * 24));
+      battleLastDate = `${diffInDays} Day${diffInDays === 1 ? "": "s"} Ago`;
+    }
+  }
+
+
+  if (activeShip) {
+    let shipDetails = Ship.shipsData.find(ship => ship.id === activeShip.id);
+    activeShipDetails = `<:${shipDetails.id}:${shipDetails.emoji}> **${activeShip.name}**`;
+  }
+
+  if (userData.shipBattle) {
+    stats = `⚓ **WIN**: ${userData.shipBattle.win || 0}\n` +
+    `😵 **LOST**: ${userData.shipBattle.lost || 0}\n` +
+    `⏱️ **LAST BATTLE**: ${battleLastDate || "Not Found"}\n` +
+    `🛳️ **ACTIVE SHIP**: ${activeShipDetails}\n`;
+  } else {
+    stats = `⚓ **WIN**: 0\n` +
+    `😵 **LOST**: 0\n` +
+    `⏱️ **LAST BATTLE**: ${battleLastDate || "Not Found"}\n`+
+    `🛳️ **ACTIVE SHIP**: ${activeShipDetails}\n`;
+  }
+
+  let battleEmbed = new EmbedBuilder()
+  .setDescription(`## SᕼIᑭ ᗷᗩTTᒪE IᑎᖴO 🧭\n\n${stats || "No battle stats found! Comeback later ⏳"}`)
+  .setColor("#c6daf2")
+  .setAuthor({
+    name: message.author.username + "'s ship battle stats", iconURL: message.author.displayAvatarURL({
+      dynamic: true
+    })
+  })
+
+  return message.channel.send({
+    embeds: [battleEmbed]
+  })
 }

@@ -6,9 +6,9 @@ import {
 } from "discord.js";
 
 export default {
-  name: "guild",
+  name: "server",
   description: "View the main bot server (guild) link.",
-  aliases: ["server",
+  aliases: ["guild",
     "mainserver"],
   cooldown: 6000,
   category: "🔧 Utility",

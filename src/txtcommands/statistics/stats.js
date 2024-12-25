@@ -69,7 +69,7 @@ export default {
     "trust",
     "ts",
     "level",
-    "exp"],
+    "exp", "stats"],
   // These aliases allow calling the command with any of the stats directly
   args: "<type>",
   example: [

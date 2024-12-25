@@ -57,7 +57,7 @@ export default {
       .setFooter({ text: `Requested by ${message.author.tag} | Gif: gifer` })
       .setImage(randomGif); // Set a randomly selected GIF
 
-    await message.reply({ embeds: [embed] });
+    await message.channel.send({ embeds: [embed] });
     } catch (e) {
       console.error(e);
     }

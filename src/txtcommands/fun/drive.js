@@ -84,7 +84,7 @@ export default {
       })
       .setImage(randomAction.gifUrl); // Set the corresponding GIF for the action
 
-      await message.reply({
+      await message.channel.send({
         embeds: [embed]
       });
     } catch (e) {

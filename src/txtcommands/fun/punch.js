@@ -63,7 +63,7 @@ export default {
       })
       .setImage(randomGif); // Set a randomly selected GIF
 
-      await message.reply({
+      await message.channel.send({
         embeds: [embed]
       });
     } catch (e) {

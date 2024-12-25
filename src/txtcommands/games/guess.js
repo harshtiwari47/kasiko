@@ -28,7 +28,7 @@ export async function guess(id, amount, number, channel) {
     let winamount = 0;
 
     if (Number(number) === random) {
-      winamount = Number(amount * 2.5).toFixed(0) || 0;
+      winamount = Number(amount * 4).toFixed(0) || 0;
       userData.cash += Number(winamount);
       updateUser(id, userData);
       return channel.send(`𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀  **@${guild.user.username}** 🎉!\nYou have won extra <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉. You guessed the correct number.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`);
@@ -47,7 +47,7 @@ export async function guess(id, amount, number, channel) {
 
 export default {
   name: "guess",
-  description: "Make a guess in a cash-betting game and win 2.5x of bet cash. Try to guess a number between 1 and 10.",
+  description: "Make a guess in a cash-betting game and win 4x of bet cash. Try to guess a number between 1 and 10.",
   aliases: ["g",
     "guessno",
     "gn"],

@@ -11,9 +11,11 @@ export default {
 
   execute: async (args, message) => {
     // Check if a question is provided
-    if (!args.length) {
+    if (args.length === 1) {
       return await message.reply("❓ Please ask a question! Example: `magicball Will I win the lottery?`");
     }
+    
+    args.shift();
 
     // Magic 8-Ball Responses
     const responses = [

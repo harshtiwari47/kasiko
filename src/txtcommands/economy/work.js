@@ -92,7 +92,7 @@ export default {
   name: "work",
   description: "Earn a random amount of cash by working.",
   aliases: ["job",
-    "earn"],
+    "earn", "w"],
   args: "",
   example: ["work",
     "job",

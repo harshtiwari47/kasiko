@@ -21,7 +21,7 @@
     "levelUpCost": 1400,
     "rarity": "common",
     "health": 300,
-    "probability": 40,
+    "probability": 75,
     "emoji": "1304674535441961052",
     "type": "airship"
   },

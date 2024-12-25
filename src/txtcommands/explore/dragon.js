@@ -34,6 +34,9 @@ export default {
     'd'],
   cooldown: 10000,
   category: "🌱 Explore",
+  example: [
+    "dragon"
+  ],
   async execute(args, message) {
     args.shift();
     const subCommand = args[0]?.toLowerCase();
@@ -248,6 +251,12 @@ export default {
 
     if (!atempt.canAttempt) {
       return message.reply(`⚠️ ${atempt.message}`);
+    }
+
+    if (userData.dragons.length === dragonTypes.length) {
+      return message.channel.send(
+        `☕ You have summoned the maximum number of dragons for now, but stay tuned for more in the future!`
+      );
     }
 
     userData.gems -= summonCost;
