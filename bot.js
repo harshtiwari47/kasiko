@@ -67,7 +67,6 @@ client.once('ready', async () => {
       name: `${guildCount} servers`, type: ActivityType.Watching
     }],
   });
-
   await loadSlashCommands('./src/slashcommands', clientId, TOKEN);
 });
 
@@ -80,8 +79,22 @@ client.on('messageCreate', async (message) => {
 
     let prefix = "kas";
 
-    if (!message.content.toLowerCase().startsWith(prefix)) return
+    try {
+      const key = `prefixs:${message.guild.id}`;
+      const customPrefix = await redisClient.get(key);
 
+      if (customPrefix) {
+        prefix = customPrefix;
+      } else {
+        prefix = await getServerPrefix(message);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
+
+    if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
     if (mentionedBots.size > 0) return;
 
     try {
@@ -125,9 +138,14 @@ client.on('messageCreate', async (message) => {
         return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas terms`.");
       }
     }
+    // handle all types of text commands started with kas || prefix
+    let args;
+    if (message.content.toLowerCase().startsWith("kas")) {
+      args = message.content.slice("kas".toLowerCase().length).trim().split(/ +/);
+    } else {
+      args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
+    }
 
-    // handle all types of text commands started with kas
-    const args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
     const commandName = args[0].toLowerCase();
     const command = txtcommands.get(commandName);
 
@@ -219,5 +237,50 @@ client.on('guildDelete', async (guild) => {
 
   console.log(`Bot was removed from the server with ID: ${serverId} & NAME: ${serverName}`);
 });
+
+async function getServerPrefix(message) {
+  const serverId = message.guild.id;
+  const serverName = message.guild.name;
+  const serverOwnerId = message.guild.ownerId;
+
+  const key = `prefixs:${serverId}`;
+
+  let existingServer = await Server.findOne({
+    id: serverId
+  });
+
+  try {
+    if (!existingServer) {
+      newServer = new Server( {
+        id: serverId,
+        name: serverName,
+        ownerId: serverOwnerId,
+        allChannelsAllowed: true,
+        channels: [],
+        prefix: "kas"
+      });
+    }
+
+    await redisClient.set(key, existingServer.prefix, {
+      EX: 60
+    });
+
+    return existingServer.prefix
+  } catch (e) {
+    console.error(e);
+    return "kas";
+  }
+}
+
+function getTotalUser(client, message) {
+  let totalMembers = 0;
+
+  client.guilds.cache.forEach(guild => {
+    totalMembers += guild.memberCount;
+    console.log(`Server: ${guild.name}, Members: ${guild.memberCount}`);
+  });
+
+  return message.channel.send(`Total Members: ${totalMembers}`);
+}
 
 client.login(TOKEN);

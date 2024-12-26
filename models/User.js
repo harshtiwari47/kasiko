@@ -161,6 +161,10 @@ const userSchema = new mongoose.Schema({
         count: 0
       }
     },
+    badges: {
+      type: Array,
+    default: []
+    },
     pass: {
       type: Object,
     default: {

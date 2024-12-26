@@ -335,7 +335,7 @@ export default {
           name: '`ocean collection <@username (optional)>`', value: 'View your or someone else\'s ocean collection.', inline: false
         },
         {
-          name: '`ocatch` or `ocean catch`', value: 'Start fishing 🎣 and catch unique items!', inline: false
+          name: '`catch` or `ocean catch`', value: 'Start fishing 🎣 and catch unique items!', inline: false
         }
       )
       .setFooter({

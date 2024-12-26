@@ -77,7 +77,11 @@ const channelSchema = new mongoose.Schema({
     },
     channels: {
       type: [channelSchema], // Embedded array of channels
-      default: [],
+    default: [],
+    },
+    prefix: {
+      type: String,
+    default: "kas"
     }
   });
 

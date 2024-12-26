@@ -57,6 +57,7 @@ export default {
         \n***gems | sigils | metals***\n- Check your stats for Gems, Sigils and Metals
         \n***powers***\n- Check all your dragons' powers
         \n***pat | walk | play <index?>***\n- Enjoy your time with dragon
+        \n***rename <index> <nickname>***\n- Give a nickname to your dragon (less than 20 charcters & no space)
         `)
 
       return message.channel.send({
@@ -126,6 +127,11 @@ export default {
     case 'walk':
     case 'play':
       return actions(args, message);
+    case 'r':
+    case 'rename':
+    case 'nick':
+    case 'n':
+      return changeNickname(args, message);
     default:
       return message.channel.send('❓ Unknown subcommand. Use `dragon` to see available options.');
     }
@@ -365,12 +371,13 @@ export default {
 
     // Final message announcing the hatch
     const finalEmbed = new EmbedBuilder()
-    .setDescription(`> 🎉 **${message.author.username}**'s **${chosenType?.name || typeId}** has hatched into a glorious surprise!\n\n-# **🐣✨ Say hello to <:${chosenType.id}2:${chosenType.emoji}>!**`)
+    .setDescription(`# Flames Awaken\n\n> 🎉 **${message.author.username}**'s **\`${chosenType?.name || typeId}\`** has hatched into a glorious surprise!\n\n-# **🐣✨ Say hello to <:${chosenType.id}2:${chosenType.emoji}>!**`)
     .setAuthor({
       name: message.author.username, iconURL: message.author.displayAvatarURL({
         dynamic: true
       })
     })
+    .setThumbnail(`https://cdn.discordapp.com/emojis/${chosenType.emoji}.png>`)
     .setColor(chosenType.color)
 
     await suspenseMessage.edit({
@@ -442,7 +449,7 @@ export default {
 
     // Check hunger before training
     if (targetDragon.hunger >= 60) {
-      return message.channel.send(`🍽️ Your dragon (#${index}) is too hungry to train. Please feed it!\n-# ${randomHungerMessage()}`);
+      return message.channel.send(`🍽️ Your dragon  (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** is too hungry to train. Please feed it!\n-# ${randomHungerMessage()}`);
     }
 
     let outcomeMessage = {
@@ -1152,4 +1159,47 @@ export default {
     return await message.channel.send({
       embeds: [embed]
     });
+  }
+
+  async function changeNickname(args, message) {
+    if (!args[2]) {
+      return message.channel.send(`❗ Nickname is missing in arguments. Use Example: \`dragon rename Puppy 1\`.`);
+    }
+
+    if (!args[1] || ! Number.isInteger(Number(args[1]))) {
+      return message.channel.send(`❗ Dragons index is missing in arguments. Use Example: \`dragon rename Puppy 1\`.`);
+    }
+
+    const index = parseInt(args[1]); // Dragon Index
+    const name = args[2]; // name
+
+    if (name.length > 20) {
+      return message.channel.send("❗Dragon nickname must be under 20 characters and cannot include spaces.");
+    }
+
+    const userId = message.author.id;
+
+    let userData = await getUserDataDragon(userId);
+
+    if (userData.dragons.length === 0) {
+      return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
+    }
+
+    const dragonIndex = index - 1;
+    if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
+      return message.channel.send(`❗ Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`);
+    }
+
+    let targetDragon = userData.dragons[dragonIndex];
+    const chosenType = dragonTypes.find(t => t.id === targetDragon.typeId);
+
+    if (userData.dragons.some(drag => drag.customName && drag.customName.toLowerCase() === name.toLowerCase())) {
+      return message.channel.send(`❗ Oops! One of your dragons already has this nickname. Please choose another.`);
+    }
+
+    targetDragon.customName = name;
+
+    await saveUserData(userId, userData);
+
+    return message.channel.send(`✅ **${message.author.username}**, you have successfully given your **${targetDragon.typeId.toUpperCase()}** dragon the sweet nickname **${name}**. Your dragon is happy!`);
   }

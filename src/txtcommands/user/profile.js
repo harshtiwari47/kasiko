@@ -42,6 +42,12 @@ export async function badges(userData) {
   if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 15)) badges += `<:supreme_cultist:1319670550871670895> `
   if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 5)) badges += `<:novice_cultist:1319670415194587189> `
 
+  if (userData.badges && userData.badges.length > 0) {
+    userData.badges.forEach(badge => {
+      badges += `${badge} `;
+    })
+  }
+
   if (badges) {
     badges = `> # ${badges}`;
   }
