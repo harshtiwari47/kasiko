@@ -3,6 +3,9 @@ import {
 } from "discord.js";
 import redisClient from "../../../redis.js";
 import Server from '../../../models/Server.js';
+import {
+  PermissionsBitField
+} from 'discord.js';
 
 
 export default {
@@ -18,7 +21,7 @@ export default {
     try {
       args.shift();
       // Check if the user has moderator permissions
-      if (!message.member.permissions.has("MANAGE_GUILD")) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
         return message.reply("❌ You need `Manage Server` permissions to set a custom prefix.");
       }
 
