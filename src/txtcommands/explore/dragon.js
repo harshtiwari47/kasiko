@@ -452,7 +452,7 @@ export default {
     }
 
     // Check hunger before training
-    if (targetDragon.hunger >= 60) {
+    if (targetDragon.hunger >= 40) {
       return message.channel.send(`🍽️ Your dragon  (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** is too hungry to train. Please feed it!\n-# ${randomHungerMessage()}`);
     }
 

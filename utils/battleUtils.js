@@ -13,6 +13,11 @@ import {
 import fs from 'fs';
 import path from 'path';
 
+import {
+  getUserData,
+  updateUser
+} from '../database.js';
+
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const powerspath = path.join(__dirname, '../src/txtcommands/explore/dragon/powers.json');
 const powerTypes = JSON.parse(fs.readFileSync(powerspath, 'utf-8'));
@@ -20,216 +25,274 @@ const powerTypes = JSON.parse(fs.readFileSync(powerspath, 'utf-8'));
 
 // Function to start the battle loop
 export async function startBattleLoop(guildId, channelId) {
-  const battle = await Battle.findOne({
-    guildId, channelId, status: 'active'
-  });
-  if (!battle) return;
+  try {
+    const battle = await Battle.findOne({
+      guildId, channelId, status: 'active'
+    });
+    if (!battle) return;
 
-  const channel = await client.channels.fetch(channelId).catch(() => null);
-  if (!channel) return;
+    const channel = await client.channels.fetch(channelId).catch(() => null);
+    if (!channel) return;
 
-  const battleInterval = setInterval(async () => {
-    if (battle.boss.health <= 0) {
-      // Boss defeated
-      clearInterval(battleInterval);
-      await endBattle(battle, channel, 'boss');
-      return;
-    }
-
-    const alivePlayers = battle.players.filter(player => player.health > 0);
-    if (alivePlayers.length <= 0) {
-      // All players defeated
-      clearInterval(battleInterval);
-      await endBattle(battle, channel, 'players');
-      return;
-    }
-
-    // Dragon attacks a random player
-    const randomPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
-    let bossPower = powerTypes[Math.floor(Math.random() * powerTypes.length)]
-
-    const damage = bossPower.dmg * battle.boss.level;
-
-    // Find index of the player in the original array
-    const playerIndex = battle.players.findIndex(player => player.userId === randomPlayer.userId);
-    if (playerIndex !== -1) {
-      battle.players[playerIndex].health -= damage;
-      if (battle.players[playerIndex].health < 0) {
-        battle.players[playerIndex].health = 0;
+    const battleInterval = setInterval(async () => {
+      if (battle.boss.health <= 0) {
+        // Boss defeated
+        clearInterval(battleInterval);
+        await endBattle(battle, channel, 'boss');
+        return;
       }
 
-      // Mark the players array as modified
-      battle.markModified('players');
-      await battle.save();
-    }
+      const alivePlayers = battle.players.filter(player => player.health > 0);
+      if (alivePlayers.length <= 0) {
+        // All players defeated
+        clearInterval(battleInterval);
+        await endBattle(battle, channel, 'players');
+        return;
+      }
 
-    const user = await client.users.fetch(randomPlayer.userId);
+      // Dragon attacks a random player
+      const randomPlayer = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+      let bossPower = powerTypes[Math.floor(Math.random() * powerTypes.length)]
 
-    // Notify the channel about the attack
-    const attackEmbed = new EmbedBuilder()
-    .setDescription(`# ${battle.boss.emoji} Dragon Attack!\nThe **${battle.boss.typeId}** used a **${bossPower.emoji}** **${bossPower.name}** attack on <@${randomPlayer.userId}> dealing **${damage} damage**! 🩸\n-# **❤️ PLAYER HEALTH:** ${battle.players[playerIndex].health}`)
-    .setColor('#dcb18e')
-    .setThumbnail(user.displayAvatarURL({
-      dynamic: true, size: 1024
-    }))
+      const damage = bossPower.dmg * battle.boss.level;
 
-    channel.send({
-      embeds: [attackEmbed]
-    });
-  },
-    18000); // Every 18 seconds
+      // Find index of the player in the original array
+      const playerIndex = battle.players.findIndex(player => player.userId === randomPlayer.userId);
+      if (playerIndex !== -1) {
+        battle.players[playerIndex].health -= damage;
+        if (battle.players[playerIndex].health < 0) {
+          battle.players[playerIndex].health = 0;
+        }
 
+        const updates = {};
+        battle.modifiedPaths().forEach((path) => {
+          updates[path] = battle[path];
+        });
+
+        if (Object.keys(updates).length > 0) {
+          // Perform atomic update using $set
+          await Battle.findByIdAndUpdate(
+            battle._id,
+            {
+              $set: updates
+            },
+            {
+              new: true
+            }
+          );
+        }
+      }
+
+      const user = await client.users.fetch(randomPlayer.userId);
+
+      // Notify the channel about the attack
+      const attackEmbed = new EmbedBuilder()
+      .setDescription(`# ${battle.boss.emoji} Dragon Attack!\nThe **${battle.boss.typeId}** used a **${bossPower.emoji}** **${bossPower.name}** attack on <@${randomPlayer.userId}> dealing 🩸 **${damage} damage**!`)
+      .setColor('#dcb18e')
+      .setFooter({
+        text: `❤️ PLAYER HEALTH:** ${battle.players[playerIndex].health}`
+      })
+      .setThumbnail(user.displayAvatarURL({
+        dynamic: true, size: 1024
+      }))
+
+      channel.send({
+        embeds: [attackEmbed]
+      });
+    },
+      18000); // Every 18 seconds
+  } catch (e) {
+    console.error(e);
+  }
   // Optionally, you can handle boss abilities, player actions, etc., here
 }
 
 // Function to end the battle
 async function endBattle(battle, channel, reason) {
-  battle.status = 'completed';
-  await battle.save();
-  const guildId = battle["guildId"];
-
-  let guild = await SkyraidGuilds.findOne({
-    guildId
-  });
-
-  if (!channel.send) {
-    channel = await client.channels.fetch(battle["channelId"]).catch(() => null);
-  }
-
-  if (!channel.send) return;
-  let badgesWon = [];
-
-  let guildBadges = ["<:celebration_crown:1322863245811515412>",
-    "<:radiant_star:1322863272113868810>",
-    "<:bursting_nova:1322863295190925372>",
-    "<:lightning_bolt:1322863131055357983>",
-    "<:diamond_core:1322863151162589185>",
-    "<:heart_of_valor:1322863190702559242>",
-    "<:shades_of_glory:1322863218091360387>"];
-
   try {
-    if (!guild) {
-      // If guild doesn't exist, create a new record
-      guild = new SkyraidGuilds( {
-        guildId,
-        totalMatches: 1,
-        matchesWon: reason === 'boss' ? 1: 0,
-        matchesCancelled: cancelled ? 1: 0,
-        bossDefeated: {
-          [battle.boss.typeId]: 1
-        },
-        players: [],
-        badges: [],
+    battle.status = 'completed';
+
+    await battle.save();
+    const guildId = battle["guildId"];
+
+    let guild = await SkyraidGuilds.findOne({
+      guildId
+    });
+
+    if (!channel.send) {
+      channel = await client.channels.fetch(battle["channelId"]).catch(() => null);
+    }
+
+    if (!channel.send) return;
+    let badgesWon = [];
+
+    let guildBadges = ["<:celebration_crown:1322863245811515412>",
+      "<:radiant_star:1322863272113868810>",
+      "<:bursting_nova:1322863295190925372>",
+      "<:lightning_bolt:1322863131055357983>",
+      "<:diamond_core:1322863151162589185>",
+      "<:heart_of_valor:1322863190702559242>",
+      "<:shades_of_glory:1322863218091360387>"];
+
+    try {
+      if (!guild) {
+        // If guild doesn't exist, create a new record
+        guild = new SkyraidGuilds( {
+          guildId,
+          totalMatches: 1,
+          matchesWon: reason === 'boss' ? 1: 0,
+          matchesCancelled: cancelled ? 1: 0,
+          bossDefeated: {
+            [battle.boss.typeId]: 1
+          },
+          players: [],
+          badges: [],
+        });
+      } else {
+        // Update existing guild
+        guild.matchesWon += reason === 'boss' ? 1: 0;
+        guild.bossDefeated[battle.boss.typeId] += reason === 'boss' ? 1: 0;
+
+        if (reason === 'boss') {
+          guild.bossDefeated[battle.boss.typeId] += 1;
+        }
+
+        if (guild.bossDefeated[battle.boss.typeId] === 5 && !guild.badges.some(b => b === "<:heart_of_valor:1322863190702559242>")) {
+          badgesWon.push("<:heart_of_valor:1322863190702559242>");
+          guild.badges.push("<:heart_of_valor:1322863190702559242>")
+        }
+
+        if (guild.matchesWon === 1 && !guild.badges.some(b => b === "<:celebration_crown:1322863245811515412>")) {
+          badgesWon.push("<:celebration_crown:1322863245811515412>");
+          guild.badges.push("<:celebration_crown:1322863245811515412>")
+        }
+
+        if (guild.matchesWon === 5 && !guild.badges.some(b => b === "<:radiant_star:1322863272113868810>")) {
+          badgesWon.push("<:radiant_star:1322863272113868810>");
+          guild.badges.push("<:radiant_star:1322863272113868810>")
+        }
+
+        if (guild.matchesWon === 15 && !guild.badges.some(b => b === "<:diamond_core:1322863151162589185>")) {
+          badgesWon.push("<:diamond_core:1322863151162589185>");
+          guild.badges.push("<:diamond_core:1322863151162589185>")
+        }
+
+        if (guild.matchesWon === 25 && !guild.badges.some(b => b === "<:lightning_bolt:1322863131055357983>")) {
+          badgesWon.push("<:lightning_bolt:1322863131055357983>");
+          guild.badges.push("<:lightning_bolt:1322863131055357983>")
+        }
+
+        if (guild.matchesWon === 45 && !guild.badges.some(b => b === "<:bursting_nova:1322863295190925372>")) {
+          badgesWon.push("<:bursting_nova:1322863295190925372>");
+          guild.badges.push("<:bursting_nova:1322863295190925372>")
+        }
+
+        if (guild.matchesWon === 65 && !guild.badges.some(b => b === "<:shades_of_glory:1322863218091360387>")) {
+          badgesWon.push("<:shades_of_glory:1322863218091360387>");
+          guild.badges.push("<:shades_of_glory:1322863218091360387>")
+        }
+      }
+
+      const updates = {};
+      guild.modifiedPaths().forEach((path) => {
+        updates[path] = guild[path];
       });
-    } else {
-      // Update existing guild
-      guild.matchesWon += reason === 'boss' ? 1: 0;
-      guild.bossDefeated[battle.boss.typeId] += reason === 'boss' ? 1: 0;
 
-      if (reason === 'boss') {
-        guild.bossDefeated[battle.boss.typeId] += 1;
+      if (Object.keys(updates).length > 0) {
+        // Perform atomic update using $set
+        await SkyraidGuilds.findByIdAndUpdate(
+          guild._id,
+          {
+            $set: updates
+          },
+          {
+            new: true
+          }
+        );
       }
 
-      if (guild.bossDefeated[battle.boss.typeId] === 5 && !guild.badges.some(b => b === "<:heart_of_valor:1322863190702559242>")) {
-        badgesWon.push("<:heart_of_valor:1322863190702559242>");
-        guild.badges.push("<:heart_of_valor:1322863190702559242>")
-      }
-
-      if (guild.matchesWon === 1) {
-        badgesWon.push("<:celebration_crown:1322863245811515412>");
-        guild.badges.push("<:celebration_crown:1322863245811515412>")
-      }
-
-      if (guild.matchesWon === 5 && !guild.badges.some(b => b === "<:radiant_star:1322863272113868810>")) {
-        badgesWon.push("<:radiant_star:1322863272113868810>");
-        guild.badges.push("<:radiant_star:1322863272113868810>")
-      }
-
-      if (guild.matchesWon === 15 && !guild.badges.some(b => b === "<:diamond_core:1322863151162589185>")) {
-        badgesWon.push("<:diamond_core:1322863151162589185>");
-        guild.badges.push("<:diamond_core:1322863151162589185>")
-      }
-
-      if (guild.matchesWon === 25 && !guild.badges.some(b => b === "<:lightning_bolt:1322863131055357983>")) {
-        badgesWon.push("<:lightning_bolt:1322863131055357983>");
-        guild.badges.push("<:lightning_bolt:1322863131055357983>")
-      }
-
-      if (guild.matchesWon === 45 && !guild.badges.some(b => b === "<:bursting_nova:1322863295190925372>")) {
-        badgesWon.push("<:bursting_nova:1322863295190925372>");
-        guild.badges.push("<:bursting_nova:1322863295190925372>")
-      }
-
-      if (guild.matchesWon === 65 && !guild.badges.some(b => b === "<:shades_of_glory:1322863218091360387>")) {
-        badgesWon.push("<:shades_of_glory:1322863218091360387>");
-        guild.badges.push("<:shades_of_glory:1322863218091360387>")
-      }
+    } catch (error) {
+      console.error('Error updating guild stats:', error);
     }
 
-    await guild.save();
-  } catch (error) {
-    console.error('Error updating guild stats:', error);
-  }
+    const sortedPlayers = [...battle.players].sort((a, b) => b.damageContributed - a.damageContributed);
+    const highestDamageBy = sortedPlayers[0]?.userId || null;
+    const secondDamageBy = sortedPlayers[1]?.userId || null;
 
-  const sortedPlayers = [...battle.players].sort((a, b) => b.damageContributed - a.damageContributed);
-  const highestDamageBy = sortedPlayers[0]?.userId || null;
+    for (const player of battle.players) {
+      const {
+        userId,
+        damageContributed
+      } = player;
+      let isStarPerformer;
 
-  for (const player of battle.players) {
-    const {
-      userId,
-      damageContributed
-    } = player;
-    let isStarPerformer;
+      if (highestDamageBy && highestDamageBy === userId) {
+        isStarPerformer = false;
+      } else {
+        isStarPerformer = false;
+      }
+      let userData = await getUserData(userId);
 
-    if (highestDamageBy && highestDamageBy === userId) {
-      isStarPerformer = false;
-    } else {
-      isStarPerformer = false;
+      let earnedBadges = [];
+
+      if (isStarPerformer) {
+        earnedBadges = ["<:StarPerformer_badge:1322048049324884019>"]
+        if (reason === 'boss') {
+          userData.cash += 50000;
+        }
+      } else {
+        if (reason === 'boss') {
+          if (secondDamageBy && secondDamageBy === userId) {
+            userData.cash += 25000;
+          } else {
+            userData.cash += 5000;
+          }
+        }
+      }
+      await updateUser(userId, userData);
+      await updateUserStats(userId, battle.guildId, damageContributed, true, isStarPerformer, earnedBadges);
     }
 
-    let earnedBadges = [];
+    if (reason === 'boss') {
+      // Players won
+      const embed = new EmbedBuilder()
+      .setTitle('🎉 Battle Won! 🎉')
+      .setDescription(`Congratulations! The **${battle.boss.typeId}** has been defeated.${badgesWon.length > 0 ? `\n## BADGES WON: ` + badgesWon.join(" "): ""}`)
+      .setColor('#00FF00')
+      .setTimestamp();
 
-    if (isStarPerformer) {
-      earnedBadges = ["<:StarPerformer_badge:1322048049324884019>"]
+      const starUserInfo = await client.users.fetch(highestDamageBy);
+
+      const starEmbed = new EmbedBuilder()
+      .setDescription(`## 💫 STAR PERFORMER: <@${highestDamageBy}>`)
+      .setThumbnail(starUserInfo.displayAvatarURL({
+        dynamic: true, size: 1024
+      }));
+
+      const rewardEmbed = new EmbedBuilder()
+      .setDescription(`## 💵 Rewards\n💫 STAR PERFORMER: <:kasiko_coin:1300141236841086977> +50k${secondDamageBy ? `\n🔥 <@${secondDamageBy}>: <:kasiko_coin:1300141236841086977> 25k`: ""}\n🗡️ Others: <:kasiko_coin:1300141236841086977> 5k`)
+
+      channel.send({
+        embeds: [embed, starEmbed, rewardEmbed]
+      });
+    } else if (reason === 'players') {
+      // Dragon won
+      const embed = new EmbedBuilder()
+      .setDescription(`# 😢 Battle Lost\nEvery single player has fallen at the hands of the **${battle.boss.typeId}**, a fierce and relentless force that left no room for escape or survival.\n❤️ BOSS HP: ${battle.boss.health}`)
+      .setImage(battle.boss.image)
+      .setColor('#FF0000')
+      .setTimestamp();
+
+      channel.send({
+        embeds: [embed]
+      });
     }
 
-    await updateUserStats(userId, battle.guildId, damageContributed, true, isStarPerformer, earnedBadges);
+    // Clean up the battle data
+    await Battle.findByIdAndDelete(battle._id);
+  } catch (err) {
+    console.error(err);
   }
-
-  if (reason === 'boss') {
-    // Players won
-    const embed = new EmbedBuilder()
-    .setTitle('🎉 Battle Won! 🎉')
-    .setDescription(`Congratulations! The **${battle.boss.typeId}** has been defeated.${badgesWon.length > 0 ? `\n## BADGES WON: ` + badgesWon.join(" "): ""}`)
-    .setColor('#00FF00')
-    .setTimestamp();
-
-    const starUserInfo = await client.users.fetch(highestDamageBy);
-
-    const starEmbed = new EmbedBuilder()
-    .setDescription(`## 💫 STAR PERFORMER: <@${highestDamageBy}>`)
-    .setThumbnail(starUserInfo.displayAvatarURL({
-      dynamic: true, size: 1024
-    }));
-
-    channel.send({
-      embeds: [embed, starEmbed]
-    });
-  } else if (reason === 'players') {
-    // Dragon won
-    const embed = new EmbedBuilder()
-    .setDescription(`# 😢 Battle Lost\nEvery single player has fallen at the hands of the **${battle.boss.typeId}**, a fierce and relentless force that left no room for escape or survival.\n❤️ BOSS HP: ${battle.boss.health}`)
-    .setImage(battle.boss.image)
-    .setColor('#FF0000')
-    .setTimestamp();
-
-    channel.send({
-      embeds: [embed]
-    });
-  }
-
-  // Clean up the battle data
-  await Battle.findByIdAndDelete(battle._id);
 }
 
 
@@ -259,7 +322,22 @@ export async function updateUserStats(userId, guildId, damage = 0, participated 
       }
     }
 
-    await user.save();
+    const updates = {};
+    user.modifiedPaths().forEach((path) => {
+      updates[path] = user[path];
+    });
+
+    if (Object.keys(updates).length > 0) {
+      await SkyraidUsers.findByIdAndUpdate(
+        user._id,
+        {
+          $set: updates
+        },
+        {
+          new: true
+        }
+      );
+    }
   } catch (error) {
     console.error('Error updating user stats:', error);
   }
@@ -346,8 +424,22 @@ export async function handleUsePower( {
       embedDescription += `${selectedPower.emoji} **${selectedPower.name}** used by **${user.username}** defended **${defenceAmount} HP**!\n`;
     }
 
-    // Save the updated battle document
-    await battle.save();
+    const updates = {};
+    battle.modifiedPaths().forEach((path) => {
+      updates[path] = battle[path];
+    });
+
+    if (Object.keys(updates).length > 0) {
+      await Battle.findByIdAndUpdate(
+        battle._id,
+        {
+          $set: updates
+        },
+        {
+          new: true
+        }
+      );
+    }
 
     // Construct the embed
     const titles = [
@@ -371,14 +463,10 @@ export async function handleUsePower( {
     )
     .setDescription(embedDescription)
     .setThumbnail(battle.boss.image)
-    .setColor('#FF4500'); // Optional: Set a color
+    .setColor('#0054ff'); // Optional
 
     // Check if boss is defeated after the attack
     if (battle.boss.health <= 0) {
-      battle.status = 'completed';
-      battle.endTime = new Date();
-      await battle.save(); // Save the updated status
-
       await endBattle(battle, channelId, 'boss');
       battleEnded = true;
     }
