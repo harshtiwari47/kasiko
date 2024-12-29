@@ -2,7 +2,9 @@ import {
   EmbedBuilder
 } from 'discord.js';
 import Server from '../models/Server.js';
-
+import {
+  client
+} from "../bot.js";
 import {
   InteractionType,
   PermissionsBitField,
@@ -19,11 +21,28 @@ const WelcomeMsg = {
         return;
       }
 
-      const welcomeChannel = guild.channels.cache.find(
-        channel =>
-        channel.type === ChannelType.GuildText &&
-        channel.permissionsFor(guild.members.me).has(PermissionsBitField.Flags.SendMessages)
-      );
+      const requiredPermissions = [
+        PermissionsBitField.Flags.SendMessages,
+        PermissionsBitField.Flags.EmbedLinks,
+        PermissionsBitField.Flags.UseExternalEmojis,
+        PermissionsBitField.Flags.UseExternalStickers,
+        PermissionsBitField.Flags.AddReactions,
+        PermissionsBitField.Flags.UseApplicationCommands,
+        PermissionsBitField.Flags.AttachFiles,
+        PermissionsBitField.Flags.ReadMessageHistory,
+      ];
+
+      const welcomeChannel = guild.channels.cache.find(channel => {
+        if (channel.type === ChannelType.GuildText) {
+          const permissions = channel.permissionsFor(guild.members.me);
+          if (permissions) {
+            const missingPermissions = requiredPermissions.filter(perm => !permissions.has(perm));
+            if (missingPermissions.length === 0) return true;
+          }
+          return false;
+        }
+        return false;
+      });
 
       if (welcomeChannel) {
         const serverId = guild.id;
@@ -81,17 +100,21 @@ const WelcomeMsg = {
         }
 
         try {
-          welcomeChannel.send({
+          await welcomeChannel.send({
             embeds: [embed]
           });
+
+          return;
         } catch (e) {
           console.error(e);
         }
       } else {
         console.warn(`No accessible text channel found in guild: ${guild.name} (${guild.id})`);
       }
+      return;
     } catch (e) {
       console.error(`Unexpected error in guildCreate handler for guild ${guild.id}:`, error);
+      return;
     }
   },
 };

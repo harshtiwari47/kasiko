@@ -32,7 +32,9 @@ import {
   loadSlashCommands,
   handleSlashCommand
 } from './src/slashCommandHandler.js';
-
+import {
+  handleButtonInteraction
+} from './interactions/buttonHandler.js';
 import {
   createUser,
   userExists
@@ -192,6 +194,28 @@ client.on('messageCreate', async (message) => {
 
 client.on('interactionCreate', async (interaction) => {
   try {
+    if (interaction.guild) {
+      const channel = interaction.channel;
+      const botPermissions = channel.permissionsFor(client.user);
+
+      if (!botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
+        return interaction.reply({
+          content: 'I do not have permission to send messages in this channel.',
+          ephemeral: true,
+        });
+      }
+
+      if (!botPermissions.has(PermissionsBitField.Flags.UseApplicationCommands)) {
+        return interaction.reply({
+          content: 'I do not have permission to use Slash commands in this channel.',
+          ephemeral: true,
+        });
+      }
+    }
+  } catch(e) {
+    console.error(e);
+  }
+  try {
     if (interaction.isCommand()) {
       await handleSlashCommand(interaction); // Handle slash command interactions
     }
@@ -212,7 +236,25 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-client.on('guildCreate', WelcomeMsg.execute);
+client.on('interactionCreate', async (interaction) => {
+  if (interaction.isButton()) {
+    try {
+      await handleButtonInteraction(interaction, client);
+    } catch (error) {
+      console.error(error);
+      // Optionally, notify the user of the error
+    }
+  }
+});
+
+client.on('guildCreate', async (guild) => {
+  console.log(`New guild ${guild.name}`)
+  try {
+    await WelcomeMsg.execute(guild);
+  } catch (e) {
+    console.error(e);
+  }
+});
 
 client.on('guildDelete', async (guild) => {
   const serverId = guild.id;

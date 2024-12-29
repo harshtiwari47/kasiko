@@ -39,7 +39,7 @@ const loadSlashCommands = async (directory, clientId, token) => {
 
   // Register the commands with Discord
   const rest = new REST( {
-    version: '9'
+    version: '10'
   }).setToken(token);
   try {
     console.log('Started refreshing application (/) commands...');

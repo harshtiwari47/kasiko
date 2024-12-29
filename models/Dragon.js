@@ -93,6 +93,10 @@ const powerSubSchema = new mongoose.Schema({
     powers: {
       type: [powerSubSchema],
     default: []
+    },
+    active: {
+      type: Number,
+    default: 0
     }
   });
 

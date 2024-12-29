@@ -53,11 +53,11 @@ export default {
         \n***daily***\n- Claim daily gems
         \n***list***\n- Show all your dragons
         \n***leaderboard***\n- Show top players by total gems
-        \n***battle <@mention> <yourDragonIndex> <theirDragonIndex>***\n- Battle another user if both have dragons
         \n***gems | sigils | metals***\n- Check your stats for Gems, Sigils and Metals
         \n***powers***\n- Check all your dragons' powers
         \n***pat | walk | play <index?>***\n- Enjoy your time with dragon
         \n***rename <index> <nickname>***\n- Give a nickname to your dragon (less than 20 charcters & no space)
+        \n***dragon active <index>***\n- Set your active dragon in battle to use its powers.
         `)
 
       return message.channel.send({
@@ -132,6 +132,10 @@ export default {
     case 'nick':
     case 'n':
       return changeNickname(args, message);
+    case 'ac':
+    case 'activate':
+    case 'active':
+      return changeActive(args, message);
     default:
       return message.channel.send('❓ Unknown subcommand. Use `dragon` to see available options.');
     }
@@ -1202,4 +1206,35 @@ export default {
     await saveUserData(userId, userData);
 
     return message.channel.send(`✅ **${message.author.username}**, you have successfully given your **${targetDragon.typeId.toUpperCase()}** dragon the sweet nickname **${name}**. Your dragon is happy!`);
+  }
+
+  async function changeActive(args, message) {
+    const userId = message.author.id;
+
+    if (!args[1] || ! Number.isInteger(Number(args[1]))) {
+      let targetDragon = userData.dragons[userData.active || 0];
+
+      return message.channel.send(`❗Your active dragon is **${targetDragon.typeId.toUpperCase()}**! Use \`dragon active <index>\` to change it.`);
+    }
+
+    const index = parseInt(args[1]); // Dragon Index
+
+    let userData = await getUserDataDragon(userId);
+
+    if (userData.dragons.length === 0) {
+      return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
+    }
+
+    const dragonIndex = index - 1;
+    if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
+      return message.channel.send(`❗ Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`);
+    }
+
+    let targetDragon = userData.dragons[dragonIndex];
+
+    userData.active = index;
+
+    await saveUserData(userId, userData);
+
+    return message.channel.send(`✅ **${message.author.username}**, you have successfully set your **${targetDragon.typeId.toUpperCase()}** dragon as active for the next battle. Your dragon is ready for adventure!`);
   }
