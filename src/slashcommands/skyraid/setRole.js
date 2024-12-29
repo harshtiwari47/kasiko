@@ -3,6 +3,9 @@ import {
   PermissionFlagsBits,
   EmbedBuilder
 } from 'discord.js';
+import {
+  PermissionsBitField
+} from 'discord.js';
 import SkyraidGuilds from '../../../models/SkyraidGuilds.js';
 
 export default {
@@ -12,6 +15,12 @@ export default {
     try {
       const guildId = interaction.guild.id;
       const role = interaction.options.getRole('role');
+
+      if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+        return interaction.followUp({
+          content: 'You do not have permission to use this command.', ephemeral: true
+        });
+      }
 
       // Validate role existence
       if (!role) {

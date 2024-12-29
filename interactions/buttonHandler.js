@@ -27,13 +27,10 @@ const powerspath = path.join(__dirname, '../src/txtcommands/explore/dragon/power
 const powerTypes = JSON.parse(fs.readFileSync(powerspath, 'utf-8'));
 
 export async function handleButtonInteraction(interaction) {
-  if (!interaction.isButton()) return;
-  if (interaction.replied || interaction.deferred) return; // Do not reply again
-
-  // Defer the reply immediately to indicate processing
-  await interaction.deferUpdate();
-
-  if (interaction.customId === 'register_battle') {
+  if (interaction.customId === 'register_battle' && interaction.isButton()) {
+    if (interaction.replied || interaction.deferred) return; // Do not reply again
+    // Defer the reply immediately to indicate processing
+    await interaction.deferUpdate();
     let userExistence = await userExists(interaction.user.id);
     if (!userExistence) {
       await interaction.followUp({

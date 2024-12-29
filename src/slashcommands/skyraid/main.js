@@ -88,14 +88,12 @@ export default {
       .setDescription('Select the role to authorize for starting or cancelling the game.')
       .setRequired(true)
     ))
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
   // Restrict to admins
   .addSubcommand(subcommand =>
     subcommand
     .setName('getrole')
-    .setDescription('View the currently authorized role to start the game.'))
-  .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild),
-  // Restrict to admins
+    .setDescription('View the currently authorized role to start the game.')
+  ),
   // Add more subcommands as needed
 
   /**
