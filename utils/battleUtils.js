@@ -117,7 +117,7 @@ async function endBattle(battle, channel, reason) {
       battleupdates[path] = battle[path];
     });
 
-    if (Object.keys(updates).length > 0) {
+    if (Object.keys(battleupdates).length > 0) {
       // Perform atomic update using $set
       await Battle.findByIdAndUpdate(
         battle._id,
