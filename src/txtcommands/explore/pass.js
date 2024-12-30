@@ -649,7 +649,7 @@ async function claimReward(userId, level, message) {
     // ship
     if (reward.type === 'ship') {
       let userShips = await Ship.getUserShipsData(userId);
-      if (userShips.ships && userShips.ships.some(shipDetails => shipDetails.id && shipDetails.id === ships[i].id)) {
+      if (userShips.ships && userShips.ships.some(shipDetails => shipDetails.id && shipDetails.id === reward.details[0].id)) {
         return message.reply("⚠️ You already own this ship, Captain!")
       }
       userShips.ships.push(reward.details[0]);
