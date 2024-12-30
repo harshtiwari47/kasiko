@@ -39,7 +39,7 @@ export async function startBattleLoop(guildId, channelId) {
     const battle = await Battle.findOne({
       guildId, channelId, status: 'active'
     });
-    
+
     if (!battle) return;
 
     const channel = await client.channels.fetch(channelId).catch(() => null);

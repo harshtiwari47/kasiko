@@ -503,7 +503,7 @@ export default {
 
     let probability = Math.random();
     let hunger = Math.floor(Math.random() * (20 * targetDragon.stage));
-    targetDragon.hunger = Math.max(100, targetDragon.hunger + (hunger));
+    targetDragon.hunger = Math.min(100, Math.max(0, targetDragon.hunger + hunger));
 
     let outcome = {};
     let type = "success";
@@ -600,7 +600,7 @@ export default {
     // Reduce hunger
     const targetDragon = userData.dragons[dragonIndex];
     const chosenType = dragonTypes.find(t => t.id === targetDragon.typeId);
-    targetDragon.hunger = Math.max(0, targetDragon.hunger - amount);
+    targetDragon.hunger = Math.min(100, Math.max(0, targetDragon.hunger - amount));
 
     await saveUserData(userId, userData);
 
@@ -662,7 +662,7 @@ export default {
     targetDragon.experience += experienceGained;
     userData.sigils += 1;
     let hunger = Math.floor(Math.random() * (10 * targetDragon.stage));
-    targetDragon.hunger = Math.max(100, targetDragon.hunger + (hunger));
+    targetDragon.hunger = Math.min(100, Math.max(0, targetDragon.hunger + (hunger)));
 
     const chosenType = dragonTypes.find(t => t.id === targetDragon.typeId);
 

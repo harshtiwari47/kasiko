@@ -101,20 +101,20 @@ export async function handleButtonInteraction(interaction) {
       powers: [{
         id: "p1",
         name: power1.name,
-        dmg: power1.dmg,
+        dmg: power1.dmg * power1.level,
         level: power1.level,
-        defence: power1.defence,
+        defence: power1.defence * power1.level,
         emoji: power1.emoji,
-        heal: power1.heal
+        heal: power1.heal * power1.level
       },
         {
           id: "p2",
           name: power2.name,
-          dmg: power2.dmg,
+          dmg: power2.dmg * power2.level,
           level: power2.level,
-          defence: power2.defence,
+          defence: power2.defence * power2.level,
           emoji: power2.emoji,
-          heal: power2.heal
+          heal: power2.heal * power2.level
         }]
     });
 
