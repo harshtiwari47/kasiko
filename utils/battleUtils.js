@@ -2,6 +2,7 @@ import Battle from '../models/Battle.js';
 
 import SkyraidUsers from '../models/SkyraidUsers.js';
 import SkyraidGuilds from '../models/SkyraidGuilds.js';
+import redisClient from '../redis.js';
 
 import {
   EmbedBuilder
@@ -26,18 +27,33 @@ const powerTypes = JSON.parse(fs.readFileSync(powerspath, 'utf-8'));
 // Function to start the battle loop
 export async function startBattleLoop(guildId, channelId) {
   try {
+
+    const battleKey = `skyraid:${guildId}-${channelId}`;
+    const intervalKey = `${battleKey}:interval`;
+
+    // Check if the interval is already active in Redis
+    if (await redisClient.exists(intervalKey)) {
+      return; // Prevent multiple intervals for the same battle
+    }
+
     const battle = await Battle.findOne({
       guildId, channelId, status: 'active'
     });
+    
     if (!battle) return;
 
     const channel = await client.channels.fetch(channelId).catch(() => null);
     if (!channel) return;
 
+    await redisClient.set(intervalKey, 'active', 'EX', 10800); //3 hours
+    const statusbattleKey = `skyraid:${battle._id}:status`;
+    await clearBattleKey(statusbattleKey);
+
     const battleInterval = setInterval(async () => {
       if (battle.boss.health <= 0) {
         // Boss defeated
         clearInterval(battleInterval);
+        await redisClient.del(intervalKey);
         await endBattle(battle, channel, 'boss');
         return;
       }
@@ -46,6 +62,7 @@ export async function startBattleLoop(guildId, channelId) {
       if (alivePlayers.length <= 0) {
         // All players defeated
         clearInterval(battleInterval);
+        await redisClient.del(intervalKey);
         await endBattle(battle, channel, 'players');
         return;
       }
@@ -101,15 +118,43 @@ export async function startBattleLoop(guildId, channelId) {
       });
     },
       18000); // Every 18 seconds
+    battleInterval.unref();
   } catch (e) {
     console.error(e);
   }
   // Optionally, you can handle boss abilities, player actions, etc., here
 }
 
+export async function isBattleActive(battleKey) {
+  return await redisClient.exists(battleKey);
+}
+
+export async function markBattleActive(battleKey, ttl = 7200) {
+  await redisClient.set(battleKey,
+    'active',
+    'EX',
+    ttl);
+}
+
+export async function markBattleCompleted(battleKey, ttl = 3600) {
+  await redisClient.set(battleKey,
+    'completed',
+    'EX',
+    ttl);
+}
+
+export async function clearBattleKey(battleKey) {
+  await redisClient.del(battleKey);
+}
+
 // Function to end the battle
 async function endBattle(battle, channel, reason) {
   try {
+    const battleKey = `skyraid:${battle._id}:status`;
+    const isCompleted = await redisClient.get(battleKey);
+    if (isCompleted === 'completed') return; // Skip if already ended
+
+    await redisClient.set(battleKey, 'completed', 'EX', 3600); // Optional TTL: 1 hour
     battle.status = 'completed';
 
     const battleupdates = {};
@@ -241,10 +286,10 @@ async function endBattle(battle, channel, reason) {
         userId,
         damageContributed
       } = player;
-      let isStarPerformer;
+      let isStarPerformer = false;
 
       if (highestDamageBy && highestDamageBy === userId) {
-        isStarPerformer = false;
+        isStarPerformer = true;
       } else {
         isStarPerformer = false;
       }
