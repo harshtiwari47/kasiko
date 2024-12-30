@@ -32,6 +32,10 @@ const playerSchema = new mongoose.Schema(
         type: [Object],
       default: [],
       },
+      totalDmg: {
+        type: Number,
+      default: 100
+      }
     },
     {
       _id: false

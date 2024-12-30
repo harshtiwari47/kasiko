@@ -115,7 +115,8 @@ export async function handleButtonInteraction(interaction) {
           defence: power2.defence * power2.level,
           emoji: power2.emoji,
           heal: power2.heal * power2.level
-        }]
+        }],
+      totalDmg: (power2.dmg * power2.level + power1.dmg * power1.level)
     });
 
     await battle.save();

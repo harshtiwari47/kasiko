@@ -458,6 +458,21 @@ export async function handleUsePower( {
       throw new Error('Player not found in battle.');
     }
 
+    // Check if boss is defeated after the attack
+    if (battle.boss.health <= 0) {
+      return {
+        replyContent: `☄️ Hold your breath... You're about to witness something incredible...`,
+        ephemeral: true,
+      };
+    }
+
+    if (player.health <= 0) {
+      return {
+        replyContent: 'You have been defeated and cannot use abilities.'
+        ephemeral: true,
+      }
+    }
+
     // Find the selected power
     const selectedPower = player.powers.find(
       (p) => p.id.toLowerCase() === power.toLowerCase()
@@ -526,12 +541,6 @@ export async function handleUsePower( {
     .setDescription(embedDescription)
     .setThumbnail(battle.boss.image)
     .setColor('#0054ff'); // Optional
-
-    // Check if boss is defeated after the attack
-    if (battle.boss.health <= 0) {
-      await endBattle(battle, channelId, 'boss');
-      battleEnded = true;
-    }
 
     // Fetch the channel
     const channel = await client.channels.fetch(channelId).catch(() => null);

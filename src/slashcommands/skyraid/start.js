@@ -55,15 +55,23 @@ export default {
     battle.status = 'active';
     battle.battleStartedAt = new Date();
 
-    if (battle.boss.health/battle.players.length < battle.players.length * 100) {
-      battle.boss.health = battle.players.length * 100;
+    let dmgCanContributeTotal = battle.players.reduce((dmgCanContribute, player, i) => {
+      dmgCanContribute += player.totalDmg;
+      return dmgCanContribute;
+    }, 0);
+
+    let newHealth = 0;
+
+    if (dmgCanContributeTotal > battle.boss.health) {
+      newHealth = dmgCanContributeTotal + (dmgCanContributeTotal/2 + Math.floor(Math.random() * (dmgCanContributeTotal/2)));
+      battle.boss.health = newHealth;
     }
 
     await battle.save();
 
     // Notify the channel
     const embed = new EmbedBuilder()
-    .setDescription(`# 🚨🔥 Battle Started!\nThe battle against ${battle.boss.emoji} **${battle.boss.typeId}** has begun! Good luck to all participants.${(battle.boss.health/battle.players.length < battle.players.length * 100) ? "⚠️🏺 Oh no, boss used a special potion, new health: ❤️ " + (battle.players.length * 100): ""}`)
+    .setDescription(`# 🚨🔥 Battle Started!\nThe battle against ${battle.boss.emoji} **${battle.boss.typeId}** has begun! Good luck to all participants.${(battle.boss.health/battle.players.length < battle.players.length * 100) ? "\n-# \`⚠️🏺 Oh no, boss used a special potion, new health: ❤️ " + (newHealth) + "\`": ""}`)
     .setImage(battle.boss.image)
     .setColor('#7fe4da');
 
