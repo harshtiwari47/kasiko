@@ -293,7 +293,7 @@ async function getServerPrefix(message) {
 
   try {
     if (!existingServer) {
-      newServer = new Server( {
+      existingServer = new Server( {
         id: serverId,
         name: serverName,
         ownerId: serverOwnerId,

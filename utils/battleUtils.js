@@ -112,7 +112,24 @@ async function endBattle(battle, channel, reason) {
   try {
     battle.status = 'completed';
 
-    await battle.save();
+    const battleupdates = {};
+    battle.modifiedPaths().forEach((path) => {
+      battleupdates[path] = battle[path];
+    });
+
+    if (Object.keys(updates).length > 0) {
+      // Perform atomic update using $set
+      await Battle.findByIdAndUpdate(
+        battle._id,
+        {
+          $set: battleupdates
+        },
+        {
+          new: true
+        }
+      );
+    }
+
     const guildId = battle["guildId"];
 
     let guild = await SkyraidGuilds.findOne({
