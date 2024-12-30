@@ -468,8 +468,8 @@ export async function handleUsePower( {
 
     if (player.health <= 0) {
       return {
-        replyContent: 'You have been defeated and cannot use abilities.'
-        ephemeral: true,
+        replyContent: 'You have been defeated and cannot use abilities.',
+        ephemeral: true
       }
     }
 
