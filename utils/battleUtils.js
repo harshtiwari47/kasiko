@@ -46,11 +46,14 @@ export async function startBattleLoop(guildId, channelId) {
     if (!channel) return;
 
     await redisClient.set(intervalKey, 'active', 'EX', 10800); //3 hours
+    await redisClient.set(`${battleKey}:bossAlive`, 'active', 'EX', 10800); //3 hours
     const statusbattleKey = `skyraid:${battle._id}:status`;
     await clearBattleKey(statusbattleKey);
 
     const battleInterval = setInterval(async () => {
-      if (battle.boss.health <= 0) {
+      const isBossAlive = await isBossActive(`${battleKey}:bossAlive`);
+
+      if (battle.boss.health <= 0 || !isBossAlive) {
         // Boss defeated
         clearInterval(battleInterval);
         await redisClient.del(intervalKey);
@@ -125,7 +128,7 @@ export async function startBattleLoop(guildId, channelId) {
   // Optionally, you can handle boss abilities, player actions, etc., here
 }
 
-export async function isBattleActive(battleKey) {
+export async function isBossActive(battleKey) {
   return await redisClient.exists(battleKey);
 }
 
@@ -516,6 +519,10 @@ export async function handleUsePower( {
           new: true
         }
       );
+    }
+
+    if (battle.boss.health <= 0) {
+      await clearBattleKey(`skyraid:${guildId}-${channelId}:bossAlive`);
     }
 
     // Construct the embed
