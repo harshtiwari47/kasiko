@@ -349,7 +349,8 @@ export async function viewAquarium(userId,
           await viewCollection(interaction.user.id, interaction);
         }
       } catch (e) {
-        await interaction.reply({
+        if (!context.deferred) await context.deferReply();
+        await interaction.followUp({
           content: '⚠️ Something went wrong while performing aquarium command button!'
         });
         return;
