@@ -251,7 +251,7 @@ export async function execute(args, message) {
   let orca = await Orca.findOne();
 
   // Build the initial embed and buttons
-  let embed = buildOrcaEmbed(orca);
+  let embed = await buildOrcaEmbed(orca);
   let components = buildOrcaButtons(orca);
 
   // Send the control panel
