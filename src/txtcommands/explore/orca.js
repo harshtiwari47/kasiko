@@ -309,7 +309,7 @@ export async function execute(args, message) {
     orca = await Orca.findOne();
 
     // Rebuild embed & buttons to reflect the *new* orca state
-    embed = buildOrcaEmbed(orca);
+    embed = await buildOrcaEmbed(orca);
     components = buildOrcaButtons(orca);
 
     // Edit the control panel message
