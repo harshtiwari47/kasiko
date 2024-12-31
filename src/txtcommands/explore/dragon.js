@@ -693,7 +693,7 @@ export default {
         `💥 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) just earned **${experienceGained} XP**! Ready for the next challenge? 🐉`,
         `🎉 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) is on fire! **${experienceGained} XP** gained! 🔥`,
         `🚀 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) just crushed it and earned **${experienceGained} XP**! 💪`,
-        `🔥 Watch out! Dragon (${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) gained **${experienceGained} XP** and is stronger than ever! 💥`,
+        `🔥 Watch out! Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) gained **${experienceGained} XP** and is stronger than ever! 💥`,
         `💎 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) collected **${experienceGained} XP**! The adventure continues! 🐉`,
         `🎯 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) achieved greatness with **${experienceGained} XP**! Next level, here we come! 🏆`,
         `⚡️ Boom! Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) earned **${experienceGained} XP**! Ready to train harder? 🐉💨`,
