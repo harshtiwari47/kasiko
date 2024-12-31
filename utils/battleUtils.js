@@ -66,7 +66,7 @@ export async function startBattleLoop(guildId, channelId) {
         // All players defeated
         clearInterval(battleInterval);
         await redisClient.del(intervalKey);
-        await endBattle(battle, channel, 'players');
+        await endBattle(battle, channel, 'players', battle.boss.health);
         return;
       }
 
@@ -110,7 +110,7 @@ export async function startBattleLoop(guildId, channelId) {
       .setDescription(`# ${battle.boss.emoji} Dragon Attack!\nThe **${battle.boss.typeId}** used a **${bossPower.emoji}** **${bossPower.name}** attack on <@${randomPlayer.userId}> dealing 🩸 **${damage} damage**!`)
       .setColor('#dcb18e')
       .setFooter({
-        text: `❤️ PLAYER HEALTH:** ${battle.players[playerIndex].health}`
+        text: `❤️ PLAYER HEALTH: ${battle.players[playerIndex].health}`
       })
       .setThumbnail(user.displayAvatarURL({
         dynamic: true, size: 1024
@@ -151,7 +151,7 @@ export async function clearBattleKey(battleKey) {
 }
 
 // Function to end the battle
-async function endBattle(battle, channel, reason) {
+async function endBattle(battle, channel, reason, bossHPLeft = null) {
   try {
     const battleKey = `skyraid:${battle._id}:status`;
     const isCompleted = await redisClient.get(battleKey);
@@ -216,7 +216,6 @@ async function endBattle(battle, channel, reason) {
       } else {
         // Update existing guild
         guild.matchesWon += reason === 'boss' ? 1: 0;
-        guild.bossDefeated[battle.boss.typeId] += reason === 'boss' ? 1: 0;
 
         if (reason === 'boss') {
           guild.bossDefeated[battle.boss.typeId] += 1;
@@ -343,7 +342,7 @@ async function endBattle(battle, channel, reason) {
     } else if (reason === 'players') {
       // Dragon won
       const embed = new EmbedBuilder()
-      .setDescription(`# 😢 Battle Lost\nEvery single player has fallen at the hands of the **${battle.boss.typeId}**, a fierce and relentless force that left no room for escape or survival.\n❤️ BOSS HP: ${battle.boss.health}`)
+      .setDescription(`# 😢 Battle Lost\nEvery single player has fallen at the hands of the **${battle.boss.typeId}**, a fierce and relentless force that left no room for escape or survival.\n${bossHPLeft ? `❤️ BOSS HP: ` + bossHPLeft: ""}`)
       .setImage(battle.boss.image)
       .setColor('#FF0000')
       .setTimestamp();

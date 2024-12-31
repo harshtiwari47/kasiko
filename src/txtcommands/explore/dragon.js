@@ -41,28 +41,162 @@ export default {
     args.shift();
     const subCommand = args[0]?.toLowerCase();
 
-    // No subcommand provided
-    if (!subCommand) {
-      const embedCommand = new EmbedBuilder()
-      .setDescription(`### __Usage:__ dragon <subcommand> [options]
-        \n-# Available subcommands:
-        \n***summon***\n- Summon a new random dragon egg
-        \n***hatch <unhatched index?>***\n- Hatch one of your unhatched eggs (default first)
-        \n***feed <index?> <amt?>***\n- Feed a dragon with some gems (default dragon #1, 10 gems)
-        \n***train <index?>***\n- Train one of your dragons
-        \n***daily***\n- Claim daily gems
-        \n***list***\n- Show all your dragons
-        \n***leaderboard***\n- Show top players by total gems
-        \n***gems | sigils | metals***\n- Check your stats for Gems, Sigils and Metals
-        \n***powers***\n- Check all your dragons' powers
-        \n***pat | walk | play <index?>***\n- Enjoy your time with dragon
-        \n***rename <index> <nickname>***\n- Give a nickname to your dragon (less than 20 charcters & no space)
-        \n***dragon active <index>***\n- Set your active dragon in battle to use its powers.
-        `)
+    // Define commands as an array of objects
+    const commands = [{
+      command: "summon",
+      description: "Summon a new random dragon egg. You can summon up to 4 times per day."
+    },
+      {
+        command: "hatch <unhatched index?>",
+        description: "Hatch one of your unhatched eggs (default first)"
+      },
+      {
+        command: "feed <index?> <amt?>",
+        description: "Feed a dragon with some gems (default dragon #1, 10 gems)"
+      },
+      {
+        command: "adventure <index?>",
+        description: "Send your dragon on an adventure and wait to see whether he succeeds or fails. You will gain +2 Sigils for each win and lose -1 for each loss"
+      },
+      {
+        command: "train <index?>",
+        description: "Train one of your dragons"
+      },
+      {
+        command: "daily",
+        description: "Claim daily gems"
+      },
+      {
+        command: "list",
+        description: "Show all your dragons"
+      },
+      {
+        command: "leaderboard",
+        description: "Show top players by total gems"
+      },
+      {
+        command: "gems | sigils | metals",
+        description: "Check your stats for Gems, Sigils, and Metals"
+      },
+      {
+        command: "powers",
+        description: "Check all your dragons' powers"
+      },
+      {
+        command: "pat | walk | play <index?>",
+        description: "Enjoy your time with dragon"
+      },
+      {
+        command: "rename <index> <nickname>",
+        description: "Give a nickname to your dragon (less than 20 characters & no space)"
+      },
+      {
+        command: "dragon active <index>",
+        description: "Set your active dragon in battle to use its powers."
+      },
+    ];
 
-      return message.channel.send({
-        embeds: [embedCommand]
+    // Function to generate a page embed
+    function getPageEmbed(page) {
+      const itemsPerPage = 4;
+      const start = page * itemsPerPage;
+      const end = start + itemsPerPage;
+      const pageCommands = commands.slice(start, end);
+
+      const embed = new EmbedBuilder()
+      .setTitle("Dragon Commands")
+      .setDescription(
+        pageCommands.map((cmd) => `**${cmd.command}**\n-# ${cmd.description}`).join("\n\n")
+      )
+      .setFooter({
+        text: `Page ${page + 1} of ${Math.ceil(commands.length / itemsPerPage)}`
       });
+
+      return embed;
+    }
+
+    // Handle interaction
+    async function handleCommandInteraction(message) {
+      let currentPage = 0;
+      const totalPages = Math.ceil(commands.length / 4);
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+        .setCustomId("prev")
+        .setLabel("Previous")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
+        new ButtonBuilder()
+        .setCustomId("next")
+        .setLabel("Next")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(totalPages <= 1)
+      );
+
+      const embed = getPageEmbed(currentPage);
+      const sentMessage = await message.channel.send({
+        embeds: [embed], components: [row]
+      });
+
+      const collector = sentMessage.createMessageComponentCollector({
+        filter: (interaction) => interaction.user.id === message.author.id,
+        time: 90000, // 1.5-minute timeout
+      });
+
+      collector.on("collect", async (interaction) => {
+        if (interaction.customId === "prev") {
+          currentPage = Math.max(0, currentPage - 1);
+        } else if (interaction.customId === "next") {
+          currentPage = Math.min(totalPages - 1, currentPage + 1);
+        }
+
+        const newEmbed = getPageEmbed(currentPage);
+
+        const newRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId("prev")
+          .setLabel("Previous")
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(currentPage === 0),
+          new ButtonBuilder()
+          .setCustomId("next")
+          .setLabel("Next")
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(currentPage === totalPages - 1)
+        );
+
+        await interaction.update({
+          embeds: [newEmbed], components: [newRow]
+        });
+      });
+
+      collector.on("end",
+        () => {
+          const disabledRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+            .setCustomId("prev")
+            .setLabel("Previous")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(true),
+            new ButtonBuilder()
+            .setCustomId("next")
+            .setLabel("Next")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(true)
+          );
+          sentMessage.edit({
+            components: [disabledRow]
+          });
+        });
+    }
+
+    // Use the function in your command handler
+    if (!subCommand) {
+      try {
+        return handleCommandInteraction(message);
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     // Route subcommands
@@ -92,10 +226,6 @@ export default {
     case 'leaderboard':
     case 'lb':
       return showLeaderboard(message, client);
-    case 'battle':
-    case 'b':
-      return message.channel.send(`⏳ The battle is not available yet!`)
-      //return battleUser(args, message, client);
     case 'gem':
     case 'gems':
     case 'g':
@@ -426,144 +556,413 @@ export default {
     return randomHungryMessage;
   }
 
-  /**
-  * Send your dragon on adventure e.g. "dragon adventure 1"
-  */
+  async function feedDragonSimple(userId, dragonIndex) {
+    let gemIcon = '<:gems:123456789>';
 
-  async function adventure(args, message) {
-    const index = parseInt(args[1]) || 1;
-    const userId = message.author.id;
-
-    let userData = await getUserDataDragon(userId);
-
-    if (userData.dragons.length === 0) {
-      return message.channel.send(`❗ You have no dragons to send for adventure! Summon one with \`dragon summon\`.`);
+    const userData = await getUserDataDragon(userId);
+    if (!userData.dragons || !userData.dragons.length) {
+      return {
+        success: false,
+        message: `You have no dragons to feed! Summon one with \`dragon summon\`.`,
+      };
     }
-
-    const dragonIndex = index - 1;
     if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
-      return message.channel.send(`❗ Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`);
+      return {
+        success: false,
+        message: `Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`,
+      };
     }
 
     const targetDragon = userData.dragons[dragonIndex];
+    const FEED_COST = targetDragon.hunger - 70 < 0 ? targetDragon.hunger: targetDragon.hunger - 70;
+    if (userData.gems < FEED_COST) {
+      return {
+        success: false,
+        message: `Not enough ${gemIcon} gems! You only have ${gemIcon} **${userData.gems}** gems.`,
+      };
+    }
 
+    userData.gems -= FEED_COST;
+    // Reduce hunger
+    targetDragon.hunger = Math.max(0, targetDragon.hunger - FEED_COST);
+
+    await saveUserData(userId, userData);
+
+    return {
+      success: true,
+      message: `You fed **${targetDragon.customName ?? targetDragon.typeId.toUpperCase()}** with ${gemIcon} **${FEED_COST}** gems!`,
+    };
+  }
+
+  async function doAdventureLogic(userId, dragonIndex, author) {
+    const userData = await getUserDataDragon(userId);
+
+    if (!userData.dragons?.length) {
+      return {
+        error: true,
+        reason: 'no_dragons',
+        errorMessage: `❗ You have no dragons to send on adventure! Summon one with \`dragon summon\`.`,
+      };
+    }
+    if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
+      return {
+        error: true,
+        reason: 'invalid_index',
+        errorMessage: `❗ Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`,
+      };
+    }
+
+    const targetDragon = userData.dragons[dragonIndex];
     if (!targetDragon.isHatched) {
-      return message.channel.send(`❗ This dragon is still an egg! Hatch it first using \`dragon hatch <index>\`.`);
+      return {
+        error: true,
+        reason: 'egg',
+        errorMessage: `❗ **${targetDragon.customName ?? targetDragon.typeId.toUpperCase()}** is still an egg! Hatch it first using \`dragon hatch <index>\`.`,
+      };
     }
 
-    // Check hunger before training
     if (targetDragon.hunger >= 80) {
-      return message.channel.send(`🍽️ Your dragon  (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** is too hungry to train. Please feed it!\n-# ${randomHungerMessage()}`);
+      return {
+        error: true,
+        reason: 'too_hungry',
+        errorMessage: `🍽️ Your dragon **${targetDragon.customName ?? targetDragon.typeId.toUpperCase()}** is too hungry to adventure. Please feed it first!\n-# ${randomHungerMessage().replace("train", "adventure")}`,
+        feedAmountReq: targetDragon.hunger - 60
+      };
     }
 
-    let outcomeMessage = {
-      "success": [{
-        "message": `${targetDragon.typeId}'s sharp senses led it to a hidden gem-filled cave, and it looted a collection of rare jewels! 💎🏆`,
-        "action": "found gems"
+    const outcomeMessage = {
+      success: [{
+        message: `${targetDragon.typeId}'s sharp senses led it to a hidden gem-filled cave, and it looted a collection of rare jewels! 💎🏆`,
       },
         {
-          "message": `After a fierce chase, ${targetDragon.typeId} caught the gem-encrusted creature and claimed the sparkling bounty! 🐉💎`,
-          "action": "caught prey"
+          message: `After a fierce chase, ${targetDragon.typeId} caught the gem-encrusted creature and claimed the sparkling bounty! 🐉💎`,
         },
         {
-          "message": `${targetDragon.typeId} uncovered an ancient chest, unlocking it with ease and revealing a stash of glittering gems inside! 🔓💎`,
-          "action": "opened chest"
+          message: `${targetDragon.typeId} uncovered an ancient chest, unlocking it with ease and revealing a stash of glittering gems inside! 🔓💎`,
         },
         {
-          "message": `With a well-aimed strike, ${targetDragon.typeId} defeated the gem guardians and looted their sparkling treasure! ⚔️💎`,
-          "action": "defeated guardians"
+          message: `With a well-aimed strike, ${targetDragon.typeId} defeated the gem guardians and looted their sparkling treasure! ⚔️💎`,
         },
         {
-          "message": `${targetDragon.typeId}'s persistence paid off, finding a trove of precious gems hidden deep in the mountains, adding to its hoard! 🏔️💎`,
-          "action": "found treasure"
-        }],
-      "fail": [{
-        "message": `${targetDragon.typeId}'s claws missed the elusive gem-encrusted creature, and it vanished into the shadows before it could strike. 😔`,
-        "action": "missed prey"
+          message: `${targetDragon.typeId}'s persistence paid off, finding a trove of precious gems hidden deep in the mountains, adding to its hoard! 🏔️💎`,
+        },
+      ],
+      fail: [{
+        message: `${targetDragon.typeId}'s claws missed the elusive gem-encrusted creature, and it vanished into the shadows before it could strike. 😔`,
       },
         {
-          "message": `${targetDragon.typeId} found a hidden treasure chest, but it was trapped! The gems inside remain out of reach. 🛑💎`,
-          "action": "trap triggered"
+          message: `${targetDragon.typeId} found a hidden treasure chest, but it was trapped! The gems inside remain out of reach. 🛑💎`,
         },
         {
-          "message": `${targetDragon.typeId}'s fiery breath ignited the ancient gem guardians, but they were too quick to escape with the precious stones. 🔥👹`,
-          "action": "guardians escaped"
+          message: `${targetDragon.typeId}'s fiery breath ignited the ancient gem guardians, but they were too quick to escape with the precious stones. 🔥👹`,
         },
         {
-          "message": `Despite ${targetDragon.typeId}'s keen senses, the gem-laden creature slipped past its grasp, leaving only glittering dust behind. 🏃‍♂️💨`,
-          "action": "lost prey"
+          message: `Despite ${targetDragon.typeId}'s keen senses, the gem-laden creature slipped past its grasp, leaving only glittering dust behind. 🏃‍♂️💨`,
         },
         {
-          "message": `${targetDragon.typeId} ventured deep into a cave filled with traps, but it triggered one, narrowly escaping with no gems to show for it. ⚠️🕳️`,
-          "action": "trap triggered"
-        }]
-    }
+          message: `${targetDragon.typeId} ventured deep into a cave filled with traps, but it triggered one, narrowly escaping with no gems to show for it. ⚠️🕳️`,
+        },
+      ],
+    };
 
-    const chosenType = dragonTypes.find(t => t.id === targetDragon.typeId);
-
+    // Probability
     let probability = Math.random();
     let hunger = Math.floor(Math.random() * (20 * targetDragon.stage));
-    targetDragon.hunger = Math.min(100, Math.max(0, targetDragon.hunger + hunger));
+    targetDragon.hunger = Math.min(100, targetDragon.hunger + hunger);
 
-    let outcome = {};
-    let type = "success";
-    let result = ``;
+    let type = 'success';
+    let resultText = '';
     let goldIcon = `<:gold:1320978185084473365>`
     let silverIcon = `<:silver:1320978175563661352>`
     let bronzeIcon = `<:bronze:1320978165702725714>`
 
-    if (probability > (0.5 - targetDragon.stage/70)) {
-      type = "success";
+    let gemIcon = '<:gems:123456789>';
+    let sigilIcon = '<:sigils:987654321>';
+
+    if (probability > (0.5 - targetDragon.stage / 70)) {
+      // success
+      type = 'success';
       let winningGems = Helper.randomInt(10, probability > 0.85 ? 50: 30);
       userData.sigils += 2;
       userData.gems += winningGems;
+
       let winningMetals = Helper.randomInt(5, probability > 0.85 ? 25: 15);
-
-      let metalWinMessage = ``;
+      let metalWinMessage = '';
       let metalWinProb = Math.random();
-
       if (metalWinProb > 0.75) {
         userData.metals.gold += winningMetals;
-        metalWinMessage = ` ${goldIcon} : **+${winningMetals}**`;
-      } else if (metalWinProb > 0.40) {
+        metalWinMessage = `${goldIcon} +${winningMetals}`;
+      } else if (metalWinProb > 0.4) {
         userData.metals.silver += winningMetals;
-        metalWinMessage = ` ${silverIcon} : **+${winningMetals}**`;
+        metalWinMessage = `${sigilIcon} +${winningMetals}`;
       } else {
         userData.metals.bronze += winningMetals;
-        metalWinMessage = ` ${bronzeIcon} : **+${winningMetals}**`;
+        metalWinMessage = `${bronzeIcon} +${winningMetals}`;
       }
 
-      result = `-# ***REWARDS*** — ${gemIcon} : **+${winningGems}**, ${sigilsIcon} : **+2**, 🍽️ : **+${hunger}**, ${metalWinMessage}`;
+      resultText = `-# ***REWARDS***\n${gemIcon} +${winningGems}\n${sigilIcon} +2\n🍽️ +${hunger}\n${metalWinMessage}`;
     } else {
-      userData.sigils -= 1;
-      type = "fail";
-      result = `-# ***LOSS*** — ${sigilsIcon} : **-1**, 🍽️ : **+${hunger}**`
+      // fail
+      userData.sigils = Math.max(0, userData.sigils - 1);
+      type = 'fail';
+      resultText = `-# ***LOSS***\n${sigilIcon} -1\n🍽️ +${hunger}`;
     }
 
-    outcome = outcomeMessage[type][Math.floor(Math.random() * outcomeMessage[type].length)]
-
-    const embed = new EmbedBuilder()
-    .setDescription(`## Adventure <:${chosenType.id}2:${chosenType.emoji}>\nYour dragon, **${targetDragon.typeId.toUpperCase()}**, is embarking on a mysterious adventure... will it succeed or fail? Only time will tell! ⏳`)
-    .setImage(chosenType.landscapes ? chosenType.landscapes[0]: `https://harshtiwari47.github.io/kasiko-public/images/dragons/drg-adventure.jpg`)
-    .setColor(chosenType.color)
-    .setAuthor({
-      name: message.author.username, iconURL: message.author.displayAvatarURL({
-        dynamic: true
-      })
-    })
-
-    let suspenseMessage = await message.channel.send({
-      embeds: [embed]
-    });
+    const outcomeObj =
+    outcomeMessage[type][
+      Math.floor(Math.random() * outcomeMessage[type].length)
+    ];
 
     await saveUserData(userId, userData);
 
-    await new Promise(resolve => setTimeout(resolve, 4000));
+    const chosenType = dragonTypes.find((t) => t.id === targetDragon.typeId) || {};
+    const randomLocationImg = `https://harshtiwari47.github.io/kasiko-public/images/dragons/adv-loc${
+    1 + Math.floor(Math.random() * 5)
+    }.jpg`;
 
-    return suspenseMessage.edit({
-      embeds: [embed.setDescription(`## Adventure <:${chosenType.id}2:${chosenType.emoji}>\n${outcome.message}\n\n${result}`).setColor(type === "fail" ? "#000000": chosenType.color).setImage(`https://harshtiwari47.github.io/kasiko-public/images/dragons/adv-loc${1 + Math.floor(Math.random() * 5)}.jpg`)]
+    const finalEmbed = new EmbedBuilder()
+    .setAuthor({
+      name: author.username, iconURL: author.displayAvatarURL({
+        dynamic: true
+      })
     })
+    .setDescription(`# ${targetDragon.customName ?? targetDragon.typeId.toUpperCase()}'𝒔 𝑨𝒅𝒗𝒆𝒏𝒕𝒖𝒓𝒆\n` + `${outcomeObj.message}\n\n${resultText}`)
+    .setColor(type === 'fail' ? '#000000': chosenType.color || '#ffffff')
+    .setImage(randomLocationImg);
+
+    return {
+      error: false,
+      finalEmbed,
+    };
   }
+
+  async function doAdventureCycle(
+    message,
+    userId,
+    dragonIndex,
+    adventureMsg,
+    collectorEnded
+  ) {
+    const userData = await getUserDataDragon(userId);
+    const targetDragon = userData.dragons?.[dragonIndex];
+    if (!targetDragon) {
+      return adventureMsg.edit({
+        content: '',
+        embeds: [
+          new EmbedBuilder().setDescription(`❗ Dragon not found or invalid index.`),
+        ],
+        components: [],
+      });
+    }
+
+    const chosenType = dragonTypes.find((t) => t.id === targetDragon.typeId) || {};
+    const suspenseEmbed = new EmbedBuilder()
+    .setTitle(`${targetDragon.customName ?? targetDragon.typeId.toUpperCase()}'𝒔 𝑨𝒅𝒗𝒆𝒏𝒕𝒖𝒓𝒆`)
+    .setDescription(
+      `Your dragon **${
+      targetDragon.customName ?? targetDragon.typeId.toUpperCase()
+      }** is embarking on a mysterious adventure...\n⏳ *Please wait...*`
+    )
+    .setColor(chosenType.color || '#ffffff')
+    .setImage(
+      chosenType.landscapes?.[0] ||
+      `https://harshtiwari47.github.io/kasiko-public/images/dragons/drg-adventure.jpg`
+    );
+
+    // Temporarily disable both buttons
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId('adventure_again')
+      .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true),
+      new ButtonBuilder()
+      .setCustomId('feed_dragon')
+      .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(true)
+    );
+
+    await adventureMsg.edit({
+      content: '',
+      embeds: [suspenseEmbed],
+      components: [row],
+    });
+
+    // Wait 4 seconds
+    await new Promise((r) => setTimeout(r, 4000));
+
+    // Now do final logic
+    const advResult = await doAdventureLogic(userId, dragonIndex, message.author);
+
+    if (advResult.error) {
+      if (advResult.reason === 'too_hungry' && !collectorEnded) {
+        const hungryEmbed = new EmbedBuilder()
+        .setTitle(`${targetDragon.customName ?? targetDragon.typeId.toUpperCase()} 𝒊𝒔 𝑻𝒐𝒐 𝑯𝒖𝒏𝒈𝒓𝒚!`)
+        .setDescription(advResult.errorMessage)
+        .setColor('#ff9900');
+
+        // Disable "Adventure again", enable "Feed"
+        const rowHungry = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('adventure_again')
+          .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(true),
+          new ButtonBuilder()
+          .setCustomId('feed_dragon')
+          .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+          .setStyle(ButtonStyle.Success)
+          .setDisabled(false)
+        );
+
+        return adventureMsg.edit({
+          embeds: [hungryEmbed],
+          components: [rowHungry],
+        });
+      } else {
+        // Any other error -> remove buttons entirely
+        return adventureMsg.edit({
+          embeds: [new EmbedBuilder().setDescription(advResult.errorMessage)],
+          components: [],
+        });
+      }
+    }
+
+    // If success/fail embed
+    if (!collectorEnded) {
+      // Re-enable both
+      const rowFinal = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+        .setCustomId('adventure_again')
+        .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(false),
+        new ButtonBuilder()
+        .setCustomId('feed_dragon')
+        .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(false)
+      );
+
+      return adventureMsg.edit({
+        embeds: [advResult.finalEmbed],
+        components: [rowFinal],
+      });
+    } else {
+      // Collector ended, disable both
+      const rowFinalDisabled = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+        .setCustomId('adventure_again')
+        .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
+        new ButtonBuilder()
+        .setCustomId('feed_dragon')
+        .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(true)
+      );
+
+      return adventureMsg.edit({
+        embeds: [advResult.finalEmbed],
+        components: [rowFinalDisabled],
+      });
+    }
+  }
+
+  /**
+  * Send your dragon on adventure e.g. "dragon adventure 1"
+  */
+
+  export async function adventure(args, message) {
+    const userId = message.author.id;
+    const index = parseInt(args[1]) || 1;
+    const dragonIndex = index - 1;
+
+    const initialMessage = await message.channel.send({
+      content: 'Preparing your dragon’s adventure...',
+    });
+
+    let collectorEnded = false;
+
+    // Start the first adventure cycle
+    await doAdventureCycle(message, userId, dragonIndex, initialMessage, collectorEnded);
+
+    // Create a component collector
+    const collector = initialMessage.createMessageComponentCollector({
+      time: 120 * 1000,
+    });
+
+    collector.on('collect', async (interaction) => {
+      if (interaction.replied || interaction.deferred) return; // Do not reply again
+      // Only the original user
+      if (interaction.user.id !== userId) {
+        return interaction.reply({
+          content: 'You are not allowed to interact!',
+          ephemeral: true,
+        });
+      }
+
+      await interaction.deferUpdate();
+
+      if (collectorEnded) {
+        return; // Do nothing if it's ended
+      }
+
+      if (interaction.customId === 'adventure_again') {
+        await doAdventureCycle(message, userId, dragonIndex, initialMessage, collectorEnded);
+      } else if (interaction.customId === 'feed_dragon') {
+        // Feed
+        const feedResult = await feedDragonSimple(userId, dragonIndex);
+
+        if (!feedResult.success) {
+          // If feed failed, just send ephemeral error
+          await interaction.followUp({
+            content: feedResult.message,
+            ephemeral: true,
+          });
+          return;
+        }
+
+        // If feed succeeded, let's reload user data to show updated gems & hunger
+        const updatedUserData = await getUserDataDragon(userId);
+        const updatedDragon = updatedUserData.dragons[dragonIndex];
+
+        // Show ephemeral success with updated stats
+        await interaction.followUp({
+          content: `${feedResult.message}\n` +
+          `You now have **${updatedUserData.gems}** gems left.\n` +
+          `Dragon's hunger is now **${updatedDragon.hunger}**.`,
+          ephemeral: true,
+        });
+
+        // Then re-run the cycle to see if we can now adventure
+        await doAdventureCycle(message, userId, dragonIndex, initialMessage, collectorEnded);
+      }
+    });
+
+    collector.on('end',
+      async () => {
+        collectorEnded = true;
+        try {
+          const fetchedMsg = await message.channel.messages.fetch(initialMessage.id);
+          if (!fetchedMsg) return;
+          if (!fetchedMsg.components.length) return;
+
+          const oldRow = fetchedMsg.components[0];
+          const row = ActionRowBuilder.from(oldRow);
+          row.components.forEach((btn) => btn.setDisabled(true));
+
+          await fetchedMsg.edit({
+            components: [row],
+          });
+        } catch (err) {
+          console.error('Error disabling adventure buttons:', err);
+        }
+      });
+  }
+
 
   /**
   * Feed a dragon with gems. e.g. "dragon feed 1 10" -> feed the 1st dragon with 10 gems
@@ -925,106 +1324,6 @@ export default {
     return message.channel.send({
       embeds: [embedTitle, embed]
     });
-  }
-
-  /**
-  * Simple Battle System: "dragon battle @user <yourDragonIndex> <theirDragonIndex>"
-  * Incorporate type advantages and more detailed outcomes.
-  */
-  async function battleUser(args, message, client) {
-    if (args.length < 2 || !message.mentions.users.size) {
-      return message.channel.send(`❗ Please mention a user and specify your and their dragon indexes. Example: \`dragon battle @User 1 1\``);
-    }
-
-    const enemy = message.mentions.users.first();
-    if (!enemy || enemy.bot || enemy.id === message.author.id) {
-      return message.channel.send(`❗ Invalid user mention.`);
-    }
-
-    const yourDragonIndex = parseInt(args[1]) || 1;
-    const theirDragonIndex = parseInt(args[2]) || 1;
-
-    const userId = message.author.id;
-    const enemyId = enemy.id;
-
-    let userData = await getUserDataDragon(userId);
-    let enemyData = await getUserDataDragon(enemyId);
-
-    if (!userData.dragons.length) {
-      return message.channel.send(`❗ You have no dragons to battle with! Use \`dragon summon\` first.`);
-    }
-    if (!enemyData.dragons.length) {
-      return message.channel.send(`❗ That user has no dragons to battle with!`);
-    }
-
-    const dIndex = yourDragonIndex - 1;
-    if (dIndex < 0 || dIndex >= userData.dragons.length) {
-      return message.channel.send(`❗ You don't have a dragon #${yourDragonIndex}.`);
-    }
-
-    const eIndex = theirDragonIndex - 1;
-    if (eIndex < 0 || eIndex >= enemyData.dragons.length) {
-      return message.channel.send(`❗ That user doesn't have a dragon #${theirDragonIndex}.`);
-    }
-
-    const yourDragon = userData.dragons[dIndex];
-    const enemyDragon = enemyData.dragons[eIndex];
-
-    if (!yourDragon.isHatched) {
-      return message.channel.send(`❗ Your dragon (#${yourDragonIndex}) is still in egg form!`);
-    }
-    if (!enemyDragon.isHatched) {
-      return message.channel.send(`❗ Their dragon (#${theirDragonIndex}) is still in egg form!`);
-    }
-
-    // Retrieve dragon types
-    const yourType = dragonTypes.find(t => t.id === yourDragon.typeId);
-    const enemyType = dragonTypes.find(t => t.id === enemyDragon.typeId);
-
-    // Determine type advantages
-    let typeAdvantage = 0; // 1 if you have advantage, -1 if enemy has advantage, 0 otherwise
-    /* if (yourType.strengths.some(power => enemyType.weaknesses.id)) {
-      typeAdvantage = 1;
-    } else if (enemyType.strengths.includes(yourType.id)) {
-      typeAdvantage = -1;
-    } */
-
-    // Calculate total power
-    const yourPower = calculateDragonPower(yourDragon, typeAdvantage);
-    const enemyPower = calculateDragonPower(enemyDragon, -typeAdvantage);
-
-    // Determine battle outcome
-    const outcome = determineBattleOutcome(yourPower, enemyPower);
-
-    // Calculate rewards or penalties
-    let resultText = `**${message.author.username}**'s **${yourType.name}** (Stage ${yourDragon.stage}) vs. **${enemy.username}**'s **${enemyType.name}** (Stage ${enemyDragon.stage})\n\n` +
-    `**${message.author.username}**'s Dragon Power: ${yourPower}\n` +
-    `**${enemy.username}**'s Dragon Power: ${enemyPower}\n\n`;
-
-    if (outcome === 1) {
-      // You win
-      const reward = Helper.randomInt(30, 60);
-      const loss = Helper.randomInt(10, 30);
-      userData.gems += reward;
-      enemyData.gems = Math.max(0, enemyData.gems - loss);
-      resultText += `🎉 **${message.author.username}**'s dragon wins! You gained **${reward}** gems. **${enemy.username}** lost **${loss}** gems.`;
-    } else if (outcome === -1) {
-      // Enemy wins
-      const reward = Helper.randomInt(30, 60);
-      const loss = Helper.randomInt(10, 30);
-      enemyData.gems += reward;
-      userData.gems = Math.max(0, userData.gems - loss);
-      resultText += `💥 **${enemy.username}**'s dragon wins! They gained **${reward}** gems. You lost **${loss}** gems.`;
-    } else {
-      // Draw
-      resultText += `😮 It's a draw! No gems lost or gained.`;
-    }
-
-    // Save modifications
-    await saveUserData(userId, userData);
-    await saveUserData(enemyId, enemyData);
-
-    return message.channel.send(resultText);
   }
 
   /**

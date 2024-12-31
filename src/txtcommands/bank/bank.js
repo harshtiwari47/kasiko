@@ -289,10 +289,10 @@ export default {
           .setTitle('🏦 **Welcome to Bank**')
           .setDescription(
             'Manage your bank using the following commands:\n\n' +
+            '`bank open` - Open a bank account.\n' +
             '`deposit <amount>` - Deposit funds into your bank.\n' +
             '`withdraw <amount>` - Withdraw funds from your bank.\n' +
             '`bank status` - Check your bank status.\n' +
-            '`bank open` - Open a bank account.\n' +
             '`bank upgrade` - Upgrade your bank level.'
           )
           .setFooter({

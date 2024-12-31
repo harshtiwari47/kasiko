@@ -18,7 +18,8 @@ import {
 const aquaData = readAquaticData();
 
 
-export async function viewCollection(userId, channel) {
+export async function viewCollection(userId, context) {
+  const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
   try {
     let userData = await getUserData(userId);
     const userCollection = userData.aquaCollection;
@@ -30,9 +31,16 @@ export async function viewCollection(userId, channel) {
       .setColor(0x0099FF)
       .setDescription("⚠️ User doesn't have any 🦦fish!");
 
-      return channel.send({
-        embeds: [embed]
-      });
+      if (isInteraction) {
+        if (!context.deferred) await context.deferReply();
+        return await context.editReply({
+          embeds: [embed]
+        });
+      } else {
+        return context.send({
+          embeds: [embed]
+        });
+      }
     } else {
       Object.values(userCollection.toJSON()).forEach((fish, i) => {
         if (fish.name) {
@@ -101,17 +109,29 @@ export async function viewCollection(userId, channel) {
       .setDisabled(chunkedCollection.length === 1)
     );
 
-    const sentMessage = await channel.send({
-      embeds: embeds[currentPage], // Send first embed
-      components: [row]
-    });
+    let sentMessage;
+    if (isInteraction) {
+      if (!context.deferred) await context.deferReply();
+      return await context.editReply({
+        embeds: embeds[currentPage], // Send first embed
+        components: [row]
+      });
+    } else {
+      sentMessage = await context.send({
+        embeds: embeds[currentPage], // Send first embed
+        components: [row]
+      });
+    }
 
     const collector = sentMessage.createMessageComponentCollector({
       filter: interaction => interaction.user.id === userId, // Only the author can interact
       time: 60000 // 1 minute timeout
     });
 
-    collector.on('collect', interaction => {
+    collector.on('collect', async (interaction) => {
+      if (interaction.replied || interaction.deferred) return; // Do not reply again
+
+      await interaction.deferUpdate();
       if (interaction.customId === 'next') {
         currentPage++;
       } else if (interaction.customId === 'prev') {
@@ -131,7 +151,7 @@ export async function viewCollection(userId, channel) {
         .setDisabled(currentPage === embeds.length - 1)
       );
 
-      interaction.update({
+      interaction.editReply({
         embeds: embeds[currentPage], // Send updated embed with the current page
         components: [updatedRow]
       });
@@ -159,11 +179,22 @@ export async function viewCollection(userId, channel) {
 
   } catch (e) {
     console.error(e);
-    return channel.send("⚠️ Something went wrong while visiting **User's Collection**");
+    if (isInteraction) {
+      if (!context.deferred) await context.deferReply();
+      return await context.editReply({
+        content: "⚠️ Something went wrong while visiting **User's Collection**"
+
+      });
+    } else {
+      return context.send("⚠️ Something went wrong while visiting **User's Collection**");
+    }
   }
 }
 
-export async function viewAquarium(userId, channel) {
+export async function viewAquarium(userId,
+  context) {
+  const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
+
   try {
     let userData = await getUserData(userId);
     const aquarium = userData.aquarium || [];
@@ -217,17 +248,145 @@ export async function viewAquarium(userId, channel) {
     .setDescription(`${aquariumDisplay}\n Minimum Collection: <:kasiko_coin:1300141236841086977> ${totalReward}`)
     .setColor('#00BFFF'); // Choose a color for the embed
 
+    let canCollect = true;
+    const currentTime = Date.now();
+
+    const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
+    if (userData.aquariumCollectionTime && (currentTime - userData.aquariumCollectionTime) < twelveHours) {
+      const timeLeft = twelveHours - (currentTime - userData.aquariumCollectionTime);
+      const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+      const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+      canCollect = false;
+      aquariumEmbed.setFooter({
+        text: `⏱️ Time Left: ${hours} hours and ${minutes} minutes`
+      });
+    }
+
+    const rowComp = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId('collect_aquarium_reward')
+      .setLabel('Collect 💰')
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(canCollect ? false: true),
+      new ButtonBuilder()
+      .setCustomId('ocean_collection')
+      .setLabel(`📒`)
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(false),
+      new ButtonBuilder()
+      .setCustomId('aquarium_help')
+      .setLabel(`⚠️`)
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(false)
+    );
+
     // Send the embed
-    return channel.send({
-      embeds: [aquariumEmbedTitle, aquariumEmbed]
+    let responseMessage;
+    if (isInteraction) {
+      if (!context.deferred) await context.deferReply();
+      responseMessage = await context.editReply({
+        embeds: [aquariumEmbedTitle, aquariumEmbed],
+        components: [rowComp]
+      });
+    } else {
+      responseMessage = await context.send({
+        embeds: [aquariumEmbedTitle, aquariumEmbed],
+        components: [rowComp]
+      });
+    }
+
+    const collector = responseMessage.createMessageComponentCollector({
+      time: 120 * 1000,
     });
+
+    let collectorEnded = false;
+
+    collector.on('collect', async (interaction) => {
+      if (interaction.replied || interaction.deferred) return; // Do not reply again
+      try {
+        // Only the original user
+        if (interaction.user.id !== userId) {
+          return interaction.reply({
+            content: 'You are not allowed to interact!',
+            ephemeral: true,
+          });
+        }
+
+        if (collectorEnded) {
+          return; // Do nothing if it's ended
+        }
+
+        if (interaction.customId === 'collect_aquarium_reward') {
+          await interaction.deferReply();
+          collectorEnded = true;
+          await collectAquariumReward(interaction, interaction.user);
+          collector.end();
+        }
+
+        if (interaction.customId === 'aquarium_help') {
+          await interaction.deferReply({
+            ephemeral: true
+          })
+          const infoAqEmbed = new EmbedBuilder()
+          .setDescription(`In your aquarium, you can add up to three fishes from your \`ocean collection\`. The higher the level or rarity (legendary), the greater the aquarium's value. You can collect value cash from random virtual visitors every 12 hours.\n` +
+            `### Commands:\n` +
+            `**Add a fish: ** \`aquarium add <fish_name>\`\n` +
+            `**Remove a fish: ** \`aquarium remove <fish_name>\`\n` +
+            `**Feed a fish: ** \`aquarium feed <fish_name> <food_amount>\`\n` +
+            `**Sell a fish: ** \`aquarium sell <fish_name> <fish_amount>\`\n\n` +
+
+            `\`\`\`You can use 'aq' in place of 'aquarium'\`\`\`\n` +
+            `Happy aquariums!
+            `)
+          return interaction.editReply({
+            embeds: [infoAqEmbed],
+            ephemeral: true
+          })
+        }
+
+        if (interaction.customId === 'ocean_collection') {
+          await interaction.deferReply();
+          await viewCollection(interaction.user.id, interaction);
+        }
+      } catch (e) {
+        await interaction.reply({
+          content: '⚠️ Something went wrong while performing aquarium command button!'
+        });
+        return;
+      }
+    });
+
+    collector.on("end",
+      async (collected, reason) => {
+        collectorEnded = true;
+        const channel = context?.channel || context;
+        const fetchedMsg = await channel.messages.fetch(responseMessage.id);
+        if (!fetchedMsg) return;
+        const oldRow = fetchedMsg.components[0];
+        const row = ActionRowBuilder.from(oldRow);
+        row.components.forEach((btn) => btn.setDisabled(true));
+
+        await fetchedMsg.edit({
+          components: [row],
+        });
+      });
+
   } catch (e) {
     console.error(e);
-    return channel.send("⚠️ Something went wrong while viewing your aquarium.");
+    if (isInteraction) {
+      if (!context.deferred) await context.deferReply();
+      return await context.editReply({
+        content: "⚠️ Something went wrong while viewing your aquarium."
+      });
+    } else {
+      return context.send("⚠️ Something went wrong while viewing your aquarium.");
+    }
   }
 }
 
-export async function addToAquarium(userId, animal, channel) {
+export async function addToAquarium(userId,
+  animal,
+  channel) {
   try {
     let userData = await getUserData(userId);
 
@@ -306,17 +465,17 @@ export async function feedAnimals(animal, amount, message) {
 
     let foodReqToLvlUp = Number(aquaAnimal.foodReq);
     let currentFoodAmount = Number(userData.aquaCollection[capitalizedName].food) + amount;
-    let remainder = currentFoodAmount % foodReqToLvlUp;
-    let level = (currentFoodAmount - remainder) / foodReqToLvlUp;
+    let level = Math.floor(currentFoodAmount / foodReqToLvlUp);
+    if (level < 2) level = 2
 
-    if (userData.aquaCollection[capitalizedName].level + level > 100) {
+    if (level > 100) {
       return message.channel.send(
         `⚠️ **${message.author.username}**, fishes can reach a maximum level of 100. You can't feed them beyond this level. Please reduce the feed amount if your fish is not yet at level 100.`
       );
     }
 
-    userData.aquaCollection[capitalizedName].food += remainder;
-    userData.aquaCollection[capitalizedName].level += level;
+    userData.aquaCollection[capitalizedName].food += amount;
+    userData.aquaCollection[capitalizedName].level += level - userData.aquaCollection[capitalizedName].level;
     userData.cash -= feedCost;
     await updateUser(message.author.id, userData);
 
@@ -364,11 +523,12 @@ export async function sellAnimals(animal, amount, message) {
   }
 }
 
-export async function collectAquariumReward(message) {
+export async function collectAquariumReward(context, author) {
+  const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
   try {
     const currentTime = Date.now();
 
-    const userData = await getUserData(message.author.id);
+    const userData = await getUserData(author.id);
 
     // Check if 12 hours have passed since the last collection
     const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
@@ -377,13 +537,27 @@ export async function collectAquariumReward(message) {
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
 
-      return message.channel.send(`⚠️ You can collect again in ${hours} hours and ${minutes} minutes.`);
+      if (context.isCommand) {
+        if (!context.deferred) await context.deferReply();
+        return await context.editReply({
+          content: `⚠️ You can collect again in ${hours} hours and ${minutes} minutes.`
+        });
+      } else {
+        return context.send(`⚠️ You can collect again in ${hours} hours and ${minutes} minutes.`);
+      }
     }
 
     const aquarium = userData.aquarium;
 
     if (!aquarium || aquarium.length === 0) {
-      return message.channel.send('⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.');
+      if (context.isCommand) {
+        if (!context.deferred) await context.deferReply();
+        return await context.editReply({
+          content: `⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.`
+        });
+      } else {
+        return channel.send('⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.');
+      }
     }
 
     // Randomly determine the number of visitors (10-30)
@@ -421,7 +595,7 @@ export async function collectAquariumReward(message) {
     // Update user's cash and last collection time
     userData.cash += totalReward;
     userData.aquariumCollectionTime = currentTime;
-    await updateUser(message.author.id,
+    await updateUser(author.id,
       userData);
 
     const embed = new EmbedBuilder()
@@ -446,14 +620,27 @@ export async function collectAquariumReward(message) {
     .setTimestamp();
 
 
-    return message.channel.send({
-      embeds: [embed]
-    });
-
+    if (context.isCommand) {
+      if (!context.deferred) await context.deferReply();
+      return await context.editReply({
+        embeds: [embed]
+      });
+    } else {
+      return context.send({
+        embeds: [embed]
+      });
+    }
   } catch (error) {
     console.error('Error in aquarium collection:',
       error);
-    return message.channel.send('⚠️ There was an error collecting your aquarium rewards. Please try again later.');
+    if (context.isCommand) {
+      if (!context.deferred) await context.deferReply();
+      return await context.editReply({
+        content: '⚠️ There was an error collecting your aquarium rewards. Please try again later.'
+      });
+    } else {
+      return context.send('⚠️ There was an error collecting your aquarium rewards. Please try again later.');
+    }
   }
 }
 
@@ -486,7 +673,7 @@ export default {
     switch (action) {
     case "collect":
     case "c":
-      return collectAquariumReward(message);
+      return collectAquariumReward(message.channel, message.author);
 
     case "add":
     case "a":
