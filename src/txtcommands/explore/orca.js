@@ -156,7 +156,7 @@ async function prayToOrca(serverId, userId, username, guildName) {
 /**
 * Builds an embed that describes the current Orca state so we can show it in the Control Panel.
 */
-function buildOrcaEmbed(orca) {
+async function buildOrcaEmbed(orca) {
   let desc = '';
   let title = '◈✦ 𝑇ℎ𝑒 𝑂𝑟𝑐𝑎 𝑄𝑢𝑒𝑠𝑡 ✦◈';
   let discovered = false;
