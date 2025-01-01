@@ -98,7 +98,7 @@ export default {
     // Generate a random dragon boss
     let boss = dragons[Math.floor(Math.random() * dragons.length)];
     boss.health = 100 + Math.floor(Math.random() * 1000);
-    boss.level = Math.ceil(Math.random() * 3);
+    boss.level = Math.ceil(Math.random() * 4);
 
     // Create a new battle
     const battle = new Battle( {

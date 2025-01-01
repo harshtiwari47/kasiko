@@ -74,7 +74,14 @@ export async function viewCollection(userId, context) {
 
         // Add fish details to embed description
         let description = '';
-        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> **${fish.animals}** (${fish.rarity.substring(0, 1).toUpperCase()})\n`;
+        let iconRarity = ``;
+        
+        if (fish.rarity.substring(0, 1).toUpperCase() === "L") iconRarity = `<:legendary:1323917783745953812>`
+        if (fish.rarity.substring(0, 1).toUpperCase() === "U") iconRarity = `<:uncommon:1323917867644882985>`
+        if (fish.rarity.substring(0, 1).toUpperCase() === "C") iconRarity = `<:common:1323917805191434240>`
+        if (fish.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
+        
+        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> **${fish.animals}** (${iconRarity})\n`;
         description += `**Lvl**: ${fish.level} **Dmg**: ${fish.damage}\n**CPF**: ${fish.feedCost} **CPS**: ${fish.sellAmount}\n\n`;
         embed.setDescription(description.trim());
 
@@ -106,13 +113,18 @@ export async function viewCollection(userId, context) {
       .setCustomId('next')
       .setLabel('▶')
       .setStyle(ButtonStyle.Primary)
-      .setDisabled(chunkedCollection.length === 1)
+      .setDisabled(chunkedCollection.length === 1),
+      new ButtonBuilder()
+      .setCustomId('aquarium_view')
+      .setLabel('Aquarium 🐠')
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(false)
     );
 
     let sentMessage;
     if (isInteraction) {
       if (!context.deferred) await context.deferReply();
-      return await context.editReply({
+      sentMessage = await context.editReply({
         embeds: embeds[currentPage], // Send first embed
         components: [row]
       });
@@ -124,17 +136,16 @@ export async function viewCollection(userId, context) {
     }
 
     const collector = sentMessage.createMessageComponentCollector({
-      filter: interaction => interaction.user.id === userId, // Only the author can interact
+      filter: resp => resp.user.id === userId, // Only the author can interact
       time: 60000 // 1 minute timeout
     });
 
-    collector.on('collect', async (interaction) => {
-      if (interaction.replied || interaction.deferred) return; // Do not reply again
-
-      await interaction.deferUpdate();
-      if (interaction.customId === 'next') {
+    collector.on('collect', async (response) => {
+      if (response.customId === 'next') {
+        if (!response.deferred) await response.deferUpdate();
         currentPage++;
-      } else if (interaction.customId === 'prev') {
+      } else if (response.customId === 'prev') {
+        if (!response.deferred) await response.deferUpdate();
         currentPage--;
       }
 
@@ -148,13 +159,24 @@ export async function viewCollection(userId, context) {
         .setCustomId('next')
         .setLabel('▶')
         .setStyle(ButtonStyle.Primary)
-        .setDisabled(currentPage === embeds.length - 1)
+        .setDisabled(currentPage === embeds.length - 1),
+        new ButtonBuilder()
+        .setCustomId('aquarium_view')
+        .setLabel('Aquarium 🐠')
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(currentPage === 0 ? false: true)
       );
 
-      interaction.editReply({
-        embeds: embeds[currentPage], // Send updated embed with the current page
-        components: [updatedRow]
-      });
+      if (response.customId === 'aquarium_view') {
+        if (!response.deferred) await response.deferReply();
+        collector.stop();
+        await viewAquarium(response.user.id, response);
+      } else {
+        response.editReply({
+          embeds: embeds[currentPage], // Send updated embed with the current page
+          components: [updatedRow]
+        });
+      }
     });
 
     collector.on('end',
@@ -169,6 +191,11 @@ export async function viewCollection(userId, context) {
           .setCustomId('next')
           .setLabel('▶')
           .setStyle(ButtonStyle.Primary)
+          .setDisabled(true),
+          new ButtonBuilder()
+          .setCustomId('aquarium_view')
+          .setLabel('Aquarium 🐠')
+          .setStyle(ButtonStyle.Success)
           .setDisabled(true)
         );
 
@@ -183,7 +210,6 @@ export async function viewCollection(userId, context) {
       if (!context.deferred) await context.deferReply();
       return await context.editReply({
         content: "⚠️ Something went wrong while visiting **User's Collection**"
-
       });
     } else {
       return context.send("⚠️ Something went wrong while visiting **User's Collection**");
@@ -349,7 +375,7 @@ export async function viewAquarium(userId,
           await viewCollection(interaction.user.id, interaction);
         }
       } catch (e) {
-        if (!context.deferred) await context.deferReply();
+        if (!interaction.deferred) await interaction.deferReply();
         await interaction.followUp({
           content: '⚠️ Something went wrong while performing aquarium command button!'
         });

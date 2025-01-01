@@ -120,7 +120,7 @@ export async function startBattleLoop(guildId, channelId) {
         embeds: [attackEmbed]
       });
     },
-      18000); // Every 18 seconds
+      12000); // Every 12 seconds
     battleInterval.unref();
   } catch (e) {
     console.error(e);

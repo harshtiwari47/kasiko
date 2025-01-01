@@ -132,16 +132,16 @@ async function prayToOrca(serverId, userId, username, guildName) {
   if (isHunter) {
     userData.cash = (userData.cash || 0) + hunterReward;
     userData.orca.count = (userData.orca.count || 0) + 1;
-    message = `**${username}** (the Orca discoverer) prayed and received **50,000** cash!`;
+    message = `**${username}** (the Orca discoverer) prayed and received <:kasiko_coin:1300141236841086977> **50,000** cash!`;
   } else {
     // If same server
     if (orca.serverId === serverId) {
       userData.cash = (userData.cash || 0) + serverReward;
-      message = `**${username}** prayed and received **2,500** cash (same server reward)!`;
+      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **2,500** cash (same server reward)!`;
     } else {
       // Different server
       userData.cash = (userData.cash || 0) + otherReward;
-      message = `**${username}** prayed and received **1,000** cash (another server's Orca).`;
+      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **1,000** cash (another server's Orca).`;
     }
   }
 

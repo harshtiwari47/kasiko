@@ -116,8 +116,8 @@ export async function give(message, userId, amount, recipientId) {
           // Send confirmation
           await interaction.editReply({
             content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to **<@${recipientId}>**! 💸 Keep spreading the wealth!`,
-            embeds: [embed.setColor('#81f1a6')],
-            components: [rowDisabled],
+            embeds: [],
+            components: [],
           });
 
           collector.stop();
@@ -161,7 +161,8 @@ export async function give(message, userId, amount, recipientId) {
             );
 
             return await replyMessage.edit({
-              components: [rowDisabled],
+              embeds: [],
+              components: [],
             });
           } catch (err) {
             console.error("Error disabling buttons after timeout:", err);

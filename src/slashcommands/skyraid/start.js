@@ -71,7 +71,7 @@ export default {
 
     // Notify the channel
     const embed = new EmbedBuilder()
-    .setDescription(`# 🚨🔥 Battle Started!\nThe battle against ${battle.boss.emoji} **${battle.boss.typeId}** has begun! Good luck to all participants.${(battle.boss.health/battle.players.length < battle.players.length * 100) ? "\n-# \`⚠️🏺 Oh no, boss used a special potion, new health: ❤️ " + (newHealth) + "\`": ""}`)
+    .setDescription(`# 🚨🔥 Battle Started!\nThe battle against ${battle.boss.emoji} **${battle.boss.typeId}** has begun! Good luck to all participants.${newHealth ? "\n-# \`⚠️🏺 Oh no, boss used a special potion, new health: ❤️ " + (newHealth) + "\`": ""}`)
     .setImage(battle.boss.image)
     .setColor('#7fe4da');
 

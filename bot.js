@@ -118,7 +118,7 @@ client.on('messageCreate', async (message) => {
         return;
       }
     } catch (e) {
-      console.error("There is an error while checkasng bot permissions!");
+      console.error("There is an error while checking bot permissions!");
     }
 
     // check user exist

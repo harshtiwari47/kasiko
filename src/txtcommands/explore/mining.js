@@ -22,9 +22,17 @@ import {
 const COAL_EMOJI = '<:coal:1312372037058170950>';
 const COAL_VALUE = 100; // 1 coal = 100 cash
 
-async function startMining(message) {
-  const userId = message.author.id;
+async function handleMessage(context, data) {
+  const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
+  if (isInteraction) {
+    if (!context.deferred) await context.deferReply();
+    return await context.editReply(data);
+  } else {
+    return context.send(data);
+  }
+}
 
+async function startMining(userId, username) {
   try {
     // Try to find the user's mining session from the database
     const userMining = await Mining.findOne({
@@ -44,7 +52,9 @@ async function startMining(message) {
       if (hours > 0) timeElapsed += `${hours} hour${hours > 1 ? 's': ''} `;
       if (minutes > 0) timeElapsed += `${minutes} minute${minutes > 1 ? 's': ''}`;
 
-      return message.channel.send(`⛏️ **${message.author.username}**, you are already mining! Time elapsed: ${timeElapsed}.`);
+      return {
+        content: `⛏️ **${username}**, you are already mining! Time elapsed: ${timeElapsed}.`
+      }
     }
 
     // If no mining session exists, create a new one
@@ -60,200 +70,310 @@ async function startMining(message) {
       }
     );
 
-    const embed = new EmbedBuilder()
-    .setColor(0x000000)
-    .setTitle("⛏️ Mining Started!")
-    .setThumbnail("https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg")
-    .setDescription(
-      `**${message.author.username}**, you have started mining. You can collect resources every 10 minutes. Your storage capacity is **${10 + updatedMining.level * 5}** coal.`
-    )
-    .setFooter({
-      text: "Type 'mine collect' to gather your coal."
-    });
-
-    message.channel.send({
-      embeds: [embed]
-    });
+    return {
+      content: `**${username}**, you have started mining. You can collect resources every 10 minutes. Your storage capacity is **${10 + updatedMining.level * 5}** coal.`
+    };
   } catch (error) {
     console.error("Error in startMining:", error);
-    message.channel.send("⚠️ Something went wrong while starting your mining session. Please try again later.");
+    return {
+      content: `⚠️ Something went wrong while starting your mining session. Please try again later.`
+    }
   }
 }
 
-async function collectResources(message) {
-  const userId = message.author.id;
-  const userMining = await Mining.findOne({
-    userId
-  });
+async function collectResources(userId, context, username) {
+  try {
+    const userMining = await Mining.findOne({
+      userId
+    });
 
-  if (!userMining || !userMining.startTime) {
-    return message.channel.send(`⛏️ **${message.author.username}**, you are not currently mining. Start mining with \`mine\`.`);
+    if (!userMining || !userMining.startTime) {
+      return {
+        content: `⛏️ **${username}**, you are not currently mining. Start mining with \`mine\`.`
+      }
+    }
+
+    const timeElapsed = Math.floor((Date.now() - new Date(userMining.startTime)) / 600000); // Coal per 10 minutes
+    if (timeElapsed <= 0) {
+      return {
+        content: `⛏️ Not enough time has passed to collect resources.`
+      }
+    }
+
+    const coalToAdd = Math.min(timeElapsed + userMining.level, 10 + userMining.level * 5 - userMining.collected);
+    if (coalToAdd <= 0) {
+      return {
+        content: `⛏️ **${username}**, your storage is full! Exchange coal or upgrade your level.`
+      }
+    }
+
+    userMining.collected += coalToAdd;
+    userMining.startTime = new Date();
+    await userMining.save();
+
+    let metalFound = null;
+
+    if (Math.random() > 0.85) {
+      metalFound = await randomMetalsReward(userId);
+    }
+
+    return {
+      content: `**${username}**, you collected **${coalToAdd} ${COAL_EMOJI}**\nCurrent storage: **${userMining.collected} ${COAL_EMOJI}**\n${metalFound ? "Wait, you’ve found something while mining:" + metalFound: ""}`,
+      collected: `${userMining.collected}`
+    }
+  } catch (e) {
+    console.error(e);
+    return {
+      content: "⚠️ Something went wrong while collecting your mine."
+    }
   }
-
-  const timeElapsed = Math.floor((Date.now() - new Date(userMining.startTime)) / 600000); // Coal per 10 minutes
-  if (timeElapsed <= 0) {
-    return message.channel.send("⛏️ Not enough time has passed to collect resources.");
-  }
-
-  const coalToAdd = Math.min(timeElapsed + userMining.level, 10 + userMining.level * 5 - userMining.collected);
-  if (coalToAdd <= 0) {
-    return message.channel.send(`⛏️ **${message.author.username}**, your storage is full! Exchange coal or upgrade your level.`);
-  }
-
-  userMining.collected += coalToAdd;
-  userMining.startTime = new Date();
-  await userMining.save();
-
-  let metalFound = null;
-
-  if (Math.random() > 0.85) {
-    metalFound = await randomMetalsReward(userId);
-  }
-
-  const embed = new EmbedBuilder()
-  .setColor(0x0f1714)
-  .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
-  .setTitle("⛏️ 𝐑𝐞𝐬𝐨𝐮𝐫𝐜𝐞𝐬 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐞𝐝")
-  .setDescription(`**${message.author.username}**, you collected **${coalToAdd} ${COAL_EMOJI}**\nCurrent storage: **${userMining.collected} ${COAL_EMOJI}**\n${metalFound ? "Wait, you’ve found something while mining:" + metalFound: ""}`)
-  .setFooter({
-    text: "Type 'mine exchange' to convert coal to cash."
-  });
-
-  message.channel.send({
-    embeds: [embed]
-  });
 }
 
-async function exchangeCoal(message) {
-  const userId = message.author.id;
-  const userMining = await Mining.findOne({
-    userId
-  });
-  const userData = await getUserData(userId);
+async function exchangeCoal(userId, context, username) {
+  try {
+    const userMining = await Mining.findOne({
+      userId
+    });
+    const userData = await getUserData(userId);
 
-  if (!userMining || userMining.collected <= 0) {
-    return message.channel.send(`⛏️ **${message.author.username}**,
-      you have no coal to exchange.`);
+    if (!userMining || userMining.collected <= 0) {
+      return await {
+        content: `⛏️ **${username}**,
+        you have no coal to exchange.`
+      };
+    }
+
+    const coalExchanged = userMining.collected;
+    const cashEarned = coalExchanged * COAL_VALUE;
+
+    userData.cash += cashEarned;
+    // Update UserData and reset collected coal
+    await updateUser(userId, userData);
+
+    userMining.collected = 0;
+    await userMining.save();
+
+    return {
+      content: `**${username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()} cash**.`,
+      collected: true
+    };
+  } catch (e) {
+    console.error(e);
+    return {
+      content: "⚠️ Something went wrong while exchanging your coals."
+    };
   }
-
-  const coalExchanged = userMining.collected;
-  const cashEarned = coalExchanged * COAL_VALUE;
-
-  userData.cash += cashEarned;
-  // Update UserData and reset collected coal
-  await updateUser(userId, userData);
-
-  userMining.collected = 0;
-  await userMining.save();
-
-  const embed = new EmbedBuilder()
-  .setColor(0xf4e500)
-  .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
-  .setTitle("⛏️💰 𝐄𝐱𝐜𝐡𝐚𝐧𝐠𝐞 𝐂𝐨𝐦𝐩𝐥𝐞𝐭𝐞")
-  .setDescription(`**${message.author.username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()} cash**.`)
-  .setFooter({
-    text: "Keep mining for more resources!"
-  });
-
-  message.channel.send({
-    embeds: [embed]
-  });
 }
 
-async function mineHelp(message) {
+function mineHelp() {
   const embed = new EmbedBuilder()
-  .setColor(0x0099ff)
   .setTitle("⛏️ Mining Help")
   .setDescription("Here are the commands to help you with mining:")
   .addFields(
     {
-      name: "**`mine`**", value: "Start your mining session. Collect coal every 10 minutes."
+      name: "**`MINE`**", value: "Start your mining session. Check your current mining status, including level, storage capacity, and collected coal."
     },
     {
-      name: "**`mine collect`**", value: "Collect the coal you have gathered from your mining session."
-    },
-    {
-      name: "**`mine status`**", value: "Check your current mining status, including level, storage capacity, and collected coal."
-    },
-    {
-      name: "**`mine exchange`**", value: `Convert your coal into cash. One coal is equivalent to ${
-      COAL_VALUE
-      } cash`
-    },
-    {
-      name: "**`mine upgrade`**", value: "Upgrade your mining level to increase storage capacity and mining efficiency."
-    },
+      name: "Buttons",
+      value: "**`collect`**: Collect the coal you have gathered from your mining session. Collect coal every 10 minutes.\n\n**`exchange`**: Convert your coal into cash. One coal is equivalent to " + COAL_VALUE + " cash.\n\n**`upgrade`**: Upgrade your mining level to increase storage capacity and mining efficiency."
+    }
   )
   .setFooter({
     text: "Use these commands to manage your mining. Happy mining!"
   });
 
-  message.channel.send({
+  return {
     embeds: [embed]
-  });
-}
-
-async function viewMiningStatus(message) {
-  const userId = message.author.id;
-  const userMining = await Mining.findOne({
-    userId
-  });
-
-  if (!userMining) {
-    return message.channel.send(`⛏️ **${
-      message.author.username
-      }**,
-      you haven't started mining yet. Start mining with \`mine\`.`);
   }
-
-  const timeElapsed = Math.floor((Date.now() - new Date(userMining.startTime)) / 600000); // Minutes divided by 10
-  const availableCoal = Math.min(timeElapsed + userMining.level, 10 + userMining.level * 5 - userMining.collected);
-
-  const embed = new EmbedBuilder()
-  .setColor(0x17140f)
-  .setTitle("⛏️ 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬")
-  .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
-  .addFields(
-    {
-      name: "Level", value: `${userMining.level}`, inline: true
-    },
-    {
-      name: "Storage Capacity", value: `${10 + userMining.level * 5} ${COAL_EMOJI}`, inline: true
-    },
-    {
-      name: "Collected", value: `${userMining.collected} ${COAL_EMOJI}`, inline: true
-    },
-    {
-      name: "Available to Collect", value: `${availableCoal} ${COAL_EMOJI}`, inline: true
-    },
-    {
-      name: "Upgrade Cost", value: `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`, inline: true
-    }
-  )
-  .setFooter({
-    text: "Type 'mine collect' to gather your coal or 'mine exchange <amount>' to convert coal to cash."
-  });
-
-  message.channel.send({
-    embeds: [embed]
-  });
 }
 
-async function upgradeMine(message) {
-  const userId = message.author.id;
+async function viewMiningStatus(userId, context, username) {
+  const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
 
   try {
     const userMining = await Mining.findOne({
       userId
     });
 
+    let miningStatus = await startMining(userId, username);
+
+    const timeElapsed = Math.floor((Date.now() - new Date(userMining.startTime)) / 600000); // Minutes divided by 10
+    const availableCoal = Math.min(timeElapsed + userMining.level, 10 + userMining.level * 5 - userMining.collected);
+
+    const mineHeader = new EmbedBuilder()
+    .setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n${miningStatus.content}`)
+
+    const embed = new EmbedBuilder()
+    .setColor(0x17140f)
+    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
+    .addFields(
+      {
+        name: "Level", value: `${userMining.level}`, inline: true
+      },
+      {
+        name: "Storage Capacity", value: `${10 + userMining.level * 5} ${COAL_EMOJI}`, inline: true
+      },
+      {
+        name: "Collected", value: `${userMining.collected} ${COAL_EMOJI}`, inline: true
+      },
+      {
+        name: "Available to Collect", value: `${availableCoal} ${COAL_EMOJI}`, inline: true
+      },
+      {
+        name: "Upgrade Cost", value: `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`, inline: true
+      }
+    )
+    .setFooter({
+      text: "Happy Mining!"
+    });
+
+    let canCollect = true;
+
+    const rowComp = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId('collect_mine')
+      .setLabel('Collect ⛏️')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(canCollect ? false: true),
+      new ButtonBuilder()
+      .setCustomId('upgrade_mine')
+      .setLabel(`Upgrade 🔼`)
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(false),
+      new ButtonBuilder()
+      .setCustomId('exchange_mine')
+      .setLabel(`Exchange 💰`)
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(false),
+      new ButtonBuilder()
+      .setCustomId('mine_help')
+      .setLabel(`⚠️`)
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(false)
+    );
+
+
+    let responseMessage = await handleMessage(context, {
+      embeds: [mineHeader, embed],
+      components: [rowComp]
+    });
+
+    const collector = responseMessage.createMessageComponentCollector({
+      time: 120 * 1000,
+    });
+
+    let collectorEnded = false;
+
+    collector.on('collect', async (interaction) => {
+      if (interaction.replied || interaction.deferred) return; // Do not reply again
+      try {
+        if (interaction.user.id !== userId) {
+          return interaction.reply({
+            content: 'You are not allowed to interact!',
+            ephemeral: true,
+          });
+        }
+
+        if (interaction.customId === 'collect_mine') {
+          await interaction.deferUpdate();
+          let response = await collectResources(interaction.user.id, interaction, interaction.user.username);
+
+          const fields = embed.data.fields;
+          if (response.collected) {
+            fields[2].value = `${response.collected}`;
+            fields[3].value = `0`;
+          }
+
+          if (response.content) {
+            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n${response.content}`);
+          }
+
+          return await interaction.editReply({
+            embeds: [mineHeader, embed.setFields(fields)]
+          })
+        }
+
+        if (interaction.customId === 'upgrade_mine') {
+          await interaction.deferUpdate();
+          let response = await upgradeMine(interaction.user.id, interaction.user.username);
+
+          const fields = embed.data.fields;
+          if (response.upgraded) {
+            fields[0].value = `${response.level}`;
+            fields[1].value = `${response.newCapacity}`;
+            fields[4].value = "<:kasiko_coin:1300141236841086977> " + response.newCost;
+          }
+
+          if (response.content) {
+            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n${response.content}`);
+          }
+
+          return await interaction.editReply({
+            embeds: [mineHeader, embed.setFields(fields)]
+          })
+        }
+
+        if (interaction.customId === 'exchange_mine') {
+          await interaction.deferUpdate();
+          let response = await exchangeCoal(interaction.user.id, interaction, interaction.user.username);
+
+          const fields = embed.data.fields;
+          if (response.collected) {
+            fields[2].value = `0`;
+          }
+
+          if (response.content) {
+            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n${response.content}`);
+          }
+
+          return await interaction.editReply({
+            embeds: [mineHeader, embed.setFields(fields)]
+          })
+        }
+
+        if (interaction.customId === 'mine_help') {
+          await interaction.deferReply({
+            ephemeral: true
+          });
+          return await interaction.editReply(mineHelp());
+        }
+
+      } catch (err) {
+        console.error(err)
+        if (!interaction.deferred) await interaction.deferReply();
+        await interaction.followUp({
+          content: '⚠️ Something went wrong while performing mine command button!'
+        });
+      }
+    });
+
+  } catch (e) {
+    console.error(e);
+    await handleMessage(context,
+      {
+        content: "⚠️ Something went wrong while viewing your mine."
+      });
+    return;
+  }
+}
+
+async function upgradeMine(userId, username) {
+  try {
+    const userMining = await Mining.findOne({
+      userId
+    });
+
     if (!userMining) {
-      return message.channel.send(`⛏️ **${message.author.username}**, you haven't started mining yet. Start mining with \`mine\`.`);
+      return {
+        content: `⛏️ **${username}**, you haven't started mining yet. Start mining with \`mine\`.`
+      }
     }
 
     const maxLevel = 10;
     if (userMining.level >= maxLevel) {
-      return message.channel.send(`⛏️ **${message.author.username}**, you have already reached the maximum mining level!`);
+      return {
+        content: `⛏️ **${username}**, you have already reached the maximum mining level!`
+      }
     }
 
     const upgradeCost = 5000 * userMining.level;
@@ -262,7 +382,9 @@ async function upgradeMine(message) {
 
     // Check if the user has enough cash for the upgrade
     if (userData.cash < upgradeCost) {
-      return message.channel.send(`⛏️ **${message.author.username}**, you don't have enough cash to upgrade your mine. You need **${upgradeCost} cash**.`);
+      return {
+        content: `⛏️ **${username}**, you don't have enough cash to upgrade your mine. You need **${upgradeCost} cash**.`
+      }
     }
 
     // Deduct the cash for the upgrade
@@ -271,26 +393,22 @@ async function upgradeMine(message) {
 
     userMining.level += 1;
 
-    const newCapacity = 10 + userMining.level * 5;
+    const newCapacity = `${10 + userMining.level * 5}`;
 
     await userMining.save();
 
-    const embed = new EmbedBuilder()
-    .setColor(0x0f122a)
-    .setTitle("⛏️ 𝐌𝐢𝐧𝐞 𝐔𝐩𝐠𝐫𝐚𝐝𝐞𝐝!")
-    .setDescription(
-      `Congratulations! **${message.author.username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**. You spent <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()} cash** on the upgrade.`
-    )
-    .setFooter({
-      text: "Type 'mine collect' to gather your coal."
-    });
-
-    message.channel.send({
-      embeds: [embed]
-    });
+    return {
+      content: `Congratulations! **${username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**. You spent <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()} cash** on the upgrade.`,
+      upgraded: true,
+      level: userMining.level,
+      newCost: 5000 * userMining.level,
+      newCapacity
+    };
   } catch (error) {
     console.error("Error in upgradeMine:", error);
-    message.channel.send("⚠️ Something went wrong while upgrading your mine. Please try again later.");
+    return {
+      content: "⚠️ Something went wrong while upgrading your mine. Please try again later."
+    }
   }
 }
 
@@ -302,30 +420,21 @@ export default {
   cooldown: 100000,
   execute: async (args, message) => {
     try {
-      const action = args[1] ? args[1].toLowerCase(): "mine";
+      const action = args[1] ? args[1].toLowerCase(): null;
 
       if (!args[1]) {
-        return await startMining(message);
+        return await viewMiningStatus(message.author.id, message.channel, message.author.username);
       }
 
       switch (action) {
-      case "collect":
-        await collectResources(message);
-        break;
-      case "status":
-        await viewMiningStatus(message);
-        break;
-      case "upgrade":
-        await upgradeMine(message);
-        break;
-      case "exchange":
-        await exchangeCoal(message);
+      case "start":
+        return await startMining(message.author.id, message.author.username);
         break;
       case "help":
-        await mineHelp(message);
+        return await message.channel.send(mineHelp());
         break;
       default:
-        return message.channel.send("⛏️ Invalid command! Use `status`, `help`, `upgrade`, `collect`, or `exchange`.");
+        return await viewMiningStatus(message.author.id, message.channel, message.author.username);
       }
     } catch (e) {
       console.error(e);
