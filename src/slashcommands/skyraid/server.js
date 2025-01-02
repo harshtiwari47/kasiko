@@ -20,7 +20,7 @@ export default {
       const bossStats = Object.entries(guildData.bossDefeated.toJSON()).map(([boss, count]) => `**${boss}**: ${count}`).join('\n-# - ');
 
       // Prepare badges
-      const badges = guildData.badges.length > 0 ? guildData.badges.join(', ') : 'None';
+      const badges = guildData.badges.length > 0 ? guildData.badges.join(' ') : 'None';
 
       // Create embed
       const embed = new EmbedBuilder()

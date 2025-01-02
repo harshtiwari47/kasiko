@@ -73,6 +73,12 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
 
   collector.on('collect', async interaction => {
     try {
+      if (interaction.user.id !== userId) {
+        return interaction.reply({
+          content: 'You are not allowed to interact!',
+          ephemeral: true,
+        });
+      }
       if (!selectedFlavor) {
         selectedFlavor = interaction.values[0];
         if (!interaction.replied && !interaction.deferred) {

@@ -81,7 +81,7 @@ export async function viewCollection(userId, context) {
         if (fish.rarity.substring(0, 1).toUpperCase() === "C") iconRarity = `<:common:1323917805191434240>`
         if (fish.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
         
-        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> **${fish.animals}** (${iconRarity})\n`;
+        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> **${fish.animals}** ${iconRarity}\n`;
         description += `**Lvl**: ${fish.level} **Dmg**: ${fish.damage}\n**CPF**: ${fish.feedCost} **CPS**: ${fish.sellAmount}\n\n`;
         embed.setDescription(description.trim());
 
@@ -375,8 +375,9 @@ export async function viewAquarium(userId,
           await viewCollection(interaction.user.id, interaction);
         }
       } catch (e) {
+        console.error(e);
         if (!interaction.deferred) await interaction.deferReply();
-        await interaction.followUp({
+        await interaction.editReply({
           content: '⚠️ Something went wrong while performing aquarium command button!'
         });
         return;

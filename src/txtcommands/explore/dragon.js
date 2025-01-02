@@ -697,18 +697,18 @@ export default {
         metalWinMessage = `${goldIcon} +${winningMetals}`;
       } else if (metalWinProb > 0.4) {
         userData.metals.silver += winningMetals;
-        metalWinMessage = `${sigilIcon} +${winningMetals}`;
+        metalWinMessage = `${sigilsIcon} +${winningMetals}`;
       } else {
         userData.metals.bronze += winningMetals;
         metalWinMessage = `${bronzeIcon} +${winningMetals}`;
       }
 
-      resultText = `-# ***REWARDS***\n${gemIcon} +${winningGems}\n${sigilIcon} +2\n🍽️ +${hunger}\n${metalWinMessage}`;
+      resultText = `-# ***REWARDS***\n${gemIcon} +${winningGems}\n${sigilsIcon} +2\n🍽️ +${hunger}\n${metalWinMessage}`;
     } else {
       // fail
       userData.sigils = Math.max(0, userData.sigils - 1);
       type = 'fail';
-      resultText = `-# ***LOSS***\n${sigilIcon} -1\n🍽️ +${hunger}`;
+      resultText = `-# ***LOSS***\n${sigilsIcon} -1\n🍽️ +${hunger}`;
     }
 
     const outcomeObj =
