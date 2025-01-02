@@ -694,21 +694,21 @@ export default {
       let metalWinProb = Math.random();
       if (metalWinProb > 0.75) {
         userData.metals.gold += winningMetals;
-        metalWinMessage = `${goldIcon} +${winningMetals}`;
+        metalWinMessage = `${goldIcon} **+${winningMetals}**`;
       } else if (metalWinProb > 0.4) {
         userData.metals.silver += winningMetals;
-        metalWinMessage = `${sigilsIcon} +${winningMetals}`;
+        metalWinMessage = `${silverIcon} **+${winningMetals}**`;
       } else {
         userData.metals.bronze += winningMetals;
-        metalWinMessage = `${bronzeIcon} +${winningMetals}`;
+        metalWinMessage = `${bronzeIcon} **+${winningMetals}**`;
       }
 
-      resultText = `-# ***REWARDS***\n${gemIcon} +${winningGems}\n${sigilsIcon} +2\n🍽️ +${hunger}\n${metalWinMessage}`;
+      resultText = `-# ***REWARDS***\n${gemIcon} **+${winningGems}**\n${sigilsIcon} **+2**\n🍽️ **+${hunger}**\n${metalWinMessage}`;
     } else {
       // fail
       userData.sigils = Math.max(0, userData.sigils - 1);
       type = 'fail';
-      resultText = `-# ***LOSS***\n${sigilsIcon} -1\n🍽️ +${hunger}`;
+      resultText = `-# ***LOSS***\n${sigilsIcon} **-1**\n🍽️ **+${hunger}**`;
     }
 
     const outcomeObj =

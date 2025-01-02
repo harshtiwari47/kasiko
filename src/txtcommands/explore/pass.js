@@ -749,6 +749,8 @@ export async function execute(args, message, client) {
     }
   } else if (args[1] === 'activate') {
     try {
+      return channel.send(`❌  This month's pass is not available`);
+
       const userCash = await getUserCash(userId);
       if (userCash < FIRST_PASS_COST) {
         return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`);

@@ -345,8 +345,7 @@ export async function viewAquarium(userId,
         if (interaction.customId === 'collect_aquarium_reward') {
           await interaction.deferReply();
           collectorEnded = true;
-          await collectAquariumReward(interaction, interaction.user);
-          collector.end();
+          return await collectAquariumReward(interaction, interaction.user);
         }
 
         if (interaction.customId === 'aquarium_help') {

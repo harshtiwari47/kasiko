@@ -95,6 +95,7 @@ client.on('messageCreate', async (message) => {
     }
 
     if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
+    if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
 
     if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
     if (mentionedBots.size > 0) return;
@@ -323,6 +324,16 @@ function getTotalUser(client, message) {
   });
 
   return message.channel.send(`Total Members: ${totalMembers}`);
+}
+
+function updateStatus(client) {
+  const guildCount = client.guilds.cache.size || 32;
+  client.user.presence.set({
+    activities: [{
+      name: `${guildCount} servers`, type: ActivityType.Watching
+    }],
+  });
+  console.log(`Activity Updated: ${guildCount} servers`)
 }
 
 client.login(TOKEN);

@@ -10,6 +10,22 @@ import {
 } from './canvas.js';
 
 import {
+  buyStock
+} from './req/buy.js';
+
+import {
+  portfolio
+} from './req/portfolio.js';
+
+import {
+  sellStock
+} from './req/sell.js';
+
+import {
+  handleBuyRequest
+} from './req/buyHandler.js';
+
+import {
   Helper
 } from '../../../helper.js';
 import {
@@ -63,7 +79,7 @@ function createStockEmbed(name, stock) {
       {
         name: "Current Status",
         value: `**Current Price**: <:kasiko_coin:1300141236841086977> ${stock.currentPrice.toLocaleString()}\n` +
-               `**Trend**: ${capitalizeFirstLetter(stock.trend)}\n` +
+               `**Trend**: ${capitalizeFirstLetter(stock.trend)} ${stock.trend.toLowerCase() === "up" ? "<:stocks_profit:1321342107574599691>": stock.trend.toLowerCase() === "down" ? "<:stocks_loss:1321342088020885525>" : "~"}\n` +
                `**Volatility**: ${stock.volatility}`,
         inline: false
       }
@@ -107,8 +123,11 @@ export async function sendPaginatedStocks(context) {
 
     // Buttons for navigation
     const buttons = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId("previousStock").setLabel("Previous").setStyle(ButtonStyle.Primary).setDisabled(true),
-      new ButtonBuilder().setCustomId("nextStock").setLabel("Next").setStyle(ButtonStyle.Primary)
+      new ButtonBuilder().setCustomId("previousStock").setLabel("⟨ PREVIOUS").setStyle(ButtonStyle.Primary).setDisabled(true),
+      new ButtonBuilder().setCustomId("nextStock").setLabel("NEXT ⟩").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("stock_buy").setLabel("🛍️ BUY").setStyle(ButtonStyle.Danger),
+      new ButtonBuilder().setCustomId("stock_graph").setLabel("📈 GRAPH").setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder().setCustomId("info").setLabel("❔").setStyle(ButtonStyle.Secondary)
     );
 
     // Send initial message
@@ -132,10 +151,43 @@ export async function sendPaginatedStocks(context) {
       }
 
       try {
+        if (buttonInteraction.customId === "stock_buy") {
+          return await handleBuyRequest(buttonInteraction.user.id, buttonInteraction.user.username, Object.keys(stockData)[currentIndex], buttonInteraction);
+        }
+        
+        if (buttonInteraction.customId === "stock_graph") {
+          await buttonInteraction.deferReply();
+          let response = await stockPrice(Object.keys(stockData)[currentIndex], buttonInteraction);
+          return await buttonInteraction.editReply(response);
+        }
+        
+        if (buttonInteraction.customId === "info") {
+          const stockGuideEmbed = new EmbedBuilder()
+  .setColor('#2ecc71') // Green color
+  .setTitle('📈 Stock Commands Guide')
+  .setDescription('Explore and manage stocks easily using these commands.')
+  .addFields(
+    { name: 'Aliases', value: '`stocks`, `s`, `portfolio or pf`', inline: true },
+    { name: 'Arguments', value: '`<command>`: Action (e.g., `price`, `buy`, `sell`)\n`[parameters]`: Additional info (e.g., stock symbol, amount)', inline: true },
+    { name: 'Examples', value: `
+      - \`stock\`: View all available stocks  
+      - \`stock price <symbol>\`: View stock price (alias: \`p\`)
+      - \`stock buy <symbol> <amount>\`: Buy a stock (alias: \`b\`)
+      - \`stock sell <symbol> <amount>\`: Sell a stock (alias: \`s\`)
+      - \`stock portfolio @user\`: View portfolios (alias: \`pf\`)
+      - \`stock news\`: Stock news  
+      - \`stock boughtprice <symbol>\`: View bought price (alias: \`bp\`)
+    ` }
+  )
+  .setFooter({ text: 'Replace <symbol> and <amount> as needed!' });
+          await buttonInteraction.deferReply();
+          return await buttonInteraction.editReply( { embeds: [stockGuideEmbed] });
+        }
+  
         await buttonInteraction.deferUpdate(); // Prevent timeout
         if (buttonInteraction.customId === "nextStock") currentIndex++;
         else if (buttonInteraction.customId === "previousStock") currentIndex--;
-
+        
         // Update embed and button states
         const newStockEmbed = createStockEmbed(
           Object.keys(stockData)[currentIndex],
@@ -265,166 +317,19 @@ export async function stockPrice(stockName, message) {
       });
 
       // Send the embed with the attachment
-      await message.channel.send({
+      return {
         embeds: [embed], files: [attachment]
-      });
+      };
     } else {
-      message.channel.send("⚠️ Stock not found.");
+      return {
+        content: "⚠️ Stock not found."
+      };
     }
   } catch (error) {
     console.error(error);
-    message.channel.send("⚠️ Something went wrong while checking stock's price.");
-  }
-}
-
-export async function buyStock(stockName, amount, message) {
-  try {
-    const userId = message.author.id;
-    let userData = await getUserData(userId);
-    const numShares = parseInt(amount, 10);
-
-    if (!stockData[stockName]) {
-      return message.channel.send("⚠️ Stock not found.");
-    }
-
-    // Calculate total unique stocks with shares > 0
-    const totalUniqueStocks = Object.values(userData.stocks || {}).filter(stock => stock.shares > 0).length;
-
-    if (totalUniqueStocks >= 5) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than five companies' stocks!`);
-    }
-
-    const stockPrice = stockData[stockName].currentPrice;
-    let totalCost = stockPrice * numShares;
-    totalCost = Number(totalCost.toFixed(0));
-
-    const today = new Date();
-    const todayDateString = today.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-
-    // Initialize stock data if it doesn't exist
-    if (!userData.stocks[stockName]) {
-      userData.stocks[stockName] = {
-        shares: 0,
-        cost: 0,
-        dailySold: [],
-        dailyPurchased: {
-          date: todayDateString,
-          count: 0
-        }
-      };
-    }
-
-// Handle existing data structures
-let dailyPurchased = userData.stocks[stockName].dailyPurchased;
-if (Array.isArray(dailyPurchased)) {
-  // Convert array [date, count] to object { date, count }
-  dailyPurchased = {
-    date: dailyPurchased[0] ? new Date(dailyPurchased[0]).toISOString().split('T')[0] : null,
-    count: dailyPurchased[1] ? dailyPurchased[1] : 0
-  };
-  userData.stocks[stockName].dailyPurchased = dailyPurchased;
-} else if (dailyPurchased === null || dailyPurchased === undefined) {
-  // Initialize if undefined or invalid
-  dailyPurchased = {
-    date: todayDateString,
-    count: 0
-  };
-  userData.stocks[stockName].dailyPurchased = dailyPurchased;
-}
-   
-    // Reset dailyPurchased if it's a new day
-    console.log(userData.stocks[stockName].dailyPurchased.date, todayDateString)
-    if (userData.stocks[stockName].dailyPurchased.date !== todayDateString) {
-      userData.stocks[stockName].dailyPurchased = {
-        date: todayDateString,
-        count: 0
-      };
-    }
-    
-    // Calculate total shares owned by the user across all stocks
-    const totalSharesOwned = Object.values(userData.stocks).reduce((sum, stock) => sum + (stock.shares || 0), 0);
-
-    // Check purchase limits
-    const dailyPurchasedCount = userData.stocks[stockName].dailyPurchased.count;
-    if (dailyPurchasedCount + numShares > 100) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you can't buy more than 100 shares of **${stockName}** today.`);
-    }
-
-    if (totalSharesOwned + numShares > 200) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you can't own more than 200 shares in total.`);
-    }
-
-    if ((userData.cash || 0) < totalCost) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉.`);
-    }
-
-    // Process the purchase
-    userData.cash = Number(((userData.cash || 0) - totalCost).toFixed(1));
-
-    userData.stocks[stockName].shares += numShares;
-    userData.stocks[stockName].cost += totalCost;
-    userData.stocks[stockName].dailyPurchased.count += numShares;
-
-    // Update user data
-    await updateUser(userId, userData);
-
-    return message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝\n\n**${message.author.username}** bought **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${totalCost.toLocaleString()}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
-  } catch (e) {
-    console.error(e);
-    message.channel.send("⚠️ Something went wrong while buying stock(s).");
-  }
-}
-
-export async function sellStock(stockName, amount, message) {
-  try {
-    const userId = message.author.id;
-    let userData = await getUserData(userId);
-    const numShares = parseInt(amount, 10);
-    stockName = stockName.toUpperCase().trim();
-
-    if (!stockData[stockName] || !userData.stocks || !userData.stocks[stockName] || userData.stocks[stockName].shares < numShares) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you don’t own enough shares or stock not found.`);
-    }
-
-    const stockPrice = stockData[stockName].currentPrice;
-    const earnings = stockPrice * numShares;
-
-    userData.cash = Number(((userData.cash || 0) + earnings).toFixed(1));
-
-    // Average weighted cost
-    if (
-      typeof userData.stocks[stockName].cost === 'number' &&
-      typeof userData.stocks[stockName].shares === 'number' &&
-      userData.stocks[stockName].shares !== 0 &&
-      typeof numShares === 'number'
-    ) {
-      const averageCostPerShare = userData.stocks[stockName].cost / userData.stocks[stockName].shares;
-      userData.stocks[stockName].cost -= Number((averageCostPerShare * numShares).toFixed(1));
-    } else {
-      console.error("Invalid data for cost calculation:", userData.stocks[stockName]);
-    }
-
-    userData.stocks[stockName].shares -= numShares;
-
-    if (userData.stocks[stockName].shares === 0) {
-      // Preserve dailyPurchased data
-      const dailyPurchased = userData.stocks[stockName].dailyPurchased;
-      delete userData.stocks[stockName];
-      userData.stocks[stockName] = {
-        dailyPurchased: dailyPurchased,
-        shares: 0,
-        cost: 0,
-        dailySold: []
-      };
-    }
-
-    // Update user data
-    await updateUser(userId, userData);
-
-    message.channel.send(`📊 𝐒𝐭𝐨𝐜𝐤(𝐬) 𝐒𝐨𝐥𝐝\n\n**${message.author.username}** sold **${numShares}** shares of **${stockName}** for <:kasiko_coin:1300141236841086977>**${earnings.toFixed(1).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
-  } catch (e) {
-    console.error(e);
-    message.channel.send("⚠️ Something went wrong while selling stock(s).");
+    return {
+        content: "⚠️ Something went wrong while checking stock's price."
+    };
   }
 }
 
@@ -447,90 +352,6 @@ export async function boughtPrice(message, stockName) {
     embeds: [embed]
   });
 }
-
-export async function portfolio(userId, message) {
-  try {
-    let userData = await getUserData(userId);
-
-    if (!userData.stocks) {
-      return message.channel.send({
-        content: "⚠️ User doesn't own any 📊 stocks.",
-      });
-    }
-
-    let portfolioDetails = "";
-    let portfolioValue = 0;
-    let cost = 0;
-
-    for (const stockName in userData.stocks.toJSON()) {
-      if (stockName === "_id") continue;
-      if (
-        userData &&
-        userData.stocks &&
-        userData.stocks[stockName] &&
-        stockData[stockName] &&
-        userData.stocks[stockName].shares === 0
-      )
-        continue;
-
-      const numShares = userData.stocks[stockName].shares;
-      const stockPrice = stockData[stockName].currentPrice;
-      const stockValue = numShares * stockPrice;
-
-      portfolioValue += stockValue;
-      cost += userData.stocks[stockName].cost;
-      
-      let isProfit = false;
-      
-      if (stockValue > userData.stocks[stockName].cost) isProfit = true;
-
-      portfolioDetails += `ᯓ★ **${stockName}**: **${numShares}** shares worth <:kasiko_coin:1300141236841086977>**${stockValue.toFixed(
-        0
-      )}** 𝑪𝒂𝒔𝒉 ${isProfit ? "<:stocks_profit:1321342107574599691>": "<:stocks_loss:1321342088020885525>"}\n`;
-    }
-
-    const profitLossPercent = ((portfolioValue - cost) / cost) * 100;
-    const profitLossLabel = profitLossPercent >= 0 ? "Profit": "Loss";
-    const profitLossSymbol = profitLossPercent >= 0 ? "+": "-";
-    const finalPercentage = `${profitLossSymbol}${Math.abs(profitLossPercent).toFixed(2)}`;
-
-    // Embed 1: Portfolio Overview
-    const embed1 = new EmbedBuilder()
-    .setTitle(`📈 <@${userId}>'s 𝐒𝐭𝐨𝐜𝐤𝐬 𝐏𝐨𝐫𝐭𝐟𝐨𝐥𝐢𝐨`)
-    .setDescription(portfolioDetails || "No stocks found.")
-    .addFields([{
-      name: "𝑻𝒐𝒕𝒂𝒍 𝑷𝒐𝒓𝒕𝒇𝒐𝒍𝒊𝒐 𝑽𝒂𝒍𝒖𝒆",
-      value: `<:kasiko_coin:1300141236841086977>${portfolioValue.toFixed(0).toLocaleString()} 𝑪𝒂𝒔𝒉`,
-    },
-    ])
-    .setColor("#f2dada");
-
-    // Embed 2: Portfolio Summary
-    const embed2 = new EmbedBuilder()
-    .addFields([{
-      name: "𝑻𝒐𝒕𝒂𝒍 𝑩𝒐𝒖𝒈𝒉𝒕 𝑷𝒓𝒊𝒄𝒆",
-      value: `<:kasiko_coin:1300141236841086977>${cost.toFixed(0).toLocaleString()} 𝑪𝒂𝒔𝒉`,
-    },
-      {
-        name: `𝑁𝑒𝑡 ${profitLossLabel}`,
-        value: `${isNaN(finalPercentage) ? "0": finalPercentage}%`,
-      },
-    ])
-    .setColor(profitLossPercent >= 0 ? "#a8dabf": "#f56056");
-
-    // Send Embeds
-    return await message.channel.send({
-      embeds: [embed1, embed2]
-    });
-    //await message.channel.send({ embeds: [embed2] });
-  } catch (e) {
-    console.error(e);
-    return message.channel.send({
-      content: "⚠️ Something went wrong while viewing stock portfolio.",
-    });
-  }
-}
-
 
 export default {
   name: "stock",
@@ -566,14 +387,14 @@ export default {
   // Cooldown of 2 seconds
   category: "📊 Stocks",
 
-  execute: (args, message) => {
+  execute: async (args, message) => {
     const command = args[1] ? args[1].toLowerCase(): null;
 
     if (args[0] === "portfolio" || args[0] === "pf") {
       if (args[1] && Helper.isUserMention(args[1], message)) {
-        return portfolio(Helper.extractUserId(args[1]), message); // View mentioned user's portfolio
+        return portfolio(Helper.extractUserId(args[1]), message.channel, message.author.id); // View mentioned user's portfolio
       }
-      return portfolio(message.author.id, message); // View the user's own Portfolio
+      return portfolio(message.author.id, message.channel, message.author.id); // View the user's own Portfolio
     }
 
     if (!command) return sendPaginatedStocks(message); // Show all available Stocks
@@ -585,7 +406,8 @@ export default {
     case "price":
     case "p":
       if (args[2]) {
-        return stockPrice(args[2].toUpperCase(), message); // Show stock price for the given symbol
+        let response = await stockPrice(args[2].toUpperCase(), message); // Show stock price for the given symbol
+        return await message.channel.send(response);
       }
       return message.channel.send("⚠️ Please specify a stock symbol to check the price.");
 
@@ -605,23 +427,23 @@ export default {
     case "buy":
     case "b":
       if (args[2] && Helper.isNumber(args[3])) {
-        return buyStock(args[2].toUpperCase(), args[3], message); // Buy a stock
+        return buyStock(message.author.id, message.author.username, args[2].toUpperCase(), args[3], message.channel); // Buy a stock
       }
       return message.channel.send("⚠️ Please specify a valid stock symbol and amount to buy. Example: `stock buy <symbol> <amount>`");
 
     case "sell":
     case "s":
       if (args[2] && Helper.isNumber(args[3])) {
-        return sellStock(args[2].toUpperCase(), args[3], message); // Sell a stock
+        return sellStock(message.author.id, message.author.username, args[2].toUpperCase(), args[3], message.channel); // Sell a stock
       }
       return message.channel.send("⚠️ Please specify a valid stock symbol and amount to sell. Example: `stock sell <symbol> <amount>`");
 
     case "portfolio":
     case "pf":
       if (args[2] && Helper.isUserMention(args[2], message)) {
-        return portfolio(Helper.extractUserId(args[2]), message); // View mentioned user's portfolio
+        return portfolio(Helper.extractUserId(args[2]), message.channel, message.author.id); // View mentioned user's portfolio
       }
-      return portfolio(message.author.id, message); // View the user's own portfolio
+      return portfolio(message.author.id, message.channel, message.author.id); // View the user's own portfolio
 
     case "all":
     case "view":
