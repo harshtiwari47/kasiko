@@ -191,11 +191,11 @@ async function viewMiningStatus(userId, context, username) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
 
   try {
+    let miningStatus = await startMining(userId, username);
+
     const userMining = await Mining.findOne({
       userId
     });
-
-    let miningStatus = await startMining(userId, username);
 
     const timeElapsed = Math.floor((Date.now() - new Date(userMining.startTime)) / 600000); // Minutes divided by 10
     const availableCoal = Math.min(timeElapsed + userMining.level, 10 + userMining.level * 5 - userMining.collected);
@@ -347,6 +347,12 @@ async function viewMiningStatus(userId, context, username) {
       }
     });
 
+    collector.on('end',
+      async () => {
+        await responseMessage.edit({
+          components: []
+        }).catch(() => {});
+      })
   } catch (e) {
     console.error(e);
     await handleMessage(context,

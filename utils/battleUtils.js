@@ -282,6 +282,10 @@ async function endBattle(battle, channel, reason, bossHPLeft = null) {
     const sortedPlayers = [...battle.players].sort((a, b) => b.damageContributed - a.damageContributed);
     const highestDamageBy = sortedPlayers[0]?.userId || null;
     const secondDamageBy = sortedPlayers[1]?.userId || null;
+    
+    let topPlayerReward = Number(battle.boss.level) * 15000
+    let secondPlayerReward = Number(battle.boss.level) * 10000
+    let otherPlayerReward = Number(battle.boss.level) * 5000
 
     for (const player of battle.players) {
       const {
@@ -302,14 +306,14 @@ async function endBattle(battle, channel, reason, bossHPLeft = null) {
       if (isStarPerformer) {
         earnedBadges = ["<:StarPerformer_badge:1322048049324884019>"]
         if (reason === 'boss') {
-          userData.cash += 50000;
+          userData.cash += topPlayerReward;
         }
       } else {
         if (reason === 'boss') {
           if (secondDamageBy && secondDamageBy === userId) {
-            userData.cash += 25000;
+            userData.cash += secondPlayerReward;
           } else {
-            userData.cash += 5000;
+            userData.cash += otherPlayerReward;
           }
         }
       }
@@ -334,7 +338,7 @@ async function endBattle(battle, channel, reason, bossHPLeft = null) {
       }));
 
       const rewardEmbed = new EmbedBuilder()
-      .setDescription(`## 💵 Rewards\n💫 STAR PERFORMER: <:kasiko_coin:1300141236841086977> +50k${secondDamageBy ? `\n🔥 <@${secondDamageBy}>: <:kasiko_coin:1300141236841086977> 25k`: ""}\n🗡️ Others: <:kasiko_coin:1300141236841086977> 5k`)
+      .setDescription(`## 💵 Rewards\n💫 STAR PERFORMER: <:kasiko_coin:1300141236841086977> ${topPlayerReward.toLocaleString()}${secondDamageBy ? `\n🔥 <@${secondDamageBy}>: <:kasiko_coin:1300141236841086977> ${secondPlayerReward.toLocaleString()}`: ""}\n🗡️ Others: <:kasiko_coin:1300141236841086977> ${otherPlayerReward.toLocaleString()}`)
 
       channel.send({
         embeds: [embed, starEmbed, rewardEmbed]

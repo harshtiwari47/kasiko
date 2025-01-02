@@ -39,6 +39,14 @@ async function myMetals(message) {
 
   const userData = await getUserDataDragon(id);
 
+  if (!userData.metals) {
+    userData.metals.gold = 0;
+    userData.metals.silver = 0;
+    userData.metals.bronze = 0;
+
+    await saveUserData(id, userData)
+  }
+
   const embed = new EmbedBuilder()
   .setColor("#fbe789")
   .setDescription(
@@ -67,7 +75,7 @@ async function myPowers(message) {
   } = message.author;
 
   const userData = await getUserDataDragon(id);
-  
+
   if (!userData.dragons) userData.dragons = []
 
   if (userData.dragons.length === 0) {
@@ -215,7 +223,7 @@ async function upgradePower(pid, message) {
   } = message.author;
 
   const userData = await getUserDataDragon(id);
-  
+
   if (!userData.dragons) userData.dragons = []
 
   if (userData.dragons.length === 0) {
@@ -241,7 +249,7 @@ async function upgradePower(pid, message) {
   let metalCost = chosenType.cost * powerSelected.level;
 
   if (userData.metals[chosenType.costType] < metalCost) {
-    return message.channel.send(`❗ **${username}, you don't have ${chosenType.costType === "gold" ? goldIcon: chosenType.costType === "silver" ? silverIcon: bronzeIcon} **${metalCost}**!`);
+    return message.channel.send(`❗ **${username}**, you don't have ${chosenType.costType === "gold" ? goldIcon: chosenType.costType === "silver" ? silverIcon: bronzeIcon} **${metalCost}**!`);
   }
 
   userData.metals[chosenType.costType] -= metalCost;

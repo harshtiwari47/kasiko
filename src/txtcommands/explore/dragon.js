@@ -105,7 +105,7 @@ export default {
 
       const embed = new EmbedBuilder()
       .setTitle("Dragon Commands")
-      .setDescription(
+      .setDescription("## dragon <command>\n" +
         pageCommands.map((cmd) => `**${cmd.command}**\n-# ${cmd.description}`).join("\n\n")
       )
       .setFooter({
@@ -261,6 +261,7 @@ export default {
     case 'rename':
     case 'nick':
     case 'n':
+    case 'nickname':
       return changeNickname(args, message);
     case 'ac':
     case 'activate':
@@ -297,7 +298,12 @@ export default {
           lastDaily: null,
           createdAt: new Date(),
           sigils: 0,
-          powers: []
+          powers: [],
+          metals: {
+            gold: 0,
+            silver: 0,
+            bronze: 0
+          }
         };
       }
 
@@ -675,9 +681,6 @@ export default {
     let goldIcon = `<:gold:1320978185084473365>`
     let silverIcon = `<:silver:1320978175563661352>`
     let bronzeIcon = `<:bronze:1320978165702725714>`
-
-    let gemIcon = '<:gems:123456789>';
-    let sigilIcon = '<:sigils:987654321>';
 
     if (probability > (0.5 - targetDragon.stage / 70)) {
       // success
@@ -1466,11 +1469,11 @@ export default {
 
   async function changeNickname(args, message) {
     if (!args[2]) {
-      return message.channel.send(`❗ Nickname is missing in arguments. Use Example: \`dragon rename Puppy 1\`.`);
+      return message.channel.send(`❗ Nickname is missing in arguments. Use Example: \`dragon rename 1 Puppy\`.`);
     }
 
     if (!args[1] || ! Number.isInteger(Number(args[1]))) {
-      return message.channel.send(`❗ Dragons index is missing in arguments. Use Example: \`dragon rename Puppy 1\`.`);
+      return message.channel.send(`❗ Dragons index is missing in arguments. Use Example: \`dragon rename 1 Puppy\`.`);
     }
 
     const index = parseInt(args[1]); // Dragon Index
