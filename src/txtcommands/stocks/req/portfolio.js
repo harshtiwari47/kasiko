@@ -184,7 +184,7 @@ export async function portfolio(userId, context, viewerId) {
         })
 
       } catch (err) {
-        console.log(err)
+        console.error(err)
       }
     })
 

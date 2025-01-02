@@ -77,7 +77,6 @@ export async function buyStock(userId, username, stockName, amount, context) {
     }
 
     // Reset dailyPurchased if it's a new day
-    console.log(userData.stocks[stockName].dailyPurchased.date, todayDateString)
     if (userData.stocks[stockName].dailyPurchased.date !== todayDateString) {
       userData.stocks[stockName].dailyPurchased = {
         date: todayDateString,

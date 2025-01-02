@@ -143,7 +143,7 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
         collector.stop('completed');
       }
     } catch (err) {
-      console.log(err)
+      console.error(err)
     }
   });
 
