@@ -5,17 +5,22 @@ import {
   readShopData
 } from '../database.js';
 
+import {
+  getOrCreateShopDoc
+} from "../src/txtcommands/shop/shopDocHelper.js"
+
 export async function updateNetWorth(userId) {
   const stockData = readStockData();
   const items = readShopData();
   const carItems = Object.values(items).filter(item => item.type === "car");
   const strItems = Object.values(items).filter(item => item.type === "structures");
 
-
   try {
     const userData = await getUserData(userId);
+    const userShopData = await getOrCreateShopDoc(userId);
     if (!userData) return 0;
-    let totalNetWorth = userData.cash || 0;
+    if (!userShopData) return 0;
+    let totalNetWorth = userData.cash + (userShopData.networth || 0) || 0;
 
     // bank
     if (userData.bankAccount) {
@@ -26,7 +31,7 @@ export async function updateNetWorth(userId) {
     if (userData.stocks && typeof userData.stocks === "object") {
       for (const stockName in userData.stocks.toJSON()) {
         if (stockName === "_id") continue;
-        if (userData.stocks[stockName] && stockData[stockName].currentPrice) {
+        if (userData.stocks[stockName] && stockData[stockName] && stockData[stockName].currentPrice) {
           const numShares = userData.stocks[stockName].shares;
           const stockPrice = stockData[stockName].currentPrice;
           totalNetWorth += numShares * stockPrice;

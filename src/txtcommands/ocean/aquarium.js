@@ -29,7 +29,7 @@ export async function viewCollection(userId, context) {
     if (Object.values(userCollection.toJSON()).length === 1) {
       const embed = new EmbedBuilder()
       .setColor(0x0099FF)
-      .setDescription("⚠️ User doesn't have any 🦦fish!");
+      .setDescription(`⚠️ You don't have any 🦦fish!\nTo catch some, you can fish from the ocean or use the following command to start fishing:\n\`kas catch\`\nEnjoy!`);
 
       if (isInteraction) {
         if (!context.deferred) await context.deferReply();
@@ -75,12 +75,12 @@ export async function viewCollection(userId, context) {
         // Add fish details to embed description
         let description = '';
         let iconRarity = ``;
-        
+
         if (fish.rarity.substring(0, 1).toUpperCase() === "L") iconRarity = `<:legendary:1323917783745953812>`
         if (fish.rarity.substring(0, 1).toUpperCase() === "U") iconRarity = `<:uncommon:1323917867644882985>`
         if (fish.rarity.substring(0, 1).toUpperCase() === "C") iconRarity = `<:common:1323917805191434240>`
         if (fish.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
-        
+
         description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> **${fish.animals}** ${iconRarity}\n`;
         description += `**Lvl**: ${fish.level} **Dmg**: ${fish.damage}\n**CPF**: ${fish.feedCost} **CPS**: ${fish.sellAmount}\n\n`;
         embed.setDescription(description.trim());
@@ -580,10 +580,10 @@ export async function collectAquariumReward(context, author) {
       if (context.isCommand) {
         if (!context.deferred) await context.deferReply();
         return await context.editReply({
-          content: `⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.`
+          content: `⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\``
         });
       } else {
-        return channel.send('⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.');
+        return channel.send('⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\`');
       }
     }
 

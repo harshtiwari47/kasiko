@@ -109,7 +109,7 @@ async function showUserShips(userId, message) {
       const embed = new EmbedBuilder()
       .setColor(0x1E90FF)
       .setTitle(`⚓🏴‍☠️ ${user.username}'s 𝐒𝐡𝐢𝐩𝐬 ⛵`)
-      .setDescription("No ships found! Ships can be found in oceans while catching.\n˙✧˖° 🌊⋆｡˚꩜");
+      .setDescription("No ships found! Ships can be found in oceans while catching.\n❔ Use: \`kas catch\` for fishing!\n˙✧˖° 🌊⋆｡˚꩜");
 
       return message.channel.send({
         embeds: [embed]
@@ -240,7 +240,7 @@ async function activeShip(userId, message) {
 
     if (!activeShip) {
       return message.channel.send({
-        content: `⚠️ No active ship found for battle! Try to set one from your collection \`ship active <shipId>\``,
+        content: `⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ship active <shipId>\``,
       });
     }
 
@@ -320,7 +320,7 @@ async function levelUp(userId, message) {
     let userShips = await getUserShipsData(userId);
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
-    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found.");
+    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ ⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ship active <shipId>\`");
     let shipDetails = shipsData.find(ship => ship.id === userShips.ships[activeShip].id);
 
     let cost = userShips.ships[activeShip].level * shipDetails.levelUpCost;
@@ -350,7 +350,7 @@ async function repair(times = 1, userId, message) {
 
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
-    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found.");
+    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ship active <shipId>\`");
     let shipDetails = shipsData.find(ship => ship.id === userShips.ships[activeShip].id);
 
     let cost = shipDetails.repairCost * times;

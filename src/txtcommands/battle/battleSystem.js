@@ -205,7 +205,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
     if (player2.user !== "bot") {
       userData2 = await getUserData(player2.id);
     }
-    
+
     userData1.shipBattle.lastBattle = Date.now();
 
     const dateinMillis = Date.now();
@@ -506,7 +506,7 @@ async function gatherDetails(username, userId, isPlayer, interaction) {
     if (isPlayer && userShips.ships.length === 0) {
       return {
         error: true,
-        message: "⚠️ You don't have any ships for battle. Ships can be found while catching fish."
+        message: "⚠️ You don't have any ships for battle. Ships can be found in oceans while catching.\n❔ Use: `kas catch` for fishing!"
       };
     }
 
@@ -532,7 +532,7 @@ async function gatherDetails(username, userId, isPlayer, interaction) {
     if (activeShip.durability < 100 && isPlayer) {
       return {
         error: true,
-        message: "⚠️ Your ship is not ready for battle. Minimum durability required: **100**."
+        message: "⚠️ Your ship is not ready for battle. Minimum durability required: **100**.\nUse: \`active repair x\` (x: Number of Times, e.g., 6)\`"
       };
     }
 

@@ -1,0 +1,41 @@
+{
+  "rings": [{
+    "id": "ring1",
+    "type": "ring",
+    "name": "Amethyst Crown",
+    "price": 450000,
+    "rarity": "rare",
+    "emoji": "1324632089978470462",
+    "description": "A regal golden ring adorned with purple amethysts."
+  },
+    {
+      "id": "ring2",
+      "type": "ring",
+      "name": "Platinum Diamond Ring",
+      "price": 600000,
+      "rarity": "rare",
+      "emoji": "1324632212498288671",
+      "description": "A stunning platinum ring encrusted with dazzling diamonds."
+    },
+    {
+      "id": "ring3",
+      "type": "ring",
+      "name": "Ruby Majesty",
+      "price": 1200000,
+      "rarity": "epic",
+      "emoji": "1324632393121796106",
+      "description": "A majestic ring with a fiery ruby centerpiece."
+    },
+    {
+      "id": "ring4",
+      "type": "ring",
+      "name": "Sapphire Royale",
+      "price": 1800000,
+      "rarity": "legendary",
+      "emoji": "1324632297881731072",
+      "description": "An exquisite golden ring crowned with a deep blue sapphire."
+    }],
+  "necklaces": [],
+  "watches": [],
+  "strips": []
+}

@@ -1,4 +1,3 @@
-// under maintenance
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -13,114 +12,176 @@ import {
   getUserData,
   updateUser
 } from '../../../database.js';
-
 import {
   Helper
 } from '../../../helper.js';
-
 import dotenv from 'dotenv';
 dotenv.config();
 
 const APPTOKEN = process.env.APP_ID;
 
+/**
+* Universal function to handle responses for both slash commands and
+* normal message commands:
+* - If it's an interaction-based context (slash command), we `defer` and `editReply`.
+* - Otherwise, we do a simple `context.send()`.
+*/
+async function handleMessage(context, data) {
+  const isInteraction = !!context.isCommand; // Distinguishes slash command vs. normal message
+  if (isInteraction) {
+    if (!context.deferred) {
+      await context.deferReply();
+    }
+    return context.editReply(data);
+  } else {
+    // For normal text-based usage:
+    return context.channel.send(data);
+  }
+}
 
 const items = readShopData();
 const structureItems = Object.values(items).filter(item => item.type === "structures");
 
-// Embed builder
+/**
+* Creates an array of two Embeds (like a 2-page spread) for a single structure
+*/
 function createStructureEmbed(structure) {
-  return [new EmbedBuilder()
+  let iconRarity = ``;
+  if (structure.rarity.substring(0, 1).toUpperCase() === "L") iconRarity = `<:legendary:1323917783745953812>`
+  if (structure.rarity.substring(0, 1).toUpperCase() === "U") iconRarity = `<:uncommon:1323917867644882985>`
+  if (structure.rarity.substring(0, 1).toUpperCase() === "C") iconRarity = `<:common:1323917805191434240>`
+  if (structure.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
+  if (structure.rarity.substring(0, 1).toUpperCase() === "E") iconRarity = `<:epic:1324666103028387851>`
+
+  return [
+    new EmbedBuilder()
     .setTitle(structure.name)
     .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure.image}.png`)
     .addFields(
       {
-        name: `ᯓ★ Price `, value: `
-        **Price:** <:kasiko_coin:1300141236841086977>${structure.price.toLocaleString()}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${structure.maintenance.toLocaleString()}
-        `, inline: false
+        name: `ᯓ★ Price`,
+        value: [
+          `**Price:** <:kasiko_coin:1300141236841086977>${structure.price.toLocaleString()}`,
+          `**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${structure.maintenance.toLocaleString()}`
+        ].join("\n"),
+        inline: false
       },
       {
-        name: `ᯓ★ Details`, value: `**ID:** ${structure.id}\n**Category:** ${structure.category}\n**Owners:** ${structure.owners}\n**Rarity:** ${structure.rarity}\n**Floors:** ${structure.floors}\n**Color:** ${structure.color}\n**Location:** ${structure.location}
-        `, inline: false
+        name: `ᯓ★ Details`,
+        value: [
+          `**ID:** ${structure.id}`,
+          `**Category:** ${structure.category}`,
+          `**Rarity:** ${iconRarity}`,
+          `**Floors:** ${structure.floors}`,
+          `**Color:** ${structure.color}`,
+          `**Location:** ${structure.location}`
+        ].join("\n"),
+        inline: false
       }
     )
     .setFooter({
       text: `ID: ${structure.id} | \`kas structure ${structure.id}\``
     })
     .setColor("#0b4ee2"),
-    new EmbedBuilder().setDescription(structure.description).addFields( {
-      name: `ᯓ★ Amenities`, value: `${structure.amenities.join(", ")}`, inline: true
-    })]
+
+    new EmbedBuilder()
+    .setDescription(structure.description)
+    .addFields({
+      name: `ᯓ★ Amenities`,
+      value: structure.amenities?.join(", ") || "None listed",
+      inline: true
+    })
+  ];
 }
 
+/**
+* Paginated view of ALL structures in the shop, with navigation + buy button
+*/
 export async function sendPaginatedStructures(context) {
   try {
-    const user = context.user || context.author; // Handles both Interaction and Message
-    if (!user) return;
+    const userId = context.user?.id || context.author?.id;
+    const username = context.user?.username || context.author?.username;
 
-    // Validate structureItems
     if (!structureItems || structureItems.length === 0) {
-      return context.channel.send("No structures are available to view!");
+      return handleMessage(context, {
+        content: "No structures are available to view!"
+      });
     }
 
     let currentIndex = 0;
     const structureEmbed = createStructureEmbed(structureItems[currentIndex]);
 
-    // Buttons for navigation
+    // Buttons: Previous, Next, and Buy
     const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
       .setCustomId("previousStructure")
-      .setLabel("Previous")
+      .setLabel("◀")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(true),
       new ButtonBuilder()
       .setCustomId("nextStructure")
-      .setLabel("Next")
-      .setStyle(ButtonStyle.Primary)
+      .setLabel("▶")
+      .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+      .setCustomId("buyStructure")
+      .setLabel("🛍️ BUY")
+      .setStyle(ButtonStyle.Success)
     );
 
-    // Send initial message
-    const message = await context.channel.send({
+    // Send the initial paginated message using our unified handleMessage
+    const messageSent = await handleMessage(context, {
       embeds: structureEmbed,
-      components: [buttons],
-      fetchReply: true,
+      components: [buttons]
     });
 
-    const collector = message.createMessageComponentCollector({
-      time: 180000, // 3 minutes
-    });
+    // Create collector for buttons
+    const collector = messageSent.createMessageComponentCollector({
+      time: 180000
+    }); // 3 minutes
 
     collector.on("collect", async (buttonInteraction) => {
-      try {
-        // Defer the interaction
-        await buttonInteraction.deferUpdate();
+      // Optional: lock interaction to the same user who triggered the command[thinking]
 
-        // Update index based on button click
-        if (buttonInteraction.customId === "nextStructure") {
-          currentIndex = Math.min(currentIndex + 1, structureItems.length - 1);
-        } else if (buttonInteraction.customId === "previousStructure") {
-          currentIndex = Math.max(currentIndex - 1, 0);
-        }
 
-        // Update embed and button state
-        const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
-        buttons.components[0].setDisabled(currentIndex === 0);
-        buttons.components[1].setDisabled(currentIndex === structureItems.length - 1);
-
-        return await message.edit({
-          embeds: newStructureEmbed,
-          components: [buttons],
+      if (buttonInteraction.user.id !== userId) {
+        return buttonInteraction.reply({
+          content: "You cannot interact with these buttons.", ephemeral: true
         });
-      } catch (err) {
-        console.error("Error during interaction handling:", err);
       }
+
+      // Defer the interaction, so it won't show "thinking..."
+      await buttonInteraction.deferUpdate();
+
+      if (buttonInteraction.customId === "nextStructure") {
+        currentIndex = Math.min(currentIndex + 1, structureItems.length - 1);
+      } else if (buttonInteraction.customId === "previousStructure") {
+        currentIndex = Math.max(currentIndex - 1, 0);
+      } else if (buttonInteraction.customId === "buyStructure") {
+        // Attempt to buy the current structure
+        const currentStructure = structureItems[currentIndex];
+        return buystructure(context, currentStructure.id);
+      }
+
+      // Update the embed
+      const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
+      // Update button states
+      buttons.components[0].setDisabled(currentIndex === 0); // Previous
+      buttons.components[1].setDisabled(currentIndex === structureItems.length - 1); // Next
+
+      // Re-edit the original message
+      await messageSent.edit({
+        embeds: newStructureEmbed,
+        components: [buttons]
+      });
     });
 
     collector.on("end",
       async () => {
         try {
-          buttons.components.forEach((button) => button.setDisabled(true));
-          return await message.edit({
-            components: [buttons],
+          // Disable all buttons after time expires
+          buttons.components.forEach(button => button.setDisabled(true));
+          await messageSent.edit({
+            components: [buttons]
           });
         } catch (err) {
           console.error("Failed to edit message after collector ended:", err);
@@ -129,276 +190,370 @@ export async function sendPaginatedStructures(context) {
   } catch (e) {
     console.error("Error in sendPaginatedStructures:",
       e);
-    return context.channel.send("⚠️ Something went wrong while viewing the structures!");
+    return handleMessage(context,
+      {
+        content: "⚠️ Something went wrong while viewing the structures!"
+      });
   }
 }
 
-export async function viewStructure(id, message) {
-  const structure = Object.values(structureItems).filter(item => item.id === id.toLowerCase());
-
-  if (structure.length === 0) {
-    return message.channel.send(`⚠️ No items with this ID exist.`);
-  }
-
-  // Create the structure embed
-  const structureEmbed = await createStructureEmbed(structure[0]);
-
-  return message.channel.send({
-    embeds: structureEmbed
-  });
-}
-
-
-export async function userstructures(userId, message) {
+/**
+* View details of a specific structure by ID
+*/
+export async function viewStructure(context, structureId) {
   try {
-    let userData = await getUserData(userId);
-    const structures = userData.structures;
+    const structure = structureItems.filter(item => item.id.toLowerCase() === structureId.toLowerCase());
+
+    if (structure.length === 0) {
+      return handleMessage(context, {
+        content: `⚠️ No items with ID "${structureId}" exist.`
+      });
+    }
+
+    const structureEmbed = createStructureEmbed(structure[0]);
+    return handleMessage(context, {
+      embeds: structureEmbed
+    });
+  } catch (e) {
+    console.error("Error in viewStructure:", e);
+    return handleMessage(context, {
+      content: "⚠️ Something went wrong while viewing the structure!"
+    });
+  }
+}
+
+/**
+* View the structures owned by a given user
+*/
+export async function userstructures(context, targetUserId) {
+  try {
+    const userId = targetUserId || context.user?.id || context.author?.id;
+    const username = context.user?.username || context.author?.username;
+
+    const userData = await getUserData(userId);
+    const structures = userData.structures || [];
 
     if (structures.length === 0) {
       const embed = new EmbedBuilder()
       .setColor(0xFF0000)
       .setDescription("⚠️ User doesn't own any structures!");
-
-      return message.channel.send({
+      return handleMessage(context, {
         embeds: [embed]
       });
     }
 
     // Split structures into chunks of 2
     const chunkedStructures = [];
-    const chunkSize = 2; // You want 2 structures per embed
+    const chunkSize = 2;
     for (let i = 0; i < structures.length; i += chunkSize) {
       chunkedStructures.push(structures.slice(i, i + chunkSize));
     }
 
-    // Create embeds from the chunked structures
-    const embeds = chunkedStructures.map((chunk, index) => {
-      const embeds = chunk.map((structure, ChunkIndex) => {
-        const propertyDetails = Object.values(structureItems).filter(item => item.id === structure.id);
+    // Create a 2D array of embeds: each chunk => array of Embeds
+    const embedsArray = chunkedStructures.map((chunk, chunkIndex) => {
+      return chunk.map((structure, structureIndex) => {
+        const propertyDetails = structureItems.find(item => item.id === structure.id);
         const embed = new EmbedBuilder()
         .setColor('#6835fe')
-        .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${propertyDetails[0].image}.png`)
+        .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${propertyDetails.image}.png`);
 
-        // Add structure details to embed
         let description = '';
-        description += `ᯓ★ 𝑵𝑨𝑴𝑬: **${propertyDetails[0].name}**\n**𝑶𝑾𝑵𝑺**: ${structure.items}\n**𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice.toLocaleString()}\n\n`;
+        description += `ᯓ★ 𝑵𝑨𝑴𝑬: **${propertyDetails.name}**\n`;
+        description += `**𝑶𝑾𝑵𝑺**: ${structure.items}\n`;
+        description += `**𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice.toLocaleString()}\n`;
 
         embed.setDescription(description.trim());
 
-        if (ChunkIndex === 0) {
-          embed.setTitle(`<@${userId}> 's Properties 🏙️`);
+        // Title for the first structure in each chunk
+        if (structureIndex === 0) {
+          embed.setTitle(`<@${userId}>'s Properties 🏙️`);
         }
-        // Add footer for page number only on the last embed
-        if (ChunkIndex === chunk.length - 1) {
+        // Footer with page number on the last embed of that chunk
+        if (structureIndex === chunk.length - 1) {
           embed.setFooter({
-            text: `Page ${index + 1} of ${chunkedStructures.length}`
+            text: `Page ${chunkIndex + 1} of ${chunkedStructures.length}`
           });
         }
         return embed;
       });
-      return embeds;
     });
 
+    // We handle each chunk as a "page"
     let currentPage = 0;
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-      .setCustomId('prev')
+      .setCustomId('prevStructurePage')
       .setLabel('◀')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(true),
       new ButtonBuilder()
-      .setCustomId('next')
+      .setCustomId('nextStructurePage')
       .setLabel('▶')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(chunkedStructures.length === 1)
     );
 
-    const sentMessage = await message.channel.send({
-      embeds: embeds[currentPage], // Send the first embed
+    // Send first page (array of multiple embeds)
+    const messageSent = await handleMessage(context, {
+      embeds: embedsArray[currentPage],
       components: [row]
     });
 
-    const collector = sentMessage.createMessageComponentCollector({
-      filter: interaction => interaction.user.id === userId, // Only the author can interact
-      time: 60000 // 1 minute timeout
-    });
+    // Create collector
+    const collector = messageSent.createMessageComponentCollector({
+      time: 60000
+    }); // 1 minute
 
     collector.on('collect', interaction => {
-      if (interaction.customId === 'next') {
+      // Optional: restrict to the original user if needed
+      // if (interaction.user.id !== userId) {
+      //   return interaction.reply({ content: "You cannot change pages.", ephemeral: true });
+      // }
+
+      if (interaction.customId === 'nextStructurePage') {
         currentPage++;
-      } else if (interaction.customId === 'prev') {
+      } else if (interaction.customId === 'prevStructurePage') {
         currentPage--;
       }
 
+      // Rebuild row with updated button states
       const updatedRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-        .setCustomId('prev')
+        .setCustomId('prevStructurePage')
         .setLabel('◀')
         .setStyle(ButtonStyle.Primary)
         .setDisabled(currentPage === 0),
         new ButtonBuilder()
-        .setCustomId('next')
+        .setCustomId('nextStructurePage')
         .setLabel('▶')
         .setStyle(ButtonStyle.Primary)
-        .setDisabled(currentPage === embeds.length - 1)
+        .setDisabled(currentPage === embedsArray.length - 1)
       );
 
       interaction.update({
-        embeds: embeds[currentPage], // Update to the current page embed
+        embeds: embedsArray[currentPage],
         components: [updatedRow]
       });
     });
 
     collector.on('end',
       () => {
+        // Disable buttons after time
         const disabledRow = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
-          .setCustomId('prev')
+          .setCustomId('prevStructurePage')
           .setLabel('◀')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true),
           new ButtonBuilder()
-          .setCustomId('next')
+          .setCustomId('nextStructurePage')
           .setLabel('▶')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true)
         );
 
-        sentMessage.edit({
+        messageSent.edit({
           components: [disabledRow]
         }).catch(() => {});
       });
-
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while visiting **User's Properties**");
+    return handleMessage(context,
+      {
+        content: "⚠️ Something went wrong while visiting **User's Properties**"
+      });
   }
 }
 
-export async function buystructure(message, structureId) {
+/**
+* Buy a specific structure by ID
+*/
+export async function buystructure(context, structureId) {
   try {
-    const structure = Object.values(structureItems).filter(item => item.id === structureId);
-    let userData = await getUserData(message.author.id);
+    const userId = context.user?.id || context.author?.id;
+    const username = context.user?.username || context.author?.username;
 
-    if (structure.length === 0) {
-      return message.channel.send(`⚠️ No items with this ID exist.`);
-    }
-
-    if (userData.cash < structure[0].price) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to buy the structure.`);
-    }
-
-    if (structure[0].rarity === "legendary" && userData.networth < 1000000) {
-      return message.channel.send(`⚠️ **${message.author.username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 1,000,000).`);
-    }
-
-    if (!userData.structures.some(structure => structure.id === structureId)) {
-      let userStructureData = {
-        id: structure[0].id,
-        purchasedPrice: structure[0].price,
-        purchasedDate: new Date().toISOString(),
-        items: 1
-      }
-      items[structureId].owners += 1;
-      userData.structures.push(userStructureData);
-    } else {
-      userData.structures = userData.structures.map(structure => {
-        if (structure.id === structureId) {
-          structure.items += 1;
-        }
-        return structure;
+    const structureArr = structureItems.filter(item => item.id === structureId);
+    if (!structureArr.length) {
+      return handleMessage(context, {
+        content: `⚠️ No items with this ID exist.`
       });
     }
 
-    userData.cash -= structure[0].price;
-    userData.maintenance += structure[0].maintenance;
+    const structure = structureArr[0];
+    const userData = await getUserData(userId);
 
-    await updateUser(message.author.id,
+    // Check for sufficient cash
+    if (userData.cash < structure.price) {
+      return handleMessage(context, {
+        content: `⚠️ **${username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒐𝒉 to buy the structure.`
+      });
+    }
+
+    // Check networth requirement
+    if (structure.rarity === "legendary" && userData.networth < 1000000) {
+      return handleMessage(context, {
+        content: `⚠️ **${username}**, your <:kasiko_coin:1300141236841086977> **networth** is too low to purchase this item (minimum required networth: <:kasiko_coin:1300141236841086977> 1,000,000).`
+      });
+    }
+
+    // If user doesn't have this structure, add a new record, else increment
+    const userHasStructure = userData.structures.some(s => s.id === structureId);
+    if (!userHasStructure) {
+      const newStructure = {
+        id: structure.id,
+        purchasedPrice: structure.price,
+        purchasedDate: new Date().toISOString(),
+        items: 1
+      };
+      items[structureId].owners += 1;
+      userData.structures.push(newStructure);
+    } else {
+      userData.structures = userData.structures.map(s => {
+        if (s.id === structureId) {
+          s.items += 1;
+        }
+        return s;
+      });
+    }
+
+    userData.cash -= structure.price;
+    userData.maintenance += structure.maintenance;
+
+    // Update DB
+    await updateUser(userId,
       userData);
     writeShopData(items);
 
     const embed = new EmbedBuilder()
     .setColor('#35e955')
-    .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐮𝐥')
-    .setDescription(`\n Everyone congrats 👏🏻 **${message.author.username}** for purchasing a brand-new structure! 🎉\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
-    .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure[0].image}.png`)
+    .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
+    .setDescription(
+      `Everyone congratulate 👏🏻 **${username}** for purchasing a brand-new **${structure.name}**! 🎉`
+    )
+    .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure.image}.png`)
     .setFooter({
       text: `Kasiko`,
       iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
-    return message.channel.send({
-      embeds: [embed]
-    });
+    return handleMessage(context,
+      {
+        embeds: [embed]
+      });
   } catch (e) {
     console.error(e);
-    return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while transition!`);
+    return handleMessage(context,
+      {
+        content: `⚠️ **${context.user?.username || context.author?.username}**, something went wrong while buying the structure!`
+      });
   }
 }
 
-export async function sellstructure(message, structureId) {
+/**
+* Sell a specific structure by ID
+*/
+export async function sellstructure(context, structureId) {
   try {
-    const structure = Object.values(structureItems).filter(item => item.id === structureId);
-    let userData = await getUserData(message.author.id);
-    const userStructure = Object.values(userData.structures).filter(item => item.id === structureId);
+    const userId = context.user?.id || context.author?.id;
+    const username = context.user?.username || context.author?.username;
 
-    if (structure.length === 0) {
-      return message.channel.send(`⚠️ No items with this ID exist.`);
+    const structureArr = structureItems.filter(item => item.id === structureId);
+    if (!structureArr.length) {
+      return handleMessage(context, {
+        content: `⚠️ No items with this ID exist.`
+      });
     }
 
-    if (!userData.structures.some(structure => structure.id === structureId)) {
-      return message.channel.send(`⚠️ You don't own this structure.`);
+    const structure = structureArr[0];
+    const userData = await getUserData(userId);
+    const userStructure = userData.structures.filter(s => s.id === structureId);
+
+    if (!userStructure.length) {
+      return handleMessage(context, {
+        content: `⚠️ You don't own this structure.`
+      });
     }
 
-    userData.structures = userData.structures.map(structure => {
-      if (structure.id === structureId) {
-        structure.items -= 1;
-        return structure;
+    // Decrease user's ownership count
+    userData.structures = userData.structures.map(s => {
+      if (s.id === structureId) {
+        s.items -= 1;
       }
-      items[structureId].owners -= 1;
-      return structure;
-    }).filter(structure => structure.items > 0);
+      return s;
+    }).filter(s => s.items > 0);
 
-    userData.cash += Number(structure[0].price);
-    userData.maintenance -= Number(structure[0].maintenance);
+    // Decrement owners count in shop data
+    items[structureId].owners -= 1;
+
+    // Add cash back to user
+    userData.cash += Number(structure.price);
+    // Decrease maintenance for the sold structure
+    userData.maintenance -= Number(structure.maintenance);
 
     writeShopData(items);
-    await updateUser(message.author.id,
+    await updateUser(userId,
       userData);
 
     const embed = new EmbedBuilder()
     .setColor('#e93535')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
-    .setDescription(`**${message.author.username}** successfully sold a **${structure[0].name}** structure for <:kasiko_coin:1300141236841086977> **${structure[0].price.toLocaleString()}** 𝑪𝒂𝒔𝒉.\nOriginally purchased that structure for <:kasiko_coin:1300141236841086977>${userStructure[0].purchasedPrice.toLocaleString()}.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
+    .setDescription(
+      `**${username}** successfully sold a **${structure.name}** for <:kasiko_coin:1300141236841086977> **${structure.price.toLocaleString()}** 𝑪𝒂𝒐𝒉.\n` +
+      `Originally purchased that structure for <:kasiko_coin:1300141236841086977>${userStructure[0].purchasedPrice.toLocaleString()}.`
+    )
     .setFooter({
       text: `Kasiko`,
       iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
 
-    return message.channel.send({
-      embeds: [embed]
-    });
+    return handleMessage(context,
+      {
+        embeds: [embed]
+      });
   } catch (e) {
     console.error(e);
-    return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while transition!`);
+    return handleMessage(context,
+      {
+        content: `⚠️ **${context.user?.username || context.author?.username}**, something went wrong while selling the structure!`
+      });
   }
 }
 
+/**
+* Export all structure-related methods as a single object
+*/
 export const Structure = {
   sendPaginatedStructures,
   viewStructure,
   userstructures,
   buystructure,
   sellstructure
-}
+};
 
-function handleStructureCommands(args, message) {
-  if (!args[1]) return Structure.userstructures(message.author.id, message);
-  if (Helper.isUserMention(args[1], message)) return Structure.userstructures(Helper.extractUserId(args[1]), message);
-  return Structure.viewStructure(args[1], message);
+/**
+* Command dispatcher for "structures" command usage
+* (Adjust as needed for your own command structure)
+*/
+function handleStructureCommands(context, args) {
+  const userId = context.user?.id || context.author?.id;
+
+  // No second argument => view the command user's structures
+  if (!args[1]) {
+    return Structure.userstructures(context, userId);
+  }
+
+  // If the second argument is a user mention => show that user's structures
+  if (Helper.isUserMention(args[1], context)) {
+    const mentionedUserId = Helper.extractUserId(args[1]);
+    return Structure.userstructures(context, mentionedUserId);
+  }
+
+  // Otherwise treat it as a structure ID => show that structure's details
+  return Structure.viewStructure(context, args[1]);
 }
 
 export default {
@@ -415,15 +570,14 @@ export default {
     // View the command user's structures
     "structures @User",
     // View structures of a mentioned user
-    "structures <structure_id>" // View details of a specific structure by ID
+    "structures <id>" // View details of a specific structure by ID
   ],
   related: ["shop",
     "properties",
     "market"],
   cooldown: 4000,
-  //4s
   category: "🛍️ Shop",
 
-  // Execute the function when the command is called
-  execute: (args, message) => handleStructureCommands(args, message)
+  // Execute function when command is called
+  execute: (args, context) => handleStructureCommands(context, args)
 };

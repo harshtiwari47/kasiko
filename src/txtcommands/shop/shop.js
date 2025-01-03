@@ -23,6 +23,9 @@ import {
 import {
   Structure
 } from './structures.js';
+import {
+  JEWELRY
+} from './jewelry.js';
 
 export async function buyRoses(amount, message) {
   try {
@@ -48,132 +51,182 @@ export async function buyRoses(amount, message) {
 }
 
 
-
 export default {
   name: "shop",
-  description: "View and purchase items in the shop (cars, structures, roses, etc.).",
-  aliases: ["store",
-    "market",
-    "buy",
-    "sell"],
-  // Additional aliases like "store" and "market"
+  description: "View and purchase items in the shop (cars, structures, roses, jewelry, etc.).",
+  aliases: ["store", "market", "buy", "sell"],
   args: "<category> [parameters]",
   example: [
     "shop car",
     // Show available cars in the shop
     "shop structure/house/building",
     // Show available structures in the shop
+    "shop jewelry",
+    // Show available jewelry in the shop
     "buy car <car_id>",
     // Buy a specific car
     "buy structure <structure_id>",
     // Buy a specific structure
+    "buy jewelry <jewelry_id>",
+    // Buy a specific jewelry item
     "buy roses <amount>",
     // Buy roses
     "sell car <car_id>",
     // Sell a specific car
-    "sell structure <structure_id>" // Sell a specific structure
+    "sell structure <structure_id>",
+    // Sell a specific structure
+    "sell jewelry <jewelry_id>"
+    // Sell a specific jewelry item
   ],
-  related: ["cars",
-    "structures",
-    "roses",
-    "buy",
-    "sell"],
+  related: ["cars", "structures", "jewelry", "roses", "buy", "sell"],
   cooldown: 8000,
-  // Cooldown of 8 seconds
   category: "🛍️ Shop",
 
   execute: (args, message) => {
-    const category = args[1] ? args[1].toLowerCase(): null;
-    const itemId = args[2] ? args[2].toLowerCase(): null;
+    const category = args[1] ? args[1].toLowerCase() : null;
+    const itemId = args[2] ? args[2].toLowerCase() : null;
 
+    // Handle "buy" and "sell" commands
     if (args[0].toLowerCase() !== "shop" && (args[0].toLowerCase() === "buy" || args[0].toLowerCase() === "sell")) {
+      // BUY logic
       if (args[0].toLowerCase() === "buy") {
         if (args[1] && itemId) {
           switch (args[1].toLowerCase()) {
+            case "car":
+              return Car.buycar(message, itemId);
 
-          case "car":
-            return Car.buycar(message, itemId); // Buy a car with the given itemId
+            case "structure":
+            case "building":
+            case "house":
+              return Structure.buystructure(message, itemId);
 
-          case "structure":
-          case "building":
-          case "house":
-            return Structure.buystructure(message, itemId); // Buy a structure with the given itemId
+            case "jewelry":
+            case "jewellery":
+            case "rings":
+            case "ring":
+            case "necklace":
+            case "watches":
+            case "watch":
+            case "strips":
+              return JEWELRY.buyJewelryItem(message, itemId);
 
-          case "roses":
-          case "rose":
-
-
-            if (!args[2]) args[2] = 1;
-            if (args[2] && Helper.isNumber(args[2])) {
-              const amount = parseInt(args[2]);
-              if (amount > 0) {
-                return buyRoses(amount, message); // Buy the specified number of roses
+            case "roses":
+            case "rose":
+              // If no amount is provided, set a default of 1
+              if (!args[2]) args[2] = 1;
+              if (Helper.isNumber(args[2])) {
+                const amount = parseInt(args[2]);
+                if (amount > 0) {
+                  return buyRoses(amount, message);
+                } else {
+                  return message.channel.send("⚠️ Please specify a valid number of roses to buy.");
+                }
               } else {
-                return message.channel.send("⚠️ Please specify a valid number of roses to buy.");
+                return message.channel.send("⚠️ Please specify a valid amount of roses to buy.\nExample: `buy roses <amount>`");
               }
-            } else {
-              return message.channel.send("⚠️ Please specify a valid amount of roses to buy. Example: `buy roses <amount>`");
-            }
 
-          default:
-            return message.channel.send("⚠️ Invalid item category. Please specify 'car', 'roses' or 'structure'.\nExample: `buy car <id>`");
+            default:
+              return message.channel.send("⚠️ Invalid category. Please specify one of: `car`, `structure`, `jewelry`, or `roses`.\nExample: `buy car <id>`");
           }
         } else {
-          return message.channel.send("⚠️ Invalid purchase request. Example: `buy <car/structure/roses> <item_id/amount>`");
+          return message.channel.send("⚠️ Invalid purchase request.\nExample: `buy car <id>` or `buy roses <amount>`");
         }
       }
+
+      // SELL logic
       if (args[0].toLowerCase() === "sell") {
         if (args[1] && itemId) {
           switch (args[1].toLowerCase()) {
-          case "car":
-            return Car.sellcar(message, itemId); // Sell a car with the given itemId
-          case "structure":
-          case "building":
-          case "house":
-            return Structure.sellstructure(message, itemId); // Sell a structure with the given itemId
-          default:
-            return message.channel.send("⚠️ Invalid item category. Please specify 'car' or 'structure'.\nExample: `sell car <id>`");
+            case "car":
+              return Car.sellcar(message, itemId);
+
+            case "structure":
+            case "building":
+            case "house":
+              return Structure.sellstructure(message, itemId);
+
+            case "jewelry":
+            case "jewellery":
+            case "rings":
+            case "ring":
+            case "necklace":
+            case "watches":
+            case "watch":
+            case "strips":
+              return JEWELRY.sellJewelryItem(message, itemId);
+
+            default:
+              return message.channel.send("⚠️ Invalid category. Please specify one of: `car`, `structure`, or `jewelry`.\nExample: `sell car <id>`");
           }
         } else {
-          return message.channel.send("⚠️ Invalid sell request. Example: `sell <car/structure> <item_id>`");
+          return message.channel.send("⚠️ Invalid sell request.\nExample: `sell car <id>` or `sell jewelry <id>`");
         }
       }
 
-      return message.channel.send(`⚠️ Please use a valid command! \`kas buy/sell <category> <itemId/amount>\``);
+      // If command not recognized
+      return message.channel.send("⚠️ Please use a valid command!\n`kas buy/sell <category> <itemId/amount>`");
     }
 
-    // Handle different categories (e.g., cars, structures)
+    // Handle "shop" categories (viewing items)
     switch (category) {
-    case "cr":
-    case "car":
-    case "cars":
-      return Car.sendPaginatedCars(message); // Show paginated cars in the shop
+      case "cr":
+      case "car":
+      case "cars":
+        return Car.sendPaginatedCars(message);
 
-    case "structure":
-    case "building":
-    case "house":
-      return Structure.sendPaginatedStructures(message); // Show paginated structures in the shop
+      case "jewelry":
+      case "jewellery":
+      case "rings":
+      case "ring":
+      case "necklace":
+      case "watches":
+      case "watch":
+      case "strips":
+        return JEWELRY.sendPaginatedJewelry(message);
 
-    default:
-      const embed = new EmbedBuilder()
-      .setColor(0x1F8B4C) // Sets the embed color
-      .setTitle("🛒 𝑺𝑯𝑶𝑷")
-      .setDescription("Use `shop car` or `shop structure` to view items.")
-      .addFields(
-        {
-          name: "𝑃𝑢𝑟𝑐ℎ𝑎𝑠𝑒", value: "- `buy car <id>` to buy a car.\n- `buy structure <id>` to buy a house or building.\n- `buy roses <amount>` to buy roses.", inline: false
-        },
-        {
-          name: "𝑆𝑒𝑙𝑙", value: "- `sell car <id>` to sell a car.\n- `sell structure <id>` to sell a house or building.", inline: false
-        }
-      )
-      .setFooter({
-        text: "Happy shopping!"
-      }); // Adds a footer
+      case "structure":
+      case "building":
+      case "house":
+        return Structure.sendPaginatedStructures(message);
 
-      message.channel.send({
-        embeds: [embed]
-      });
+      // Default: Send an embed with instructions
+      default: {
+        const embed = new EmbedBuilder()
+          .setColor(0x1F8B4C)
+          .setTitle("🛒 SHOP COMMANDS")
+          .setDescription("Browse and trade various items. Use one of the categories below to view listings or see how to buy/sell items.")
+          .addFields(
+            {
+              name: "❔ View Items",
+              value:
+                "• **shop car** – View available cars\n" +
+                "• **shop structure** – View houses/buildings\n" +
+                "• **shop jewelry** – View jewelry items\n" +
+                "• **(or)** **shop** – Show this guide",
+              inline: false
+            },
+            {
+              name: "❔ How to Buy",
+              value:
+                "• **buy car `<car_id>`** – Buy a specific car\n" +
+                "• **buy structure `<structure_id>`** – Buy a house or building\n" +
+                "• **buy jewelry `<jewelry_id>`** – Buy a piece of jewelry\n" +
+                "• **buy roses `<amount>`** – Buy a certain number of roses",
+              inline: false
+            },
+            {
+              name: "❔ How to Sell",
+              value:
+                "• **sell car `<car_id>`** – Sell a specific car\n" +
+                "• **sell structure `<structure_id>`** – Sell a house or building\n" +
+                "• **sell jewelry `<jewelry_id>`** – Sell a piece of jewelry",
+              inline: false
+            }
+          )
+          .setFooter({ text: "Happy shopping! Use the commands above to get started." });
+
+        return message.channel.send({ embeds: [embed] });
+      }
     }
   }
 };

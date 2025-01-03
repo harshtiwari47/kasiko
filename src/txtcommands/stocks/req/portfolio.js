@@ -206,7 +206,7 @@ export async function portfolio(userId, context, viewerId) {
 }
 
 client.on('interactionCreate', async (interaction) => {
-  if (interaction.customId.startsWith('sellStocks-btn') && interaction.isButton()) {
+  if (interaction.customId && interaction.isButton() && interaction.customId.startsWith('sellStocks-btn')) {
     if (interaction.replied || interaction.deferred) return; // Do not reply again
 
     let stockName = interaction.customId.replace("sellStocks-btn", "");
@@ -239,10 +239,12 @@ client.on('interactionCreate', async (interaction) => {
 
 client.on('interactionCreate', async (interaction) => {
   if (interaction.type === InteractionType.ModalSubmit) {
-    const customData = JSON.parse(interaction.customId);
+    try {
+      const customData = JSON.parse(interaction.customId);
 
-    if (customData.action === 'stockSell-modal') {
-      await handleNumberInput(interaction, customData.name);
-    }
+      if (customData.action === 'stockSell-modal') {
+        await handleNumberInput(interaction, customData.name);
+      }
+    } catch (e) {}
   }
 });

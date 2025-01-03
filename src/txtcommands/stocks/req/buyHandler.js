@@ -71,10 +71,14 @@ export async function handleBuyRequest(userId, username, stockName, context) {
 
 client.on('interactionCreate', async (interaction) => {
   if (interaction.type === InteractionType.ModalSubmit) {
-    const customData = JSON.parse(interaction.customId);
+    if (interaction.customId) {
+      try {
+        const customData = JSON.parse(interaction.customId);
 
-    if (customData.action === 'stockBuy-modal') {
-      await handleNumberInput(interaction, customData.name);
+        if (customData.action === 'stockBuy-modal') {
+          await handleNumberInput(interaction, customData.name);
+        }
+      } catch (e) {}
     }
   }
 });
