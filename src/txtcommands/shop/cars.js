@@ -220,7 +220,7 @@ export async function usercars(context, targetUserId) {
     const username = context.user?.username || context.author?.username;
 
     const userData = await getUserData(userId);
-    const cars = userData.cars || [];
+    const cars = userData.cars.sort((a,b) => b.purchasedPrice - a.purchasedPrice) || [];
 
     if (!cars.length) {
       const embed = new EmbedBuilder()
@@ -486,7 +486,7 @@ export async function sellcar(context, carId) {
     .setColor('#e93535')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
     .setDescription(
-      `**${username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${car[0].price.toLocaleString()}** 𝑪𝒂𝒐𝒉.\n` +
+      `**${username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${car[0].price.toLocaleString()}** 𝑪𝒂𝒔𝒉.\n` +
       `Originally purchased that car for <:kasiko_coin:1300141236841086977>${userCar[0].purchasedPrice}.`
     )
     .setFooter({
