@@ -18,7 +18,7 @@ export default {
   // Main function to execute the collect command
   execute: (args, message) => {
     try {
-      return collectAquariumReward(message, message.author);
+      return collectAquariumReward(message.channel, message.author);
     } catch (error) {
       console.error('Error in aquarium collection:',
         error);
