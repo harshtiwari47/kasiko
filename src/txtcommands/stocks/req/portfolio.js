@@ -119,34 +119,45 @@ export async function portfolio(userId, context, viewerId) {
     ])
     .setColor(profitLossPercent >= 0 ? "#a8dabf": "#f56056");
 
-    const stockSelectMenu = new StringSelectMenuBuilder()
-    .setCustomId('stocks_select')
-    .setPlaceholder('📈 𝘝𝘐𝘌𝘞 𝘗𝘈𝘙𝘛𝘐𝘊𝘜𝘓𝘈𝘙 𝘚𝘛𝘖𝘊𝘒')
-    .setMinValues(1)
-    .setMaxValues(1)
-    .addOptions(
-      Object.keys(userData.stocks.toJSON()).filter(stock => userData.stocks[stock] && userData.stocks[stock].shares > 0).reduce((available, stock) => {
-        available.push({
-          label: `${stock.toUpperCase()}`,
-          value: stock
-        })
-        return available
-      },
-        [])
-    );
+    let stockSelectMenu;
+    let stocksNumber = Object.keys(userData.stocks.toJSON()).filter(stock => userData.stocks[stock] && userData.stocks[stock].shares > 0).length;
+
+    if (stocksNumber > 0) {
+      stockSelectMenu = new StringSelectMenuBuilder()
+      .setCustomId('stocks_select')
+      .setPlaceholder('📈 𝘝𝘐𝘌𝘞 𝘗𝘈𝘙𝘛𝘐𝘊𝘜𝘓𝘈𝘙 𝘚𝘛𝘖𝘊𝘒')
+      .setMinValues(1)
+      .setMaxValues(1)
+      .addOptions(
+        Object.keys(userData.stocks.toJSON()).filter(stock => userData.stocks[stock] && userData.stocks[stock].shares > 0).reduce((available, stock) => {
+          available.push({
+            label: `${stock.toUpperCase()}`,
+            value: stock
+          })
+          return available
+        },
+          [])
+      );
+    }
 
     let components = [];
-    if (viewerId === userId && Object.keys(userData.stocks.toJSON()).length > 1) {
+    if (viewerId === userId && stockSelectMenu && stocksNumber > 0) {
       const selectRow = new ActionRowBuilder().addComponents(stockSelectMenu);
       if (selectRow) {
         components = [selectRow]
       }
     }
+
+    let contentMessage = {
+      embeds: [embed1,
+        embed2]
+    }
+
+    if (components.length > 0) {
+      contentMessage.components = components
+    }
     // Send Embeds
-    const selectMessage = await handleMessage(context, {
-      embeds: [embed1, embed2],
-      components: components.length > 0 ? components: []
-    });
+    const selectMessage = await handleMessage(context, contentMessage);
 
     const collector = selectMessage.createMessageComponentCollector({
       filter: i => i.user.id === userId,

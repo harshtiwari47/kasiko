@@ -106,25 +106,33 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
           },
           []);
 
-        const flavorSelectMenu2 = new StringSelectMenuBuilder()
-        .setCustomId('amount_select')
-        .setPlaceholder('🛒 𝑪𝒉𝒐𝒐𝒔𝒆 𝒚𝒐𝒖𝒓 𝒂𝒎𝒐𝒖𝒏𝒕')
-        .setMinValues(1)
-        .setMaxValues(1)
-        .addOptions(
-          amountUserCanCreate.map(amount => ({
-            label: `${amount} ($${amount * flavorDetails.cost})`,
-            value: `${amount}`
-          }))
-        );
+        let flavorSelectMenu2;
 
-        const selectRow2 = new ActionRowBuilder().addComponents(flavorSelectMenu2);
+        if (amountUserCanCreate.length > 0) {
+          flavorSelectMenu2 = new StringSelectMenuBuilder()
+          .setCustomId('amount_select')
+          .setPlaceholder('🛒 𝑪𝒉𝒐𝒐𝒔𝒆 𝒚𝒐𝒖𝒓 𝒂𝒎𝒐𝒖𝒏𝒕')
+          .setMinValues(1)
+          .setMaxValues(1)
+          .addOptions(
+            amountUserCanCreate.map(amount => ({
+              label: `${amount} ($${amount * flavorDetails.cost})`,
+              value: `${amount}`
+            }))
+          );
+        }
+
+        let selectRow2;
+
+        if (flavorSelectMenu2) {
+          selectRow2 = new ActionRowBuilder().addComponents(flavorSelectMenu2);
+        }
 
         await interaction.editReply(
           {
             embeds: [machineTitleEmbed,
               optionEmbed.setDescription(`✔️ You selected: **${flavorDetails.icecream}**`)],
-            components: [selectRow2]
+            components: selectRow2 ? [selectRow2]: []
           });
         // Proceed to amount selection
       } else {
