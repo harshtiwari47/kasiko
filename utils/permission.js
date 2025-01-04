@@ -67,7 +67,7 @@ export async function checkPerms(message) {
   // If all permissions are granted, do nothing
   if (missingPermissions.length === 0) return;
 
-  console.log(`Bot is missing these permissions: ${missingPermissions.map(perm => (permissionNames[perm] || "Unknown")).join(', ')} \n in server ${message.guild.id}`);
+  // console.log(`Bot is missing these permissions: ${missingPermissions.map(perm => (permissionNames[perm] || "Unknown")).join(', ')} \n in server ${message.guild.id}`);
 
   return "\n- " + missingPermissions.map(perm => {
     if (permissionNames[perm]) {

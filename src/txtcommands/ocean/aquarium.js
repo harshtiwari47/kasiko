@@ -438,7 +438,7 @@ export async function addToAquarium(userId,
     const capitalizedName = animal.charAt(0).toUpperCase() + animal.slice(1).toLowerCase();
 
     userData.aquarium.push(capitalizedName);
-    user.markModified('aquarium');
+    userData.markModified('aquarium');
     
     await updateUser(userId, userData);
     return channel.send(`➕ ✅ Added **${capitalizedName}** to your <:aquarium:1301825002013851668> aquarium!`);
@@ -461,7 +461,7 @@ export async function removeFromAquarium(userId, animal, channel) {
     }
 
     userData.aquarium = userData.aquarium.filter(fish => fish.toLowerCase() !== animal.toLowerCase());
-    user.markModified('aquarium');
+    userData.markModified('aquarium');
     
     await updateUser(userId, userData);
     return channel.send(`➖ Removed **${animal}** from your aquarium!`);
