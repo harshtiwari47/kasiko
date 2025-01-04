@@ -138,12 +138,14 @@ export async function portfolio(userId, context, viewerId) {
     let components = [];
     if (viewerId === userId && Object.keys(userData.stocks.toJSON()).length > 1) {
       const selectRow = new ActionRowBuilder().addComponents(stockSelectMenu);
-      components = [selectRow]
+      if (selectRow) {
+        components = [selectRow]
+      }
     }
     // Send Embeds
     const selectMessage = await handleMessage(context, {
       embeds: [embed1, embed2],
-      components
+      components: components.length > 0 ? components: []
     });
 
     const collector = selectMessage.createMessageComponentCollector({
