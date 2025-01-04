@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 import User from "./models/User.js";
+import UserGuild from "./models/UserGuild.js";
 
 import redisClient from "./redis.js";
 
@@ -201,7 +202,7 @@ export const userExists = async (userId) => {
 };
 
 // Function to update user data using Mongoose documents and modifiedPaths
-export const updateUser = async (userId, userData) => {
+export const updateUser = async (userId, userData, guildId = null) => {
   try {
     if (!userData || !userData.isModified) {
       console.error('Invalid user data provided for update.');
@@ -228,6 +229,25 @@ export const updateUser = async (userId, userData) => {
     if (Object.keys(updates).length === 0) {
       // No changes to update
       return userData;
+    }
+
+    if (guildId) {
+      await UserGuild.findOneAndUpdate(
+        {
+          userId,
+          guildId
+        },
+        {
+          $set: {
+            level: userData.networth.level,
+            networth: userData.networth,
+            cash: userData.networth.cash
+          }
+        },
+        {
+          upsert: true
+        }
+      );
     }
 
     // Perform atomic update using $set

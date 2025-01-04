@@ -22,6 +22,7 @@ import {
 import WelcomeMsg from './utils/welcome.js';
 import Server from './models/Server.js';
 import ServerRemoved from './models/ServerRemoved.js';
+import UserGuild from './models/UserGuild.js';
 
 import txtcommands from './src/textCommandHandler.js';
 
@@ -63,12 +64,7 @@ const clientId = process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
-  const guildCount = client.guilds.cache.size || 32;
-  client.user.presence.set({
-    activities: [{
-      name: `${guildCount} servers`, type: ActivityType.Watching
-    }],
-  });
+  updateStatus(client);
   await loadSlashCommands('./src/slashcommands', clientId, TOKEN);
 });
 
@@ -153,7 +149,7 @@ client.on('messageCreate', async (message) => {
     const command = txtcommands.get(commandName);
 
     // update experience and level
-    updateExpPoints(message.content.toLowerCase(), message.author, message.channel);
+    updateExpPoints(message.content.toLowerCase(), message.author, message.channel, message?.guild.id);
 
     if (!command) return;
 
@@ -281,6 +277,15 @@ client.on('guildDelete', async (guild) => {
   console.log(`Bot was removed from the server with ID: ${serverId} & NAME: ${serverName}`);
 });
 
+client.on("guildMemberRemove", async (member) => {
+  const userId = member.id;
+  const guildId = member.guild.id;
+
+  await UserGuild.deleteOne({
+    userId, guildId
+  });
+});
+
 async function getServerPrefix(message) {
   const serverId = message.guild.id;
   const serverName = message.guild.name;
@@ -326,14 +331,35 @@ function getTotalUser(client, message) {
   return message.channel.send(`Total Members: ${totalMembers}`);
 }
 
+
 function updateStatus(client) {
-  const guildCount = client.guilds.cache.size || 32;
-  client.user.presence.set({
-    activities: [{
-      name: `${guildCount} servers`, type: ActivityType.Watching
-    }],
-  });
-  console.log(`Activity Updated: ${guildCount} servers`)
+  let toggle = true; // Flag to switch between server count and member count
+
+  setInterval(() => {
+    const guildCount = client.guilds.cache.size || 32;
+    let totalMembers = 0;
+
+    client.guilds.cache.forEach(guild => {
+      totalMembers += guild.memberCount;
+    });
+
+    // Alternate between showing server count and member count
+    const activity = toggle
+      ? {
+          name: `${guildCount} servers`,
+          type: ActivityType.Watching,
+        }
+      : {
+          name: `with ${totalMembers} members`,
+          type: ActivityType.Playing,
+        };
+
+    client.user.presence.set({
+      activities: [activity],
+    });
+
+    toggle = !toggle; // Toggle the flag to switch activities
+  }, 6000); // Update every 60 seconds (1 minute)
 }
 
 client.login(TOKEN);

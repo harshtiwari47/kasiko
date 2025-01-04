@@ -73,7 +73,7 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
   }
 }
 
-export async function updateExpPoints(content, user, channel) {
+export async function updateExpPoints(content, user, channel, guildId) {
   try {
     const userData = await getUserData(user.id);
     if (!userData) return;
@@ -96,7 +96,7 @@ export async function updateExpPoints(content, user, channel) {
     // Calculate experience required for the next level
     const expRequiredNextLvl = (Math.pow(lvl + 1, 2) * threshold) - Number(userData.exp);
 
-    await updateUser(user.id, userData);
+    await updateUser(user.id, userData, guildId);
 
     if (lvlUp) {
       const attachment = await generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, user.displayAvatarURL({

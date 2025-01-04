@@ -31,13 +31,13 @@ import UserPet from "../../../models/Pet.js";
 const aquaData = readAquaticData();
 
 /**
- * Check if user gets a bonus reward (ship or pet food).
- * Return an Embed describing the reward, or null if no reward.
- * 
- * @param {string} userId 
- * @param {object} message 
- * @returns {Promise<EmbedBuilder|null>}
- */
+* Check if user gets a bonus reward (ship or pet food).
+* Return an Embed describing the reward, or null if no reward.
+*
+* @param {string} userId
+* @param {object} message
+* @returns {Promise<EmbedBuilder|null>}
+*/
 async function checkExtraReward(userId, message) {
   try {
     // For debugging: let's see the random # in your console
@@ -55,7 +55,7 @@ async function checkExtraReward(userId, message) {
         if (randomChance < ships[i].probability) {
           // Already has this ship?
           const alreadyOwned = userShips.ships &&
-            userShips.ships.some(shipDetails => shipDetails.id === ships[i].id);
+          userShips.ships.some(shipDetails => shipDetails.id === ships[i].id);
 
           if (alreadyOwned) {
             return null; // user already has it, so no new reward
@@ -74,13 +74,13 @@ async function checkExtraReward(userId, message) {
 
           // Return an embed about the stolen ship
           const shipEmbed = new EmbedBuilder()
-            .setTitle("🚢 A Piratical Plunder!")
-            .setDescription(
-              `**${message.author.username}**, you’ve *stolen* a <:${ships[i].id}:${ships[i].emoji}> **${ships[i].name}** with no master!\nIt's ${
-                ['a', 'e', 'i', 'o', 'u'].includes(ships[i].rarity[0].toLowerCase()) ? 'an' : 'a'
-              } **${ships[i].rarity}** ship! ⚓\n\nYou’re the captain now! 🏴‍☠️`
-            )
-            .setColor("#FF8C00");
+          .setTitle("🚢 A Piratical Plunder!")
+          .setDescription(
+            `**${message.author.username}**, you’ve *stolen* a <:${ships[i].id}:${ships[i].emoji}> **${ships[i].name}** with no master!\nIt's ${
+            ['a', 'e', 'i', 'o', 'u'].includes(ships[i].rarity[0].toLowerCase()) ? 'an': 'a'
+            } **${ships[i].rarity}** ship! ⚓\n\nYou’re the captain now! 🏴‍☠️`
+          )
+          .setColor("#FF8C00");
 
           return shipEmbed;
         }
@@ -91,18 +91,22 @@ async function checkExtraReward(userId, message) {
 
     // ~20% chance (81-99) => find 2 pet foods
     if (randomProb > 80) {
-      let userPetData = await UserPet.findOne({ id: userId });
+      let userPetData = await UserPet.findOne({
+        id: userId
+      });
       if (!userPetData) {
-        userPetData = new UserPet({ id: userId });
+        userPetData = new UserPet( {
+          id: userId
+        });
       }
       userPetData.food += 2;
       await userPetData.save();
 
       // Return an embed about the pet food
       const foodEmbed = new EmbedBuilder()
-        .setTitle("🍖 Found Pet Food!")
-        .setDescription(`**${message.author.username}** found **2 sea food** for their pets in the ocean! 🐱`)
-        .setColor("#228B22");
+      .setTitle("🍖 Found Pet Food!")
+      .setDescription(`**${message.author.username}** found **2 sea food** for their pets in the ocean! 🐱`)
+      .setColor("#228B22");
 
       return foodEmbed;
     }
@@ -116,18 +120,18 @@ async function checkExtraReward(userId, message) {
 }
 
 /**
- * This function handles the entire "fishing" process and updates the provided message.
- * Potentially yields up to 3 embeds in one edit:
- *    1) The initial fishing embed 
- *    2) The success/failure fishing result 
- *    3) (Optional) a reward embed if user gets a ship or pet food
- *
- * @param {object} message - The original Discord message object.
- * @param {string|null} fishName - The fish to catch (optional). 
- * @param {string|null} zone - The zone name (optional).
- * @param {object} fishingMsg - The message object we are editing to show the fishing progress/result.
- * @param {boolean} collectorEnded - Whether the collector is already ended (so we can disable the button if so).
- */
+* This function handles the entire "fishing" process and updates the provided message.
+* Potentially yields up to 3 embeds in one edit:
+*    1) The initial fishing embed
+*    2) The success/failure fishing result
+*    3) (Optional) a reward embed if user gets a ship or pet food
+*
+* @param {object} message - The original Discord message object.
+* @param {string|null} fishName - The fish to catch (optional).
+* @param {string|null} zone - The zone name (optional).
+* @param {object} fishingMsg - The message object we are editing to show the fishing progress/result.
+* @param {boolean} collectorEnded - Whether the collector is already ended (so we can disable the button if so).
+*/
 async function doFishing(message, fishName, zone = null, fishingMsg, collectorEnded) {
   try {
     const userData = await getUserData(message.author.id);
@@ -135,9 +139,9 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
     // Check user has enough cash
     if (userData.cash < 1500) {
       const noCashEmbed = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle('Insufficient Cash')
-        .setDescription(`⚠️ **${message.author.username}**, you don't have enough cash for fishing.\nMinimum Required: <:kasiko_coin:1300141236841086977> **1500** 𝑪𝒂𝒔𝒉.`);
+      .setColor('#FF0000')
+      .setTitle('Insufficient Cash')
+      .setDescription(`⚠️ **${message.author.username}**, you don't have enough cash for fishing.\nMinimum Required: <:kasiko_coin:1300141236841086977> **1500** 𝑪𝒂𝒔𝒉.`);
 
       return fishingMsg.edit({
         embeds: [noCashEmbed],
@@ -153,8 +157,8 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
       const filtered = aquaData.filter((f) => f.name.toLowerCase() === fishName.toLowerCase());
       if (!filtered.length) {
         const notFound = new EmbedBuilder()
-          .setColor('#FF0000')
-          .setDescription(`⚠️ No fish data found for **${fishName}**.`);
+        .setColor('#FF0000')
+        .setDescription(`⚠️ No fish data found for **${fishName}**.`);
         return fishingMsg.edit({
           embeds: [notFound],
           components: []
@@ -191,11 +195,13 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
 
     // 3) The initial embed: "suspense"
     const initialEmbed = new EmbedBuilder()
-      .setTitle("🎣 𝑭𝒊𝒔𝒉𝒊𝒏𝒈 𝒊𝒏 𝑷𝒓𝒐𝒄𝒆𝒔𝒔!")
-      .setDescription(`**${message.author.username}** cast their line...\nThey're trying to catch a **${fish.rarity}** fish! ⏳`)
-      .setColor('#0e2c42')
-      .setImage('https://harshtiwari47.github.io/kasiko-public/images/fishing.jpg')
-      .setFooter({ text: "𝐻𝑜𝑙𝑑 𝑜𝑛, 𝑡ℎ𝑒 𝑓𝑖𝑠ℎ 𝑖𝑠 𝑜𝑛 𝑡ℎ𝑒 𝑙𝑖𝑛𝑒..." });
+    .setTitle("🎣 𝑭𝒊𝒔𝒉𝒊𝒏𝒈 𝒊𝒏 𝑷𝒓𝒐𝒄𝒆𝒔𝒔!")
+    .setDescription(`**${message.author.username}** cast their line...\nThey're trying to catch a **${fish.rarity}** fish! ⏳`)
+    .setColor('#0e2c42')
+    .setImage(`https://harshtiwari47.github.io/kasiko-public/images/fishing${1 + Math.floor(Math.random() * 4)}.jpg`)
+    .setFooter({
+      text: "𝐻𝑜𝑙𝑑 𝑜𝑛, 𝑡ℎ𝑒 𝑓𝑖𝑠ℎ 𝑖𝑠 𝑜𝑛 𝑡ℎ𝑒 𝑙𝑖𝑛𝑒..."
+    });
 
     // Update the message with the suspense embed (clearing old components)
     await fishingMsg.edit({
@@ -213,10 +219,10 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         await updateUser(message.author.id, userData);
 
         resultEmbed = new EmbedBuilder()
-          .setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
-          .setDescription(`**${message.author.username}** cast their line...\nbut all they hooked was a soggy boot — <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉 wasted.\nBetter luck next time! 🥾💦`)
-          .setColor('#620a0a')
-          .setThumbnail('https://harshtiwari47.github.io/kasiko-public/images/empty-boat.jpg');
+        .setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
+        .setDescription(`**${message.author.username}** cast their line...\nbut all they hooked was a soggy boot — <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉 wasted.\nBetter luck next time! 🥾💦`)
+        .setColor('#620a0a')
+        .setThumbnail('https://harshtiwari47.github.io/kasiko-public/images/empty-boat.jpg');
       } else {
         // The fish is caught
         userData.cash -= cost;
@@ -237,14 +243,14 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         await updateUser(message.author.id, userData);
 
         resultEmbed = new EmbedBuilder()
-          .setTitle("🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝")
-          .setDescription(
-            `**${message.author.username}** collected a **${fish.rarity}** <:${fish.name}_fish:${fish.emoji}> \`${fish.name}\`${
-              zone ? ` in **${zone.toUpperCase()}**` : ''
-            } for <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉.\n\n✦⋆ 𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`
-          )
-          .setColor('#58dbf7')
-          .setThumbnail(`https://cdn.discordapp.com/emojis/${fish.emoji}.png`);
+        .setTitle("🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝")
+        .setDescription(
+          `**${message.author.username}** collected a **${fish.rarity}** <:${fish.name}_fish:${fish.emoji}> \`${fish.name}\`${
+          zone ? ` in **${zone.toUpperCase()}**`: ''
+          } for <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉.\n\n✦⋆ 𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`
+        )
+        .setColor('#58dbf7')
+        .setThumbnail(`https://cdn.discordapp.com/emojis/${fish.emoji}.png`);
       }
 
       // Increment the "catch" task exp
@@ -259,48 +265,57 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         // If the collector is still active, show an enabled button
         row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
-            .setCustomId('re_fish')
-            .setLabel('Re-fish?')
-            .setStyle(ButtonStyle.Primary)
+          .setCustomId('re_fish')
+          .setLabel('Re-fish?')
+          .setStyle(ButtonStyle.Primary),
+          new ButtonBuilder()
+          .setCustomId('ocean_collection')
+          .setLabel(`📒`)
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(false)
         );
       } else {
         // If the collector ended, show the button disabled
         const disabledBtn = new ButtonBuilder()
-          .setCustomId('re_fish')
-          .setLabel('Re-fish?')
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(true);
+        .setCustomId('re_fish')
+        .setLabel('Re-fish?')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true);
 
         row = new ActionRowBuilder().addComponents(disabledBtn);
       }
 
       // Final array of embeds
-      const finalEmbeds = [initialEmbed, resultEmbed];
+      const finalEmbeds = [initialEmbed.setImage(`https://harshtiwari47.github.io/kasiko-public/images/fishing${1 + Math.floor(Math.random() * 4)}.jpg`),
+        resultEmbed];
       if (rewardEmbed) finalEmbeds.push(rewardEmbed);
 
       await fishingMsg.edit({
         embeds: finalEmbeds,
         components: [row]
       });
-    }, 4000);
+    },
+      4000);
   } catch (err) {
     console.error(err);
     const errorEmbed = new EmbedBuilder()
-      .setColor('#FF0000')
-      .setDescription(`⚠️ Something went wrong. The 🐟 fish escaped.`);
-    return message.channel.send({ embeds: [errorEmbed] });
+    .setColor('#FF0000')
+    .setDescription(`⚠️ Something went wrong. The 🐟 fish escaped.`);
+    return message.channel.send({
+      embeds: [errorEmbed]
+    });
   }
 }
 
 /**
- * Initiates the fishing process (including sending the initial "Preparing" message).
- * Sets up a single button collector to allow repeated fishing attempts for 1 minute.
- *
- * @param {string} userId
- * @param {object} message
- * @param {string|null} zone - If "general", means no zone. Otherwise the zone name.
- * @param {string|null} forcedAnimal - If you specifically want to attempt a certain fish
- */
+* Initiates the fishing process (including sending the initial "Preparing" message).
+* Sets up a single button collector to allow repeated fishing attempts for 1 minute.
+*
+* @param {string} userId
+* @param {object} message
+* @param {string|null} zone - If "general", means no zone. Otherwise the zone name.
+* @param {string|null} forcedAnimal - If you specifically want to attempt a certain fish
+*/
 async function addToCollection(userId, message, zone = null, forcedAnimal = null) {
   // A single message that we keep editing
   const initialMessage = await message.channel.send({
@@ -311,53 +326,66 @@ async function addToCollection(userId, message, zone = null, forcedAnimal = null
   let collectorEnded = false;
 
   // Start the fishing process once
-  await doFishing(message, forcedAnimal, zone, initialMessage, collectorEnded);
+  await doFishing(message,
+    forcedAnimal,
+    zone,
+    initialMessage,
+    collectorEnded);
 
   // Create a component collector on that same message
   const collector = initialMessage.createMessageComponentCollector({
     time: 120 * 1000 // 2 minute
   });
 
-  collector.on('collect', async (interaction) => {
-    // Make sure it's the same user
-    if (interaction.user.id !== message.author.id) {
-      return interaction.reply({
-        content: 'This button is not for you!',
-        ephemeral: true
-      });
-    }
+  collector.on('collect',
+    async (interaction) => {
+      // Make sure it's the same user
+      if (interaction.user.id !== message.author.id) {
+        return interaction.reply({
+          content: 'This button is not for you!',
+          ephemeral: true
+        });
+      }
 
-    // Acknowledge
-    await interaction.deferUpdate();
+      if (interaction.customId === 'ocean_collection') {
+        await interaction.deferReply();
+        return await viewCollection(interaction.user.id, interaction);
+      }
 
-    // Re-run fishing with the same message, 
-    // but only if the collector not ended
-    if (!collectorEnded) {
-      await doFishing(message, forcedAnimal, zone, initialMessage, collectorEnded);
-    }
-  });
+      // Acknowledge
+      await interaction.deferUpdate();
 
-  collector.on('end', async () => {
-    // Mark that the collector is ended
-    collectorEnded = true;
+      // Re-run fishing with the same message,
+      // but only if the collector not ended
+      if (!collectorEnded) {
+        await doFishing(message, forcedAnimal, zone, initialMessage, collectorEnded);
+      }
+    });
 
-    // We attempt to fetch the current message, then disable the button 
-    try {
-      const editedMsg = await initialMessage.fetch();
-      if (!editedMsg) return;
+  collector.on('end',
+    async () => {
+      // Mark that the collector is ended
+      collectorEnded = true;
 
-      // If there's no row or no components, do nothing
-      if (!editedMsg.components.length) return;
+      // We attempt to fetch the current message, then disable the button
+      try {
+        const editedMsg = await initialMessage.fetch();
+        if (!editedMsg) return;
 
-      // Disable the button
-      const row = ActionRowBuilder.from(editedMsg.components[0]);
-      row.components.forEach((btn) => btn.setDisabled(true));
+        // If there's no row or no components, do nothing
+        if (!editedMsg.components.length) return;
 
-      await editedMsg.edit({ components: [row] }).catch(() => {});
-    } catch (err) {
-      console.error("Error disabling button after collector end:", err);
-    }
-  });
+        // Disable the button
+        const row = ActionRowBuilder.from(editedMsg.components[0]);
+        row.components.forEach((btn) => btn.setDisabled(true));
+
+        await editedMsg.edit({
+          components: [row]
+        }).catch(() => {});
+      } catch (err) {
+        console.error("Error disabling button after collector end:", err);
+      }
+    });
 }
 
 //------------------------------------ Other Functions -------------------------------------//
@@ -370,9 +398,9 @@ export async function listZones(message) {
 }
 
 /**
- * Explore a specific zone; picks a random fish from that zone's set
- * or "general" to get from the entire aquaData
- */
+* Explore a specific zone; picks a random fish from that zone's set
+* or "general" to get from the entire aquaData
+*/
 export async function exploreZone(userId, zoneName, message) {
   try {
     const animalsByZone = {
@@ -401,8 +429,8 @@ export async function exploreZone(userId, zoneName, message) {
 }
 
 /**
- * Basic "catch" command logic (when user simply types "catch").
- */
+* Basic "catch" command logic (when user simply types "catch").
+*/
 async function collect(userId, message) {
   const userData = await getUserData(userId);
   if (userData.cash < 1500) {
@@ -417,14 +445,23 @@ async function collect(userId, message) {
 }
 
 /**
- * For direct usage if you want a random animal from the local array
- */
+* For direct usage if you want a random animal from the local array
+*/
 export async function collectAnimal(userId, message) {
   try {
     const foundAnimals = [
-      "Clownfish", "Turtle", "Otter", "Garibaldifish", 
-      "Anglerfish", "Dolphin", "Shark", "Whale", 
-      "Octopus", "Pufferfish", "Lionfish", "Swordfish"
+      "Clownfish",
+      "Turtle",
+      "Otter",
+      "Garibaldifish",
+      "Anglerfish",
+      "Dolphin",
+      "Shark",
+      "Whale",
+      "Octopus",
+      "Pufferfish",
+      "Lionfish",
+      "Swordfish"
     ];
     const randomAnimal = foundAnimals[Math.floor(Math.random() * foundAnimals.length)];
     return addToCollection(userId, message, null, randomAnimal);
@@ -438,7 +475,10 @@ export async function collectAnimal(userId, message) {
 export default {
   name: "ocean",
   description: "Explore ocean zones, collect animals, and manage ocean-related activities.",
-  aliases: ["oc", "o", "catch"],
+  aliases: ["oc",
+    "o",
+    "catch",
+    "fishing"],
   // Short alias for the ocean command
   args: "<action> [parameters]",
   example: [
@@ -450,64 +490,80 @@ export default {
     // Catch an animal in the ocean
     "ocean collection <@username optional>" // view an animal collection
   ],
-  related: ["aquarium", "catch"],
-  cooldown: 10000, // Cooldown of 10 seconds
+  related: ["aquarium",
+    "catch"],
+  cooldown: 10000,
+  // Cooldown of 10 seconds
   category: "🌊 Ocean Life",
 
   async execute(args, message) {
-    if (args[0] === "catch") {
+    if (args[0] === "catch" || args[0] === "fishing") {
       // User just typed "catch"
       return collect(message.author.id, message);
     }
 
-    const subcommand = args[1] ? args[1].toLowerCase() : null;
-    const zone = args[2] ? args[2].toLowerCase() : null;
+    const subcommand = args[1] ? args[1].toLowerCase(): null;
+    const zone = args[2] ? args[2].toLowerCase(): null;
 
     switch (subcommand) {
-      case "zone":
-        return listZones(message);
+    case "zone":
+      return listZones(message);
 
-      case "explore":
-        if (!zone) {
-          return message.channel.send("⚠️ Please specify a zone to explore. Example: `ocean explore <zone>` or `ocean explore general`");
-        }
+    case "explore":
+      if (!zone) {
+        return message.channel.send("⚠️ Please specify a zone to explore. Example: `ocean explore <zone>` or `ocean explore general`");
+      }
+      return exploreZone(message.author.id, zone, message);
+
+    case "cl":
+    case "collection":
+      if (args[2] && Helper.isUserMention(args[2])) {
+        return viewCollection(Helper.extractUserId(args[2]), message.channel);
+      }
+      return viewCollection(message.author.id, message.channel);
+
+    case "fish":
+      // "ocean fish <zone|general>"
+      if (zone) {
         return exploreZone(message.author.id, zone, message);
+      } else {
+        // If no zone is given, treat as general
+        return addToCollection(message.author.id, message, null, null);
+      }
 
-      case "cl":
-      case "collection":
-        if (args[2] && Helper.isUserMention(args[2])) {
-          return viewCollection(Helper.extractUserId(args[2]), message.channel);
+    case "catch":
+    case "c":
+      return collect(message.author.id, message);
+
+    default:
+      const oceanEmbed = new EmbedBuilder()
+      .setColor('#1E90FF') // Ocean-like color
+      .setTitle('🌊🐚 Ocean Command')
+      .setDescription('Explore the vast ocean with these commands:')
+      .addFields(
+        {
+          name: '`ocean zone`', value: 'View available ocean zones.', inline: false
+        },
+        {
+          name: '`ocean explore <zone|general>`', value: 'Explore a specific ocean zone or general.', inline: false
+        },
+        {
+          name: '`ocean fish <zone|general>`', value: 'Fish in a specific zone or general.', inline: false
+        },
+        {
+          name: '`ocean collection <@username (optional)>`', value: 'View your or someone else\'s ocean collection.', inline: false
+        },
+        {
+          name: '`catch` or `ocean catch`', value: 'Start fishing 🎣 and catch random items!', inline: false
         }
-        return viewCollection(message.author.id, message.channel);
+      )
+      .setFooter({
+        text: 'Happy fishing! 🎣'
+      });
 
-      case "fish":
-        // "ocean fish <zone|general>"
-        if (zone) {
-          return exploreZone(message.author.id, zone, message);
-        } else {
-          // If no zone is given, treat as general
-          return addToCollection(message.author.id, message, null, null);
-        }
-
-      case "catch":
-      case "c":
-        return collect(message.author.id, message);
-
-      default:
-        const oceanEmbed = new EmbedBuilder()
-          .setColor('#1E90FF') // Ocean-like color
-          .setTitle('🌊🐚 Ocean Command')
-          .setDescription('Explore the vast ocean with these commands:')
-          .addFields(
-            { name: '`ocean zone`', value: 'View available ocean zones.', inline: false },
-            { name: '`ocean explore <zone|general>`', value: 'Explore a specific ocean zone or general.', inline: false },
-            { name: '`ocean fish <zone|general>`', value: 'Fish in a specific zone or general.', inline: false },
-            { name: '`ocean collection <@username (optional)>`', value: 'View your or someone else\'s ocean collection.', inline: false },
-            { name: '`catch` or `ocean catch`', value: 'Start fishing 🎣 and catch random items!', inline: false }
-          )
-          .setFooter({ text: 'Happy fishing! 🎣' });
-
-        return message.channel.send({ embeds: [oceanEmbed] });
+      return message.channel.send({
+        embeds: [oceanEmbed]
+      });
     }
   },
 };

@@ -36,6 +36,34 @@
       "description": "An exquisite golden ring crowned with a deep blue sapphire."
     }],
   "necklaces": [],
-  "watches": [],
+  "watches": [
+  {
+    "id": "watch1",
+    "type": "watch",
+    "name": "Eclipse Chrono",
+    "price": 700000,
+    "rarity": "epic",
+    "emoji": "1324984044894687292",
+    "description": "A stunning black-and-gold chronograph with celestial design elements."
+  },
+  {
+    "id": "watch2",
+    "type": "watch",
+    "name": "Titanium Voyager",
+    "price": 1200000,
+    "rarity": "epic",
+    "emoji": "1324984065799225404",
+    "description": "A durable yet elegant titanium watch, perfect for adventurers."
+  },
+  {
+    "id": "watch3",
+    "type": "watch",
+    "name": "Crystal Dawn",
+    "price": 2000000,
+    "rarity": "legendary",
+    "emoji": "1324984146401038356",
+    "description": "A sleek silver watch with a shimmering crystal bezel."
+  }
+],
   "strips": []
 }
