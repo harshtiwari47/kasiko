@@ -387,7 +387,7 @@ export async function buystructure(context, structureId) {
     // Check for sufficient cash
     if (userData.cash < structure.price) {
       return handleMessage(context, {
-        content: `⚠️ **${username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒐𝒉 to buy the structure.`
+        content: `⚠️ **${username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝐬𝒉 to buy the structure.`
       });
     }
 
@@ -501,7 +501,7 @@ export async function sellstructure(context, structureId) {
     .setColor('#e93535')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
     .setDescription(
-      `**${username}** successfully sold a **${structure.name}** for <:kasiko_coin:1300141236841086977> **${structure.price.toLocaleString()}** 𝑪𝒂𝒐𝒉.\n` +
+      `**${username}** successfully sold a **${structure.name}** for <:kasiko_coin:1300141236841086977> **${structure.price.toLocaleString()}** 𝑪𝒂𝐬𝒉.\n` +
       `Originally purchased that structure for <:kasiko_coin:1300141236841086977>${userStructure[0].purchasedPrice.toLocaleString()}.`
     )
     .setFooter({

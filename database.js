@@ -80,14 +80,13 @@ export const createUser = async (userId) => {
       roses: 0,
       bondXP: 0,
       charity: 0,
-      trust: 200,
+      trust: 100,
       exp: 120,
       level: 1,
       verified: false,
       acceptedTerms: true,
       lastBattle: null,
       lastRobbery: null,
-      aquariumCollectionTime: null,
       marriedOn: null,
       joined: Date.now(),
       dailyReward: null,
@@ -95,10 +94,10 @@ export const createUser = async (userId) => {
       stocks: {},
       cars: [],
       structures: [],
-      aquaCollection: {},
-      aquarium: [],
       children: [],
-      battleLog: [],
+      shipBattle: {
+        battleLog: []
+      }
     });
 
     const savedUser = await newUser.save();

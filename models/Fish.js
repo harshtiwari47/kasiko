@@ -1,7 +1,10 @@
 import mongoose from 'mongoose';
 
-// AnimalDetail Schema (for individual animal tracking)
 const animalDetailSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true
+  },
   level: {
     type: Number,
     default: 1,
@@ -12,11 +15,6 @@ const animalDetailSchema = new mongoose.Schema({
     default: 1,
       set: (value) => (value < 1 ? 1: value)
     },
-    name: {
-      type: String,
-      required: true,
-    default: "Dolphin"
-    },
     food: {
       type: Number,
     default: 0,
@@ -24,44 +22,47 @@ const animalDetailSchema = new mongoose.Schema({
     }
   });
 
-  // Main Animal Schema (includes references to individual animal details)
-  const fishSchema = new mongoose.Schema({
-    Dolphin: {
-      type: animalDetailSchema
+  const aquariumSchema = new mongoose.Schema({
+    userId: {
+      type: String,
+      required: true,
+      unique: true
     },
-    Clownfish: {
-      type: animalDetailSchema
+    fishes: {
+      type: [animalDetailSchema],
+    default: []
     },
-    Turtle: {
-      type: animalDetailSchema
+    aquarium: {
+      type: Array,
+    default: []
     },
-    Otter: {
-      type: animalDetailSchema
+    rods: {
+      Bamboo: {
+        type: Number,
+      default: 0
+      },
+      Fiberglass: {
+        type: Number,
+      default: 0
+      },
+      Carbon: {
+        type: Number,
+      default: 0
+      },
+      Titanium: {
+        type: Number,
+      default: 0
+      },
+      Neptune: {
+        type: Number,
+      default: 0
+      }
     },
-    Garibaldifish: {
-      type: animalDetailSchema
-    },
-    Anglerfish: {
-      type: animalDetailSchema
-    },
-    Shark: {
-      type: animalDetailSchema
-    },
-    Whale: {
-      type: animalDetailSchema
-    },
-    Octopus: {
-      type: animalDetailSchema
-    },
-    Pufferfish: {
-      type: animalDetailSchema
-    },
-    Lionfish: {
-      type: animalDetailSchema
-    },
-    Swordfish: {
-      type: animalDetailSchema
+    aquariumCollectionTime: {
+      type: Number
     }
   });
 
-  export default fishSchema;
+  const FishCollection = mongoose.model('Fishes', aquariumSchema);
+
+  export default FishCollection;

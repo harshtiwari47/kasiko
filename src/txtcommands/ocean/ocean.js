@@ -9,6 +9,10 @@ import {
 import {
   Helper
 } from '../../../helper.js';
+import {
+  getUserFishData,
+  updateFishUser
+} from './data.js';
 
 import {
   EmbedBuilder,
@@ -135,6 +139,7 @@ async function checkExtraReward(userId, message) {
 async function doFishing(message, fishName, zone = null, fishingMsg, collectorEnded) {
   try {
     const userData = await getUserData(message.author.id);
+    const userFishData = await getUserFishData(message.author.id);
 
     // Check user has enough cash
     if (userData.cash < 1500) {
@@ -226,21 +231,22 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
       } else {
         // The fish is caught
         userData.cash -= cost;
-        if (!userData.aquaCollection) {
-          userData.aquaCollection = {};
+        if (!userFishData.fishes) {
+          userFishData.fishes = []
         }
-        if (!userData.aquaCollection[fish.name]) {
-          userData.aquaCollection[fish.name] = {
+        if (!userFishData.fishes.find(f => f.name.toLowerCase() === fish.name.toLowerCase())) {
+          userFishData.fishes.push({
             level: 1,
             animals: 1,
             name: fish.name,
             food: 0,
-          };
+          });
         } else {
-          userData.aquaCollection[fish.name].animals += 1;
+          userFishData.fishes.find(f => f.name.toLowerCase() === fish.name.toLowerCase()).animals += 1;
         }
 
         await updateUser(message.author.id, userData);
+        await updateFishUser(message.author.id, userFishData);
 
         resultEmbed = new EmbedBuilder()
         .setTitle("🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝")
@@ -478,7 +484,9 @@ export default {
   aliases: ["oc",
     "o",
     "catch",
-    "fishing"],
+    "fishing",
+    "fish",
+    "fishes"],
   // Short alias for the ocean command
   args: "<action> [parameters]",
   example: [
@@ -500,6 +508,13 @@ export default {
     if (args[0] === "catch" || args[0] === "fishing") {
       // User just typed "catch"
       return collect(message.author.id, message);
+    }
+
+    if (args[0] === "fishes" || args[0] === "fish") {
+      if (args[1] && Helper.isUserMention(args[1])) {
+        return viewCollection(Helper.extractUserId(args[1]), message.channel);
+      }
+      return viewCollection(message.author.id, message.channel);
     }
 
     const subcommand = args[1] ? args[1].toLowerCase(): null;

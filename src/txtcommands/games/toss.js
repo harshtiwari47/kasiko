@@ -12,6 +12,12 @@ export async function toss(id, amount, channel, choice = "head") {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
+    if (amount === "all") amount = userData.cash;
+
+    if (amount > 200000) {
+      return channel.send(`⚠️ **${guild.user.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
+    }
+
     // Check if the user has enough cash and if the amount is valid
     if (userData.cash < 1) {
       return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
@@ -81,16 +87,19 @@ export default {
   // Main function to execute the coin toss logic
   execute: (args, message) => {
     // Check if a valid amount argument is provided
-    if (args[1] && Helper.isNumber(args[1])) {
-      const amount = parseInt(args[1]);
+    if ((args[1] && Helper.isNumber(args[1])) || args[1] === "all") {
 
-      // Ensure amount is within valid range
-      if (amount < 1) {
-        return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
+      let amount;
+
+      if (args[1] === "all") {
+        amount = "all";
+      } else {
+        amount = parseInt(args[1]);
       }
 
-      if (amount > 200000) {
-        return message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
+      // Ensure amount is within valid range
+      if (amount !== "all" && amount < 1) {
+        return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
       }
 
       let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";

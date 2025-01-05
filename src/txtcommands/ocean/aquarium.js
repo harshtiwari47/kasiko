@@ -12,21 +12,25 @@ import {
 } from '../../../database.js';
 
 import {
+  getUserFishData,
+  updateFishUser
+} from './data.js';
+
+import {
   Helper
 } from '../../../helper.js';
 
 const aquaData = readAquaticData();
 
-
 export async function viewCollection(userId, context) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
   try {
-    let userData = await getUserData(userId);
-    const userCollection = userData.aquaCollection;
+    let userFishData = await getUserFishData(userId);
+    const userCollection = userFishData.fishes;
 
     let collection = [];
 
-    if (Object.values(userCollection.toJSON()).length === 1) {
+    if (userCollection.length === 0) {
       const embed = new EmbedBuilder()
       .setColor(0x0099FF)
       .setDescription(`⚠️ You don't have any 🦦fish!\nTo catch some, you can fish from the ocean or use the following command to start fishing:\n\`kas catch\`\nEnjoy!`);
@@ -42,7 +46,7 @@ export async function viewCollection(userId, context) {
         });
       }
     } else {
-      Object.values(userCollection.toJSON()).forEach((fish, i) => {
+      userCollection.forEach((fish, i) => {
         if (fish.name) {
           let fishDetails = aquaData.filter(item => item.name === fish.name);
           collection.push({
@@ -223,12 +227,14 @@ export async function viewAquarium(userId,
 
   try {
     let userData = await getUserData(userId);
-    const aquarium = userData.aquarium || [];
+    let userFishData = await getUserFishData(userId);
+
+    const aquarium = userFishData.aquarium || [];
 
     let totalReward = 0;
     aquarium.forEach(fish => {
       let fishDetails = aquaData.find(fishData => fishData.name.toLowerCase() === fish.toLowerCase());
-      let userfishDetails = Object.values(userData.aquaCollection.toJSON()).find(fishData => fishData.name && fishData.name.toLowerCase() === fish.toLowerCase());
+      let userfishDetails = userFishData.fishes.find(fishData => fishData.name && fishData.name.toLowerCase() === fish.toLowerCase());
       let rarityAmount = 10;
 
       if (fishDetails.rarity === "lengendary") {
@@ -278,8 +284,8 @@ export async function viewAquarium(userId,
     const currentTime = Date.now();
 
     const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-    if (userData.aquariumCollectionTime && (currentTime - userData.aquariumCollectionTime) < twelveHours) {
-      const timeLeft = twelveHours - (currentTime - userData.aquariumCollectionTime);
+    if (userFishData.aquariumCollectionTime && (currentTime - userFishData.aquariumCollectionTime) < twelveHours) {
+      const timeLeft = twelveHours - (currentTime - userFishData.aquariumCollectionTime);
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
       canCollect = false;
@@ -415,32 +421,32 @@ export async function addToAquarium(userId,
   animal,
   channel) {
   try {
-    let userData = await getUserData(userId);
+    const userFishData = await getUserFishData(userId);
 
     if (!aquaData.some(fish => fish.name.toLowerCase() === animal.toLowerCase())) {
       return channel.send("⚠️ Fish not found.")
     }
 
-    if (!userData.aquarium && !Array.isArray(userData.aquarium)) userData.aquarium = [];
+    if (!userFishData.aquarium && !Array.isArray(userFishData.aquarium)) userFishData.aquarium = [];
 
-    if (userData.aquarium.length > 2) {
+    if (userFishData.aquarium.length > 2) {
       return channel.send(`\n⚠️ 🐚 <:aquarium:1301825002013851668> **Your Aquarium is Full!**\nMaximum limit: **3 fish**\nPlease **remove some fish** to make space.`);
     }
 
-    if (userData.aquarium.some(fish => fish.toLowerCase() === animal.toLowerCase())) {
+    if (userFishData.aquarium.some(fish => fish.toLowerCase() === animal.toLowerCase())) {
       return channel.send(`\n⚠️ 🎣 <:aquarium:1301825002013851668> **This fish is already in your Aquarium!**\nYou can only add unique fish. Please try adding a different one.`);
     }
 
-    if (!Object.values(userData.aquaCollection.toJSON()).some(fish => fish.name && fish.name.toLowerCase() === animal.toLowerCase())) {
+    if (!userFishData.fishes.some(fish => fish.name && fish.name.toLowerCase() === animal.toLowerCase())) {
       return channel.send("⚠️ 🐠 This fish isn't in your collection. Try catching it first!");
     }
 
     const capitalizedName = animal.charAt(0).toUpperCase() + animal.slice(1).toLowerCase();
 
-    userData.aquarium.push(capitalizedName);
-    userData.markModified('aquarium');
-    
-    await updateUser(userId, userData);
+    userFishData.aquarium.push(capitalizedName);
+    userFishData.markModified('aquarium');
+
+    await updateFishUser(userId, userFishData);
     return channel.send(`➕ ✅ Added **${capitalizedName}** to your <:aquarium:1301825002013851668> aquarium!`);
   } catch (e) {
     console.error(e);
@@ -451,19 +457,20 @@ export async function addToAquarium(userId,
 export async function removeFromAquarium(userId, animal, channel) {
   try {
     let userData = await getUserData(userId);
+    let userFishData = await getUserFishData(userId);
 
-    if (!Array.isArray(userData.aquarium) || userData.aquarium.length === 0) {
+    if (!Array.isArray(userFishData.aquarium) || userFishData.aquarium.length === 0) {
       return channel.send("⚠️ 🎣 No animals to remove.");
     }
 
-    if (!userData.aquarium.some(fish => fish.toLowerCase() === animal.toLowerCase())) {
+    if (!userFishData.aquarium.some(fish => fish.toLowerCase() === animal.toLowerCase())) {
       return channel.send(`⚠️ 🐠 Fish **${animal}** is not in your aquarium.`);
     }
 
-    userData.aquarium = userData.aquarium.filter(fish => fish.toLowerCase() !== animal.toLowerCase());
-    userData.markModified('aquarium');
-    
-    await updateUser(userId, userData);
+    userFishData.aquarium = userFishData.aquarium.filter(fish => fish.toLowerCase() !== animal.toLowerCase());
+    userFishData.markModified('aquarium');
+
+    await updateFishUser(userId, userFishData);
     return channel.send(`➖ Removed **${animal}** from your aquarium!`);
   } catch (e) {
     console.error(e);
@@ -475,7 +482,9 @@ export async function feedAnimals(animal, amount, message) {
   try {
     const capitalizedName = animal.charAt(0).toUpperCase() + animal.slice(1).toLowerCase();
     const userData = await getUserData(message.author.id);
-    let userAnimal = Object.values(userData.aquaCollection.toJSON()).find(fish => fish.name && fish.name.toLowerCase() === animal.toLowerCase());
+    const userFishData = await getUserFishData(message.author.id);
+
+    let userAnimal = userFishData.fishes.find(f => f.name.toLowerCase() === animal.toLowerCase());
     const aquaAnimal = aquaData.find(fish => fish.name.toLowerCase() === animal.toLowerCase());
 
     if (!aquaAnimal) {
@@ -486,15 +495,16 @@ export async function feedAnimals(animal, amount, message) {
       return message.channel.send("⚠️ 🐠 This animal is not found in your collection.");
     }
 
+    let index = userFishData.fishes.findIndex(f => f.name.toLowerCase() === capitalizedName.toLowerCase());
     // Each animal has a feed cost associated with it
-    const feedCost = aquaAnimal.feedCost * amount * userData.aquaCollection[capitalizedName].animals;
+    const feedCost = aquaAnimal.feedCost * amount * userFishData.fishes[index].animals;
 
     if (userData.cash < feedCost) {
       return message.channel.send(`⚠️ You do not have enough cash (<:kasiko_coin:1300141236841086977>${feedCost}) to feed your animals.`);
     }
 
     let foodReqToLvlUp = Number(aquaAnimal.foodReq);
-    let currentFoodAmount = Number(userData.aquaCollection[capitalizedName].food) + amount;
+    let currentFoodAmount = Number(userFishData.fishes.find(f => f.name.toLowerCase() === capitalizedName.toLowerCase()).food) + amount;
     let level = Math.floor(currentFoodAmount / foodReqToLvlUp);
     if (level < 2) level = 2
 
@@ -504,12 +514,14 @@ export async function feedAnimals(animal, amount, message) {
       );
     }
 
-    userData.aquaCollection[capitalizedName].food += amount;
-    userData.aquaCollection[capitalizedName].level += level - userData.aquaCollection[capitalizedName].level;
+
+    userFishData.fishes[index].food += amount;
+    userFishData.fishes[index].level += level - userFishData.fishes[index].level;
     userData.cash -= feedCost;
     await updateUser(message.author.id, userData);
+    await updateFishUser(message.author.id, userFishData);
 
-    return message.channel.send(`🍤 **${message.author.username}**, you fed your <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) ${amount} food for <:kasiko_coin:1300141236841086977> ${feedCost} 𝑪𝒂𝒔𝒉! They are happy and healthy. Your ${animal}(s) are ${level ? "**now**": "**still**"} at level ${userData.aquaCollection[capitalizedName].level}.`);
+    return message.channel.send(`🍤 **${message.author.username}**, you fed your <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) ${amount} food for <:kasiko_coin:1300141236841086977> ${feedCost} 𝑪𝒂𝒔𝒉! They are happy and healthy. Your ${animal}(s) are ${level ? "**now**": "**still**"} at level ${userFishData.fishes[index].level}.`);
   } catch (error) {
     console.error(error);
     return message.channel.send("⚠️ Something went wrong while feeding the animals.");
@@ -519,6 +531,8 @@ export async function feedAnimals(animal, amount, message) {
 export async function sellAnimals(animal, amount, message) {
   try {
     const userData = await getUserData(message.author.id);
+    const userFishData = await getUserFishData(userId);
+
     const aquaAnimal = aquaData.find(fish => fish.name.toLowerCase() === animal.toLowerCase());
     const capitalizedName = animal.charAt(0).toUpperCase() + animal.slice(1).toLowerCase();
 
@@ -528,23 +542,25 @@ export async function sellAnimals(animal, amount, message) {
     }
 
     // Assuming each animal has a sell amount associated with it
-    const sellAmount = aquaAnimal.sellAmount * amount * userData.aquaCollection[capitalizedName].level;
+    const sellAmount = aquaAnimal.sellAmount * amount * userFishData.fishes.find(f => f.name.toLowerCase() === capitalizedName.toLowerCase()).level;
 
-    if (!userData.aquaCollection || !Object.values(userData.aquaCollection.toJSON()).some(fish => fish.name && fish.name === capitalizedName)) {
+    if (!userFishData.fishes || !userFishData.fishes.some(fish => fish.name && fish.name === capitalizedName)) {
       return message.channel.send("⚠️ You do not have this animal in your collection to sell.");
     }
 
     // Remove the animal from the aquarium
-    if (userData.aquaCollection[capitalizedName].animals === 1) {
-      delete userData.aquaCollection[capitalizedName];
+    if (userFishData.fishes.find(f => f.name.toLowerCase() === capitalizedName.toLowerCase()).animals === 1) {
+      userFishData.fishes = userFishData.fishes.filter(f => f.name.toLowerCase() !== capitalizedName.toLowerCase());
+      userFishData.aquarium = userFishData.aquarium.filter(fish => fish !== capitalizedName);
     } else {
-      userData.aquaCollection[capitalizedName].animals -= 1;
+      let index = userFishData.fishes.findIndex(f => f.name.toLowerCase() === capitalizedName.toLowerCase());
+      userFishData.fishes[index].animals -= 1;
     }
 
-    userData.aquarium = userData.aquarium.filter(fish => fish !== capitalizedName);
     userData.cash += sellAmount;
 
     await updateUser(message.author.id, userData);
+    await updateFishUser(message.author.id, userFishData);
 
     return message.channel.send(`💰 **${message.author.username}**, you sold ${amount} <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) for <:kasiko_coin:1300141236841086977> ${sellAmount} 𝑪𝒂𝒔𝒉!`);
   } catch (error) {
@@ -559,11 +575,12 @@ export async function collectAquariumReward(context, author) {
     const currentTime = Date.now();
 
     const userData = await getUserData(author.id);
+    const userFishData = await getUserFishData(author.id);
 
     // Check if 12 hours have passed since the last collection
     const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-    if (userData.aquariumCollectionTime && (currentTime - userData.aquariumCollectionTime) < twelveHours) {
-      const timeLeft = twelveHours - (currentTime - userData.aquariumCollectionTime);
+    if (userFishData.fishes && (currentTime - userFishData.aquariumCollectionTime) < twelveHours) {
+      const timeLeft = twelveHours - (currentTime - userFishData.aquariumCollectionTime);
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
 
@@ -577,7 +594,7 @@ export async function collectAquariumReward(context, author) {
       }
     }
 
-    const aquarium = userData.aquarium;
+    const aquarium = userFishData.aquarium;
 
     if (!aquarium || aquarium.length === 0) {
       if (context.isCommand) {
@@ -597,7 +614,7 @@ export async function collectAquariumReward(context, author) {
     let totalReward = 0;
     aquarium.forEach(fish => {
       let fishDetails = aquaData.find(fishData => fishData.name.toLowerCase() === fish.toLowerCase());
-      let userfishDetails = Object.values(userData.aquaCollection.toJSON()).find(fishData => fishData.name && fishData.name.toLowerCase() === fish.toLowerCase());
+      let userfishDetails = userFishData.fishes.find(fishData => fishData.name && fishData.name.toLowerCase() === fish.toLowerCase());
       let rarityAmount = 10;
 
       if (fishDetails.rarity === "lengendary") {
@@ -624,9 +641,11 @@ export async function collectAquariumReward(context, author) {
 
     // Update user's cash and last collection time
     userData.cash += totalReward;
-    userData.aquariumCollectionTime = currentTime;
+    userFishData.aquariumCollectionTime = currentTime;
     await updateUser(author.id,
       userData);
+    await updateFishUser(author.id,
+      userFishData);
 
     const embed = new EmbedBuilder()
     .setColor('#87dcee')

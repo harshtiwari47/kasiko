@@ -80,7 +80,10 @@ export const Bank = {
       }
 
       const charge = Math.ceil((amount * Interest) / 100);
-      const totalWithdrawal = amount + charge;
+
+      let totalWithdrawal;
+      if (amount === "all") amount = Math.max(0, account.deposit - charge);
+      totalWithdrawal = amount + charge;
 
       if (totalWithdrawal > account.deposit) {
         return message.channel.send(
@@ -258,9 +261,15 @@ export default {
 
       case "withdraw":
       case "with":
-        const withdrawAmount = parseInt(args[1], 10);
-        if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
-          return message.channel.send("Please specify a valid amount to withdraw.");
+        let withdrawAmount;
+
+        if (args[1] !== "all") {
+          withdrawAmount = parseInt(args[1], 10);
+          if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
+            return message.channel.send("Please specify a valid amount to withdraw.");
+          }
+        } else {
+          withdrawAmount = "all";
         }
 
         // Call a function to withdraw the amount

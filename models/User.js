@@ -105,9 +105,6 @@ const userSchema = new mongoose.Schema({
     lastRobbery: {
       type: Number
     },
-    aquariumCollectionTime: {
-      type: Number
-    },
     marriedOn: {
       type: Number
     },
@@ -135,7 +132,7 @@ const userSchema = new mongoose.Schema({
     default: []
     },
     aquaCollection: {
-      type: fishSchema
+      type: Object 
     },
     aquarium: {
       type: [String],

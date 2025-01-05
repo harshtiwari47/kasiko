@@ -32,9 +32,9 @@ export async function buyStock(userId, username, stockName, amount, context) {
     // Calculate total unique stocks with shares > 0
     const totalUniqueStocks = Object.keys(userData.stocks.toJSON()).filter(stock => userData.stocks[stock] && userData.stocks[stock].shares > 0).length;
 
-    if (totalUniqueStocks >= 6) {
+    if (totalUniqueStocks >= 7) {
       return await handleMessage(context, {
-        content: `⚠️ **${username}**, you can't own more than six companies' stocks!`
+        content: `⚠️ **${username}**, you can't own more than seven companies' stocks!`
       });
     }
 
