@@ -195,7 +195,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
     let userShips = await Ship.getUserShipsData(player1.id);
     let currentShipIndex = userShips.ships.findIndex(ship => ship.name === player1.shipName);
 
-    let reward = Math.floor(5000 + Math.random() * 10000); // Random reward between 5000 and 10000
+    let reward = Math.floor(5000 + Math.random() * 20000); // Random reward between 5000 and 10000
 
     if (friendly) {
       reward = 1000;

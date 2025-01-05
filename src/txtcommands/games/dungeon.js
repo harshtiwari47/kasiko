@@ -34,7 +34,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
     const dungeons = {
       easy: {
         reward: [200,
-          800],
+          3000],
         monsterChance: 0.4,
         trapChance: 0.4,
         puzzleChance: 0.2,
@@ -42,7 +42,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
       },
       medium: {
         reward: [1000,
-          2000],
+          5000],
         monsterChance: 0.6,
         trapChance: 0.5,
         puzzleChance: 0.3,
@@ -50,7 +50,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
       },
       hard: {
         reward: [2000,
-          3000],
+          8000],
         monsterChance: 0.8,
         trapChance: 0.5,
         puzzleChance: 0.4,
@@ -58,7 +58,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
       },
       legendary: {
         reward: [5000,
-          10000],
+          20000],
         monsterChance: 0.8,
         trapChance: 0.6,
         puzzleChance: 0.5,

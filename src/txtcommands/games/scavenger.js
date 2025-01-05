@@ -18,27 +18,27 @@ export async function scavengerHunt(id, location, channel) {
     const locations = {
       forest: {
         min: 100,
-        max: 1000,
+        max: 10000,
         trap: "poison ivy"
       },
       cave: {
         min: 300,
-        max: 2000,
+        max: 8000,
         trap: "bats"
       },
       beach: {
-        min: 50,
-        max: 800,
+        min: 1000,
+        max: 9000,
         trap: "quicksand"
       },
       ruins: {
         min: 500,
-        max: 2500,
+        max: 15000,
         trap: "falling rocks"
       },
       desert: {
         min: 700,
-        max: 3000,
+        max: 14000,
         trap: "sandstorm"
       }
     };

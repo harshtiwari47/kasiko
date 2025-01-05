@@ -592,7 +592,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
         let reward = Math.random();
 
         if (reward > 0.9 && gameData.zombiesKilled > 7) {
-          let cash = 1000 + Math.floor(Math.random() * 5000);
+          let cash = 1000 + Math.floor(Math.random() * 16000);
           let wood = 20 + Math.floor(Math.random() * 30);
           let medkit = 1 + Math.floor(Math.random() * 2);
           let metal = 10 + Math.floor(Math.random() * 30);

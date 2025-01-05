@@ -34,7 +34,7 @@ export async function dailylogin(message) {
       }
 
       // Calculate reward amount
-      let rewardAmount = 1250 + userData.rewardStreak * 100;
+      let rewardAmount = 2550 + userData.rewardStreak * 300;
 
       if (userData.spouse) {
         let additionalReward = 0.25 * rewardAmount;

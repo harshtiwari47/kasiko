@@ -71,7 +71,7 @@ export async function work(id, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
-    const earnedCash = Math.floor(Math.random() * 1500) + 500;
+    const earnedCash = Math.floor(Math.random() * 3000) + 500;
 
     userData.cash += earnedCash;
 
