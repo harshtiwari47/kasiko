@@ -354,6 +354,8 @@ async function startRoulette(
 
     // Send a short "firing" message
     await roundMsg.edit(`${gunEmoji}💨 **${shooter.member.user.username}** fires...`);
+    
+   await Helper.wait(3000);
 
     if (hasBullet) {
       // BANG! Shooter is shot
