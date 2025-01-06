@@ -81,6 +81,11 @@ export function pickDragonType(dragonTypes) {
     return dragonTypes[dragonTypes.length - 1]; 
 }
 
+async function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
 export const Helper = {
   isUserMention,
   extractUserId,
@@ -88,7 +93,8 @@ export const Helper = {
   newsDatabase,
   checkTimeGap,
   randomInt,
-  pickDragonType
+  pickDragonType,
+  wait
 }
 
 export default Helper;

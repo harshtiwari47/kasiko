@@ -59,7 +59,7 @@ export async function toss(id, amount, channel, choice = "head") {
     } else if (random === 0 && choice === "tail") {
       await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username}**, victory is yours! 💸\nThe coin 🪙 landed on _tails_!\nYou \`won\` <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉!\n-# Luck favors you this time!`);
     } else {
-      await suspenseMessage.edit(`Oops, **${guild.user.nickname || guild.user.username}**, fate wasn't kind! 🌪️\nThe coin 🪙 landed on _${choice === "tail" ? "heads": "tails"}_... You \`lost\` <:kasiko_coin:1300141236841086977>**${Number(winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\nBetter luck next time!`);
+      await suspenseMessage.edit(`Oops, **${guild.user.nickname || guild.user.username}**, fate wasn't kind! 🌪️\nThe coin 🪙 landed on _${choice === "tail" ? "heads": "tails"}_... You \`lost\` <:kasiko_coin:1300141236841086977>**${Number(winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\n-# Better luck next time!`);
     }
 
   } catch (e) {

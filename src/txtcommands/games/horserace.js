@@ -150,7 +150,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
 
         const embed = new EmbedBuilder()
         .setColor(0xFFD700) // Gold color
-        .setTitle(`🎉 ${guild.user.username}, your bet paid off!`)
+        .setTitle(`💸 ${guild.user.username}, your bet paid off!`)
         .setDescription(
           `Your bet on **${winner === "horse1" ? "<:horse_brown:1314077268447985725> Horse 1": winner === "horse2" ? "<:horse_red:1314077243881820241> Horse 2 ": horse3 + " Horse 3"}** paid off!\n` +
           `**${winner === "horse1" ? horse1: horse2}** won the race! 🏆\n` +

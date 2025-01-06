@@ -115,7 +115,7 @@ export async function give(message, userId, amount, recipientId) {
 
           // Send confirmation
           await interaction.editReply({
-            content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to **<@${recipientId}>**! 💸 Keep spreading the wealth!`,
+            content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to **<@${recipientId}>**!\n-# **💸 Keep spreading the wealth!**`,
             embeds: [],
             components: [],
           });

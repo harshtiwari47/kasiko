@@ -204,7 +204,7 @@ async function viewMiningStatus(userId, context, username) {
     .setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n${miningStatus.content}`)
 
     const embed = new EmbedBuilder()
-    .setColor(0x17140f)
+    .setColor(`#ab6c38`)
     .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
     .addFields(
       {

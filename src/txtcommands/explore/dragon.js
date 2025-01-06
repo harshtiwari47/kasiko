@@ -703,12 +703,12 @@ export default {
         metalWinMessage = `${bronzeIcon} **+${winningMetals}**`;
       }
 
-      resultText = `-# ***REWARDS***\n${gemIcon} **+${winningGems}**\n${sigilsIcon} **+2**\n🍽️ **+${hunger}**\n${metalWinMessage}`;
+      resultText = `-# ***REWARDS***\n${gemIcon} **+${winningGems}** ${sigilsIcon} **+2**\n🍽️ **+${hunger}** ${metalWinMessage}`;
     } else {
       // fail
       userData.sigils = Math.max(0, userData.sigils - 1);
       type = 'fail';
-      resultText = `-# ***LOSS***\n${sigilsIcon} **-1**\n🍽️ **+${hunger}**`;
+      resultText = `-# ***LOSS***\n${sigilsIcon} **-1** 🍽️ **+${hunger}**`;
     }
 
     const outcomeObj =
