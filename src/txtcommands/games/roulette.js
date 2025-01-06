@@ -305,6 +305,9 @@ async function startRoulette(
       err);
     return;
   }
+  
+  let roundMsg = await channel.send(`The game is about to begin.`)
+    
 
   // 2) Load bullets randomly into a 6-chamber cylinder
   //    Example: array of 6 booleans, bulletCount of them = true
@@ -340,8 +343,6 @@ async function startRoulette(
   let loserId = null;
   let shotChamber = null;
   
-  let roundMsg = channel.send(`The game is about to begin.`)
-
   // We'll allow up to 12 total shots (just in case it cycles multiple times)
   // But realistically, you won't go more than 6 in normal roulette logic
   for (let i = 0; i < 12; i++) {
@@ -372,7 +373,7 @@ async function startRoulette(
     // Switch turn
     turn = turn === 0 ? 1: 0;
     // Slight pause for realism
-    await Helper.wait(2000);
+    await Helper.wait(4000);
   }
 
   if (!isGameOver) {
@@ -417,8 +418,8 @@ async function startRoulette(
 
   return channel.send(
     `💥${gunEmoji} **BANG!** ${cylEmoji} Chamber **${shotChamber}** had a bullet! ${rubBulletEmoji}\n` +
-    `- **${loserName}** got shot and loses  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 💸\n` +
-    `- **${winnerName}** survives and earns  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**!`
+    `- **${loserName}** got shot and \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 💸\n` +
+    `- **${winnerName}** _survives_ and \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**!`
   );
 }
 

@@ -1,20 +1,20 @@
 [
   {
-    "headline": "NEWMEDIA CEO Mark Foster Outlines Vision for the Future",
-    "description": "During an annual conference, CEO Mark Foster presented a future growth vision for NEWMEDIA, including innovation and sustainability goals.",
-    "stat": "",
-    "date": ""
-  },
-  {
-    "headline": "GLOBALTRADE Reports Record Low Volatility at 0.8",
-    "description": "For the first time this year, GLOBALTRADE has seen a record low in volatility, appealing to more risk-averse investors.",
+    "headline": "Innovation at GLOBALTRADE Drives Sector-Wide Optimism",
+    "description": "With new advancements in technology, GLOBALTRADE has strengthened its position in the Logistics industry, driving a positive trend.",
     "stat": "up",
     "date": ""
   },
   {
-    "headline": "HEALTHPLUS Stock Steadies After Market Adjustments",
-    "description": "After recent fluctuations, HEALTHPLUS’s stock has settled around <:kasiko_coin:1300141236841086977> 153.15, showing resilience in the face of market changes.",
-    "stat": "",
+    "headline": "CVIDIA Announces Layoffs to Reduce Operational Costs",
+    "description": "To optimize costs, CVIDIA announced layoffs, a measure that affected its stock price, which now stands at <:kasiko_coin:1300141236841086977> 1231.01.",
+    "stat": "down",
+    "date": ""
+  },
+  {
+    "headline": "HEALTHPLUS Faces Lawsuit Over Patent Dispute",
+    "description": "A recent lawsuit over intellectual property rights has led to uncertainties for HEALTHPLUS, with stock dipping to <:kasiko_coin:1300141236841086977> 151.69.",
+    "stat": "down",
     "date": ""
   }
 ]
