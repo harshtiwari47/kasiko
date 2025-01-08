@@ -964,6 +964,6 @@ export default {
   aliases: ['royalpass'],
   args: '<progress|status|task|activate|premium|claim>',
   cooldown: 5000,
-  category: '🌱 Explore',
+  category: '🍬 Explore',
   execute,
 };

@@ -33,7 +33,7 @@ export default {
   aliases: ['drg',
     'd'],
   cooldown: 10000,
-  category: "🌱 Explore",
+  category: "🍬 Explore",
   example: [
     "dragon"
   ],

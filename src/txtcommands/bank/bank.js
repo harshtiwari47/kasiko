@@ -79,10 +79,10 @@ export const Bank = {
         Interest -= additionalReward;
       }
 
+      if (amount === "all") amount = Math.max(0, account.deposit - charge);
       const charge = Math.ceil((amount * Interest) / 100);
 
       let totalWithdrawal;
-      if (amount === "all") amount = Math.max(0, account.deposit - charge);
       totalWithdrawal = amount + charge;
 
       if (totalWithdrawal > account.deposit) {

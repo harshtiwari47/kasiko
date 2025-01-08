@@ -153,7 +153,7 @@ export default {
     "dice"],
   cooldown: 10000,
   // 10 seconds cooldown
-  category: "🌱 Explore",
+  category: "🍬 Explore",
 
   execute: (args, message) => {
     try {

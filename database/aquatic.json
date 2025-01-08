@@ -11,7 +11,8 @@
     "foodReq": 10,
     "level": 1,
     "sellAmount": 150,
-    "damage": 2
+    "damage": 2,
+    "description": "A vibrant and friendly fish that thrives in coral reefs."
   },
   {
     "type": "aquatic",
@@ -25,7 +26,8 @@
     "foodReq": 20,
     "level": 1,
     "sellAmount": 200,
-    "damage": 3
+    "damage": 3,
+    "description": "A gentle swimmer with a sturdy shell for protection."
   },
   {
     "type": "aquatic",
@@ -39,7 +41,8 @@
     "foodReq": 10,
     "level": 1,
     "sellAmount": 300,
-    "damage": 1
+    "damage": 1,
+    "description": "Playful and agile, often found in kelp forests."
   },
   {
     "type": "aquatic",
@@ -47,13 +50,14 @@
     "color": "orange",
     "image": "",
     "emoji": "1301513938265051209",
-    "zone": "Kelp Forest",
+    "zone": "KelpForest",
     "rarity": "uncommon",
     "feedCost": 15,
     "foodReq": 20,
     "level": 1,
     "sellAmount": 380,
-    "damage": 4
+    "damage": 4,
+    "description": "Brightly colored and fiercely territorial in its habitat."
   },
   {
     "type": "aquatic",
@@ -67,7 +71,8 @@
     "foodReq": 30,
     "level": 1,
     "sellAmount": 450,
-    "damage": 6
+    "damage": 6,
+    "description": "A mysterious fish with a glowing lure for hunting in the deep sea."
   },
   {
     "type": "aquatic",
@@ -81,7 +86,8 @@
     "foodReq": 20,
     "level": 1,
     "sellAmount": 250,
-    "damage": 5
+    "damage": 5,
+    "description": "Intelligent and playful, known for their speed and grace."
   },
   {
     "type": "aquatic",
@@ -95,7 +101,8 @@
     "foodReq": 30,
     "level": 1,
     "sellAmount": 600,
-    "damage": 10
+    "damage": 10,
+    "description": "A powerful predator, feared and respected in the ocean."
   },
   {
     "type": "aquatic",
@@ -109,7 +116,8 @@
     "foodReq": 50,
     "level": 1,
     "sellAmount": 800,
-    "damage": 15
+    "damage": 15,
+    "description": "The gentle giant of the ocean, majestic and strong."
   },
   {
     "type": "aquatic",
@@ -123,7 +131,8 @@
     "foodReq": 30,
     "level": 1,
     "sellAmount": 520,
-    "damage": 7
+    "damage": 7,
+    "description": "An intelligent creature with eight arms and a crafty nature."
   },
   {
     "type": "aquatic",
@@ -137,7 +146,8 @@
     "foodReq": 20,
     "level": 1,
     "sellAmount": 300,
-    "damage": 5
+    "damage": 5,
+    "description": "A small fish that inflates to defend itself from predators."
   },
   {
     "type": "aquatic",
@@ -151,7 +161,8 @@
     "foodReq": 30,
     "level": 1,
     "sellAmount": 480,
-    "damage": 9
+    "damage": 9,
+    "description": "A stunning fish with venomous spines and striking patterns."
   },
   {
     "type": "aquatic",
@@ -165,6 +176,112 @@
     "foodReq": 50,
     "level": 1,
     "sellAmount": 700,
-    "damage": 12
+    "damage": 12,
+    "description": "A sleek and fast swimmer with a sharp bill for hunting."
+  },
+  {
+    "type": "aquatic",
+    "name": "Seahorse",
+    "color": "blue",
+    "image": "",
+    "emoji": "1326125099077603358",
+    "zone": "CoralReef",
+    "rarity": "common",
+    "feedCost": 10,
+    "foodReq": 8,
+    "level": 1,
+    "sellAmount": 100,
+    "damage": 1,
+    "description": "A delicate and unique fish, often found in shallow waters."
+  },
+  {
+    "type": "aquatic",
+    "name": "Manta",
+    "color": "blue and white",
+    "image": "",
+    "emoji": "1326125085366681681",
+    "zone": "OpenOcean",
+    "rarity": "rare",
+    "feedCost": 50,
+    "foodReq": 30,
+    "level": 1,
+    "sellAmount": 550,
+    "damage": 8,
+    "description": "A majestic glider of the ocean, gentle yet impressive."
+  },
+  {
+    "type": "aquatic",
+    "name": "Guppy",
+    "color": "golden",
+    "image": "",
+    "emoji": "1326125127540277248",
+    "zone": "CoralReef",
+    "rarity": "common",
+    "feedCost": 5,
+    "foodReq": 5,
+    "level": 1,
+    "sellAmount": 50,
+    "damage": 0.5,
+    "description": "A small and colorful fish that is easy to care for."
+  },
+  {
+    "type": "aquatic",
+    "name": "Betta",
+    "color": "pink and blue",
+    "image": "",
+    "emoji": "1326125169571401758",
+    "zone": "CoralReef",
+    "rarity": "uncommon",
+    "feedCost": 20,
+    "foodReq": 15,
+    "level": 1,
+    "sellAmount": 250,
+    "damage": 3,
+    "description": "A vibrant fish known for its aggression and beauty."
+  },
+  {
+    "type": "aquatic",
+    "name": "Barracuda",
+    "color": "silver",
+    "image": "",
+    "emoji": "1326125116026785803",
+    "zone": "OpenOcean",
+    "rarity": "rare",
+    "feedCost": 45,
+    "foodReq": 30,
+    "level": 1,
+    "sellAmount": 500,
+    "damage": 9,
+    "description": "A swift and ferocious predator in the open ocean."
+  },
+  {
+    "type": "aquatic",
+    "name": "Marlin",
+    "color": "blue",
+    "image": "",
+    "emoji": "1326125141041610782",
+    "zone": "OpenOcean",
+    "rarity": "legendary",
+    "feedCost": 90,
+    "foodReq": 50,
+    "level": 1,
+    "sellAmount": 750,
+    "damage": 14,
+    "description": "A prized catch, known for its speed and sharp bill."
+  },
+  {
+    "type": "aquatic",
+    "name": "Snapper",
+    "color": "pink",
+    "image": "",
+    "emoji": "1326125153612070974",
+    "zone": "KelpForest",
+    "rarity": "uncommon",
+    "feedCost": 25,
+    "foodReq": 15,
+    "level": 1,
+    "sellAmount": 320,
+    "damage": 4,
+    "description": "A calm and colorful fish found near kelp forests."
   }
 ]

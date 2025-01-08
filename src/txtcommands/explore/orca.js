@@ -356,6 +356,6 @@ export default {
   args: '',
   example: [],
   cooldown: 10000, // 10 seconds cooldown
-  category: '🌱 Explore',
+  category: '🍬 Explore',
   execute,
 };

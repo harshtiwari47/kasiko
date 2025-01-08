@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
       min: 0,
       set: (value) => (value < 0 ? 0: value)
     },
+    friendly: {
+      type: Number,
+    default: 0
+    },
     bondXP: {
       type: Number,
     default: 0,
@@ -132,7 +136,10 @@ const userSchema = new mongoose.Schema({
     default: []
     },
     aquaCollection: {
-      type: Object 
+      type: Object
+    },
+    cookie: {
+      type: Object
     },
     aquarium: {
       type: [String],

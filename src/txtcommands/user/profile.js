@@ -49,7 +49,7 @@ export async function badges(userData) {
   }
 
   if (badges) {
-    badges = `> # ${badges}`;
+    badges = `-# # ${badges}`;
   }
 
   return `${badges}`;
@@ -99,7 +99,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     // Embed 1: Personal Info & Wealth Stats
     const embed1 = new EmbedBuilder()
     .setColor(EmbedColor || "#f6e59a")
-    .setTitle(`⌞ ⌝  <@${userId.toString()}>'s Profile ✨`)
+    .setTitle(`⌞ ⌝  <@${userId.toString()}>'𝙨 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✨`)
     .setDescription(`${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
     .addFields(
       // Financial Information
@@ -112,7 +112,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
       // Rewards and Status
       {
         name: '🎉 Rewards & Status',
-        value: `**Daily Rewards:** ${dailyRewardsDetail}\n**Trust Level:** ${userData.trust}`,
+        value: `**Daily Rewards:** ${dailyRewardsDetail}\n**Friendly:** ${userData.friendly}`,
         inline: true
       },
 
