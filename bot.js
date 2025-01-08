@@ -116,6 +116,7 @@ client.on('messageCreate', async (message) => {
       }
     } catch (e) {
       console.error("There is an error while checking bot permissions!");
+      return;
     }
 
     // check user exist
@@ -182,10 +183,11 @@ client.on('messageCreate', async (message) => {
       command.execute(args, message);
     } catch (error) {
       console.error(error);
-      message.reply("There was an error executing that command.");
+      return message.reply("There was an error executing that command.");
     }
   } catch (e) {
     console.error(e);
+    return;
   }
 });
 

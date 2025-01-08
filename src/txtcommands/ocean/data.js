@@ -60,7 +60,7 @@ export const updateFishUser = async (userId, userData) => {
 
     // Collect modified fields
     const updates = {};
-    userData.modifiedPaths().forEach((path) => {
+    userData.modifiedPaths?.().forEach((path) => {
       updates[path] = userData[path];
     });
 
@@ -69,14 +69,16 @@ export const updateFishUser = async (userId, userData) => {
       return userData;
     }
 
-    // Perform atomic update using $set
-    const updatedUser = await FishCollection.findByIdAndUpdate(
-      userData._id,
+    // Perform upsert: update or create the document if it doesn't exist
+    const updatedUser = await FishCollection.findOneAndUpdate(
+      { _id: userId },
       {
-        $set: updates
+        $set: updates,
       },
       {
-        new: true
+        new: true, // Return the updated document
+        upsert: true, // Create document if it doesn't exist
+        setDefaultsOnInsert: true, // Apply schema defaults if creating
       }
     );
 
