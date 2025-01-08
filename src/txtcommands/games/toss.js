@@ -27,10 +27,11 @@ export async function toss(id, amount, channel, choice = "head") {
       return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
     
-    const spiningCoin = `<:SpinningCoin:1326387052496818216>`;
+    const spiningCoin = `<a:SpinningCoin:1326387052496818216>`;
+    const stillCoin = `<:StillCoin:1326414822841253980>`;
 
     // Send a suspenseful message
-    const suspenseMessage = await channel.send(`🔮 Tossing the coin... It's spinning in the air... 🪙 The fate of **${guild.user.username}** cash is on the line...`);
+    const suspenseMessage = await channel.send(`Tossing the coin... It's spinning in the air... ${spiningCoin} The fate of **${guild.user.username}** cash is on the line...`);
 
     // Simulate a short delay to build suspense
     await new Promise(resolve => setTimeout(resolve, 3000)); // 3-second delay for better effect
@@ -55,11 +56,11 @@ export async function toss(id, amount, channel, choice = "head") {
 
     // Edit the initial "thinking" message to the final result
     if (random === 1 && choice === "head") {
-      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username}**, you did it! 💸\nThe coin ${spiningCoin} landed on _heads_!\nYou \`won\` <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉!\n-# Fortune is on your side today!`);
+      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username}**, you did it! 💸\nThe coin ${stillCoin} landed on _heads_!\nYou \`won\` <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉!\n-# Fortune is on your side today!`);
     } else if (random === 0 && choice === "tail") {
-      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username}**, victory is yours! 💸\nThe coin ${spiningCoin} landed on _tails_!\nYou \`won\` <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉!\n-# Luck favors you this time!`);
+      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username}**, victory is yours! 💸\nThe coin ${stillCoin} landed on _tails_!\nYou \`won\` <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉!\n-# Luck favors you this time!`);
     } else {
-      await suspenseMessage.edit(`Oops, **${guild.user.nickname || guild.user.username}**, the coin ${spiningCoin} landed on _${choice === "tail" ? "heads": "tails"}_... You \`lost\` <:kasiko_coin:1300141236841086977>**${Number(winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\n-# Better luck next time!`);
+      await suspenseMessage.edit(`Oops, **${guild.user.nickname || guild.user.username}**, the coin ${stillCoin} landed on _${choice === "tail" ? "heads": "tails"}_... You \`lost\` <:kasiko_coin:1300141236841086977>**${Number(winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\n-# Better luck next time!`);
     }
 
   } catch (e) {

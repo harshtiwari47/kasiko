@@ -767,7 +767,7 @@ export default {
   aliases: ["survive", "zombies", "z"],
   cooldown: 90000,
   example: ["zombie", "z", "zombie help"],
-  category: "🌱 Explore",
+  category: "🍬 Explore",
 
   execute: async (args,
     message) => {

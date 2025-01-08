@@ -64,7 +64,7 @@ async function bakeCookie(userId) {
   userData.cookie.cookies = (userData.cookie.cookies || 0) + 1;
   await updateUser(userId, userData);
   
-  const burningFire = `<:fire:1326388149957689435>`
+  const burningFire = `<a:fire:1326388149957689435>`
     
   return {
     success: true,
@@ -139,7 +139,7 @@ async function buildCookieStatsEmbed(userId) {
     userData.cookie = {};
   }
   
-  const burningFire = `<:fire:1326388149957689435>`
+  const burningFire = `<a:fire:1326388149957689435>`
 
   const cookies = userData.cookie.cookies || 0;
   const sharedCount = userData.cookie.sharedCount || 0;
