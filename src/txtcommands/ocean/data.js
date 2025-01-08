@@ -28,7 +28,7 @@ export const getUserFishData = async (userId) => {
 
     // If user doesn't exist, create a new one
     const createdUserData = new FishCollection( {
-      userId: user.id,
+      userId: userId,
       fishes: [],
       aquarium: [],
       rods: {
