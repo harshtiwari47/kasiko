@@ -61,6 +61,8 @@ const animalDetailSchema = new mongoose.Schema({
     aquariumCollectionTime: {
       type: Number
     }
+  }, {
+    timestamps: true, // Adds `createdAt` and `updatedAt` fields
   });
 
   const FishCollection = mongoose.model('Fishes', aquariumSchema);

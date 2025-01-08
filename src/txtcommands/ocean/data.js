@@ -73,7 +73,7 @@ export const updateFishUser = async (userId, userData) => {
 
     // Perform upsert: update or create the document if it doesn't exist
     const updatedUser = await FishCollection.findOneAndUpdate(
-      { _id: userId },
+      { _id: userData["_id"] },
       {
         $set: updates,
       },
