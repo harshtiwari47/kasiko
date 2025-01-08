@@ -14,9 +14,7 @@ export const getUserFishData = async (userId) => {
     }
 
     // Fetch from MongoDB
-    const user = await FishCollection.findOne({
-      userId
-    });
+    const user = await FishCollection.findOne({ userId });
 
     if (user) {
       // Cache the user data in Redis
@@ -26,8 +24,8 @@ export const getUserFishData = async (userId) => {
       return user;
     }
 
-    // If user doesn't exist, create a new one
-    const createdUserData = new FishCollection( {
+    // If user doesn't exist, create a new one and save to MongoDB
+    const createdUserData = new FishCollection({
       userId: userId,
       fishes: [],
       aquarium: [],
@@ -40,11 +38,15 @@ export const getUserFishData = async (userId) => {
       }
     });
 
-    if (createdUserData) {
-      return createdUserData;
-    }
+    // Save the new user to the database
+    await createdUserData.save();
 
-    return null;
+    // Cache the new user data in Redis
+    await redisClient.set(`user:${userId}:fishes`, JSON.stringify(createdUserData.toObject()), {
+      EX: 60, // Cache for 1 minute
+    });
+
+    return createdUserData;
   } catch (error) {
     console.error('Error fetching user data:', error);
     return null;
