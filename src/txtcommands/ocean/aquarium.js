@@ -531,7 +531,7 @@ export async function feedAnimals(animal, amount, message) {
 export async function sellAnimals(animal, amount, message) {
   try {
     const userData = await getUserData(message.author.id);
-    const userFishData = await getUserFishData(userId);
+    const userFishData = await getUserFishData(message.author.id);
 
     const aquaAnimal = aquaData.find(fish => fish.name.toLowerCase() === animal.toLowerCase());
     const capitalizedName = animal.charAt(0).toUpperCase() + animal.slice(1).toLowerCase();

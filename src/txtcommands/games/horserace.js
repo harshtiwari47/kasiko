@@ -98,9 +98,9 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
   );
 
   // Race details
-  const horse1 = "<:horse_brown:1314077268447985725>";
-  const horse2 = "<:horse_red:1314077243881820241>";
-  const horse3 = "<:horse_grey:1316729191202558003>";
+  const horse1 = "<a:runningHorse:1326785483866374265>";
+  const horse2 = "<a:runningHorse:1326785483866374265>";
+  const horse3 = "<a:runningHorse:1326785483866374265>";
 
   const trackLength = 20; // Length of the race track
   let horse1Pos = 0;
