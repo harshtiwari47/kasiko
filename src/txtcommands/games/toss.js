@@ -73,7 +73,7 @@ export async function toss(id, amount, channel, choice = "head") {
 export default {
   name: "tosscoin",
   description: "Play a coin toss game by betting an amount. Win or lose based on the result.",
-  aliases: ["tc"],
+  aliases: ["tc", "coinflip", "cf", "cointoss"],
   args: "<amount>",
   example: ["tosscoin 250",
     "tc 250 head",
@@ -105,7 +105,7 @@ export default {
       }
 
       if (amount !== "all" && amount > 300000) {
-        return channel.send(`⚠️ **${guild.user.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+        return message.channel.send(`⚠️ **${guild.user.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
       }
 
       let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";

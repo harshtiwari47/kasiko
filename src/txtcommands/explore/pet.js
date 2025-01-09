@@ -46,7 +46,6 @@ export default {
     "feed",
     "walk",
     "excercise",
-    "pat",
     "mypet"],
   args: "<action> [parameters]",
   example: [

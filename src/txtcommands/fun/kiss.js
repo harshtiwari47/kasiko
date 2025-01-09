@@ -59,7 +59,7 @@ export default {
       .setColor('Random')
       .setDescription(`**${message.author.username}** ${randomText} **${target.username}**`)
       .setFooter({
-        text: `Requested by ${message.author.tag} | Gif: gipher`
+        text: `giphy`
       })
       .setImage(randomGif); // Set a randomly selected GIF
 

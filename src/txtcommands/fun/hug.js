@@ -54,7 +54,7 @@ export default {
     const embed = new EmbedBuilder()
       .setColor('Random')
       .setDescription(`**${message.author.username}** ${randomText} **${target.username}**`)
-      .setFooter({ text: `Requested by ${message.author.tag} | Gif: gifer` })
+      .setFooter({ text: `giphy` })
       .setImage(randomGif); // Set a randomly selected GIF
 
     await message.channel.send({ embeds: [embed] });

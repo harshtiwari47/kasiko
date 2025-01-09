@@ -38,7 +38,7 @@ export default {
     .setDescription(`Oh no, **${message.author.tag}** feeling sad. 😢`)
     .setImage(randomGif) // Set a randomly selected crying GIF
     .setFooter({
-      text: `Requested by ${message.author.tag} | Gif: gipher`
+      text: `giphy`
     });
 
     await message.channel.send({
