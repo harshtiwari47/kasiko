@@ -277,7 +277,7 @@ export default {
           const shareEmbed = new EmbedBuilder()
           .setTitle("🎁 Ice Cream Shared!")
           .setDescription(
-            `You generously shared a **${sharedIceCream}** ice cream with **${targetUser.username}**! 🍦`
+            `You generously shared a **${sharedIceCream.icecream}** ice cream with **${targetUser.username}**! 🍦`
           )
           .addFields(
             {
