@@ -117,77 +117,79 @@ export default {
 
     // Handle interaction
     async function handleCommandInteraction(message) {
-      let currentPage = 0;
-      const totalPages = Math.ceil(commands.length / 4);
+      try {
+        let currentPage = 0;
+        const totalPages = Math.ceil(commands.length / 4);
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-        .setCustomId("prev")
-        .setLabel("Previous")
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(true),
-        new ButtonBuilder()
-        .setCustomId("next")
-        .setLabel("Next")
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(totalPages <= 1)
-      );
-
-      const embed = getPageEmbed(currentPage);
-      const sentMessage = await message.channel.send({
-        embeds: [embed], components: [row]
-      });
-
-      const collector = sentMessage.createMessageComponentCollector({
-        filter: (interaction) => interaction.user.id === message.author.id,
-        time: 90000, // 1.5-minute timeout
-      });
-
-      collector.on("collect", async (interaction) => {
-        if (interaction.customId === "prev") {
-          currentPage = Math.max(0, currentPage - 1);
-        } else if (interaction.customId === "next") {
-          currentPage = Math.min(totalPages - 1, currentPage + 1);
-        }
-
-        const newEmbed = getPageEmbed(currentPage);
-
-        const newRow = new ActionRowBuilder().addComponents(
+        const row = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
           .setCustomId("prev")
           .setLabel("Previous")
           .setStyle(ButtonStyle.Primary)
-          .setDisabled(currentPage === 0),
+          .setDisabled(true),
           new ButtonBuilder()
           .setCustomId("next")
           .setLabel("Next")
           .setStyle(ButtonStyle.Primary)
-          .setDisabled(currentPage === totalPages - 1)
+          .setDisabled(totalPages <= 1)
         );
 
-        await interaction.update({
-          embeds: [newEmbed], components: [newRow]
+        const embed = getPageEmbed(currentPage);
+        const sentMessage = await message.channel.send({
+          embeds: [embed], components: [row]
         });
-      });
 
-      collector.on("end",
-        () => {
-          const disabledRow = new ActionRowBuilder().addComponents(
+        const collector = sentMessage.createMessageComponentCollector({
+          filter: (interaction) => interaction.user.id === message.author.id,
+          time: 90000, // 1.5-minute timeout
+        });
+
+        collector.on("collect", async (interaction) => {
+          if (interaction.customId === "prev") {
+            currentPage = Math.max(0, currentPage - 1);
+          } else if (interaction.customId === "next") {
+            currentPage = Math.min(totalPages - 1, currentPage + 1);
+          }
+
+          const newEmbed = getPageEmbed(currentPage);
+
+          const newRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
             .setCustomId("prev")
             .setLabel("Previous")
             .setStyle(ButtonStyle.Primary)
-            .setDisabled(true),
+            .setDisabled(currentPage === 0),
             new ButtonBuilder()
             .setCustomId("next")
             .setLabel("Next")
             .setStyle(ButtonStyle.Primary)
-            .setDisabled(true)
+            .setDisabled(currentPage === totalPages - 1)
           );
-          sentMessage.edit({
-            components: [disabledRow]
+
+          await interaction.update({
+            embeds: [newEmbed], components: [newRow]
           });
         });
+
+        collector.on("end",
+          () => {
+            const disabledRow = new ActionRowBuilder().addComponents(
+              new ButtonBuilder()
+              .setCustomId("prev")
+              .setLabel("Previous")
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(true),
+              new ButtonBuilder()
+              .setCustomId("next")
+              .setLabel("Next")
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(true)
+            );
+            sentMessage.edit({
+              components: [disabledRow]
+            });
+          });
+      } catch (e) {}
     }
 
     // Use the function in your command handler

@@ -123,7 +123,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   // Return a cute success message (with optional reward text)
   return {
     success: true,
-    message: `🍬 **So swᥱᥱt !*****${authorUsername}*** shared 🍪 **1 cookie** with <@${mentionedUserId}>.\n` +
+    message: `🍬 ***So swᥱᥱt !*****${authorUsername}** shared 🍪 **1 cookie** with <@${mentionedUserId}>.\n` +
     `𝑇ℎ𝑒 𝑎𝑟𝑜𝑚𝑎 𝑖𝑠 𝑑𝑒𝑙𝑖𝑔ℎ𝑡𝑓𝑢𝑙, 𝑎𝑛𝑑 𝑦𝑜𝑢𝑟 𝑓𝑟𝑖𝑒𝑛𝑑𝑠ℎ𝑖𝑝 𝑔𝑟𝑜𝑤𝑠 𝑠𝑡𝑟𝑜𝑛𝑔𝑒𝑟!\n` +
     `ꜰʀɪᴇɴᴅʟʏ ꜱᴄᴏʀᴇ: +5`
   };
