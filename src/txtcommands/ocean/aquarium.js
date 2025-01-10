@@ -579,7 +579,7 @@ export async function collectAquariumReward(context, author) {
 
     // Check if 12 hours have passed since the last collection
     const twelveHours = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
-    if (userFishData.fishes && (currentTime - userFishData.aquariumCollectionTime) < twelveHours) {
+    if (userFishData.fishes.length && (currentTime - userFishData.aquariumCollectionTime) < twelveHours) {
       const timeLeft = twelveHours - (currentTime - userFishData.aquariumCollectionTime);
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
@@ -597,7 +597,7 @@ export async function collectAquariumReward(context, author) {
     const aquarium = userFishData.aquarium;
 
     if (!aquarium || aquarium.length === 0) {
-      if (context.isCommand) {
+      if (isInteraction) {
         if (!context.deferred) await context.deferReply();
         return await context.editReply({
           content: `⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\``

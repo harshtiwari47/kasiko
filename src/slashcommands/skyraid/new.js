@@ -75,7 +75,8 @@ const dragons = [{
 export default {
   execute: async (interaction) => {
     await interaction.deferReply();
-
+    const guildId = interaction.guild.id;
+      
     let userExistence = await userExists(interaction.user.id);
     if (!userExistence) {
       await interaction.followUp({

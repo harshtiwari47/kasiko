@@ -396,7 +396,7 @@ export default {
   args: "<action> [target]",
   example: [
     "ship",
-    "ship active <shipId (optional: specify to set as active)>",
+    "active <shipId (optional: specify to set as active)>",
     "active",
     "active <option> (option: use 'up' to level up or 'repair <count>' for number of repairs; count is optional)",
   ],
