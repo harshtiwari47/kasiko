@@ -16,7 +16,7 @@ export default {
   category: "🌊 Ocean Life",
 
   // Main function to execute the collect command
-  execute: (args, message) => {
+  execute: async (args, message) => {
     try {
       return await collectAquariumReward(message.channel, message.author);
     } catch (error) {
