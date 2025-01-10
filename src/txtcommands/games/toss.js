@@ -105,7 +105,7 @@ export default {
       }
 
       if (amount !== "all" && amount > 300000) {
-        return message.channel.send(`⚠️ **${guild.user.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+        return message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
       }
 
       let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";

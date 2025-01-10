@@ -81,7 +81,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
         });
     } else {
       // If no teammate, skip the message collection and start race directly
-      await startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild);
+      await startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild, id);
     }
     return;
   } catch (e) {
@@ -91,7 +91,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
 }
 
 // Function to start the race logic
-async function startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild) {
+async function startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild, userId) {
   amount = parseInt(amount)
   const suspenseMessage = await channel.send(
     `🏁 The race is about to begin!\n`
@@ -167,7 +167,13 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
         if (teammateData && winner === opponentBetOn) {
           teammateData.cash += amount + winAmount;
           await updateUser(teammateId, teammateData);
+        } else if (teammateData) {
+          teammateData.cash -= amount;
+          await updateUser(teammateId, teammateData);
         }
+
+        userData.cash -= amount;
+        await updateUser(userId, userData);
 
         const embed = new EmbedBuilder()
         .setColor(0xFF0000) // Red color for loss
