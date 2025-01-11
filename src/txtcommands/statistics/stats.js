@@ -16,7 +16,17 @@ async function sendUserStat(stat, message) {
   const userData = await getUserData(message.author.id);
 
   if (stat === "cash") {
-    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
+    const cashStatus = "";
+    const currentCash = Number(userData["networth"]);
+
+    if (currentCash < 1000000) cashStatus = `ᴺᴼᴺ-ᴹᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
+    if (currentCash > 1000000) cashStatus = `ᴹᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
+    if (currentCash > 5000000) cashStatus = `ᴮᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
+    if (currentCash > 10000000) cashStatus = `ᵀᴿᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
+    if (currentCash > 15000000) cashStatus = `ᶜᴴᴵᴸᴸᴵᴺᴬᴵᴿᴱ`;
+
+    if (currentCash)
+      message.channel.send(`### 💳 **${message.author.username}** 𝐁𝐚𝐥𝐚𝐧𝐜𝐞**\n` + `💸 | **<:kasiko_coin:1300141236841086977> **${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉\n` + `-# ${cashStatus}`);
   }
   if (stat === "trust") {
     message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`);
@@ -69,7 +79,8 @@ export default {
     "trust",
     "ts",
     "level",
-    "exp", "stats"],
+    "exp",
+    "stats"],
   // These aliases allow calling the command with any of the stats directly
   args: "<type>",
   example: [
