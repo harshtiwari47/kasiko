@@ -16,7 +16,7 @@ async function sendUserStat(stat, message) {
   const userData = await getUserData(message.author.id);
 
   if (stat === "cash") {
-    const cashStatus = "";
+    let cashStatus = "";
     const currentCash = Number(userData["networth"]);
 
     if (currentCash < 1000000) cashStatus = `ᴺᴼᴺ-ᴹᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
