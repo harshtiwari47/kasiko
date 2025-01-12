@@ -76,8 +76,8 @@ export async function marriage(message) {
   try {
     let userData = await getUserData(message.author.id);
 
-    if (userData.family.spouse) {
-      let marrydate = new Date(userData.family.marriedOn) || new Date(); // The user's marriage date
+    if (userData?.family.spouse) {
+      let marrydate = new Date(userData?.family.marriedOn) || new Date(); // The user's marriage date
       let currentDate = new Date(); // Current date
       let partner = await client.users.fetch(userData.family.spouse) || {
         "username": "Failed to Fetch"
@@ -99,6 +99,8 @@ export async function marriage(message) {
         2500,
         5000,
         7500];
+        
+      const bondXP = userData.family.bondXP;
 
       // Determine how many emojis to add
       const emojiCount = thresholds.filter(threshold => bondXP >= threshold).length - 1;

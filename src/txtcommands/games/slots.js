@@ -64,7 +64,7 @@ export async function slots(id, amount, channel) {
     // Simulate locking each position one by one
     for (let i = 0; i < spinResult.length; i++) {
       // Spin animation for this position
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Lock the current position
       spinResult[i] = finalResult[i];
