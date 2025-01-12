@@ -38,9 +38,9 @@ export async function slots(id, amount, channel) {
 
 
     // Initial placeholders and message
-    let spinResult = ['<:slotsanim:1327959630915047556>',
-      '<:slotsanim:1327959630915047556>',
-      '<:slotsanim:1327959630915047556>'];
+    let spinResult = ['<a:slotsanim:1327959630915047556>',
+      '<a:slotsanim:1327959630915047556>',
+      '<a:slotsanim:1327959630915047556>'];
     const slotBackground = `
     ╔══════════╗
     🎰 **Slot Machine**
@@ -64,7 +64,7 @@ export async function slots(id, amount, channel) {
     // Simulate locking each position one by one
     for (let i = 0; i < spinResult.length; i++) {
       // Spin animation for this position
-      await new Promise(resolve => setTimeout(resolve, 900));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       // Lock the current position
       spinResult[i] = finalResult[i];
