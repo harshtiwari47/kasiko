@@ -509,7 +509,7 @@ export default {
         }
         return Marriage.roses(message); // Show the roses system info if no arguments are provided
       case "daily":
-        return dailyRewards(message.author.id, message.author.username, message.channel)
+        return dailyRewards(message.author.id, message.author.username, message)
 
       default:
         return message.channel.send("⚠️ Invalid command. Use `marry <@username>`, `divorce <@username>`, `marriage/m`, or `roses <@username (optional for sending)> <amount (if @user)>`.");
