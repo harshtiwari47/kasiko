@@ -82,8 +82,8 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
       return sum;
     }, 0);
 
-    if (userData.spouse) {
-      partner = await client.users.fetch(userData.spouse) || {
+    if (userData.family.spouse) {
+      partner = await client.users.fetch(userData.family.spouse) || {
         username: "Failed to Fetch"
       };
     }
@@ -119,7 +119,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
       // Personal Information
       {
         name: '👪 Family Details',
-        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.children.length === 0 ? "0": userData.children.join(", ")}**`,
+        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.family.children.length === 0 ? "0": userData.family.children.join(", ")}**`,
         inline: true
       }
     );

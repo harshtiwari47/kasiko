@@ -227,7 +227,6 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         .setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
         .setDescription(`**${message.author.username}** cast their line...\nbut all they hooked was a soggy boot — <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉 wasted.\nBetter luck next time! 🥾💦`)
         .setColor('#620a0a')
-        .setThumbnail('https://harshtiwari47.github.io/kasiko-public/images/empty-boat.jpg');
       } else {
         // The fish is caught
         userData.cash -= cost;

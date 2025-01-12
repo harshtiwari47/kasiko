@@ -92,9 +92,21 @@ client.on('messageCreate', async (message) => {
 
     if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
-
     if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
     if (mentionedBots.size > 0) return;
+    
+    const serverDoc = await Server.findOne({ id: message.guild.id });
+
+    // If we have a doc and the server is in restricted mode, check channel
+    if (serverDoc && serverDoc.permissions === 'restricted_channels') {
+      // Find the channel entry
+      const channelDoc = serverDoc.channels.find(ch => ch.id === message.channel.id);
+
+      // If channelDoc exists and isAllowed is false, skip
+      if (channelDoc && channelDoc.isAllowed === false && !message.content.toLowerCase().includes("channel")) {
+        return; 
+      }
+    }
 
     try {
       let notAllowed = await checkPerms(message);
@@ -115,7 +127,7 @@ client.on('messageCreate', async (message) => {
         return;
       }
     } catch (e) {
-      console.error("There is an error while checking bot permissions!");
+      console.error("There is an error while checking bot permissions!", e);
       return;
     }
 
@@ -253,6 +265,10 @@ client.on('guildCreate', async (guild) => {
   } catch (e) {
     console.error(e);
   }
+});
+
+client.on('error', (error) => {
+  console.error('Discord.js Error:', error);
 });
 
 client.on('guildDelete', async (guild) => {

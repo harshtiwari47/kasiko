@@ -32,6 +32,12 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
   let selectedAmount;
   let flavorDetails;
 
+  if (playerShop.money < 10) {
+    return await handleMessage(content, {
+      content: `You don't have sufficient money (<:creamcash:1309495440030302282> 10) to make an ice cream! 🥺`
+    })
+  }
+
   const machineTitleEmbed = new EmbedBuilder()
   .setDescription(`🍧 𝑊𝑒𝑙𝑐𝑜𝑚𝑒 𝑡𝑜 𝑡ℎ𝑒 𝐼𝑐𝑒 𝐶𝑟𝑒𝑎𝑚 𝐹𝑙𝑎𝑣𝑜𝑟 𝑀𝑎𝑘𝑒𝑟!`)
   .setColor(`#e7d68d`);

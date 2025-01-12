@@ -33,10 +33,6 @@ const userSchema = new mongoose.Schema({
       min: 0,
       set: (value) => (value < 0 ? 0: value)
     },
-    spouse: {
-      type: String,
-    default: null
-    },
     roses: {
       type: Number,
     default: 0,
@@ -46,12 +42,6 @@ const userSchema = new mongoose.Schema({
     friendly: {
       type: Number,
     default: 0
-    },
-    bondXP: {
-      type: Number,
-    default: 0,
-      min: 0,
-      set: (value) => (value < 0 ? 0: value)
     },
     charity: {
       type: Number,
@@ -109,8 +99,31 @@ const userSchema = new mongoose.Schema({
     lastRobbery: {
       type: Number
     },
-    marriedOn: {
-      type: Number
+    family: {
+      children: {
+        type: [String],
+      default: []
+      },
+      marriedOn: {
+        type: Number
+      },
+      adopted: {
+        type: [String],
+      default: []
+      },
+      dailyReward: {
+        type: Number
+      },
+      bondXP: {
+        type: Number,
+      default: 0,
+        min: 0,
+        set: (value) => (value < 0 ? 0: value)
+      },
+      spouse: {
+        type: String,
+      default: null
+      }
     },
     joined: {
       type: Number,
@@ -142,10 +155,6 @@ const userSchema = new mongoose.Schema({
       type: Object
     },
     aquarium: {
-      type: [String],
-    default: []
-    },
-    children: {
       type: [String],
     default: []
     },

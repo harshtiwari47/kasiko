@@ -76,7 +76,6 @@ export const createUser = async (userId) => {
       cash: 10000,
       networth: 10000,
       maintenance: 0,
-      spouse: null,
       roses: 0,
       bondXP: 0,
       charity: 0,
@@ -87,14 +86,12 @@ export const createUser = async (userId) => {
       acceptedTerms: true,
       lastBattle: null,
       lastRobbery: null,
-      marriedOn: null,
       joined: Date.now(),
       dailyReward: null,
       rewardStreak: 1,
       stocks: {},
       cars: [],
       structures: [],
-      children: [],
       shipBattle: {
         battleLog: []
       }

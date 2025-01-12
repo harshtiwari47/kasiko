@@ -97,19 +97,21 @@ const WelcomeMsg = {
 
         } catch (e) {
           console.error(e);
+          return;
         }
 
         try {
-          await welcomeChannel.send({
+          let welcomemsg = await welcomeChannel.send({
             embeds: [embed]
           });
-
           return;
         } catch (e) {
           console.error(e);
+          return;
         }
       } else {
         console.warn(`No accessible text channel found in guild: ${guild.name} (${guild.id})`);
+        return;
       }
       return;
     } catch (e) {

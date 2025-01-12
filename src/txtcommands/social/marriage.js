@@ -18,6 +18,20 @@ import {
   Helper
 } from '../../../helper.js';
 
+async function handleMessage(context, data) {
+  const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
+  if (isInteraction) {
+    // If not already deferred, defer it.
+    if (!context.deferred) {
+      await context.deferReply();
+    }
+    return context.editReply(data);
+  } else {
+    // For normal text-based usage
+    return context.channel.send(data);
+  }
+}
+
 export const sendConfirmation = async (title, description, color, message, id) => {
   // Create an embed for the confirmation message
   const embed = new EmbedBuilder()
@@ -62,16 +76,37 @@ export async function marriage(message) {
   try {
     let userData = await getUserData(message.author.id);
 
-    if (userData.spouse) {
-      let marrydate = new Date(userData.marriedOn) || new Date(); // The user's marriage date
+    if (userData.family.spouse) {
+      let marrydate = new Date(userData.family.marriedOn) || new Date(); // The user's marriage date
       let currentDate = new Date(); // Current date
-      let partner = await client.users.fetch(userData.spouse) || {
+      let partner = await client.users.fetch(userData.family.spouse) || {
         "username": "Failed to Fetch"
       };
 
       let countdownInDays = Math.ceil((marrydate - currentDate) / (1000 * 60 * 60 * 24));
 
-      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n✿⁠ Couple BondXP: **♡ ${userData.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**`);
+      let mEmojies = [];
+      const EmojiesList = [
+        "<:lovebird1:1327928654025588767>",
+        "<:lovebird2:1327927083330175010>",
+        "<:lovebird3:1327927957154697236>",
+        "<:lovebird4:1327928023902720030>",
+        "<:lovebird5:1327928684518309898>"
+      ]
+
+      const thresholds = [0,
+        500,
+        2500,
+        5000,
+        7500];
+
+      // Determine how many emojis to add
+      const emojiCount = thresholds.filter(threshold => bondXP >= threshold).length - 1;
+
+      // Add emojis to mEmojies
+      mEmojies = EmojiesList.slice(0, emojiCount).join(" ");
+
+      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n# ${mEmojies}`);
     } else {
       return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!");
     }
@@ -91,9 +126,9 @@ export async function marry(user, message) {
       return message.channel.send(`⚠️ You can not propose yourself!`);
     }
 
-    if (userData.spouse && userData.spouse !== user) {
+    if (userData.family.spouse && userData.family.spouse !== user) {
       return message.channel.send(`⚠️ You are already married! 🔫`);
-    } else if (userData.spouse && userData.spouse === user) {
+    } else if (userData.family.spouse && userData.family.spouse === user) {
       return message.channel.send(`⚠️ You are __already married__ to each other.`);
     } else {
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
@@ -126,10 +161,10 @@ export async function marry(user, message) {
 
         if (i.customId === 'confirmmarry') {
           let date = Date.now();
-          userData.spouse = user;
-          userData.marriedOn = date;
-          invitedUserData.spouse = message.author.id;
-          invitedUserData.marriedOn = date;
+          userData.family.spouse = user;
+          userData.family.marriedOn = date;
+          invitedUserData.family.spouse = message.author.id;
+          invitedUserData.family.marriedOn = date;
 
           await updateUser(message.author.id, userData);
           await updateUser(user, invitedUserData);
@@ -181,11 +216,11 @@ export async function divorce(user, message) {
     let invitedUserData = await getUserData(user);
     const guild = await message.channel.guild.members.fetch(user);
 
-    if (userData.spouse && userData.spouse !== user) {
+    if (userData.family.spouse && userData.family.spouse !== user) {
       message.channel.send(`⚠️ You are not married to **${guild.user.username}**.`);
-    } else if (!userData.spouse) {
+    } else if (!userData.family.spouse) {
       message.channel.send(`⚠️ Find your partner first! 😸. You are __not married__.`);
-    } else if (userData.spouse && userData.spouse === user) {
+    } else if (userData.family.spouse && userData.family.spouse === user) {
 
       const title = "💔🥀 𝑫𝒊𝒗𝒐𝒓𝒄𝒆 𝑪𝒐𝒏𝒇𝒊𝒓𝒎𝒂𝒕𝒊𝒐𝒏 ";
       const description = `<@${message.author.id}> wants to divorce you. Do you agree <@${user}>?`;
@@ -217,8 +252,8 @@ export async function divorce(user, message) {
 
         if (i.customId === 'confirmdivorce') {
 
-          userData.spouse = null;
-          invitedUserData.spouse = null;
+          userData.family.spouse = null;
+          invitedUserData.family.spouse = null;
 
           await updateUser(message.author.id, userData);
           await updateUser(user, invitedUserData);
@@ -292,13 +327,13 @@ export async function sendRoses(toUser, amount, message) {
       senderData.roses -= amount;
 
       // Add roses to the recipient
-      if (senderData.spouse && senderData.spouse === toUser) {
-        senderData.bondXP += 10;
-        recipientData.bondXP += 10;
+      if (senderData.family.spouse && senderData.family.spouse === toUser) {
+        senderData.family.bondXP += 10 * amount;
+        recipientData.family.bondXP += 10 * amount;
         await updateUser(toUser, recipientData);
         await updateUser(message.author.id, senderData);
 
-        return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing bondXP by 10! 🌹`);
+        return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing 💞 bondXP by 10! 🌹`);
       } else {
         recipientData.roses = (recipientData.roses || 0) + amount;
         await updateUser(toUser, recipientData);
@@ -314,6 +349,80 @@ export async function sendRoses(toUser, amount, message) {
   } catch (e) {
     console.error(e);
     return message.channel.send("⚠️ An error occurred while sending roses. Please try again later.");
+  }
+}
+
+export async function dailyRewards(userId, username, context) {
+  try {
+    const currentTime = Date.now();
+    const nextClaim = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+    const userData = await getUserData(userId);
+
+    if (!userData?.family?.spouse) {
+      return await handleMessage(context, {
+        content: "♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!"
+      });
+    }
+
+    if (userData && userData?.family.dailyReward && (currentTime - Number(userData.family.dailyReward)) < nextClaim) {
+      // Calculate remaining time
+      const timeLeft = nextClaim - (currentTime - Number(userData.family.dailyReward));
+      const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+      const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+
+      return await handleMessage(context, {
+        content: `Sorry **${username}**, you have **already claimed** your daily ***💍 marriage reward*** for today.\n` +
+        `Next reward in ⏳ **${hours} hours & ${minutes} minutes**. 🎁\n`
+        + `🎀˚˖𓍢ִ໋🦢˚〰﹏ᥫ᭡.𐙚⋆⁺₊💞`
+      });
+    } else {
+      let rosesClaimed = (1 + Math.floor(Math.random() * 3));
+      let bondExpInc = (1 + Math.floor(Math.random() * 11));
+      let cashExt = (1000 + Math.floor(Math.random() * 5000));
+      const loveMessages = [
+        "Every moment with you feels like magic.",
+        "You're the reason my heart skips a beat.",
+        "Loving you is my favorite adventure.",
+        "You are my sunshine on the cloudiest days.",
+        "My world is brighter with you in it.",
+        "You make my heart smile every single day.",
+        "With you, every day feels like a dream.",
+        "You’re the missing piece to my puzzle of life.",
+        "You are my greatest blessing and my sweetest gift.",
+        "I fall in love with you a little more every day.",
+        "You’re my favorite thought and my happiest memory.",
+        "My heart belongs to you and always will.",
+        "You are the melody to my life's song.",
+        "You make my soul feel complete.",
+        "Every love story is beautiful, but ours is my favorite."
+      ];
+
+      userData.family.bondXP += bondExpInc;
+      userData.cash += cashExt;
+      userData.roses += rosesClaimed;
+      userData.family.dailyReward = currentTime;
+
+      await updateUser(userId, userData);
+
+      let messageForm = {
+        content: `🎁💍 **Daily marriage reward claimed!**\n**${username}** received:\n` +
+        `+ <:kasiko_coin:1300141236841086977> **${cashExt}**\n` +
+        `+ 🌹 **${rosesClaimed}**\n` +
+        `+ 💞 **${bondExpInc}**\n` +
+        `-# 💌 ${loveMessages[Math.floor(Math.random() * loveMessages.length)]}`
+      }
+
+      let messageEmb = new EmbedBuilder()
+      .setDescription(messageForm.content)
+      .setColor(`#f5659c`);
+
+      return await handleMessage(context, {
+        embeds: [messageEmb]
+      });
+    }
+  } catch (e) {
+    console.error(e)
   }
 }
 
@@ -340,6 +449,7 @@ export default {
     "divorce <@user>",
     // Divorce a user
     "marriage",
+    "marriage daily",
     // View marriage status
     "roses <amount> <@user>",
     // Send roses to a user
@@ -396,6 +506,8 @@ export default {
           return Marriage.sendRoses(Helper.extractUserId(args[3]), parseInt(args[2]), message); // Send roses to a user
         }
         return Marriage.roses(message); // Show the roses system info if no arguments are provided
+      case "daily":
+        return dailyRewards(message.author.id, message.author.username, message.channel)
 
       default:
         return message.channel.send("⚠️ Invalid command. Use `marry <@username>`, `divorce <@username>`, `marriage/m`, or `roses <@username (optional for sending)> <amount (if @user)>`.");

@@ -295,14 +295,14 @@ export default {
 
           const bankEmbed = new EmbedBuilder()
           .setColor('#d4e6f6')
-          .setTitle('🏦 **Welcome to Bank**')
+          .setTitle('🏦 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝑩𝒂𝒏𝒌')
           .setDescription(
             'Manage your bank using the following commands:\n\n' +
-            '`bank open` - Open a bank account.\n' +
-            '`deposit <amount>` - Deposit funds into your bank.\n' +
-            '`withdraw <amount>` - Withdraw funds from your bank.\n' +
-            '`bank status` - Check your bank status.\n' +
-            '`bank upgrade` - Upgrade your bank level.'
+            '`bank open`\n-# Open a bank account.\n' +
+            '`deposit <amount>`\n-# Deposit funds into your bank.\n' +
+            '`withdraw <amount>`\n-# Withdraw funds from your bank.\n' +
+            '`bank status`\n-# Check your bank status.\n' +
+            '`bank upgrade`\n-# Upgrade your bank level.'
           )
           .setFooter({
             text: 'Use your bank wisely!'

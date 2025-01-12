@@ -23,12 +23,12 @@ export async function slots(id, amount, channel) {
     }
 
     // Slots symbols
-    const allSymbols = ['🍒',
-      '🍋',
-      '🍊',
-      '🍇',
-      '💎',
-      '<:kasiko_coin:1300141236841086977>'];
+    const allSymbols = ['<:sberries:1327950598158417981>',
+      '<:slemon:1327950617322459168>',
+      '<:sorange:1327950638616678440>',
+      '<:sgrapes:1327950719596232704>',
+      '<:sdiamond:1327950737963221075>',
+      '<:scash:1327950770657820764>'];
 
     const symbols = Array.from({
       length: 3
@@ -38,9 +38,9 @@ export async function slots(id, amount, channel) {
 
 
     // Initial placeholders and message
-    let spinResult = ['❓',
-      '❓',
-      '❓'];
+    let spinResult = ['<:slotsanim:1327959630915047556>',
+      '<:slotsanim:1327959630915047556>',
+      '<:slotsanim:1327959630915047556>'];
     const slotBackground = `
     ╔══════════╗
     🎰 **Slot Machine**
@@ -63,22 +63,9 @@ export async function slots(id, amount, channel) {
 
     // Simulate locking each position one by one
     for (let i = 0; i < spinResult.length; i++) {
-      for (let j = 0; j < 4; j++) {
-        // Spin animation for this position
-        spinResult[i] = symbols[Math.floor(Math.random() * symbols.length)];
-        const updatedBackground = `
-        ╔══════════╗
-        🎰 **Slot Machine**
-        ┌─────────────────┐
-        ${spinResult.join(' | ')}
-        └─────────────────┘
-        ╚══════════╝
-        `;
-        await spinningMessage.edit(
-          `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!`
-        );
-        await new Promise(resolve => setTimeout(resolve, 10));
-      }
+      // Spin animation for this position
+      await new Promise(resolve => setTimeout(resolve, 900));
+
       // Lock the current position
       spinResult[i] = finalResult[i];
       const updatedBackground = `

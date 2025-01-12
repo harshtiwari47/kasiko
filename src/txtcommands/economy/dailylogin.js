@@ -20,7 +20,7 @@ export async function dailylogin(message) {
 
       return message.channel.send(
         `Sorry **${message.author.username}**, you have **already claimed** your daily reward for today.\n` +
-        `You can collect again in ⏳ **${hours} hours and ${minutes} minutes**. 🎁`
+        `-# Next reward in ⏳ **${hours} hours and ${minutes} minutes**. 🎁`
       );
     } else {
       // Calculate the last claim date
@@ -36,7 +36,7 @@ export async function dailylogin(message) {
       // Calculate reward amount
       let rewardAmount = 2550 + userData.rewardStreak * 300;
 
-      if (userData.spouse) {
+      if (userData.family.spouse) {
         let additionalReward = 0.25 * rewardAmount;
         rewardAmount += additionalReward;
       }
@@ -74,9 +74,9 @@ export async function dailylogin(message) {
       await updateUser(message.author.id, userData);
 
       return message.channel.send(
-        `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount}** Cash and 🍖 **2** pet food.\n` +
-        `Your current streak is 🔥 **${userData.rewardStreak}** day(s).\n` +
-        `Next reward can be claimed tomorrow.`
+        `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount}** Cash & 🍖 **2** pet food.\n` +
+        `🔥 Streak ~ **${userData.rewardStreak}** day(s).\n` +
+        `⏱️ Next reward can be claimed tomorrow.`
       );
     }
   } catch (e) {

@@ -264,15 +264,19 @@ export default {
               items: 1
             });
           }
-
+          
+          const userData = await getUserData(message.author.id);
+                  
           playerShop.money += 10;
           playerShop.reputation += 1;
           playerShop.loyaltyPoints += 15;
+          userData.friendly += 5;
 
           playerShop.flavors.find(flavour => flavour.name === sharedIceCreamName).items -= 1;
 
           await targetShop.save();
           await playerShop.save();
+          await updateUser(message.author.id, userData)
 
           const shareEmbed = new EmbedBuilder()
           .setTitle("🎁 Ice Cream Shared!")
@@ -281,7 +285,7 @@ export default {
           )
           .addFields(
             {
-              name: "🎉 Reward for Sharing", value: "<:creamcash:1309495440030302282> +10 cash, +1 reputation, ✪⁠ +15 Loyalty Points!"
+              name: "🎉 Reward for Sharing", value: "<:creamcash:1309495440030302282> +10 cash, +1 reputation, ✪⁠ +15 Loyalty Points, +5 friendly points!"
             }
           )
           .setColor(0x00ff00)
