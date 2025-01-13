@@ -18,14 +18,16 @@ import {
 export async function badges(userData) {
   let badges = "";
 
-  if (userData.networth > 15000000) {
-    badges += `<:chills:1316680306039984128> `
+  if (userData.networth > 30000000) {
+    badges += `<:krills:1328221841076129793> `
+  } else if (userData.networth > 15000000) {
+    badges += `<:chills:1328221817181311058> `
   } else if (userData.networth > 10000000) {
-    badges += `<:trills:1316679914346381332> `
+    badges += `<:trills:1328221792652886111> `
   } else if (userData.networth > 5000000) {
-    badges += `<:bills:1316679142263230466> `
+    badges += `<:bills:1328221769672163361> `
   } else if (userData.networth > 1000000) {
-    badges += `<:mills:1316678507450863637> `
+    badges += `<:mills:1328221741650284604> `
   }
 
   const currentMonth = new Date().getMonth();
@@ -38,9 +40,9 @@ export async function badges(userData) {
   }
 
 
-  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 30)) badges += `<:paramount_cultist:1319670623508631694> `
-  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 15)) badges += `<:supreme_cultist:1319670550871670895> `
-  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 5)) badges += `<:novice_cultist:1319670415194587189> `
+  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 30)) badges += `<:paramount_cultist:1328222702040907836> `
+  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 15)) badges += `<:supreme_cultist:1328222685112569856> `
+  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 5)) badges += `<:novice_cultist:1328222665235894282> `
 
   if (userData.badges && userData.badges.length > 0) {
     userData.badges.forEach(badge => {

@@ -108,7 +108,7 @@ export async function marriage(message) {
       // Add emojis to mEmojies
       mEmojies = EmojiesList.slice(0, emojiCount).join(" ");
 
-      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n# ${mEmojies}`);
+      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}` : ``}`);
     } else {
       return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!");
     }
@@ -335,7 +335,7 @@ export async function sendRoses(toUser, amount, message) {
         await updateUser(toUser, recipientData);
         await updateUser(message.author.id, senderData);
 
-        return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing 💞 bondXP by 10! 🌹`);
+        return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing 💞 bondXP by ${amount * 10}! 🌹`);
       } else {
         recipientData.roses = (recipientData.roses || 0) + amount;
         await updateUser(toUser, recipientData);
@@ -408,7 +408,7 @@ export async function dailyRewards(userId, username, context) {
       await updateUser(userId, userData);
 
       let messageForm = {
-        content: `🎁💍 **Daily marriage reward claimed!**\n**${username}** received:\n` +
+        content: `🎁💍 **𝓓𝓪𝓲𝓵𝔂 𝓶𝓪𝓻𝓻𝓲𝓪𝓰𝓮 𝓻𝓮𝔀𝓪𝓻𝓭 𝓬𝓵𝓪𝓲𝓶𝓮𝓭!**\n**${username}** received:\n` +
         `+ <:kasiko_coin:1300141236841086977> **${cashExt}**\n` +
         `+ 🌹 **${rosesClaimed}**\n` +
         `+ 💞 **${bondExpInc}**\n` +
