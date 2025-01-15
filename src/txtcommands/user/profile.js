@@ -131,12 +131,14 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     .setTitle(`⌞ ⌝ Assets ✨`)
     .setThumbnail(avatar)
     .setDescription(
-      `Investing & securing assets is life's ultimate game. 💰\n\n` +
       `**ᯓ★𝐂𝐚𝐫𝐬**: ${totalCars}\n` +
       `**ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬**: ${totalStructures}\n`+
       `**ᯓ★𝐏𝐚𝐬𝐬𝐞𝐬**: ${userData.seasonalPasses.length ? userData.seasonalPasses.join(" "): "No Pass Found"}\n`+
       `⟡ ₊ .⋆ ✦⋆𓂁﹏ 𓂃⋆.˚⟡\n`
-    );
+    )
+    .setFooter({
+      text: `ɪɴᴠᴇꜱᴛɪɴɢ & ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ. 💰`
+    })
 
     return [embed1,
       embed2];

@@ -31,8 +31,7 @@ export default {
     const randomComment = comments[Math.floor(Math.random() * comments.length)];
 
     const embed = new EmbedBuilder()
-    .setTitle("🍴 Nom Nom Time!")
-    .setDescription(`${randomSound}\n\nI just ate ${randomFood}!\n\n**Comment:** ${randomComment}`)
+    .setDescription(`# 🍴 𝑵𝒐𝒎 𝑵𝒐𝒎 𝑻𝒊𝒎𝒆! 👄\n${randomSound}\nI just ate ${randomFood}!\n-# 🗨️ **${randomComment}**`)
 
     await message.channel.send({
       embeds: [embed]

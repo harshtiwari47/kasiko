@@ -5,6 +5,8 @@ import IceCreamShop from "../../../models/IceCream.js";
 import layout from "./ic/layout.js";
 import helpEmbed from "./ic/help.js";
 import User from "../../../models/User.js";
+import UserGuild from "../../../models/UserGuild.js";
+
 import {
   getUserData,
   updateUser
@@ -23,6 +25,10 @@ import {
 import {
   playerShopInfo
 } from './ic/shop.js';
+
+import {
+  iceLeaderboard
+} from './ic/leaderboard.js';
 
 const flavors = [{
   level: 1,
@@ -131,6 +137,8 @@ export default {
     // Share an ice cream with another user
     "ice exchange <amount>",
     // Convert loyalty points into cash
+    "ice leaderboard money|reputation|served",
+    // leaderboard 
     "ice daily" // Claim your daily bonus
   ],
   related: ["stat",
@@ -206,6 +214,26 @@ export default {
       if (!playerShop) {
         return message.channel.send(`🍧 **${message.author.username}**, you need to create an ice cream shop first using \`icecream/ice create <shopname>\`. The shop name must not contain spaces and must be within 15 characters.`);
       }
+
+      if (message.guild && message.guild.id) {
+        await UserGuild.findOneAndUpdate(
+          {
+            userId: message.author.id,
+            guildId: message.guild.id
+          },
+          {
+            $set: {
+              'icecream.money': playerShop.money,
+              'icecream.reputation': playerShop.reputation,
+              'icecream.served': playerShop.customersServed
+            }
+          },
+          {
+            upsert: true // Create a new document if no match is found
+          }
+        );
+      }
+
       // Command: Serve a customer
       if (args[0] === "serve") {
         return await serveIceCream(playerShop, flavors, message.author.id, message.author.username, message.channel);
@@ -264,9 +292,9 @@ export default {
               items: 1
             });
           }
-          
+
           const userData = await getUserData(message.author.id);
-                  
+
           playerShop.money += 10;
           playerShop.reputation += 1;
           playerShop.loyaltyPoints += 15;
@@ -385,8 +413,10 @@ export default {
 
           let level = parseInt(args[1]);
 
-          if (level > 1 || level < 0) {
-            return message.channel.send(`⚠️ Currently, only the \`level 1\` layout is available!`)
+          if (level > 2 || level < 0) {
+            return message.channel.send(
+              `⚠️ Currently, only the up to \`level 2\` layout is available!`
+            );
           }
 
           const embed = new EmbedBuilder()
@@ -402,7 +432,7 @@ export default {
           });
         } else {
           return message.channel.send(
-            `⚠️ **${message.author.username}**, please provide a valid level (1) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
+            `⚠️ **${message.author.username}**, please provide a valid level (1-2) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
           );
         }
       }
@@ -434,6 +464,12 @@ export default {
         } else {
           return message.channel.send(`⚠️ **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``);
         }
+      }
+
+      // command: leaderboard
+      if (args[0] === "leaderboard" || args[0] === "lb") {
+        const sortBy = args[1] || "money"; // e.g. "reputation" or "served" or fallback to "money"
+        await iceLeaderboard(message, sortBy);
       }
 
       // Command: Claim daily bonus

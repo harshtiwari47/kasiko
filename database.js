@@ -235,9 +235,9 @@ export const updateUser = async (userId, userData, guildId = null) => {
         },
         {
           $set: {
-            level: userData.networth.level,
+            level: userData.level,
             networth: userData.networth,
-            cash: userData.networth.cash
+            cash: userData.cash
           }
         },
         {

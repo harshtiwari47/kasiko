@@ -1,5 +1,6 @@
 import {
-  PermissionsBitField
+  PermissionsBitField,
+  ChannelType
 } from "discord.js";
 import Server from "../../../models/Server.js";
 
@@ -20,7 +21,7 @@ export default {
     try {
       // Check if the user has moderator permissions
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-        return message.reply("❌ You need `Manage Server` permissions to run this command.");
+        return message.channel.send("❌ You need `Manage Server` permissions to run this command.");
       }
 
       // Load the server doc from Mongo
@@ -49,7 +50,7 @@ export default {
       let target = args[2]?.toLowerCase(); // e.g. "all" or a channel mention
 
       if (!subCommand || !["on", "off"].includes(subCommand)) {
-        return message.reply("Please specify `on` or `off`, e.g. `channel on all` or `channel off #channel`.");
+        return message.channel.send("Please specify `on` or `off`, e.g. `channel on all` or `channel off #channel`.");
       }
 
       if (!target) {
@@ -77,13 +78,13 @@ export default {
         const allowed = subCommand === "on"; // on -> true, off -> false
         // For each channel in the guild, update or insert
         message.guild.channels.cache.forEach((ch) => {
-          // Only text channels or as you desire
-          if (["GUILD_TEXT", "text"].includes(ch.type)) {
+          // Only text channels
+          if (ch.type === ChannelType.GuildText) {
             updateChannelAllowance(ch.id, allowed);
           }
         });
         await serverDoc.save();
-        return message.reply(
+        return message.channel.send(
           `All text channels have been set to **${allowed ? "ALLOWED": "NOT ALLOWED"}** for the bot.`
         );
       }
@@ -102,12 +103,12 @@ export default {
       updateChannelAllowance(channelMention.id, allowedFlag);
       await serverDoc.save();
 
-      return message.reply(
+      return message.channel.send(
         `Bot has been set to **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in ${channelMention.toString()}.`
       );
     } catch (e) {
       console.error(e);
-      return message.reply("❌ An error occurred while toggling the bot in channel(s).");
+      return message.channel.send("❌ An error occurred while toggling the bot in channel(s).");
     }
   },
 };

@@ -94,8 +94,17 @@ client.on('messageCreate', async (message) => {
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
     if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
     if (mentionedBots.size > 0) return;
-    
-    const serverDoc = await Server.findOne({ id: message.guild.id });
+
+    let args;
+    if (message.content.toLowerCase().startsWith("kas")) {
+      args = message.content.slice("kas".toLowerCase().length).trim().split(/ +/);
+    } else {
+      args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
+    }
+
+    const serverDoc = await Server.findOne({
+      id: message.guild.id
+    });
 
     // If we have a doc and the server is in restricted mode, check channel
     if (serverDoc && serverDoc.permissions === 'restricted_channels') {
@@ -104,7 +113,7 @@ client.on('messageCreate', async (message) => {
 
       // If channelDoc exists and isAllowed is false, skip
       if (channelDoc && channelDoc.isAllowed === false && !message.content.toLowerCase().includes("channel")) {
-        return; 
+        return;
       }
     }
 
@@ -118,13 +127,15 @@ client.on('messageCreate', async (message) => {
 
         if (!message.client.user) return;
 
-        if (!notAllowed.includes("SEND_MESSAGES")) {
+        if (!notAllowed.includes("SEND_MESSAGES") && (args[0] && args[0] !== "channel")) {
           return await message.channel.send({
             content: `I am missing the following permissions: ${notAllowed}`,
           });
         }
 
-        return;
+        if (notAllowed.includes("SEND_MESSAGES")) {
+          return;
+        }
       }
     } catch (e) {
       console.error("There is an error while checking bot permissions!", e);
@@ -151,12 +162,6 @@ client.on('messageCreate', async (message) => {
       }
     }
     // handle all types of text commands started with kas || prefix
-    let args;
-    if (message.content.toLowerCase().startsWith("kas")) {
-      args = message.content.slice("kas".toLowerCase().length).trim().split(/ +/);
-    } else {
-      args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
-    }
 
     const commandName = args[0].toLowerCase();
     const command = txtcommands.get(commandName);
@@ -363,14 +368,13 @@ function updateStatus(client) {
 
     // Alternate between showing server count and member count
     const activity = toggle
-      ? {
-          name: `${guildCount} servers`,
-          type: ActivityType.Watching,
-        }
-      : {
-          name: `with ${totalMembers} members`,
-          type: ActivityType.Playing,
-        };
+    ? {
+      name: `${guildCount} servers`,
+      type: ActivityType.Watching,
+    }: {
+      name: `with ${totalMembers} members`,
+      type: ActivityType.Playing,
+    };
 
     client.user.presence.set({
       activities: [activity],

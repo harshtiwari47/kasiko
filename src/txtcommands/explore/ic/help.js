@@ -8,7 +8,7 @@ const embed = new EmbedBuilder()
 .setDescription("Here are the available commands for managing your Ice Cream Shop:")
 .addFields(
   {
-    name: "💢 General", value: "`ice create <shopname (no space)>`, status`, `shop`, `layout`"
+    name: "💢 General", value: "`ice create <shopname (no space)>`, status`, `shop`, `layout`, `leaderboard`"
   },
   {
     name: "🍧 Flavours",
