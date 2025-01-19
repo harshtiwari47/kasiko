@@ -82,7 +82,7 @@ export default {
       } else {
         serverDoc.channels.push({
           id: message.channel.id,
-          name: message.guild.channels.cache.get(channelId)?.name || "unknown",
+          name: message.guild.channels.cache.get(message.channel.id)?.name || "unknown",
           isAllowed: true,
         });
 
