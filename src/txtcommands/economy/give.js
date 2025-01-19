@@ -161,8 +161,9 @@ export async function give(message, userId, amount, recipientId) {
             );
 
             return await replyMessage.edit({
+              content: `⏱️ Transaction timeout!`,
               embeds: [],
-              components: [],
+              components: [rowDisabled],
             });
           } catch (err) {
             console.error("Error disabling buttons after timeout:", err);

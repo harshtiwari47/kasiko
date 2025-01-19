@@ -22,7 +22,7 @@ export default {
       .setColor(0x00ff00)
       .addFields(
         {
-          name: "✅ Send Messages",
+          name: "🗨️ Send Messages",
           value: permissions.has(PermissionsBitField.Flags.SendMessages)
           ? "✅ Allowed": "❌ Denied",
           inline: true,
@@ -30,12 +30,6 @@ export default {
         {
           name: "🔍 Read Message History",
           value: permissions.has(PermissionsBitField.Flags.ReadMessageHistory)
-          ? "✅ Allowed": "❌ Denied",
-          inline: true,
-        },
-        {
-          name: "📝 Manage Messages",
-          value: permissions.has(PermissionsBitField.Flags.ManageMessages)
           ? "✅ Allowed": "❌ Denied",
           inline: true,
         },

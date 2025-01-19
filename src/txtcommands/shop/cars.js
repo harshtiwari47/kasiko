@@ -220,7 +220,7 @@ export async function usercars(context, targetUserId) {
     const username = context.user?.username || context.author?.username;
 
     const userData = await getUserData(userId);
-    const cars = userData.cars.sort((a,b) => b.purchasedPrice - a.purchasedPrice) || [];
+    const cars = userData.cars.sort((a, b) => b.purchasedPrice - a.purchasedPrice) || [];
 
     if (!cars.length) {
       const embed = new EmbedBuilder()
@@ -455,32 +455,27 @@ export async function sellcar(context, carId) {
     }
 
     let userData = await getUserData(userId);
-    const userCar = userData.cars.filter(item => item.id === carId);
 
-    if (!userCar.length) {
+    const userCarIndex = userData.cars.findIndex(item => item.id === carId);
+    const userCar = userData.cars[userCarIndex];
+
+    if (!userCar) {
       return handleMessage(context, {
         content: `⚠️ You don't own this car.`
       });
     }
 
-    // Decrease the user's ownership, remove car from their array if items = 0
-    userData.cars = userData.cars.map(uCar => {
-      if (uCar.id === carId) {
-        uCar.items -= 1;
-      }
-      return uCar;
-    }).filter(uCar => uCar.items > 0);
-
-    // Decrement the shop owners for that car
-    items[carId].owners -= 1;
+    if (userCar.items > 1) {
+      userCar.items -= 1;
+    } else {
+      userData.cars.splice(userCarIndex, 1);
+    }
 
     // Give user back the full price (if that’s the logic you want)
     userData.cash += Number(car[0].price);
     userData.maintenance -= Number(car[0].maintenance);
 
-    writeShopData(items);
-    await updateUser(userId,
-      userData);
+    await updateUser(userId, userData);
 
     const embed = new EmbedBuilder()
     .setColor('#e93535')

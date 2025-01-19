@@ -87,10 +87,10 @@ export default {
     });
 
     // Build the response
-    let response = "**Available Commands:**\nAll commands must be triggered with the prefix `kas`.\n\n";
+    let response = "All commands must be triggered with the prefix `kas`.\n\n";
     for (const [category, commands] of Object.entries(commandsByCategory)) {
       response += `**${category}**\n`;
-      response += commands.map(cmd => ` ${cmd.name}`).join(' ') + "\n";
+      response += commands.filter(cmd => cmd.visible !== false).map(cmd => ` ${cmd.name}`).join(' ') + "\n";
     }
 
     response += "\nUse `help <command name>` for detailed info on a command.";

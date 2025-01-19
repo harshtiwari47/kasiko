@@ -167,13 +167,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
         if (teammateData && winner === opponentBetOn) {
           teammateData.cash += amount + winAmount;
           await updateUser(teammateId, teammateData);
-        } else if (teammateData) {
-          teammateData.cash -= amount;
-          await updateUser(teammateId, teammateData);
         }
-
-        userData.cash -= amount;
-        await updateUser(userId, userData);
 
         const embed = new EmbedBuilder()
         .setColor(0xFF0000) // Red color for loss

@@ -1,0 +1,22 @@
+{
+  "boosters": [
+    {
+      "name": "Lucky Charm",
+      "effect": "doubleCatchChance",
+      "description": "Doubles chance to successfully hunt the next animal.",
+      "rarity": 1
+    },
+    {
+      "name": "Mystic Bait",
+      "effect": "spawnRareAnimal",
+      "description": "Greatly increases chance of encountering a rarer animal next time.",
+      "rarity": 2
+    },
+    {
+      "name": "Revival Powder",
+      "effect": "avoidDeath",
+      "description": "Prevents death in the next hunt or battle.",
+      "rarity": 3
+    }
+  ]
+}

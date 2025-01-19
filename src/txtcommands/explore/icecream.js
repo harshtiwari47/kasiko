@@ -95,7 +95,7 @@ const flavors = [{
   }];
 
 function getLayout(lvl) {
-  if (lvl > 1) lvl = 1;
+  if (lvl > 2) lvl = 2;
   return layout[lvl - 1].image;
 }
 

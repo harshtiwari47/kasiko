@@ -95,7 +95,7 @@ export default {
   related: ["leaderboard",
     "profile"],
   cooldown: 10000,
-  category: "🧮 Stats",
+  category: "📰 Information",
 
   // Execute function based on the command alias
   execute: (args, message) => {

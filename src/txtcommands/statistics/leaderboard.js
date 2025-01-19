@@ -349,7 +349,7 @@ export default {
   example: ["leaderboard"],
   related: ["leaderboard", "profile", "stat"],
   cooldown: 30000, // Cooldown of 30 seconds
-  category: "🧮 Stats",
+  category: "📰 Information",
 
   execute: (args,
     context) => {

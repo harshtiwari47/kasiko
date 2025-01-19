@@ -129,8 +129,7 @@ export async function scavengerHunt(id, location, channel) {
 export default {
   name: "scavenger",
   description: "Go on a scavenger hunt to find treasures, rare items, or face traps!",
-  aliases: ["hunt",
-    "treasure"],
+  aliases: ["treasure", "sc"],
   args: "<location>",
   example: ["scavenger forest",
     "hunt cave",

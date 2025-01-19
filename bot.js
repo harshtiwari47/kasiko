@@ -105,11 +105,11 @@ client.on('messageCreate', async (message) => {
     const serverDoc = await Server.findOne({
       id: message.guild.id
     });
-
+    let channelDoc;
     // If we have a doc and the server is in restricted mode, check channel
     if (serverDoc && serverDoc.permissions === 'restricted_channels') {
       // Find the channel entry
-      const channelDoc = serverDoc.channels.find(ch => ch.id === message.channel.id);
+      channelDoc = serverDoc.channels.find(ch => ch.id === message.channel.id);
 
       // If channelDoc exists and isAllowed is false, skip
       if (channelDoc && channelDoc.isAllowed === false && !message.content.toLowerCase().includes("channel")) {
@@ -170,6 +170,16 @@ client.on('messageCreate', async (message) => {
     updateExpPoints(message.content.toLowerCase(), message.author, message.channel, message?.guild.id);
 
     if (!command) return;
+
+    if (channelDoc && channelDoc.category) {
+      if (channelDoc && !channelDoc.category.allAllowed) {
+        if (channelDoc.category.notAllowedCategories.includes(command.category)) {
+          if (!(command.category === "🔧 Utility" && args[0] === "category")) {
+            return;
+          }
+        }
+      }
+    }
 
     try {
       const userId = message.author.id;

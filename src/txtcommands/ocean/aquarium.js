@@ -603,7 +603,7 @@ export async function collectAquariumReward(context, author) {
           content: `⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\``
         });
       } else {
-        return channel.send('⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\`');
+        return context.send('⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\`');
       }
     }
 

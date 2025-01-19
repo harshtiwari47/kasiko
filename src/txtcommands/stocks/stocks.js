@@ -384,8 +384,8 @@ export default {
     "buy",
     "sell"],
   cooldown: 10000,
-  // Cooldown of 2 seconds
-  category: "📊 Stocks",
+  // Cooldown of 10 seconds
+  category: "🏦 Economy",
 
   execute: async (args, message) => {
     const command = args[1] ? args[1].toLowerCase(): null;

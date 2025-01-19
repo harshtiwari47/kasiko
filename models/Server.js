@@ -21,6 +21,16 @@ const channelSchema = new mongoose.Schema({
     categoryId: {
       type: String, // Optional: Category ID for better organization
     },
+    category: {
+      allAllowed: {
+        type: Boolean,
+      default: true
+      },
+      notAllowedCategories: {
+        type: Array,
+      default: []
+      }
+    },
     createdAt: {
       type: Date,
     default: Date.now, // Timestamp when the channel entry was created

@@ -11,10 +11,6 @@ export default {
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
-      if (!args[1]) {
-        return message.reply("You need to mention someone to kiss!");
-      }
-
       // Get the mentioned user
       const target = message.mentions.users.first();
       if (!target) {

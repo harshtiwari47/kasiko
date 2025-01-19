@@ -106,21 +106,21 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     .addFields(
       // Financial Information
       {
-        name: '💰 Financial Details',
+        name: '💰 𝘍𝘪𝘯𝘢𝘯𝘤𝘪𝘢𝘭 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
         value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData.cash.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}\n**Charity:** <:kasiko_coin:1300141236841086977> ${userData.charity.toLocaleString()}`,
         inline: true
       },
 
       // Rewards and Status
       {
-        name: '🎉 Rewards & Status',
+        name: '🎉 𝘙𝘦𝘸𝘢𝘳𝘥𝘴 & 𝘚𝘵𝘢𝘵𝘶𝘴',
         value: `**Daily Rewards:** ${dailyRewardsDetail}\n**Friendly:** ${userData.friendly}`,
         inline: true
       },
 
       // Personal Information
       {
-        name: '👪 Family Details',
+        name: '👪 𝘍𝘢𝘮𝘪𝘭𝘺 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
         value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.family.children.length === 0 ? "0": userData.family.children.join(", ")}**`,
         inline: true
       }

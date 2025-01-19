@@ -11,8 +11,8 @@ export default {
   description: "Displays detailed bot statistics.",
   aliases: [],
   cooldown: 6000,
-  category: "🔧 Utility",
   visible: false,
+  category: "🔧 Utility",
 
   execute: async (args, message) => {
 
