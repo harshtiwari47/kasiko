@@ -44,7 +44,8 @@ export default {
         'https://i.gifer.com/B60l.gif',
         'https://i.gifer.com/4msN.gif',
         'https://i.gifer.com/N32W.gif',
-        'https://i.gifer.com/OWKl.gif'
+        'https://i.gifer.com/OWKl.gif',
+        'https://media4.giphy.com/media/xUPGckXfbVgnITuvYY/giphy.gif?cid=6c09b952i6bzhp6bfypyo7usavd6fvxrb9saww38vsp7vnxj&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'
       ];
 
       // Randomly pick a text and a GIF independently

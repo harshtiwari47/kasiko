@@ -67,7 +67,9 @@ export default {
         'https://media2.giphy.com/media/nXWxE3nbUpJdyTnGRF/giphy.gif?cid=6c09b952sm526jchtb4yzazeg9cyomrmez0jdcx52fr9g58n&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media2.giphy.com/media/s8yzk6DeZTfNzbVdlh/giphy.gif?cid=6c09b952gc3luo1fw4a4mbhoumnlj3jaqj6d8el49ueivi50&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media2.giphy.com/media/rnhJwvHjF2Jpgl0J3l/giphy.gif?cid=6c09b952zwqgj09icmg3hpqmj75fa8s9otv1dvxovvxa1ml7&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
-        'https://media0.giphy.com/media/TGQPszNWLBggPM2kQA/giphy.gif?cid=6c09b952b5hmsj5zdefuofo0xgln076by865rmekabdn86cg&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'
+        'https://media0.giphy.com/media/TGQPszNWLBggPM2kQA/giphy.gif?cid=6c09b952b5hmsj5zdefuofo0xgln076by865rmekabdn86cg&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
+        'https://media0.giphy.com/media/xUPGcGMZr0nVdMgEnK/giphy.gif?cid=6c09b9521751pu4l9cqmupycetsfw9muj161eju6649iin7v&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
+        'https://media4.giphy.com/media/CLPSFbwMqpsvf5cRe8/giphy.gif?cid=6c09b952jw81slimpubk10wpvvrrsby5hg8j0bom6vihcee3&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'
       ];
 
       // Randomly pick a text and a GIF independently

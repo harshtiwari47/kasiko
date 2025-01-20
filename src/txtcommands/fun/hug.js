@@ -40,7 +40,9 @@ export default {
       'https://i.gifer.com/Bvr.gif',
       'https://i.gifer.com/13Vc.gif',
       'https://i.gifer.com/Txh9.gif',
-      'https://i.gifer.com/GAMC.gif'
+      'https://i.gifer.com/GAMC.gif',
+      'https://media4.giphy.com/media/du8yT5dStTeMg/giphy.gif?cid=6c09b95273alyhgkv1nqoxwvavgair8fdlcvdkctoklrjrp4&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
+      'https://media1.giphy.com/media/wnsgren9NtITS/giphy.gif?cid=6c09b9520lp01fp7z36gycmbozikezu926vsibrarhyj6e0m&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'
     ];
 
     // Randomly pick a text and a GIF independently

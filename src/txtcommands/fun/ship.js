@@ -18,7 +18,7 @@ export default {
   execute: async (args, message) => {
     args.shift();
     // If user typed "ship random"
-    const isRandom = args[0]?.toLowerCase() === "random";
+    const isRandom = args[0]?.toLowerCase() === "random" || !args[0];
 
     // All members (excluding bots) so we can pick random ones if needed
     // Make sure we're in a guild channel

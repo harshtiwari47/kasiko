@@ -37,7 +37,8 @@ export default {
         'https://media2.giphy.com/media/z8xRcmTwu1QU8/giphy.gif?cid=6c09b952dp0m5indrw72qsxndxmr3jgrwy9ebnu7a2ihscl5&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media1.giphy.com/media/26uf6J2OmD1lu0lI4/giphy.gif?cid=6c09b952auv3yei38583rb6i8csug1b6jqddjvwoixfyll5m&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media3.giphy.com/media/Hvxj9j8itdteCP6ySx/giphy.gif?cid=6c09b952ikvh3cxknqljz2zna3cwz96eytoj00xj403m3hm8&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
-        'https://media0.giphy.com/media/dmbZs8ZlTm5NMvr4js/giphy.gif?cid=6c09b9526xqrtitctu9zetqc3agyt2j61lhdqbsg1nenywtv&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'
+        'https://media0.giphy.com/media/dmbZs8ZlTm5NMvr4js/giphy.gif?cid=6c09b9526xqrtitctu9zetqc3agyt2j61lhdqbsg1nenywtv&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
+        'https://media1.giphy.com/media/srcLS0USEVFmg/giphy.gif?cid=6c09b952glxb4i13bwsb08j3op0oh22jzv3uv956kq6ldhov&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'
       ];
 
       const randomText = texts[Math.floor(Math.random() * texts.length)];
