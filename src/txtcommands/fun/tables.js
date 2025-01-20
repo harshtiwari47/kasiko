@@ -1,8 +1,7 @@
 export default {
   name: "fliptable",
   description: "Flip or fix a table, depending on your mood `kas table <option>`.",
-  aliases: ["rage",
-    "table"],
+  aliases: ["table"],
   cooldown: 4000,
   category: "🧩 Fun",
   execute: async (args, message) => {
