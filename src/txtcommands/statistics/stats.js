@@ -59,6 +59,8 @@ async function sendUserStat(stat, message) {
 function handleUserStat(statType, message) {
   let name = statType;
   if (statType === "c") name = "cash"
+  if (statType === "bal") name = "cash"
+  if (statType === "balance") name = "cash"
   if (statType === "ts") name = "trust"
   if (statType === "nw") name = "networth"
   if (statType === "cy") name = "charity"
@@ -80,7 +82,9 @@ export default {
     "ts",
     "level",
     "exp",
-    "stats"],
+    "stats",
+    "bal",
+    "balance"],
   // These aliases allow calling the command with any of the stats directly
   args: "<type>",
   example: [

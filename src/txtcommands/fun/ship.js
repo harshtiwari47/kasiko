@@ -128,9 +128,9 @@ export default {
       // 6) Create an embed to display the results
       const embed = new EmbedBuilder()
       .setDescription(
-        `# 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
+        `## 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
         `## **${user1.username}** ❤️ **${user2.username}**\n` +
-        `> **Score:** ***${score}%***\n\n` +
+        `> **Score:** ***${score}%***\n` +
         `-# 💌 *${quote}*`
       )
       .setColor("#FFB6C1")

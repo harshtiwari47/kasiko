@@ -12,6 +12,10 @@ export async function slots(id, amount, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
+    if (amount === "all") amount = userData.cash;
+
+    if (amount > 300000) amount = 300000;
+
     if (userData.cash < 1) {
       return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
     } else if (amount < 1) {
@@ -128,16 +132,23 @@ export default {
   // Main function to execute the slots game logic
   execute: (args, message) => {
     // Check if a valid amount argument is provided
-    if (args[1] && Helper.isNumber(args[1])) {
-      const amount = parseInt(args[1]);
+    if ((args[1] && Helper.isNumber(args[1])) || args[1] === "all") {
+
+      let amount;
+
+      if (args[1] === "all") {
+        amount = "all";
+      } else {
+        amount = parseInt(args[1]);
+      }
 
       // Ensure amount is within valid range
-      if (amount < 1) {
+      if (amount !== "all" && amount < 1) {
         return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
       }
 
-      if (amount > 200000) {
-        return message.channel.send(`⚠️ **${message.author.username}**, you can't play slots more than <:kasiko_coin:1300141236841086977> 200,000 cash.`);
+      if (amount !== "all" && amount > 300000) {
+        return message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
       }
 
       // Call the slots function

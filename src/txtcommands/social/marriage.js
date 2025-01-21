@@ -526,7 +526,7 @@ export default {
             name: '💔 Divorce', value: 'divorce <@username>'
           },
           {
-            name: '💒 Marriage Info', value: 'marriage` or `/m`'
+            name: '💒 Marriage Info', value: 'marriage or m'
           },
           {
             name: '🌹 Send Roses', value: 'roses <@username (optional)> <amount>'
