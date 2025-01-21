@@ -109,14 +109,14 @@ export default {
 
       // ———————————— Draw heart / score text ————————————
       // A big heart in the middle:
-      ctx.fillStyle = "rgb(168,0,0)";
+      ctx.fillStyle = "rgb(255,38,38)";
       ctx.font = "100px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("♥", canvasWidth / 2, canvasHeight / 2);
 
       // Score text below the heart
-      ctx.fillStyle = "rgb(168,0,0)";
+      ctx.fillStyle = "rgb(255,42,42)";
       ctx.font = "30px sans-serif";
       ctx.fillText(`${score}%`, canvasWidth / 2, (canvasHeight / 2) + 60);
 

@@ -63,10 +63,10 @@ export const termsAndcondition = async (message) => {
     collector.on('collect', async (interaction) => {
       try {
         if (interaction.customId === 'accept_terms') {
-
+          await interaction.deferReply();
           let user = await createUser(message.author.id);
           if (user) {
-            await interaction.reply({
+            await interaction.editReply({
               content: 'Thank you for accepting the Terms and Conditions!',
               ephemeral: true
             });
@@ -78,7 +78,7 @@ export const termsAndcondition = async (message) => {
               components: [updatedRow]
             });
           } else {
-            return message.reply({
+            return message.editReply({
               content: '⚠️ Something went wrong! Please contact the support or try again',
               ephemeral: true
             });
