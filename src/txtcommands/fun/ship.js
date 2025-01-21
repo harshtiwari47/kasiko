@@ -116,7 +116,7 @@ export default {
       ctx.fillText("♥", canvasWidth / 2, canvasHeight / 2);
 
       // Score text below the heart
-      ctx.fillStyle = "rgb(255,42,42)";
+      ctx.fillStyle = "rgb(240,0,0)";
       ctx.font = "30px sans-serif";
       ctx.fillText(`${score}%`, canvasWidth / 2, (canvasHeight / 2) + 60);
 
