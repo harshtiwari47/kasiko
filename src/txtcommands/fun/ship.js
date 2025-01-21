@@ -109,14 +109,14 @@ export default {
 
       // ———————————— Draw heart / score text ————————————
       // A big heart in the middle:
-      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.fillStyle = "rgb(168,0,0)";
       ctx.font = "100px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("♥", canvasWidth / 2, canvasHeight / 2);
 
       // Score text below the heart
-      ctx.fillStyle = "#ffffff";
+      ctx.fillStyle = "rgb(168,0,0)";
       ctx.font = "30px sans-serif";
       ctx.fillText(`${score}%`, canvasWidth / 2, (canvasHeight / 2) + 60);
 
@@ -131,7 +131,7 @@ export default {
         `# 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
         `## **${user1.username}** ❤️ **${user2.username}**\n` +
         `> **Score:** ***${score}%***\n\n` +
-        `-# *${quote}*`
+        `-# 💌 *${quote}*`
       )
       .setColor("#FFB6C1")
       .setFooter({
