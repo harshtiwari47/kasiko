@@ -200,34 +200,36 @@ export default {
       // Default: Send an embed with instructions
     default: {
         const embed = new EmbedBuilder()
-        .setColor(0x1F8B4C)
         .setTitle("🛒 SHOP COMMANDS")
         .setDescription("Browse and trade various items. Use one of the categories below to view listings or see how to buy/sell items.")
         .addFields(
           {
             name: "❔ View Items",
             value:
-            "• **shop car**\n-# View available cars\n" +
-            "• **shop structure**\n-# View houses/buildings\n" +
-            "• **shop jewelry**\n-# View jewelry items\n" +
-            "• **(or)** **shop**\n-# Show this guide",
+            `\`\`\`
+            ✧ shop car
+            ✧ shop structure
+            ✧ shop jewelry
+            \`\`\``,
             inline: false
           },
           {
             name: "❔ How to Buy",
             value:
-            "• **buy car `<car_id>`**\n-# Buy a specific car\n" +
-            "• **buy structure `<structure_id>`**\n-# Buy a house or building\n" +
-            "• **buy jewelry `<jewelry_id>`**\n-# Buy a piece of jewelry\n" +
-            "• **buy roses `<amount>`**\n-# Buy a certain number of roses",
+            `\`\`\`
+            ✧ buy car <car_id>
+            ✧ buy structure <structure_id>
+            ✧ buy jewelry <jewelry_id>
+            ✧ buy roses <amount>\`\`\``,
             inline: false
           },
           {
             name: "❔ How to Sell",
             value:
-            "• **sell car `<car_id>`**\n-# Sell a specific car\n" +
-            "• **sell structure `<structure_id>`**\n-# Sell a house or building\n" +
-            "• **sell jewelry `<jewelry_id>`**\n-# Sell a piece of jewelry",
+            `\`\`\`
+            ✧ sell car <car_id>
+            ✧ sell structure <structure_id>
+            ✧ sell jewelry <jewelry_id>\`\`\``,
             inline: false
           }
         )

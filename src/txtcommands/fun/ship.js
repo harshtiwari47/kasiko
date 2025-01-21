@@ -16,132 +16,136 @@ export default {
   category: "🧩 Fun",
 
   execute: async (args, message) => {
-    args.shift();
-    // If user typed "ship random"
-    const isRandom = args[0]?.toLowerCase() === "random" || !args[0];
+    try {
+      args.shift();
+      // If user typed "ship random"
+      const isRandom = args[0]?.toLowerCase() === "random" || !args[0];
 
-    // All members (excluding bots) so we can pick random ones if needed
-    // Make sure we're in a guild channel
-    // Ensure we're in a guild channel
-    if (!message.guild) {
-      return message.reply("This command can only be used in servers.");
-    }
+      // All members (excluding bots) so we can pick random ones if needed
+      // Make sure we're in a guild channel
+      // Ensure we're in a guild channel
+      if (!message.guild) {
+        return message.reply("This command can only be used in servers.");
+      }
 
-    const allMembers = await message.guild.members.fetch();
+      const allMembers = await message.guild.members.fetch();
 
-    if (isRandom) {
-      if (!allMembers || allMembers.size <= 1) {
+      if (isRandom) {
+        if (!allMembers || allMembers.size <= 1) {
+          return message.reply(
+            "Not enough members to perform `ship random`. At least 2 members are required!"
+          );
+        }
+      }
+
+      let user1 = null;
+      let user2 = null;
+
+      // Attempt to grab mentioned users from the message
+      const mentions = message.mentions.users;
+
+      // If we have two mentions, use those
+      if (mentions.size >= 2) {
+        const arr = [...mentions.values()];
+        user1 = arr[0];
+        user2 = arr[1];
+      }
+      // If we have one mention, ship them with the message author
+      else if (mentions.size === 1) {
+        user1 = message.author;
+        user2 = mentions.first();
+      }
+      // If "random" was specified, pick two distinct random members
+      else if (isRandom && allMembers && allMembers.size > 1) {
+        const randomMember1 = message.author;
+        let randomMember2 = allMembers.random();
+        while (randomMember1.id === randomMember2.id) {
+          randomMember2 = allMembers.random();
+        }
+        user1 = randomMember1;
+        user2 = randomMember2.user;
+      }
+      // If nothing is mentioned or "random" can't be done, show usage or fallback
+      else {
         return message.reply(
-          "Not enough members to perform `ship random`. At least 2 members are required!"
+          "Please mention one/two users or use `ship random` (in a server with enough members) to test a love score!"
         );
       }
+
+      // 2) Calculate a stable love score based on user IDs (so it doesn't change)
+      const score = Math.min(100, (getLoveScore(user1.id, user2.id, user1.username, user2.username, 100, Math.max(25, Math.ceil(Math.random() * 50))) + Math.floor((Math.random() * 10))));
+
+      // 3) Generate a short love quote depending on the score
+      const quote = pickQuote(score);
+
+      // 4) Create a canvas image using @napi-rs/canvas
+      const canvasWidth = 700;
+      const canvasHeight = 300;
+      const canvas = createCanvas(canvasWidth, canvasHeight);
+      const ctx = canvas.getContext("2d");
+
+      // ———————————— Background ————————————
+      // Draw a simple gradient background
+      const gradient = ctx.createLinearGradient(0, 0, canvasWidth, canvasHeight);
+      gradient.addColorStop(0, "#ff9a9e"); // Pinkish
+      gradient.addColorStop(1, "#fad0c4"); // Light pinkish
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+      // ———————————— Load user avatars ————————————
+      const avatarSize = 200;
+      const user1Avatar = await loadImage(user1.displayAvatarURL({
+        extension: "png", size: 512
+      }));
+      const user2Avatar = await loadImage(user2.displayAvatarURL({
+        extension: "png", size: 512
+      }));
+
+      // Draw left user avatar (circle mask)
+      drawCircleImage(ctx, user1Avatar, 60, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
+
+      // Draw right user avatar (circle mask)
+      drawCircleImage(ctx, user2Avatar, canvasWidth - 260, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
+
+      // ———————————— Draw heart / score text ————————————
+      // A big heart in the middle:
+      ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      ctx.font = "100px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("♥", canvasWidth / 2, canvasHeight / 2);
+
+      // Score text below the heart
+      ctx.fillStyle = "#ffffff";
+      ctx.font = "30px sans-serif";
+      ctx.fillText(`${score}%`, canvasWidth / 2, (canvasHeight / 2) + 60);
+
+      // 5) Convert to Discord attachment
+      const attachment = new AttachmentBuilder(await canvas.encode("png"), {
+        name: "ship.png",
+      });
+
+      // 6) Create an embed to display the results
+      const embed = new EmbedBuilder()
+      .setDescription(
+        `# 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
+        `## **${user1.username}** ❤️ **${user2.username}**\n` +
+        `> **Score:** ***${score}%***\n\n` +
+        `-# *${quote}*`
+      )
+      .setColor("#FFB6C1")
+      .setFooter({
+        text: `TIP: 𝘬𝘢𝘴 𝘮𝘢𝘳𝘳𝘺 @${user2.username} 𝑡𝑜 𝑝𝑢𝑟𝑝𝑜𝑠𝑒`
+      })
+      .setImage("attachment://ship.png") // reference the attachment name
+
+      // 7) Reply with embed + image
+      await message.channel.send({
+        embeds: [embed], files: [attachment]
+      });
+    } catch (e) {
+      console.error(e);
     }
-
-    let user1 = null;
-    let user2 = null;
-
-    // Attempt to grab mentioned users from the message
-    const mentions = message.mentions.users;
-
-    // If we have two mentions, use those
-    if (mentions.size >= 2) {
-      const arr = [...mentions.values()];
-      user1 = arr[0];
-      user2 = arr[1];
-    }
-    // If we have one mention, ship them with the message author
-    else if (mentions.size === 1) {
-      user1 = message.author;
-      user2 = mentions.first();
-    }
-    // If "random" was specified, pick two distinct random members
-    else if (isRandom && allMembers && allMembers.size > 1) {
-      const randomMember1 = message.author;
-      let randomMember2 = allMembers.random();
-      while (randomMember1.id === randomMember2.id) {
-        randomMember2 = allMembers.random();
-      }
-      user1 = randomMember1;
-      user2 = randomMember2.user;
-    }
-    // If nothing is mentioned or "random" can't be done, show usage or fallback
-    else {
-      return message.reply(
-        "Please mention one/two users or use `ship random` (in a server with enough members) to test a love score!"
-      );
-    }
-
-    // 2) Calculate a stable love score based on user IDs (so it doesn't change)
-    const score = Math.min(100, (getLoveScore(user1.id, user2.id, user1.username, user2.username, 100, Math.max(25, Math.ceil(Math.random() * 50))) + Math.floor((Math.random() * 10))));
-
-    // 3) Generate a short love quote depending on the score
-    const quote = pickQuote(score);
-
-    // 4) Create a canvas image using @napi-rs/canvas
-    const canvasWidth = 700;
-    const canvasHeight = 300;
-    const canvas = createCanvas(canvasWidth, canvasHeight);
-    const ctx = canvas.getContext("2d");
-
-    // ———————————— Background ————————————
-    // Draw a simple gradient background
-    const gradient = ctx.createLinearGradient(0, 0, canvasWidth, canvasHeight);
-    gradient.addColorStop(0, "#ff9a9e"); // Pinkish
-    gradient.addColorStop(1, "#fad0c4"); // Light pinkish
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
-    // ———————————— Load user avatars ————————————
-    const avatarSize = 200;
-    const user1Avatar = await loadImage(user1.displayAvatarURL({
-      extension: "png", size: 512
-    }));
-    const user2Avatar = await loadImage(user2.displayAvatarURL({
-      extension: "png", size: 512
-    }));
-
-    // Draw left user avatar (circle mask)
-    drawCircleImage(ctx, user1Avatar, 60, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
-
-    // Draw right user avatar (circle mask)
-    drawCircleImage(ctx, user2Avatar, canvasWidth - 260, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
-
-    // ———————————— Draw heart / score text ————————————
-    // A big heart in the middle:
-    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-    ctx.font = "100px sans-serif";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("♥", canvasWidth / 2, canvasHeight / 2);
-
-    // Score text below the heart
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "30px sans-serif";
-    ctx.fillText(`${score}%`, canvasWidth / 2, (canvasHeight / 2) + 60);
-
-    // 5) Convert to Discord attachment
-    const attachment = new AttachmentBuilder(await canvas.encode("png"), {
-      name: "ship.png",
-    });
-
-    // 6) Create an embed to display the results
-    const embed = new EmbedBuilder()
-    .setDescription(
-      `# 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
-      `## **${user1.username}** ❤️ **${user2.username}**\n` +
-      `> **Score:** ***${score}%***\n\n` +
-      `-# *${quote}*`
-    )
-    .setColor("#FFB6C1")
-    .setFooter({
-      text: `TIP: 𝘬𝘢𝘴 𝘮𝘢𝘳𝘳𝘺 @${user2.username} 𝑡𝑜 𝑝𝑢𝑟𝑝𝑜𝑠𝑒`
-    })
-    .setImage("attachment://ship.png") // reference the attachment name
-
-    // 7) Reply with embed + image
-    await message.channel.send({
-      embeds: [embed], files: [attachment]
-    });
   },
 };
 

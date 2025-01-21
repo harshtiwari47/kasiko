@@ -174,7 +174,7 @@ client.on('messageCreate', async (message) => {
     if (channelDoc && channelDoc.category) {
       if (channelDoc && !channelDoc.category.allAllowed) {
         if (channelDoc.category.notAllowedCategories.includes(command.category)) {
-          if (!(command.category === "🔧 Utility" && args[0] === "category")) {
+          if (!((command.category === "🔧 Utility" && args[0] === "category") || (command.category === "🔧 Utility" && args[0] === "channel"))) {
             return;
           }
         }
@@ -191,7 +191,9 @@ client.on('messageCreate', async (message) => {
           `⏳ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
         );
         setTimeout(async () => {
-          await coolDownMessage.delete();
+          try {
+            await coolDownMessage.delete();
+          } catch (e) {}
         }, ttl * 1000);
         return;
       }

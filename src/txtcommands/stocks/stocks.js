@@ -388,6 +388,7 @@ export default {
   category: "🏦 Economy",
 
   execute: async (args, message) => {
+    try {
     const command = args[1] ? args[1].toLowerCase(): null;
 
     if (args[0] === "portfolio" || args[0] === "pf") {
@@ -450,7 +451,22 @@ export default {
       return sendPaginatedStocks(message); // Show all available stocks
 
     default:
-      return message.channel.send("⚠️ Invalid command. Use `stock all`, `stock price <symbol>`, `stock buy <symbol> <amount>`, `stock sell <symbol> <amount>`, `stock news` or `stock portfolio`.");
+    const embed = new EmbedBuilder()
+  .setColor(0xFF0000) // Hex color as a number
+  .setTitle('❗ Stocks Command')
+  .addFields(
+    { name: '`stock all`', value: 'View all available stocks', inline: true },
+    { name: '`stock price <symbol>`', value: 'Check the price of a stock', inline: true },
+    { name: '`stock buy <symbol> <amount>`', value: 'Buy a stock', inline: true },
+    { name: '`stock sell <symbol> <amount>`', value: 'Sell a stock', inline: true },
+    { name: '`stock news`', value: 'Get the latest stock news', inline: true },
+    { name: '`stock portfolio`', value: 'View your stock portfolio', inline: true }
+  )
+
+    return message.channel.send({ embeds: [embed] });
+    }
+    } catch (e) {
+      console.log(e);
     }
   }
 };
