@@ -516,20 +516,20 @@ export default {
       default:
         const embed = new EmbedBuilder()
         .setColor('#FF69B4') // Beautiful pink color
-        .setTitle('💞 Marriage Command Guide 💞')
+        .setTitle('💞 Marriage Command Guide')
         .setDescription('Here’s how to use the marriage commands effectively:')
         .addFields(
           {
-            name: '💍 Marry', value: '`/marry <@username>` - Propose to someone special.'
+            name: '💍 Marry', value: 'marry <@username>'
           },
           {
-            name: '💔 Divorce', value: '`/divorce <@username>` - End your marriage.'
+            name: '💔 Divorce', value: 'divorce <@username>'
           },
           {
-            name: '💒 Marriage Info', value: '`/marriage` or `/m` - View marriage details.'
+            name: '💒 Marriage Info', value: 'marriage` or `/m`'
           },
           {
-            name: '🌹 Send Roses', value: '`/roses <@username (optional)> <amount>` - Send roses to someone or specify the amount.'
+            name: '🌹 Send Roses', value: 'roses <@username (optional)> <amount>'
           }
         )
 
