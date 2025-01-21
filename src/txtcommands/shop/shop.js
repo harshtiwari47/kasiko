@@ -205,31 +205,27 @@ export default {
         .addFields(
           {
             name: "❔ View Items",
-            value:
-            `\`\`\`
-            ✧ shop car
+            value:`**\`\`\`✧ shop car
             ✧ shop structure
             ✧ shop jewelry
-            \`\`\``,
+            \`\`\`**`,
             inline: false
           },
           {
             name: "❔ How to Buy",
             value:
-            `\`\`\`
-            ✧ buy car <car_id>
+            `**\`\`\`✧ buy car <car_id>
             ✧ buy structure <structure_id>
             ✧ buy jewelry <jewelry_id>
-            ✧ buy roses <amount>\`\`\``,
+            ✧ buy roses <amount>\`\`\`**`,
             inline: false
           },
           {
             name: "❔ How to Sell",
             value:
-            `\`\`\`
-            ✧ sell car <car_id>
+            `**\`\`\`✧ sell car <car_id>
             ✧ sell structure <structure_id>
-            ✧ sell jewelry <jewelry_id>\`\`\``,
+            ✧ sell jewelry <jewelry_id>\`\`\`**`,
             inline: false
           }
         )
