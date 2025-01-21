@@ -99,7 +99,7 @@ export async function marriage(message) {
         2500,
         5000,
         7500];
-        
+
       const bondXP = userData.family.bondXP;
 
       // Determine how many emojis to add
@@ -108,7 +108,7 @@ export async function marriage(message) {
       // Add emojis to mEmojies
       mEmojies = EmojiesList.slice(0, emojiCount).join(" ");
 
-      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}` : ``}`);
+      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}`);
     } else {
       return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!");
     }
@@ -466,7 +466,7 @@ export default {
   // Cooldown of 10 seconds
   category: "👤 User",
 
-  execute: (args, message) => {
+  execute: async (args, message) => {
     try {
       if (args[0] === "marry") {
         if (args[1] && Helper.isUserMention(args[1], message)) {
@@ -514,7 +514,28 @@ export default {
         return dailyRewards(message.author.id, message.author.username, message)
 
       default:
-        return message.channel.send("⚠️ Invalid command. Use `marry <@username>`, `divorce <@username>`, `marriage/m`, or `roses <@username (optional for sending)> <amount (if @user)>`.");
+        const embed = new EmbedBuilder()
+        .setColor('#FF69B4') // Beautiful pink color
+        .setTitle('💞 Marriage Command Guide 💞')
+        .setDescription('Here’s how to use the marriage commands effectively:')
+        .addFields(
+          {
+            name: '💍 Marry', value: '`/marry <@username>` - Propose to someone special.'
+          },
+          {
+            name: '💔 Divorce', value: '`/divorce <@username>` - End your marriage.'
+          },
+          {
+            name: '💒 Marriage Info', value: '`/marriage` or `/m` - View marriage details.'
+          },
+          {
+            name: '🌹 Send Roses', value: '`/roses <@username (optional)> <amount>` - Send roses to someone or specify the amount.'
+          }
+        )
+
+        return await message.channel.send({
+          embeds: [embed]
+        })
       }
     } catch (e) {
       console.error(e);
