@@ -255,7 +255,9 @@ export async function divorce(user, message) {
         if (i.customId === 'confirmdivorce') {
 
           userData.family.spouse = null;
+          userData.family.bondXP = 0;
           invitedUserData.family.spouse = null;
+          invitedUserData.family.bondXP = 0;
 
           await updateUser(message.author.id, userData);
           await updateUser(user, invitedUserData);
