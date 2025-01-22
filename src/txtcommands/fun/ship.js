@@ -126,12 +126,12 @@ export default {
       ctx.font = "100px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("♥", circleX, circleY - 8);
+      ctx.fillText("♥", circleX, circleY - 12);
 
       // Score text below the heart
       ctx.fillStyle = "rgb(240,0,0)";
       ctx.font = "30px sans-serif";
-      ctx.fillText(`${score}%`, circleX, circleY + 60);
+      ctx.fillText(`${score}%`, circleX, circleY + 50);
 
       // 5) Convert to Discord attachment
       const attachment = new AttachmentBuilder(await canvas.encode("png"), {
@@ -143,7 +143,7 @@ export default {
       .setDescription(
         `## 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
         `### **${user1.username}** ❤️ **${user2.username}**\n` +
-        `> ***Score: ${score}%\`***\n` +
+        `> \`***Score: ${score}%\`***\n` +
         `-# 💌 *${quote}*`
       )
       .setColor("#FFB6C1")

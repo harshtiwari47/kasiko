@@ -62,7 +62,9 @@ export const termsAndcondition = async (message) => {
     collector.on('collect', async (interaction) => {
       try {
         if (interaction.customId === 'accept_terms') {
-          await interaction.deferReply();
+          await interaction.deferReply({
+            ephemeral: true
+          });
           let user = await createUser(message.author.id);
           if (user) {
             await interaction.editReply({
