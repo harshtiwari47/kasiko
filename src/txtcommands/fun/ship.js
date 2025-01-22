@@ -143,7 +143,7 @@ export default {
       .setDescription(
         `## 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
         `### **${user1.username}** ❤️ **${user2.username}**\n` +
-        `> \`***Score: ${score}%\`***\n` +
+        `> ✧ ***\`Score: ${score}%\`***\n` +
         `-# 💌 *${quote}*`
       )
       .setColor("#FFB6C1")
