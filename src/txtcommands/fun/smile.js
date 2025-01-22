@@ -6,7 +6,7 @@ export default {
   name: "happy",
   description: "Share some happiness with a cheerful GIF!",
   aliases: ["joy",
-    "smile"],
+    "smile", "laugh"],
   cooldown: 4000,
   category: "🧩 Fun",
   execute: async (args, message) => {

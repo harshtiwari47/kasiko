@@ -6,7 +6,7 @@ export default {
   name: "cry",
   description: "Express sadness with a crying GIF.",
   aliases: ["tears",
-    "sob"],
+    "sob", "sad"],
   cooldown: 4000,
   category: "🧩 Fun",
   execute: async (args, message) => {

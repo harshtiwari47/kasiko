@@ -53,7 +53,7 @@ const PetSchema = new mongoose.Schema({
           lastPatTime: null,
           lastExercise: null,
           petId: "cat1",
-          exp: 50, // Initial experience points
+          exp: 201, // Initial experience points
         },
         ],
       },

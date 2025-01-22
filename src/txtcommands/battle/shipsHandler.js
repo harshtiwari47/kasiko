@@ -240,7 +240,7 @@ async function activeShip(userId, message) {
 
     if (!activeShip) {
       return message.channel.send({
-        content: `⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ship active <shipId>\``,
+        content: `⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\``,
       });
     }
 
@@ -306,7 +306,7 @@ async function setActiveShip(shipId, userId, message) {
 
     await modifyUserShips(userId, userShips);
 
-    return message.channel.send(`**${message.author.username}**, your current active ship is set to **${userShips.ships[toActiveShip].name}**\n⭑𓂃\n\`Kas ship active\` for more details, \`kas active repair\` for repair & \`kas active up\` for level up. ˙✧˖° 🌊⋆｡˚꩜`);
+    return message.channel.send(`**${message.author.username}**, your current active ship is set to **${userShips.ships[toActiveShip].name}**\n⭑𓂃\n\`Kas ships active\` for more details, \`kas active repair\` for repair & \`kas active up\` for level up. ˙✧˖° 🌊⋆｡˚꩜`);
 
   } catch (e) {
     console.error(e);
@@ -320,7 +320,7 @@ async function levelUp(userId, message) {
     let userShips = await getUserShipsData(userId);
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
-    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ ⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ship active <shipId>\`");
+    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\`");
     let shipDetails = shipsData.find(ship => ship.id === userShips.ships[activeShip].id);
 
     let cost = userShips.ships[activeShip].level * shipDetails.levelUpCost;
@@ -350,7 +350,7 @@ async function repair(times = 1, userId, message) {
 
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
-    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ship active <shipId>\`");
+    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\`");
     let shipDetails = shipsData.find(ship => ship.id === userShips.ships[activeShip].id);
 
     let cost = shipDetails.repairCost * times;
@@ -395,8 +395,8 @@ export default {
   // Aliases allow calling the command with different variations for battles or ships
   args: "<action> [target]",
   example: [
-    "ship",
-    "ship active <shipId (optional: specify to set as active)>",
+    "ships",
+    "ships active <shipId (optional: specify to set as active)>",
     "active",
     "active <option> (option: use 'up' to level up or 'repair <count>' for number of repairs; count is optional)",
   ],
@@ -438,7 +438,7 @@ export default {
       }
       break;
     default:
-      return message.channel.send("⚔️ **Invalid Command**\nUse `ship/ships` to view all ships' stats, `active` to see stats of your current active ship, `ship active <shipId>` to set an active ship, `active up` to level up, or `active repair`/`active repair <times>` to increase durability in a pirate battle.");
+      return message.channel.send("⚔️ **Invalid Command**\nUse `ship/ships` to view all ships' stats, `active` to see stats of your current active ship, `ships active <shipId>` to set an active ship, `active up` to level up, or `active repair`/`active repair <times>` to increase durability in a pirate battle.");
     }
   }
 }
