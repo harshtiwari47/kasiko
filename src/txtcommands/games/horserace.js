@@ -206,8 +206,8 @@ export default {
     const teammateMention = message.mentions.users.first();
     const teammateId = teammateMention ? teammateMention.id: null;
 
-    if (amount > 200000 || amount < 10000) {
-      return message.channel.send(`The range for participating in the horse race is <:kasiko_coin:1300141236841086977> 10,000 to <:kasiko_coin:1300141236841086977> 200,000.`);
+    if (amount > 300000 || amount < 1000) {
+      return message.channel.send(`The range for participating in the horse race is <:kasiko_coin:1300141236841086977> 1,000 to <:kasiko_coin:1300141236841086977> 300,000.`);
     }
 
     if (!Helper.isNumber(amount) || amount < 1) {

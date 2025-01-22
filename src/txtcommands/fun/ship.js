@@ -73,14 +73,14 @@ export default {
       }
 
       // 2) Calculate a stable love score based on user IDs (so it doesn't change)
-      const score = Math.min(100, (getLoveScore(user1.id, user2.id, user1.username, user2.username, 100, Math.max(25, Math.ceil(Math.random() * 50))) + Math.floor((Math.random() * 10))));
+      const score = Math.min(100, (getLoveScore(user1.id, user2.id, user1.username, user2.username, 100, Math.max(30, Math.ceil(Math.random() * 45))) + Math.floor((Math.random() * 10))));
 
       // 3) Generate a short love quote depending on the score
       const quote = pickQuote(score);
 
       // 4) Create a canvas image using @napi-rs/canvas
       const canvasWidth = 700;
-      const canvasHeight = 300;
+      const canvasHeight = 290;
       const canvas = createCanvas(canvasWidth, canvasHeight);
       const ctx = canvas.getContext("2d");
 
@@ -88,12 +88,12 @@ export default {
       // Draw a simple gradient background
       const gradient = ctx.createLinearGradient(0, 0, canvasWidth, canvasHeight);
       gradient.addColorStop(0, "#ff9a9e"); // Pinkish
-      gradient.addColorStop(1, "#fad0c4"); // Light pinkish
+      gradient.addColorStop(1, "#ff848f"); // Light pinkish
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
       // ———————————— Load user avatars ————————————
-      const avatarSize = 200;
+      const avatarSize = 290;
       const user1Avatar = await loadImage(user1.displayAvatarURL({
         extension: "png", size: 512
       }));
@@ -102,23 +102,36 @@ export default {
       }));
 
       // Draw left user avatar (circle mask)
-      drawCircleImage(ctx, user1Avatar, 60, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
+      drawRoundedImage(ctx, user1Avatar, 0, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
 
       // Draw right user avatar (circle mask)
-      drawCircleImage(ctx, user2Avatar, canvasWidth - 260, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
+      drawRoundedImage(ctx, user2Avatar, canvasWidth - 290, (canvasHeight / 2) - (avatarSize / 2), avatarSize);
 
-      // ———————————— Draw heart / score text ————————————
+      // ———————————— Draw heart / score text with a circle ————————————
+
+      // Circle dimensions
+      const circleRadius = 90; // Adjust radius as needed
+      const circleX = canvasWidth / 2; // Center X
+      const circleY = canvasHeight / 2; // Center Y
+
+      // Draw a circle
+      ctx.fillStyle = "#ff9a9e"; // the circle color
+      ctx.beginPath();
+      ctx.arc(circleX, circleY, circleRadius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.closePath();
+
       // A big heart in the middle:
       ctx.fillStyle = "rgb(255,38,38)";
       ctx.font = "100px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("♥", canvasWidth / 2, canvasHeight / 2);
+      ctx.fillText("♥", circleX, circleY);
 
       // Score text below the heart
       ctx.fillStyle = "rgb(240,0,0)";
       ctx.font = "30px sans-serif";
-      ctx.fillText(`${score}%`, canvasWidth / 2, (canvasHeight / 2) + 60);
+      ctx.fillText(`${score}%`, circleX, circleY + 60);
 
       // 5) Convert to Discord attachment
       const attachment = new AttachmentBuilder(await canvas.encode("png"), {
@@ -137,7 +150,7 @@ export default {
       .setFooter({
         text: `TIP: 𝘬𝘢𝘴 𝘮𝘢𝘳𝘳𝘺 @${user2.username} 𝑡𝑜 𝑝𝑢𝑟𝑝𝑜𝑠𝑒`
       })
-      .setImage("attachment://ship.png") // reference the attachment name
+      //   .setImage("attachment://ship.png") // reference the attachment Namespace
 
       // 7) Reply with embed + image
       await message.channel.send({
@@ -211,13 +224,28 @@ export default {
   }
 
   // ———————————————————————————————————————————————————————————————
-  // Helper to draw circular masked image
-  function drawCircleImage(ctx, img, x, y, size) {
+  // Helper to draw rounded rectangular masked image with fixed 8px border radius
+  function drawRoundedImage(ctx, img, x, y, size) {
+    const radius = 16; // Fixed border radius
     ctx.save();
     ctx.beginPath();
-    ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2, true);
+
+    // Draw rounded rectangle
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + size - radius, y);
+    ctx.quadraticCurveTo(x + size, y, x + size, y + radius);
+    ctx.lineTo(x + size, y + size - radius);
+    ctx.quadraticCurveTo(x + size, y + size, x + size - radius, y + size);
+    ctx.lineTo(x + radius, y + size);
+    ctx.quadraticCurveTo(x, y + size, x, y + size - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+
     ctx.closePath();
     ctx.clip();
+
+    // Draw the image
     ctx.drawImage(img, x, y, size, size);
+
     ctx.restore();
   }
