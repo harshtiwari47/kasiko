@@ -126,7 +126,7 @@ export default {
       ctx.font = "100px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText("♥", circleX, circleY);
+      ctx.fillText("♥", circleX, circleY - 8);
 
       // Score text below the heart
       ctx.fillStyle = "rgb(240,0,0)";
@@ -142,14 +142,11 @@ export default {
       const embed = new EmbedBuilder()
       .setDescription(
         `## 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
-        `## **${user1.username}** ❤️ **${user2.username}**\n` +
-        `> **Score:** ***${score}%***\n` +
+        `### **${user1.username}** ❤️ **${user2.username}**\n` +
+        `> ***Score: ${score}%\`***\n` +
         `-# 💌 *${quote}*`
       )
       .setColor("#FFB6C1")
-      .setFooter({
-        text: `TIP: 𝘬𝘢𝘴 𝘮𝘢𝘳𝘳𝘺 @${user2.username} 𝑡𝑜 𝑝𝑢𝑟𝑝𝑜𝑠𝑒`
-      })
       //   .setImage("attachment://ship.png") // reference the attachment Namespace
 
       // 7) Reply with embed + image
