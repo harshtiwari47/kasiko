@@ -59,7 +59,7 @@ export default {
       const embed = new EmbedBuilder()
       .setColor('Random')
       .setAuthor({
-        name: `Oh no, **${message.author.tag}** feeling sad. 😢`, iconURL: message.author.displayAvatarURL({
+        name: `Oh no, ${message.author.tag} feeling sad. 😢`, iconURL: message.author.displayAvatarURL({
           dynamic: true
         })
       })

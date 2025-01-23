@@ -44,7 +44,7 @@ export default {
       const embed = new EmbedBuilder()
       .setColor('Random')
       .setAuthor({
-        name: `**${message.author.username}** ${randomText} **${target.username}**`,
+        name: `${message.author.username} ${randomText} ${target.username}`,
         iconURL: message.author.displayAvatarURL({
           dynamic: true
         })

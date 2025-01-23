@@ -68,7 +68,7 @@ export default {
       .setColor('Random')
       .setImage(randomGif)
       .setAuthor({
-        name: target ? `**${message.author.username}** ${randomText} **${target.username}**`: `**${message.author.username}** ${randomText}`,
+        name: target ? `${message.author.username} ${randomText} ${target.username}`: `${message.author.username} ${randomText}`,
         iconURL: message.author.displayAvatarURL({
           dynamic: true
         })

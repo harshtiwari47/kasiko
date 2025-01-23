@@ -19,21 +19,21 @@ export default {
 
       // List of random texts
       const texts = [
-        "unleashed *bullets* on",
+        "unleashed bullets on",
         "sniped down",
         "sprayed ~chaotic~ fire at",
         "bazooka-blasted",
-        "turret-locked *onto*",
+        "turret-locked onto",
         "John-Wick’d",
         "airstriked",
-        "minigun’d *into*",
+        "minigun’d into",
         "misfired toward",
         "laser-zapped",
         "~plasma~ blasted",
         "cowboy-aimed at",
-        "rained *lead* on",
+        "rained lead on",
         "robo-assassinated",
-        "spin-fired *at*"
+        "spin-fired at"
       ];
 
       // List of random GIF URLs
@@ -74,7 +74,7 @@ export default {
 
       const embed = new EmbedBuilder()
       .setColor('Random')
-      .setDescription(`**${message.author.username}** ${randomText} **${target.username}**! 💀`)
+      .setDescription(`${message.author.username} ${randomText} ${target.username}! 💀`)
       .setFooter({
         text: `giphy`
       })
