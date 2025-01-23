@@ -25,8 +25,8 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
     if (teammateData) teammateData.cash -= amount;
 
     // Save the updated cash to the database
-    await updateUser(id, userData);
-    if (teammateData) await updateUser(teammateId, teammateData);
+    userData = await updateUser(id, userData);
+    if (teammateData) teammateData = await updateUser(teammateId, teammateData);
 
     let gameMessage;
 
@@ -83,7 +83,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
     }
     return;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     return channel.send("Oops! Something went wrong during the race!");
   }
 }
@@ -145,6 +145,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
       if (winner === betOn) {
         userData.cash += amount + winAmount;
         await updateUser(userData.id, userData);
+        console.log("user Win")
 
         const embed = new EmbedBuilder()
         .setColor(0xFFD700) // Gold color

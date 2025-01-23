@@ -48,7 +48,9 @@ const loadStaticData = () => {
     shopData = JSON.parse(fs.readFileSync(shopDatabasePath, 'utf-8'));
     stockData = JSON.parse(fs.readFileSync(stockDatabasePath, 'utf-8'));
     aquaticData = JSON.parse(fs.readFileSync(aquaticDatabasePath, 'utf-8'));
-    console.log('Static data loaded into memory.');
+    if (Math.random() > 0.8) {
+      console.log('Static data loaded into memory.');
+    }
   } catch (error) {
     console.error('Error loading static data:', error);
   }
