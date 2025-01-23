@@ -67,15 +67,13 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
 
       collector.on("end",
         async (collected, reason) => {
-
-          userData.cash += amount;
-          if (teammateData) teammateData.cash += amount;
-
-          // Save the updated cash to the database
-          await updateUser(id, userData);
-          if (teammateData) await updateUser(teammateId, teammateData);
-
           if (reason !== "opponent_joined") {
+            userData.cash += amount;
+            if (teammateData) teammateData.cash += amount;
+            // Save the updated cash to the database
+            await updateUser(id, userData);
+            if (teammateData) await updateUser(teammateId, teammateData);
+
             return channel.send(`⏱️ No one joined the race. The game has been canceled, and your bet has been refunded.`);
           }
         });

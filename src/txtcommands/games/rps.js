@@ -44,20 +44,20 @@ export async function rockPaperScissors(id, opponentId, amount, channel) {
     const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
       .setCustomId('rps_rock')
-      .setLabel('Rock')
+      .setLabel('🪨 Rock')
       .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
       .setCustomId('rps_paper')
-      .setLabel('Paper')
+      .setLabel('📄 Paper')
       .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
       .setCustomId('rps_scissors')
-      .setLabel('Scissors')
+      .setLabel('✂️ Scissors')
       .setStyle(ButtonStyle.Danger)
     );
 
     const gameMessage = await channel.send({
-      content: `🎮 **${guild.user.username}** challenges **${opponent.user.username}** to Rock Paper Scissors for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\n\nBoth players choose your move!`,
+      content: `✂️ **${guild.user.username}** challenges **${opponent.user.username}** to Rock Paper Scissors for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\n\nBoth players choose your move!`,
       components: [buttons]
     });
 
@@ -101,7 +101,7 @@ export async function rockPaperScissors(id, opponentId, amount, channel) {
         `**${opponent.user.username}** chose ${opponentChoice}\n\n`;
 
         if (result === 'tie') {
-          content += "✨ It's a tie! No coins exchanged.";
+          content += "✨ It's a tie! No cash exchanged.";
         } else {
           const winnerId = result === 'challenger' ? id: opponentId;
           const loserId = result === 'challenger' ? opponentId: id;
@@ -122,7 +122,7 @@ export async function rockPaperScissors(id, opponentId, amount, channel) {
             updateUser(loserId, loserData)
           ]);
 
-          content += `🎉 **${winner.username}** wins ${amount.toLocaleString()} coins!`;
+          content += `🎉 **${winner.username}** wins <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()} cash!`;
         }
 
         await gameMessage.edit(content);
@@ -157,7 +157,7 @@ export default {
       return message.channel.send("⚠️ You can't play against yourself.");
     }
     if (amount < 1 || amount > 200000) {
-      return message.channel.send("⚠️ Bet must be between 1 and 200,000 coins.");
+      return message.channel.send("⚠️ Bet must be between 1 and 200,000 cash.");
     }
 
     rockPaperScissors(message.author.id, opponentId, amount, message.channel);
