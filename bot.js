@@ -71,22 +71,12 @@ client.once('ready', async () => {
 client.on('messageCreate', async (message) => {
   try {
 
-    // Check if user is command-banned
-    const userId = message.author.id;
-    const banKey = `user_ban:${userId}`;
-    const isBanned = await redisClient.get(banKey).catch(() => null);
-    if (isBanned) {
-      const ttl = await redisClient.ttl(banKey);
-      await message.channel.send(`⛔ You're command-banned for ${Math.ceil(ttl/60)} minutes`).catch(() => {});
-      return;
-    }
+    let prefix = "kas";
 
     //return if author is bot
     if (message.author.bot) return;
 
     const mentionedBots = message.mentions.users.filter(user => user.bot);
-
-    let prefix = "kas";
 
     try {
       const key = `prefixs:${message.guild.id}`;
@@ -104,6 +94,17 @@ client.on('messageCreate', async (message) => {
     if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
     if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
+
+    // Check if user is command-banned
+    const userId = message.author.id;
+    const banKey = `user_ban:${userId}`;
+    const isBanned = await redisClient.get(banKey).catch(() => null);
+    if (isBanned) {
+      const ttl = await redisClient.ttl(banKey);
+      await message.channel.send(`⛔ You're command-banned for ${Math.ceil(ttl/60)} minutes`).catch(() => {});
+      return;
+    }
+
 
     let args;
     if (message.content.toLowerCase().startsWith("kas")) {
@@ -236,7 +237,7 @@ client.on('messageCreate', async (message) => {
 
         const ttl = await redisClient.ttl(cooldownKey);
         const warning = await message.channel.send(
-          `⏱️ ${message.author}, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
+          `⏱️ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
         );
         setTimeout(() => warning.delete().catch(() => {}), 5000);
         return;
