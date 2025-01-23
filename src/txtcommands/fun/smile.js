@@ -6,7 +6,8 @@ export default {
   name: "happy",
   description: "Share some happiness with a cheerful GIF!",
   aliases: ["joy",
-    "smile", "laugh"],
+    "smile",
+    "laugh"],
   cooldown: 4000,
   category: "🧩 Fun",
   execute: async (args, message) => {
@@ -37,7 +38,12 @@ export default {
 
       const embed = new EmbedBuilder()
       .setColor('Random')
-      .setDescription("Spreading some happiness! 😊")
+      .setAuthor({
+        name: `**${message.author.username}**, spreading some happiness! 😊`,
+        iconURL: message.author.displayAvatarURL({
+          dynamic: true
+        })
+      })
       .setImage(randomGif) // Set a randomly selected happy GIF
       .setFooter({
         text: `giphy`

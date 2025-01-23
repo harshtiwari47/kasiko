@@ -19,25 +19,21 @@ export default {
 
       // List of random texts
       const texts = [
-        "unleashed a hail of bullets 🔫🔫 on",
-        "pulled out a sniper rifle 🎯 and perfectly aimed at",
-        "sprayed them with a dual-wielded Uzi attack 🔫🔥 against",
-        "launched an explosive bazooka shot 🚀💥 at",
-        "activated a turret and locked onto 🎯",
-        "went full John Wick mode 🔫⚡ and eliminated",
-        "called for an airstrike ✈️💥 to rain down destruction on",
-        "used a minigun and sprayed chaos 🔫💨 all over",
-        "fired a warning shot... and missed (just kidding) 💥 at",
-        "took out their laser cannon 🔫✨ and zapped",
-        "fired a high-energy plasma rifle 🔫⚡ at",
-        "aimed a revolver cowboy-style 🤠🔫 at",
-        "summoned a rain of bullets ☔🔫 to overwhelm",
-        "hired a robot assassin 🤖🔫 to finish off",
-        "spun around and fired dramatically 🔫🎭 at",
-        "used a silenced pistol 🔇🔫 to take care of",
-        "unloaded an entire magazine 💥🔫 on",
-        "activated their anime blaster cannon 🎆🔫 on",
-        "fired a homing missile 🚀🎯 straight at"
+        "unleashed *bullets* on",
+        "sniped down",
+        "sprayed ~chaotic~ fire at",
+        "bazooka-blasted",
+        "turret-locked *onto*",
+        "John-Wick’d",
+        "airstriked",
+        "minigun’d *into*",
+        "misfired toward",
+        "laser-zapped",
+        "~plasma~ blasted",
+        "cowboy-aimed at",
+        "rained *lead* on",
+        "robo-assassinated",
+        "spin-fired *at*"
       ];
 
       // List of random GIF URLs

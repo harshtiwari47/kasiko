@@ -71,18 +71,28 @@ export function randomInt(min, max) {
 }
 
 export function pickDragonType(dragonTypes) {
-    const rand = Math.random();
-    dragonTypes = dragonTypes.sort((a,b) => b.rarity - a.rarity);
-    for (let i = 0; i < dragonTypes.length; i++) {
-      if (rand > dragonTypes[i].rarity) {
-        return dragonTypes[i];
-      }
+  const rand = Math.random();
+  dragonTypes = dragonTypes.sort((a, b) => b.rarity - a.rarity);
+  for (let i = 0; i < dragonTypes.length; i++) {
+    if (rand > dragonTypes[i].rarity) {
+      return dragonTypes[i];
     }
-    return dragonTypes[dragonTypes.length - 1]; 
+  }
+  return dragonTypes[dragonTypes.length - 1];
 }
 
 async function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function determineRPSWinner(a, b) {
+  if (a === b) return 'tie';
+  const wins = {
+    rock: 'scissors',
+    paper: 'rock',
+    scissors: 'paper'
+  };
+  return wins[a] === b ? 'challenger': 'opponent';
 }
 
 
@@ -94,7 +104,8 @@ export const Helper = {
   checkTimeGap,
   randomInt,
   pickDragonType,
-  wait
+  wait,
+  determineRPSWinner
 }
 
 export default Helper;

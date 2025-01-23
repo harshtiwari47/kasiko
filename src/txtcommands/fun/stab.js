@@ -46,7 +46,12 @@ export default {
 
       const embed = new EmbedBuilder()
       .setColor('Random')
-      .setDescription(`**${message.author.username}** ${randomText} **${target.username}**!`)
+      .setAuthor({
+        name: `**${message.author.username}** ${randomText} **${target.username}**`,
+        iconURL: message.author.displayAvatarURL({
+          dynamic: true
+        })
+      })
       .setImage(randomGif)
       .setFooter({
         text: `giphy`

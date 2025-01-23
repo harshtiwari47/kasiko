@@ -17,6 +17,11 @@ export default {
       const embed = new EmbedBuilder()
       .setColor('Random')
       .setImage(randomGif)
+      .setAuthor({
+        iconURL: message.author.displayAvatarURL({
+          dynamic: true
+        })
+      })
       .setFooter({
         text: `Great job!`
       });

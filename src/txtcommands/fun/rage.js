@@ -55,10 +55,13 @@ export default {
       const embed = new EmbedBuilder()
       .setColor('Random')
       .setImage(randomGif)
-      .setDescription(
-        target
-        ? `**${message.author.username}** ${randomText} **${target.username}**`: `**${message.author.username}** ${randomText}`
-      );
+      .setAuthor({
+        name: target
+        ? `**${message.author.username}** ${randomText} **${target.username}**`: `**${message.author.username}** ${randomText}`,
+        iconURL: message.author.displayAvatarURL({
+          dynamic: true
+        })
+      })
 
       await message.channel.send({
         embeds: [embed]
