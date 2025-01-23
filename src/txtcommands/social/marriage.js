@@ -309,7 +309,7 @@ export async function roses(message) {
 
     // Check if roses data exists
     if (userData && typeof userData.roses === 'number') {
-      return message.channel.send(`**${message.author.username}**, you currently have **${userData.roses}** roses! 🌹\nYou can send roses to your partner & share them with others by using \`roses <amount> <@user>\``);
+      return message.channel.send(`✦ **${message.author.username}**, you have **${userData.roses}** roses! 🌹\n➺ Share roses: \`roses <amount> <@user>\``);
     } else {
       return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` 🌹`);
     }

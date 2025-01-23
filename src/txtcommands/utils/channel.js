@@ -3,6 +3,7 @@ import {
   ChannelType
 } from "discord.js";
 import Server from "../../../models/Server.js";
+import redisClient from "../../../redis.js";
 
 export default {
   name: "channel",
@@ -102,6 +103,14 @@ export default {
       const allowedFlag = subCommand === "on";
       updateChannelAllowance(channelMention.id, allowedFlag);
       await serverDoc.save();
+
+      try {
+        const serverKey = `server:${message.guild.id}`;
+        const cachedServer = await redisClient.get(serverKey);
+        if (cachedServer) {
+          await redisClient.del(serverKey);
+        }
+      } catch (e) {}
 
       return message.channel.send(
         `Bot has been set to **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in ${channelMention.toString()}.`

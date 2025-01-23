@@ -4,6 +4,7 @@ import {
   ChannelType
 } from 'discord.js';
 import Server from '../../../models/Server.js';
+import redisClient from "../../../redis.js";
 
 export default {
   data: new SlashCommandBuilder()
@@ -108,6 +109,14 @@ export default {
 
       updateChannelAllowance(channelId, allowedFlag);
       await serverDoc.save();
+
+      try {
+        const serverKey = `server:${interaction.guild.id}`;
+        const cachedServer = await redisClient.get(serverKey);
+        if (cachedServer) {
+          await redisClient.del(serverKey);
+        }
+      } catch (e) {}
 
       return await interaction.editReply({
         content: `Bot is now **${allowedFlag ? 'ALLOWED': 'NOT ALLOWED'}** in <#${channelId}>.`

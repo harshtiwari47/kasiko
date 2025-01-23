@@ -3,6 +3,7 @@ import {
   PermissionsBitField,
   ChannelType
 } from "discord.js";
+import redisClient from "../../../redis.js";
 
 export default {
   name: "category",
@@ -129,6 +130,14 @@ export default {
         currentChannel.category.allAllowed = false; // Specific categories take precedence
       }
       await serverDoc.save();
+
+      try {
+        const serverKey = `server:${message.guild.id}`;
+        const cachedServer = await redisClient.get(serverKey);
+        if (cachedServer) {
+          await redisClient.del(serverKey);
+        }
+      } catch (e) {}
 
       return message.channel.send(
         `✅ The bot is now **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in the \`${categoryName}\` category.`

@@ -17,7 +17,7 @@ const BankInfo = {
   security: 1,
   charge: 1.5,
   levelUpCost: 1000,
-  storage: 20000
+  storage: 50000
 }
 
 export const Bank = {
@@ -51,7 +51,7 @@ export const Bank = {
       });
 
       return message.channel.send(
-        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** successfully.\n**New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**,\n**Remaining Cash**: <:kasiko_coin:1300141236841086977> **${userData.cash.toLocaleString()}**`
+        `🏦 | **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n**New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**,\n**Remaining Cash**: <:kasiko_coin:1300141236841086977> **${userData.cash.toLocaleString()}**`
       );
     } catch (err) {
       return message.channel.send(`Error depositing funds: ${err.message}`);
@@ -79,8 +79,8 @@ export const Bank = {
         Interest -= additionalReward;
       }
 
-      if (amount === "all") amount = Math.max(0, account.deposit - charge);
       const charge = Math.ceil((amount * Interest) / 100);
+      if (amount === "all") amount = Math.max(0, account.deposit - charge);
 
       let totalWithdrawal;
       totalWithdrawal = amount + charge;
@@ -100,9 +100,10 @@ export const Bank = {
         deposit: newDeposit
       });
 
-      message.channel.send(
-        `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** successfully.\n**Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()},\n**New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()},\n**Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+      await message.channel.send(
+        `🏦 | **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n**Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()},\n**New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()},\n**Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
       );
+      return;
     } catch (err) {
       return message.channel.send(`Error withdrawing funds: ${err.message}`);
     }
@@ -130,7 +131,7 @@ export const Bank = {
 
       const emebedHeader = new EmbedBuilder()
       .setColor("#a4bef2")
-      .setDescription("## 🏦 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** \`${account.level}\` **𝑺𝒉𝒊𝒆𝒍𝒅**: \`${account.shield}\``)
+      .setDescription("## 🏦 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** **${account.level}** **𝑺𝒉𝒊𝒆𝒍𝒅**: **${account.shield}** **𝑰𝒏𝒕𝒆𝒓𝒆𝒔𝒕**: **${Interest} ${specialInterest ? "(" + specialInterest.toFixed(1) + ")": ''}**`)
 
       const embed = new EmbedBuilder()
       .setColor('#dfe9fd') // Choose a color for the embed
@@ -143,12 +144,15 @@ export const Bank = {
           name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
         },
         {
-          name: '𝑰𝒏𝒕𝒆𝒓𝒆𝒔𝒕', value: `${Interest} ${specialInterest ? "(" + specialInterest.toFixed(1) + ")": ''}`, inline: true
-        },
-        {
           name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true
         }
       )
+      .setAuthor({
+        name: `${message.author.username}`,
+        iconURL: message.author.displayAvatarURL({
+          dynamic: true
+        })
+      })
 
       return message.channel.send({
         embeds: [emebedHeader, embed]

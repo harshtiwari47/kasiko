@@ -70,6 +70,17 @@ client.once('ready', async () => {
 
 client.on('messageCreate', async (message) => {
   try {
+
+    // Check if user is command-banned
+    const userId = message.author.id;
+    const banKey = `user_ban:${userId}`;
+    const isBanned = await redisClient.get(banKey).catch(() => null);
+    if (isBanned) {
+      const ttl = await redisClient.ttl(banKey);
+      await message.channel.send(`⛔ You're command-banned for ${Math.ceil(ttl/60)} minutes`).catch(() => {});
+      return;
+    }
+
     //return if author is bot
     if (message.author.bot) return;
 
@@ -93,7 +104,6 @@ client.on('messageCreate', async (message) => {
     if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
     if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
-    if (mentionedBots.size > 0) return;
 
     let args;
     if (message.content.toLowerCase().startsWith("kas")) {
@@ -102,9 +112,35 @@ client.on('messageCreate', async (message) => {
       args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
     }
 
-    const serverDoc = await Server.findOne({
-      id: message.guild.id
-    });
+    // handle all types of text commands started with kas || prefix
+    const commandName = args[0].toLowerCase();
+    const command = txtcommands.get(commandName);
+    if (!command) return;
+
+    if (command.category !== "🧩 Fun") {
+      if (mentionedBots.size > 0) return;
+    }
+
+    let serverDoc;
+    // Cache server configuration
+    try {
+      const serverKey = `server:${message.guild.id}`;
+      const cachedServer = await redisClient.get(serverKey);
+
+      if (cachedServer) {
+        serverDoc = JSON.parse(cachedServer);
+      } else {
+        serverDoc = await Server.findOne({
+          id: message.guild.id
+        });
+        if (serverDoc) {
+          await redisClient.setEx(serverKey, 300, JSON.stringify(serverDoc)); // Cache 5 minutes
+        }
+      }
+    } catch (e) {
+      console.error('Server config error:', e);
+    }
+
     let channelDoc;
     // If we have a doc and the server is in restricted mode, check channel
     if (serverDoc && serverDoc.permissions === 'restricted_channels') {
@@ -154,22 +190,15 @@ client.on('messageCreate', async (message) => {
 
     // check other user has accepted terms & conditions
     const firstUserMention = message.mentions.users.first();
-
-    if (firstUserMention) {
+    if (firstUserMention && !firstUserMention.bot) {
       let userExistenceMentioned = await userExists(firstUserMention.id);
       if (!userExistenceMentioned) {
         return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas terms`.");
       }
     }
-    // handle all types of text commands started with kas || prefix
-
-    const commandName = args[0].toLowerCase();
-    const command = txtcommands.get(commandName);
 
     // update experience and level
     updateExpPoints(message.content.toLowerCase(), message.author, message.channel, message?.guild.id);
-
-    if (!command) return;
 
     if (channelDoc && channelDoc.category) {
       if (channelDoc && !channelDoc.category.allAllowed) {
@@ -182,32 +211,41 @@ client.on('messageCreate', async (message) => {
     }
 
     try {
-      const userId = message.author.id;
-      const globalCooldownKey = `cooldown:${commandName}:${userId}`;
-      const cooldownDuration = 10; // Cooldown duration in seconds
-      const ttl = await redisClient.ttl(globalCooldownKey);
-      if (ttl > 0) {
-        const coolDownMessage = await message.channel.send(
-          `⏳ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
-        );
-        setTimeout(async () => {
-          try {
-            await coolDownMessage.delete();
-          } catch (e) {}
-        }, ttl * 1000);
-        return;
-      }
+      const cooldownKey = `cooldown:${commandName}:${userId}`;
+      const cooldownDuration = 10; // seconds
 
-      // Set a cooldown for the user
-      await redisClient.set(globalCooldownKey, '1', {
+      // Atomic cooldown set
+      const cooldownSet = await redisClient.set(cooldownKey, '1', {
+        NX: true,
         EX: cooldownDuration
       });
 
-      await incrementTaskExp(message.author.id, "command", message);
+      if (!cooldownSet) {
+        const violationsKey = `violations:${userId}`;
+        const violations = await redisClient.incr(violationsKey);
 
-      if (command.category === "🧩 Fun") {
-        await incrementTaskExp(message.author.id, "fun", message);
+        // Set violation window on first offense
+        if (violations === 1) await redisClient.expire(violationsKey, 60);
+
+        // Ban after 4 violations in 60 seconds
+        if (violations >= 4) {
+          await redisClient.setEx(banKey, 600, '1'); // 10-minute ban
+          await redisClient.del(violationsKey);
+          return message.channel.send(`⛔ Command access revoked for 10 minutes due to spamming`);
+        }
+
+        const ttl = await redisClient.ttl(cooldownKey);
+        const warning = await message.channel.send(
+          `⏱️ ${message.author}, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
+        );
+        setTimeout(() => warning.delete().catch(() => {}), 5000);
+        return;
       }
+
+      // Reset violation counter on successful command
+      await redisClient.del(`violations:${userId}`);
+
+      await incrementTaskExp(message.author.id, "command", message);
 
       command.execute(args, message);
     } catch (error) {
