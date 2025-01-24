@@ -1,17 +1,17 @@
 {
   "TECHCORP": {
-    "currentPrice": 679.99,
+    "currentPrice": 594.44,
     "last10Prices": [
-      639.58,
-      577.15,
-      585.76,
-      630.21,
-      666.18,
-      642.71,
-      648.16,
-      687.78,
-      657.86,
-      679.99
+      515.35,
+      556.5,
+      585.07,
+      554.67,
+      598.37,
+      632.94,
+      601.81,
+      586.85,
+      581.05,
+      594.44
     ],
     "maxmin": [
       1110,
@@ -28,18 +28,18 @@
     "description": "Leading technology firm specializing in innovative software solutions."
   },
   "AUTOWORKS": {
-    "currentPrice": 26.56,
+    "currentPrice": 26.44,
     "last10Prices": [
-      22.39,
-      22.66,
-      23.16,
-      23.77,
-      23.86,
-      24.49,
-      25.25,
-      25.64,
-      26.11,
-      26.56
+      26.77,
+      26.91,
+      27.36,
+      26.41,
+      26.88,
+      25.93,
+      25.23,
+      25.19,
+      26.1,
+      26.44
     ],
     "maxmin": [
       90,
@@ -56,24 +56,24 @@
     "description": "Automotive manufacturer known for reliable and affordable vehicles."
   },
   "ECOENERGY": {
-    "currentPrice": 869.72,
+    "currentPrice": 892.54,
     "last10Prices": [
-      913.22,
-      945.92,
-      915.2,
-      906.46,
-      915.6,
-      892.15,
-      887.22,
-      872.4,
-      868.6,
-      869.72
+      799.18,
+      799.74,
+      778.11,
+      799.05,
+      816.35,
+      823.59,
+      842.18,
+      837.51,
+      868.5,
+      892.54
     ],
     "maxmin": [
       1300,
       700
     ],
-    "trend": "stable",
+    "trend": "up",
     "sector": "Energy",
     "marketCap": "500M",
     "volatility": 0.8,
@@ -84,24 +84,24 @@
     "description": "Sustainable energy provider focused on renewable resources."
   },
   "FOODIE": {
-    "currentPrice": 439.73,
+    "currentPrice": 665,
     "last10Prices": [
-      496.56,
-      431,
-      480.46,
-      489.31,
-      430.88,
-      408.57,
-      421.23,
-      484.3,
-      444.57,
-      439.73
+      460.26,
+      482.7,
+      551.08,
+      577.5,
+      648.79,
+      665,
+      630.34,
+      664.04,
+      665,
+      665
     ],
     "maxmin": [
       665,
       180
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Food & Beverage",
     "marketCap": "300M",
     "volatility": 3,
@@ -112,18 +112,18 @@
     "description": "Popular food and beverage company with diverse product lines."
   },
   "MEDICAL": {
-    "currentPrice": 657.11,
+    "currentPrice": 526.93,
     "last10Prices": [
-      757.66,
-      708.84,
-      739.85,
-      707.03,
-      671.12,
-      648.71,
-      621.92,
-      642.85,
-      638.64,
-      657.11
+      566.5,
+      569.77,
+      534.05,
+      552.29,
+      525.14,
+      516.97,
+      533.98,
+      524.32,
+      506.98,
+      526.93
     ],
     "maxmin": [
       775,
@@ -140,18 +140,18 @@
     "description": "Innovative healthcare provider specializing in medical devices."
   },
   "RETAILER": {
-    "currentPrice": 152.77,
+    "currentPrice": 139.85,
     "last10Prices": [
-      156.25,
-      149.56,
-      149.65,
-      153.15,
-      146.82,
-      141.57,
-      147.75,
-      149.49,
-      152.41,
-      152.77
+      147.91,
+      148.97,
+      149.4,
+      146.17,
+      140.72,
+      140.15,
+      141.29,
+      137.24,
+      137.92,
+      139.85
     ],
     "maxmin": [
       190,
@@ -168,24 +168,24 @@
     "description": "Leading retail chain with a strong online presence."
   },
   "FINTECH": {
-    "currentPrice": 550.03,
+    "currentPrice": 793.54,
     "last10Prices": [
-      540.68,
-      608.61,
-      710.72,
-      623.92,
-      477.55,
-      438,
-      449.52,
-      351.8,
-      453.71,
-      550.03
+      828.74,
+      625.97,
+      532.82,
+      511.71,
+      603.18,
+      734.36,
+      783.44,
+      715.76,
+      859.96,
+      793.54
     ],
     "maxmin": [
       1320,
       270
     ],
-    "trend": "up",
+    "trend": "stable",
     "sector": "Finance",
     "marketCap": "1.8B",
     "volatility": 6,
@@ -196,24 +196,24 @@
     "description": "Innovative financial technology solutions for modern banking."
   },
   "TRAVEL": {
-    "currentPrice": 38.22,
+    "currentPrice": 35,
     "last10Prices": [
-      42.36,
-      41.22,
-      40.88,
-      41,
-      40.5,
-      39.86,
-      38.43,
-      38.69,
-      38.53,
-      38.22
+      35.59,
+      35,
+      35,
+      35,
+      35,
+      35.37,
+      35,
+      35,
+      35,
+      35
     ],
     "maxmin": [
       300,
       35
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Travel & Leisure",
     "marketCap": "400M",
     "volatility": 0.8,
@@ -224,24 +224,24 @@
     "description": "Expansive travel and leisure company offering diverse services."
   },
   "EDUCATECH": {
-    "currentPrice": 159.44,
+    "currentPrice": 167.03,
     "last10Prices": [
-      150.02,
-      151.84,
-      150.61,
-      149.39,
-      142.3,
-      145.31,
-      145.9,
-      148.75,
-      155.16,
-      159.44
+      156.3,
+      162.32,
+      158.05,
+      164.14,
+      162.43,
+      167.03,
+      161.99,
+      166.1,
+      168.05,
+      167.03
     ],
     "maxmin": [
       670,
       100
     ],
-    "trend": "up",
+    "trend": "stable",
     "sector": "Education",
     "marketCap": "600M",
     "volatility": 1.1,
@@ -252,18 +252,18 @@
     "description": "Educational technology firm enhancing learning experiences globally."
   },
   "CLEANENERGY": {
-    "currentPrice": 650.26,
+    "currentPrice": 795.95,
     "last10Prices": [
-      607.93,
-      633.07,
-      669.75,
-      661.23,
-      689.27,
-      716.52,
-      680.39,
-      641.5,
-      668.25,
-      650.26
+      811.39,
+      836.45,
+      881.54,
+      830.47,
+      781.8,
+      743.57,
+      777.46,
+      781.25,
+      781.17,
+      795.95
     ],
     "maxmin": [
       1600,
@@ -280,24 +280,24 @@
     "description": "Pioneering clean energy solutions for a sustainable future."
   },
   "BIOGENICS": {
-    "currentPrice": 234.51,
+    "currentPrice": 281.61,
     "last10Prices": [
-      242.78,
-      239.54,
-      229.51,
-      241.31,
-      242.4,
-      234.17,
-      236.52,
-      235.64,
-      225.96,
-      234.51
+      278.56,
+      285.09,
+      287.65,
+      282.06,
+      286.7,
+      294.81,
+      310.91,
+      298.19,
+      289.91,
+      281.61
     ],
     "maxmin": [
       550,
       200
     ],
-    "trend": "stable",
+    "trend": "down",
     "sector": "Biotechnology",
     "marketCap": "1.2B",
     "volatility": 1.1,
@@ -308,24 +308,24 @@
     "description": "Biotech company focused on cutting-edge medical research and solutions."
   },
   "AEROSPACE": {
-    "currentPrice": 672.17,
+    "currentPrice": 430,
     "last10Prices": [
-      431.45,
+      623.08,
+      565.46,
+      505.24,
+      454.24,
       430,
+      439.37,
       430,
-      487.59,
-      509.22,
-      538.2,
-      552.87,
-      542.65,
-      595.5,
-      672.17
+      494.02,
+      441.51,
+      430
     ],
     "maxmin": [
       900,
       430
     ],
-    "trend": "up",
+    "trend": "down",
     "sector": "Aerospace & Defense",
     "marketCap": "2B",
     "volatility": 3.5,
@@ -336,24 +336,24 @@
     "description": "Leading aerospace and defense manufacturer with global reach."
   },
   "CYBERPROTECT": {
-    "currentPrice": 297.55,
+    "currentPrice": 292.16,
     "last10Prices": [
-      264.56,
-      277.49,
-      284.01,
-      278.52,
-      280.96,
-      274.39,
-      282.76,
-      280.59,
-      284.06,
-      297.55
+      296.67,
+      289.42,
+      298.57,
+      300,
+      298.38,
+      300,
+      300,
+      298.71,
+      295.89,
+      292.16
     ],
     "maxmin": [
       300,
       120
     ],
-    "trend": "up",
+    "trend": "down",
     "sector": "Cybersecurity",
     "marketCap": "750M",
     "volatility": 1,
@@ -364,24 +364,24 @@
     "description": "Top-tier cybersecurity firm safeguarding digital assets globally."
   },
   "GREENSCAPE": {
-    "currentPrice": 50.41,
+    "currentPrice": 50.17,
     "last10Prices": [
-      49.04,
-      50.04,
-      51.01,
-      50.36,
-      48.63,
-      48.12,
-      48.79,
-      49.74,
-      51.19,
-      50.41
+      51.66,
+      51.88,
+      53.15,
+      53.34,
+      51.77,
+      50.3,
+      50.76,
+      49.23,
+      49.45,
+      50.17
     ],
     "maxmin": [
       95,
       30
     ],
-    "trend": "stable",
+    "trend": "up",
     "sector": "Agriculture",
     "marketCap": "300M",
     "volatility": 0.7,
@@ -392,24 +392,24 @@
     "description": "Agricultural company committed to sustainable farming practices."
   },
   "WATERWORKS": {
-    "currentPrice": 74.41,
+    "currentPrice": 67.31,
     "last10Prices": [
-      72.3,
-      70.9,
-      70.91,
-      70.62,
-      70.89,
-      69.99,
-      69.94,
-      71.55,
-      72.81,
-      74.41
+      68.55,
+      69.17,
+      69.02,
+      70.18,
+      70.12,
+      68.53,
+      67.97,
+      69.05,
+      67.55,
+      67.31
     ],
     "maxmin": [
       120,
       50
     ],
-    "trend": "up",
+    "trend": "down",
     "sector": "Utilities",
     "marketCap": "450M",
     "volatility": 0.6,
@@ -420,24 +420,24 @@
     "description": "Utility provider ensuring reliable water services to communities."
   },
   "NEWMEDIA": {
-    "currentPrice": 119.8,
+    "currentPrice": 132.08,
     "last10Prices": [
-      125.84,
-      129.73,
-      131.26,
-      125.25,
-      123.14,
-      123.4,
-      122.46,
-      123.34,
-      122.34,
-      119.8
+      133.6,
+      134.15,
+      132.74,
+      132.32,
+      135.09,
+      134.72,
+      135.88,
+      129.36,
+      132.23,
+      132.08
     ],
     "maxmin": [
       220,
       90
     ],
-    "trend": "down",
+    "trend": "stable",
     "sector": "Media",
     "marketCap": "1.1B",
     "volatility": 1,
@@ -448,24 +448,24 @@
     "description": "Dynamic media company producing diverse content across platforms."
   },
   "GLOBALTRADE": {
-    "currentPrice": 109.4,
+    "currentPrice": 114.42,
     "last10Prices": [
-      113.27,
-      108.8,
-      112.31,
-      114.63,
-      115.51,
-      114.05,
-      109.79,
-      107.18,
-      109.15,
-      109.4
+      113.77,
+      116.16,
+      119.7,
+      123.21,
+      124.23,
+      120.65,
+      118.01,
+      120.66,
+      118.11,
+      114.42
     ],
     "maxmin": [
       150,
       50
     ],
-    "trend": "up",
+    "trend": "down",
     "sector": "Logistics",
     "marketCap": "650M",
     "volatility": 0.8,
@@ -476,24 +476,24 @@
     "description": "Global logistics provider ensuring efficient supply chain solutions."
   },
   "CVIDIA": {
-    "currentPrice": 706.53,
+    "currentPrice": 645.11,
     "last10Prices": [
-      770.61,
-      834.68,
-      887.59,
-      860.26,
-      880.88,
-      820.47,
-      766.73,
-      836.56,
-      758.73,
-      706.53
+      501.14,
+      546.02,
+      519.56,
+      557.84,
+      602.45,
+      601.54,
+      558.01,
+      559.39,
+      589.25,
+      645.11
     ],
     "maxmin": [
       1500,
       500
     ],
-    "trend": "down",
+    "trend": "up",
     "sector": "Technology",
     "marketCap": "3B",
     "volatility": 2,
@@ -504,18 +504,18 @@
     "description": "Leading GPU manufacturer driving advancements in graphics technology."
   },
   "HEALTHPLUS": {
-    "currentPrice": 129.18,
+    "currentPrice": 100,
     "last10Prices": [
-      146.19,
-      157.43,
-      166.94,
-      142.64,
-      155.84,
-      170.97,
-      142.43,
-      130.26,
-      131.57,
-      129.18
+      127.28,
+      125.71,
+      123.09,
+      106.33,
+      100,
+      106.75,
+      107.5,
+      106.26,
+      100,
+      100
     ],
     "maxmin": [
       250,

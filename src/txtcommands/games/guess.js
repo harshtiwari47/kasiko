@@ -48,8 +48,7 @@ export async function guess(id, amount, number, channel) {
 export default {
   name: "guess",
   description: "Make a guess in a cash-betting game and win 4x of bet cash. Try to guess a number between 1 and 10.",
-  aliases: ["g",
-    "guessno",
+  aliases: ["guessno",
     "gn"],
   args: "<amount> <number>",
   example: ["guess 500 7"],
