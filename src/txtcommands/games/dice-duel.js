@@ -217,13 +217,13 @@ export default {
     message) => {
     // Validate opponent mention or ID
     const opponentId = args[1] ? args[1].replace(/[<@!>]/g,
-      '')  : null; // Get opponent ID
+      ''): null; // Get opponent ID
 
     if (!opponentId || !/^\d+$/.test(opponentId)) {
       return message.channel.send("⚠️ Invalid opponent ID or mention. Please mention a valid user or provide their user ID.`diceduel @user <amount>`");
     }
 
-    const amount = parseInt(args[2]);
+    const amount = parseInt(args[2] ? args[2]: 1);
 
     // Validate the amount
     if (amount < 1) {

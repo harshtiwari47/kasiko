@@ -24,6 +24,7 @@ export const Bank = {
   async deposit(userId, amount, message) {
     try {
       const userData = await getUserData(userId);
+      if (amount === "all") amount = userData.cash;
       if (!userData || userData.cash < amount) {
         return message.channel.send(
           `${message.author.username}, you don't have enough cash to deposit ${amount}.`
@@ -79,8 +80,8 @@ export const Bank = {
         Interest -= additionalReward;
       }
 
+      if (amount === "all") amount = Math.max(0, account.deposit - Math.ceil((account.deposit * Interest) / 100));
       const charge = Math.ceil((amount * Interest) / 100);
-      if (amount === "all") amount = Math.max(0, account.deposit - charge);
 
       let totalWithdrawal;
       totalWithdrawal = amount + charge;
@@ -255,9 +256,14 @@ export default {
       switch (action) {
       case "deposit":
       case "dep":
-        const depositAmount = parseInt(args[1], 10);
-        if (isNaN(depositAmount) || depositAmount <= 0) {
-          return message.channel.send("Please specify a valid amount to deposit.");
+        let depositAmount;
+        if (args[1] !== "all") {
+          depositAmount = parseInt(args[1], 10);
+          if (isNaN(depositAmount) || depositAmount <= 0) {
+            return message.channel.send("Please specify a valid amount to deposit.");
+          }
+        } else {
+          depositAmount = "all";
         }
 
         // Call a function to deposit the amount

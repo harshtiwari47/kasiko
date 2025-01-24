@@ -29,7 +29,7 @@ async function handleMessage(context, data) {
 async function showCageOverview(context, user) {
   const username = context.user?.username || context.author?.username;
 
-  if (!user.hunt.animals || user.hunt.animals.length === 0) {
+  if (!user.hunt.animals || (user.hunt.animals && user.hunt.animals.length === 0)) {
     return handleMessage(context, {
       embeds: [new EmbedBuilder().setDescription(`🍃 **${username}**, your cage is currently empty! Try using the **hunt** command first.`)]
     });
@@ -58,7 +58,7 @@ async function showCageOverview(context, user) {
 async function showAnimalDetail(context, user, animalName) {
   const animalsData = JSON.parse(allAnimalsData).animals;
 
-  if (!user.hunt.animals || user.hunt.animals.length === 0) {
+  if (!user.hunt.animals || (user.hunt.animals && user.hunt.animals.length === 0)) {
     return handleMessage(context, {
       content: `Your cage is empty. Nothing to show!`
     });
@@ -134,7 +134,7 @@ export async function cageCommand(context) {
     }
 
     // Check if an argument is provided
-    if (args.length > 0) {
+    if (args && args.length > 0) {
       // Combine args if you allow multi-word names, or just take args[0] if single-word
       const animalName = args.join(' ');
       return showAnimalDetail(context, user, animalName);

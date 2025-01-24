@@ -229,7 +229,7 @@ client.on('messageCreate', async (message) => {
         if (violations === 1) await redisClient.expire(violationsKey, 60);
 
         // Ban after 4 violations in 60 seconds
-        if (violations >= 4) {
+        if (violations >= 5) {
           await redisClient.setEx(banKey, 600, '1'); // 10-minute ban
           await redisClient.del(violationsKey);
           return message.channel.send(`⛔ Command access revoked for 10 minutes due to spamming`);

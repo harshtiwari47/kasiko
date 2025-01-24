@@ -18,6 +18,7 @@ export default {
       .setColor('Random')
       .setImage(randomGif)
       .setAuthor({
+        name: "",
         iconURL: message.author.displayAvatarURL({
           dynamic: true
         })

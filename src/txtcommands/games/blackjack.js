@@ -53,6 +53,8 @@ export async function blackjack(id, amount, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
+    if (amount === "all") amount = userData.cash;
+
     if (userData.cash < amount) {
       return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **${amount.toLocaleString()}**.`);
     }
@@ -232,12 +234,19 @@ export default {
   execute: async (args,
     message) => {
     args.shift();
-    if (!args[0] || isNaN(args[0]) || args[0] <= 0) {
-      return message.channel.send("⚠️ Please provide a valid bet amount.");
+
+    let amount;
+    if (!args[0]) {
+      amount = 1;
     }
-    const amount = parseInt(args[0]);
-    if (amount > 200000 || amount < 1) {
-      return message.channel.send(`The range for participating in the blackjack is <:kasiko_coin:1300141236841086977> 1 to <:kasiko_coin:1300141236841086977> 200,000.`);
+
+    if (args[0] !== "all") {
+      amount = parseInt(args[0]);
+      if (amount > 200000 || amount < 1) {
+        return message.channel.send(`The range for participating in the blackjack is <:kasiko_coin:1300141236841086977> 1 to <:kasiko_coin:1300141236841086977> 200,000.`);
+      }
+    } else {
+      amount = "all";
     }
     try {
       blackjack(message.author.id, amount, message.channel);

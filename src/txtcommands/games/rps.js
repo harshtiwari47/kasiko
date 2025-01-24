@@ -13,11 +13,6 @@ import {
 
 export async function rockPaperScissors(id, opponentId, amount, channel) {
   try {
-    amount = parseInt(amount, 10);
-    if (isNaN(amount)) {
-      return channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **rps**!`);
-    }
-
     const guild = await channel.guild.members.fetch(id);
     const opponent = await channel.guild.members.fetch(opponentId);
 
@@ -31,6 +26,8 @@ export async function rockPaperScissors(id, opponentId, amount, channel) {
       console.error("Error fetching user data:", e);
       return channel.send('🚨 **Error!** There was an issue retrieving user data.');
     }
+
+    if (amount === "all") amount = userData.cash;
 
     // Validate balances
     if (userData.cash < amount) {
@@ -148,7 +145,6 @@ export default {
     message) => {
     const opponentId = args[1]?.replace(/[<@!>]/g,
       '');
-    const amount = parseInt(args[2]);
 
     if (!opponentId || !/^\d+$/.test(opponentId)) {
       return message.channel.send("⚠️ Invalid opponent. Usage: `rps @user <amount>`");
@@ -156,8 +152,22 @@ export default {
     if (message.author.id === opponentId) {
       return message.channel.send("⚠️ You can't play against yourself.");
     }
-    if (amount < 1 || amount > 200000) {
-      return message.channel.send("⚠️ Bet must be between 1 and 200,000 cash.");
+
+    let amount;
+
+    if (args[2] && args[2] !== "all") {
+      amount = parseInt(args[2]);
+      if (amount < 1 || amount > 200000) {
+        return message.channel.send("⚠️ Bet must be between 1 and 200,000 cash.");
+      }
+
+      if (isNaN(amount)) {
+        return message.channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **rps**!`);
+      }
+    } else if (args[2] && args[2] === "all") {
+      amount = "all";
+    } else {
+      amount = 1;
     }
 
     rockPaperScissors(message.author.id, opponentId, amount, message.channel);

@@ -482,7 +482,7 @@ export default {
         return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`");
       }
       if (args[0] === "roses") {
-        if (args[1] && Helper.isNumber(args[1]) && Helper.isUserMention(args[2], message)) {
+        if (args[1] && Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.sendRoses(Helper.extractUserId(args[2]), parseInt(args[1]), message); // Send roses to a user
         }
         return Marriage.roses(message); // Show the roses system info if no arguments are provided

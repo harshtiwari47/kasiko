@@ -191,9 +191,8 @@ export async function huntCommand(context, {
 
     // 8) 5% chance of awarding a new booster
     let newlyAcquiredBooster = null;
-    if (Math.random() < 0.05) {
-      const randomBooster =
-      globalBoosters[Math.floor(Math.random() * globalBoosters.length)];
+    if (Math.random() < 0.05 && globalBoosters) {
+      const randomBooster = globalBoosters[Math.floor(Math.random() * globalBoosters.length)];
       user.hunt.boosters.push(randomBooster);
       newlyAcquiredBooster = randomBooster.name;
     }

@@ -15,6 +15,8 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
     let teammateData = teammateId ? await getUserData(teammateId): null;
+
+    if (amount === "all") amount = userData.cash;
     // Check if the user and teammate have enough cash
     if (userData.cash < amount || (teammateData && teammateData.cash < amount)) {
       return channel.send(`⚠️ **${guild.user.username}**, you or your teammate don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **${amount.toLocaleString()}**.`);
@@ -32,7 +34,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
 
     if (teammateData) {
       gameMessage = await channel.send(
-        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\nType **participate <horse (optional)>** (horse1, horse2, horse3) to join the race. **<@${teammateId}>**, you have 25 seconds!`
+        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\nType **join <horse (optional)>** (horse1, horse2, horse3) to join the race. **<@${teammateId}>**, you have 25 seconds!`
       );
 
       const filter = (m) => m.content.toLowerCase().startsWith("participate") && m.author.id === teammateId;
@@ -43,7 +45,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
       collector.on("collect", async (msg) => {
         const opponent = msg.author;
 
-        const msgArgs = msg.content.slice("participate".toLowerCase().length).trim().split(/ +/);
+        const msgArgs = msg.content.slice("join".toLowerCase().length).trim().split(/ +/);
 
         if (msgArgs && msgArgs[0] && (msgArgs[0] === "horse1" || msgArgs[0] === "horse2" || msgArgs[0] === "horse3")) {
           if (msgArgs === betOn) {
@@ -199,18 +201,26 @@ export default {
 
   async execute(args,
     message) {
-    const amount = parseInt(args[1]);
     let betOn = args[2]?.toLowerCase() === "horse2" ? "horse2": "horse1";
     betOn = args[2]?.toLowerCase() === "horse3" ? "horse3": betOn;
     const teammateMention = message.mentions.users.first();
     const teammateId = teammateMention ? teammateMention.id: null;
 
-    if (amount > 300000 || amount < 1000) {
-      return message.channel.send(`The range for participating in the horse race is <:kasiko_coin:1300141236841086977> 1,000 to <:kasiko_coin:1300141236841086977> 300,000.`);
-    }
+    let amount;
 
-    if (!Helper.isNumber(amount) || amount < 1) {
-      return message.channel.send("⚠️ Invalid amount! Use `horserace <amount> <horse1/horse2> [teammate (optional)]`.");
+    if (args[1] && args[1] !== "all") {
+      amount = parseInt(args[1]);
+      if (amount > 300000 || amount < 1000) {
+        return message.channel.send(`The range for participating in the horse race is <:kasiko_coin:1300141236841086977> 1,000 to <:kasiko_coin:1300141236841086977> 300,000.`);
+      }
+
+      if (!Helper.isNumber(amount) || amount < 1) {
+        return message.channel.send("⚠️ Invalid amount! Use `horserace <amount> <horse1/horse2> [teammate (optional)]`.");
+      }
+    } else if (args[1] && args[1] === "all") {
+      amount = "all"
+    } else {
+      amount = 1000;
     }
 
     await horseRace(message.author.id, amount, message.channel, betOn, "horse2", teammateId);
