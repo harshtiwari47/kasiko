@@ -56,7 +56,13 @@ export default {
         'https://media1.giphy.com/media/6k6iDdi5NN8ZO/giphy.gif?cid=6c09b9529hiyk7el6bnoj8bbce4opu1sci40t1a1yyyg2e1d&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media1.giphy.com/media/z8pi6Q8wTxuFO/giphy.gif?cid=6c09b9529ebzi5u7hnx3r9ira9mw9pt12mq34o6ahd02fuq7&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media3.giphy.com/media/W6dHvprT7oks6BpX5R/giphy.gif?cid=6c09b952z71cv9f4qba1ufk7rv2xdnpxmvy30p88phnbwnwx&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
-        'https://media2.giphy.com/media/eqCaSzU2sDe8g/giphy.gif?cid=6c09b9527pakrgi5kfnus0zhbam8znogdh1fvl1tyi6464p7&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g'
+        'https://media2.giphy.com/media/eqCaSzU2sDe8g/giphy.gif?cid=6c09b9527pakrgi5kfnus0zhbam8znogdh1fvl1tyi6464p7&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338537974075453/shika-shikanokonokonokoshitan.mp4?ex=6794e475&is=679392f5&hm=9b07cf3e679d4c7fbbb142313d8fea28dbfb6427eec41ddd8700eeaeda2aff23&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338538229796994/aharen-dance.mp4?ex=6794e475&is=679392f5&hm=eee313b2d5d09bdd3318dc42b842f213d4114247f82673b32748af8604e4cdb9&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338538548690964/bocchi-bocchi-the-rock.mp4?ex=6794e475&is=679392f5&hm=a5e020315c7bd17b333187cb65e7a273f41ab3f07b64570a0adf0950377aad9c&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338538871521340/bocchi-the-rock-bocchi.mp4?ex=6794e475&is=679392f5&hm=8e15ebba14a515993e51d06b982fb0938d60c442816a7b4499e1eb678a44a085&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338539295281203/chainsaw-man-dance.mp4?ex=6794e475&is=679392f5&hm=0da72a1216d67bb4bcc89a757bc8a1e17c73802ffa3da75a2a4f7220a461d921&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338539630952531/pulcino-pio.mp4?ex=6794e475&is=679392f5&hm=5582ff4f61f01b4827099c77671e11b9f703953c1c4f71eaf441970e0f0ff2fa&'
       ]
 
       const randomGif = gifs[Math.floor(Math.random() * gifs.length)];

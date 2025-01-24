@@ -3,10 +3,11 @@ import {
 } from 'discord.js';
 
 export default {
-  name: "thumbsup",
+  name: "thumbs",
   description: "Give a thumbs up to another user.",
   aliases: ["like",
-    "approve"],
+    "approve",
+    "thumbsup"],
   cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
@@ -18,14 +19,11 @@ export default {
       .setColor('Random')
       .setImage(randomGif)
       .setAuthor({
-        name: "",
+        name: "Great job!",
         iconURL: message.author.displayAvatarURL({
           dynamic: true
         })
       })
-      .setFooter({
-        text: `Great job!`
-      });
 
       await message.channel.send({
         embeds: [embed]
