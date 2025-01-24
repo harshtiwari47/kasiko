@@ -427,7 +427,7 @@ async function viewGardenStatus(userId, username) {
 */
 export default {
   name: "garden",
-  description: "Manage your flower garden in a casual text-based way.",
+  description: "Manage your flower garden.",
   aliases: ["g"],
   example: ["graden help"],
   category: "🍬 Explore",
