@@ -36,16 +36,16 @@ export default {
         'https://media0.giphy.com/media/5tmRHwTlHAA9WkVxTU/giphy.gif?cid=6c09b952wgbnnt0lojorau95la1vp6j0a005iv8bp84wekm3&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media1.giphy.com/media/Z7x24IHBcmV7W/giphy.gif?cid=6c09b9525ro8z8i6p897j4yrwd8s0fvk51im3plxe7nnacle&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media4.giphy.com/media/X2fB80sJ5mjny/giphy.gif?cid=6c09b952gy7t1ykukft8dhu0arit1xwkeafbhkr2g3lxh722&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332340845625610312/aharen-san-aharen-san-anime.mp4?ex=6794e69b&is=6793951b&hm=7ffe642c9ebf760fd473f3708d27bc521c13dbf7cdc2b47344e90162ba942088&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332340845973602336/pat-head-gakuen-babysitters.mp4?ex=6794e69b&is=6793951b&hm=44383de9f1ef8910088b3c9dee34589befaf0ce1a177a1a99a9ad64435724917&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332340846254886982/aharen-aharen-san.mp4?ex=6794e69b&is=6793951b&hm=fa4ca36265db560d5cea28ae31d9f9ef467120c9bb54a17fa94c124e19c6faac&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332340846720192543/sakuta-azusagawa-mai-sakurajima.mp4?ex=6794e69b&is=6793951b&hm=2ea5a5eeb4af99540b694f46687bf676b4a5de93b97445d3405e8987ed7b4f79&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332340847068582001/higurashi-no-naku-koro-ni-mal-piro.mp4?ex=6794e69b&is=6793951b&hm=81234e12b891c830c91533263caa1f732438df9849ec995e7f4e3f38fc8325d8&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332340847328624700/anime-anime-headpat.mp4?ex=6794e69b&is=6793951b&hm=6e5b1c08ff836a9d53c1c21228efb88b62a1f5917b60cd6276dc5e45217d682b&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332342634437541968/pat-pat.mp4?ex=6794e845&is=679396c5&hm=4cd5ba323a35c24d9d7374a6fe19b9aa2db1a25fe791e9ad8bd007b07aa60c37&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332342634936537098/pokemon-anime.mp4?ex=6794e845&is=679396c5&hm=1f9182855c7d9e6e5e7c59cff6a718eebd2e390de85b5df569bd7f1d72908e46&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332342635259756564/anime-head-pat-anime-pat.mp4?ex=6794e845&is=679396c5&hm=42d36c4381475959750be3c495aafe644f04011f4abbc05a0dad1fed411f621f&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332342640292663386/rika-higurashi.mp4?ex=6794e847&is=679396c7&hm=a0a739a58ecba15dc3b99551e682b43b11d0dd8e45c87d600b8d23185d9a0dc4&'
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367101205413950/ezgif-6-59341b9ff6.gif?ex=6794ff0f&is=6793ad8f&hm=20890234270d81df7f3444045bdf73fc701be56e4202f47e851e7e5330ca3ad7&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367101788160162/ezgif-6-6c1cf1755f.gif?ex=6794ff0f&is=6793ad8f&hm=3c4f2d5b233e914f9b53b53f4984c0d7161668bf19bd85b0120df632420a9f7f&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367102304325663/ezgif-6-7838c20443.gif?ex=6794ff0f&is=6793ad8f&hm=4db59e2fec05d5657119103e434f67e0f7c0a391c0f17d18909e53be6dbd027f&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367102790729860/ezgif-6-d143d0d7d6.gif?ex=6794ff0f&is=6793ad8f&hm=82b3e6c08418d0a3f2f49fd75a38ca7ab66458ea4190cb2e253988e08a5e25af&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367103444910183/ezgif-6-09ba457f33.gif?ex=6794ff0f&is=6793ad8f&hm=e695f0bef2f60e9cac659c72dc5752833497083b0de6397ee4acbfe2785bd6b1&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367103948488734/ezgif-6-0e51bfdbdd.gif?ex=6794ff0f&is=6793ad8f&hm=6b3738a34e17e963dcf5e673d603bc7f53d70e24a5ccfee3cd990bced9b66180&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367104615120947/ezgif-6-0a16b659a1.gif?ex=6794ff0f&is=6793ad8f&hm=02f6e67f5d8587b3c2fe2dd4d7bba9b050ae55e96cb8f3866fcb5177ed000a06&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367105252917299/ezgif-6-05d01e3479.gif?ex=6794ff10&is=6793ad90&hm=d8de3a2478ab0daac486b1a4f6f5f01b884b25c72cc709d720dcfe0c55426d29&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367106230190246/ezgif-6-3a897d0518.gif?ex=6794ff10&is=6793ad90&hm=7b11d1ba8e200f9d6f4117a1d5f73afe87c5524272a141adc9ecc9b934bb9f6c&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332367105751777404/ezgif-6-8058c929ee.gif?ex=6794ff10&is=6793ad90&hm=4f6128e1aae163bfa2169ba7f5dfa9e2c49f7875e0371bad27a674cff391fc63&'
       ];
 
       const randomText = texts[Math.floor(Math.random() * texts.length)];

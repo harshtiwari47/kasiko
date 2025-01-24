@@ -57,12 +57,12 @@ export default {
         'https://media1.giphy.com/media/z8pi6Q8wTxuFO/giphy.gif?cid=6c09b9529ebzi5u7hnx3r9ira9mw9pt12mq34o6ahd02fuq7&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media3.giphy.com/media/W6dHvprT7oks6BpX5R/giphy.gif?cid=6c09b952z71cv9f4qba1ufk7rv2xdnpxmvy30p88phnbwnwx&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
         'https://media2.giphy.com/media/eqCaSzU2sDe8g/giphy.gif?cid=6c09b9527pakrgi5kfnus0zhbam8znogdh1fvl1tyi6464p7&ep=v1_internal_gif_by_id&rid=giphy.gif&ct=g',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338537974075453/shika-shikanokonokonokoshitan.mp4?ex=6794e475&is=679392f5&hm=9b07cf3e679d4c7fbbb142313d8fea28dbfb6427eec41ddd8700eeaeda2aff23&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338538229796994/aharen-dance.mp4?ex=6794e475&is=679392f5&hm=eee313b2d5d09bdd3318dc42b842f213d4114247f82673b32748af8604e4cdb9&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338538548690964/bocchi-bocchi-the-rock.mp4?ex=6794e475&is=679392f5&hm=a5e020315c7bd17b333187cb65e7a273f41ab3f07b64570a0adf0950377aad9c&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338538871521340/bocchi-the-rock-bocchi.mp4?ex=6794e475&is=679392f5&hm=8e15ebba14a515993e51d06b982fb0938d60c442816a7b4499e1eb678a44a085&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338539295281203/chainsaw-man-dance.mp4?ex=6794e475&is=679392f5&hm=0da72a1216d67bb4bcc89a757bc8a1e17c73802ffa3da75a2a4f7220a461d921&',
-        'https://cdn.discordapp.com/attachments/1332338317374783528/1332338539630952531/pulcino-pio.mp4?ex=6794e475&is=679392f5&hm=5582ff4f61f01b4827099c77671e11b9f703953c1c4f71eaf441970e0f0ff2fa&'
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332364494810386546/ezgif-6-59ef71508f.gif?ex=6794fca1&is=6793ab21&hm=2980eadef293d084ae7560005c220c94a83bcd24ed7e13925f5fe91cea039ace&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332364495233745007/ezgif-6-08c066adcb.gif?ex=6794fca1&is=6793ab21&hm=8c22dba23cbf454473a7cea77b9bc1dbca05d29c050be37c5972a88a41095529&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332364495607173162/ezgif-6-c6475aa6df.gif?ex=6794fca1&is=6793ab21&hm=3823007824b4388d15e5ca97406a1691f70f45632be5da8ad7d4c16b1e394b01&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332364496001568860/ezgif-6-634b0add1c.gif?ex=6794fca1&is=6793ab21&hm=81ab11ec790a43f6d3086e765eb5e0263de966a8c13ca1feffb890e11a47a006&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332364496382984253/ezgif-6-2aefbec6cd.gif?ex=6794fca2&is=6793ab22&hm=4e935c8a6fc7eeadcc18af37c2bc16c2ca62c3eb3efae3afb4bb24fd87623cac&',
+        'https://cdn.discordapp.com/attachments/1332338317374783528/1332364496794161182/ezgif-6-659abd2c08.gif?ex=6794fca2&is=6793ab22&hm=4a6f583f7c2d22e42eaeddf1b972babaa4c4d79d54b1fba616a29749df90a92c&'
       ]
 
       const randomGif = gifs[Math.floor(Math.random() * gifs.length)];
