@@ -465,18 +465,6 @@ export async function sellcar(context, carId) {
       });
     }
 
-    if (userCar.items > 1) {
-      userCar.items -= 1;
-    } else {
-      userData.cars.splice(userCarIndex, 1);
-    }
-
-    // Give user back the full price (if that’s the logic you want)
-    userData.cash += Number(car[0].price);
-    userData.maintenance -= Number(car[0].maintenance);
-
-    await updateUser(userId, userData);
-
     const embed = new EmbedBuilder()
     .setColor('#e93535')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
@@ -489,6 +477,18 @@ export async function sellcar(context, carId) {
       iconURL: 'https://cdn.discordapp.com/app-assets/1300081477358452756/1303245073324048479.png'
     })
     .setTimestamp();
+
+    if (userCar.items > 1) {
+      userCar.items -= 1;
+    } else {
+      userData.cars.splice(userCarIndex, 1);
+    }
+
+    // Give user back the full price (if that’s the logic you want)
+    userData.cash += Number(car[0].price);
+    userData.maintenance -= Number(car[0].maintenance);
+
+    await updateUser(userId, userData);
 
     return handleMessage(context,
       {

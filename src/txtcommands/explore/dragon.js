@@ -1515,6 +1515,8 @@ export default {
   async function changeActive(args, message) {
     const userId = message.author.id;
 
+    let userData = await getUserDataDragon(userId);
+
     if (!args[1] || ! Number.isInteger(Number(args[1]))) {
       let targetDragon = userData.dragons[userData.active || 0];
 
@@ -1523,7 +1525,6 @@ export default {
 
     const index = parseInt(args[1]); // Dragon Index
 
-    let userData = await getUserDataDragon(userId);
 
     if (userData.dragons.length === 0) {
       return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
