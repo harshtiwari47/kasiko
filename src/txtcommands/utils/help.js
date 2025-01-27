@@ -7,7 +7,7 @@ export default {
   name: "help",
   description: "Provides a list of commands or detailed info on a specific command.",
   aliases: ["commands",
-    "h"],
+    "guide"],
   args: "[command name]",
   example: [
     "help",
