@@ -61,7 +61,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
 
   // Function to generate the top embed
   const embedTop = new EmbedBuilder()
-  .setDescription(`## ⚔️ Battle Arena 🏴‍☠️🌊\nAn intense duel between **${player1.name}**'s ***${player1.shipName}*** (Lvl ${player1.shipLvl}) and **${player2.name}**'s ***${player2.shipName}*** (Lvl ${player2.shipLvl})!`)
+  .setDescription(`## ⚔️ Battle Arena 🏴‍☠️🌊\n**${player1.name}**'s ***${player1.emoji}*** (Lvl ${player1.shipLvl}) & **${player2.name}**'s ***${player2.emoji}*** (Lvl ${player2.shipLvl})!`)
   .addFields(
     {
       name: '🪝 Special Abilities',
@@ -81,18 +81,13 @@ export async function battle(interaction, player1, player2, friendly = false) {
         inline: false,
       },
       {
-        name: '⏱️ Current Status',
-        value: battleStarted ? `**${currentPlayer.name}'s turn!**`: 'The battle is about to start!',
-        inline: false,
-      },
-      {
         name: '⚔️ Action Log',
         value: battleLog.length > 0 ? battleLog.join('\n'): 'Let the fight begin! Each action will appear here in real-time.',
         inline: false,
       },
     )
     .setFooter({
-      text: 'Prepare for glory!',
+      text: `${currentPlayer.name}'s turn!`,
     });
 
     return embed;
@@ -103,11 +98,11 @@ export async function battle(interaction, player1, player2, friendly = false) {
     const damage = Math.floor(attacker.dmg / 3 + Math.random() * attacker.dmg + (attacker.user === "bot" ? Math.random() * 100: 0)); // Random damage between dmg/3 and dmg*1.33
     defender.health -= damage;
     battleLog.push(`**${attacker.name}** strikes, dealing **${damage}** damage to **${defender.name}**!`);
-    if (battleLog.length > 3) {
+    if (battleLog.length > 1) {
       battleLog.shift();
     }
     // Limit battle log to the last 5 entries
-    if (battleLog.length > 3) {
+    if (battleLog.length > 1) {
       battleLog.shift();
     }
   };
@@ -117,11 +112,11 @@ export async function battle(interaction, player1, player2, friendly = false) {
     const shield = Math.floor(player.dmg / 3 + Math.random() * (player.dmg/2)); // Random shield between dmg/2 and dmg*1.5
     player.health += shield;
     battleLog.push(`**${player.name}** defends and gains **${shield}** health!`);
-    if (battleLog.length > 3) {
+    if (battleLog.length > 1) {
       battleLog.shift();
     }
     // Limit battle log to the last 5 entries
-    if (battleLog.length > 3) {
+    if (battleLog.length > 1) {
       battleLog.shift();
     }
   };
@@ -151,7 +146,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
     }
 
     // Limit battle log to the last 5 entries
-    if (battleLog.length > 3) {
+    if (battleLog.length > 1) {
       battleLog.shift();
     }
   };
@@ -220,7 +215,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
 
       if (!userData2.shipBattle.battleLog) userData2.shipBattle.battleLog = [];
       userData2.shipBattle.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
-      if (userData2.shipBattle.battleLog.length > 3) {
+      if (userData2.shipBattle.battleLog.length > 1) {
         userData2.shipBattle.battleLog.shift(); // Remove the oldest log
       }
 
@@ -234,7 +229,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
 
       if (!userData2.shipBattle.battleLog) userData2.shipBattle.battleLog = [];
       userData2.shipBattle.battleLog.push(`**${player2.name}**, congratulations! You have successfully defended in battle against **${player1.name}** and won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
-      if (userData2.shipBattle.battleLog.length > 3) {
+      if (userData2.shipBattle.battleLog.length > 1) {
         userData2.shipBattle.battleLog.shift(); // Remove the oldest log
       }
 
@@ -257,7 +252,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
     if (userData2) await updateUser(player2.id, userData2);
 
     battleLog.push(otherMessage);
-    if (battleLog.length > 3) {
+    if (battleLog.length > 1) {
       battleLog.shift();
     }
     await battleMessage.edit({
@@ -331,7 +326,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
       special(currentPlayer, opponent);
       battleLog.push(`**${currentPlayer.name}** uses **${currentPlayer.special}**!`);
     }
-    if (battleLog.length > 3) {
+    if (battleLog.length > 1) {
       battleLog.shift();
     }
 
@@ -548,7 +543,8 @@ async function gatherDetails(username, userId, isPlayer, interaction) {
       shipName: activeShip.name,
       shipLvl: activeShip.level,
       id: userId,
-      user: "player"
+      user: "player",
+      emoji: `<:${shipDetails.id}:${shipDetails.emoji}>`
     };
   } catch (error) {
     console.error("Error in gatherDetails:", error);

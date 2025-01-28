@@ -144,7 +144,10 @@ export default {
       );
     } catch (e) {
       console.error(e);
-      return message.channel.send("❌ An error occurred while updating the category settings.");
+      const botPermissions = message.channel.permissionsFor(message.client.user);
+      if (botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
+        return message.channel.send("❌ An error occurred while updating the category settings.");
+      }
     }
   },
 };

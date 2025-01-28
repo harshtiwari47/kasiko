@@ -117,7 +117,10 @@ export default {
       );
     } catch (e) {
       console.error(e);
-      return message.channel.send("❌ An error occurred while toggling the bot in channel(s).");
+      const botPermissions = message.channel.permissionsFor(message.client.user);
+      if (botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
+        return message.channel.send("❌ An error occurred while toggling the bot in channel(s).");
+      }
     }
   },
 };

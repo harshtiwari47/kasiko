@@ -77,31 +77,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
     collector.on('collect', async (response) => {
       const answer = parseInt(response.content, 10);
-      if (answer === correctAnswer) {
-
-        if (response.author.id === targetUserId) {
-          const robberyFailedEmbed = new EmbedBuilder()
-          .setColor('#ff0000') // Red for failure
-          .setTitle('❌ **𝑹𝒐𝒃𝒃𝒆𝒓𝒚 𝑭𝒂𝒊𝒍𝒆𝒅!**')
-          .setDescription(
-            `**${message.author.username}**, your robbery attempt has failed!\n` +
-            `**${message.mentions.users.first().username}** managed to answer correctly in time! 🎯`
-          )
-          .addFields(
-            {
-              name: '<:kasiko_coin:1300141236841086977> **No Cash Taken:**',
-              value: `You didn't manage to steal any money. Better luck next time!`
-            }
-          )
-          .setFooter({
-            text: 'The puzzle master wins! 🏆'
-          })
-          .setTimestamp();
-
-          return robberyMessage.edit({
-            embeds: [robberyFailedEmbed]
-          });
-        }
+      if (answer === correctAnswer && response.author.id !== targetUserId) {
 
         // Successful robbery logic
         const caughtChance = Math.random();
@@ -180,7 +156,38 @@ export async function attemptRobbery(userId, targetUserId, message) {
             embeds: [successEmbed]
           });
         }
-      } else {
+      } else if (response.author.id === targetUserId && answer === correctAnswer) {
+        // Failed robbery attempt
+        const penalty = Math.floor(userCash * 0.1);
+
+        userData.cash = userCash - penalty;
+        targetData.cash = targetCash + penalty;
+
+        await updateUser(userId, userData);
+        await updateUser(targetUserId, targetData);
+
+        const robberyFailedEmbed = new EmbedBuilder()
+        .setColor('#ff0000') // Red for failure
+        .setTitle('❌ **𝑹𝒐𝒃𝒃𝒆𝒓𝒚 𝑭𝒂𝒊𝒍𝒆𝒅!**')
+        .setDescription(
+          `**${message.author.username}**, your robbery attempt has failed!\n` +
+          `**${message.mentions.users.first().username}** managed to answer correctly in time! 🎯`
+        )
+        .addFields(
+          {
+            name: '<:kasiko_coin:1300141236841086977> **No Cash Taken:**',
+            value: `You didn't manage to steal any money. Better luck next time!`
+          }
+        )
+        .setFooter({
+          text: 'The puzzle master wins! 🏆'
+        })
+        .setTimestamp();
+
+        return robberyMessage.edit({
+          embeds: [robberyFailedEmbed]
+        });
+      } else if (response.author.id !== targetUserId) {
         // Failed robbery attempt
         const penalty = Math.floor(userCash * 0.1);
 

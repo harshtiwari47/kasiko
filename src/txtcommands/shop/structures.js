@@ -469,9 +469,9 @@ export async function sellstructure(context, structureId) {
 
     const structure = structureArr[0];
     const userData = await getUserData(userId);
-    const userStructure = userData.structures.filter(s => s.id === structureId);
+    const userStructure = userData.structures.find(s => s.id === structureId);
 
-    if (!userStructure.length) {
+    if (!userStructure) {
       return handleMessage(context, {
         content: `⚠️ You don't own this structure.`
       });
@@ -485,15 +485,11 @@ export async function sellstructure(context, structureId) {
       return s;
     }).filter(s => s.items > 0);
 
-    // Decrement owners count in shop data
-    items[structureId].owners -= 1;
-
     // Add cash back to user
     userData.cash += Number(structure.price);
     // Decrease maintenance for the sold structure
     userData.maintenance -= Number(structure.maintenance);
 
-    writeShopData(items);
     await updateUser(userId,
       userData);
 

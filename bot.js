@@ -105,7 +105,6 @@ client.on('messageCreate', async (message) => {
       return;
     }
 
-
     let args;
     if (message.content.toLowerCase().startsWith("kas")) {
       args = message.content.slice("kas".toLowerCase().length).trim().split(/ +/);
@@ -193,7 +192,7 @@ client.on('messageCreate', async (message) => {
     const firstUserMention = message.mentions.users.first();
     if (firstUserMention && !firstUserMention.bot) {
       let userExistenceMentioned = await userExists(firstUserMention.id);
-      if (!userExistenceMentioned) {
+      if (!userExistenceMentioned && command.category !== "🧩 Fun") {
         return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas terms`.");
       }
     }
