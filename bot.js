@@ -115,7 +115,7 @@ client.on('messageCreate', async (message) => {
     // handle all types of text commands started with kas || prefix
     const commandName = args[0].toLowerCase();
     const command = txtcommands.get(commandName);
-    if (!command) return;
+    if (!command && commandName !== "terms") return;
 
     if (command.category !== "🧩 Fun") {
       if (mentionedBots.size > 0) return;
@@ -308,7 +308,6 @@ client.on('interactionCreate', async (interaction) => {
       await handleButtonInteraction(interaction, client);
     } catch (error) {
       console.error(error);
-      // Optionally, notify the user of the error
     }
   }
 });

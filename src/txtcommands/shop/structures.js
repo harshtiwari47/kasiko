@@ -455,50 +455,52 @@ export async function buystructure(context, structureId) {
 /**
 * Sell a specific structure by ID
 */
+
 export async function sellstructure(context, structureId) {
   try {
     const userId = context.user?.id || context.author?.id;
     const username = context.user?.username || context.author?.username;
 
-    const structureArr = structureItems.filter(item => item.id === structureId);
-    if (!structureArr.length) {
+    // Find structure in available items
+    const structure = structureItems.find(item => item.id === structureId);
+    if (!structure) {
       return handleMessage(context, {
         content: `⚠️ No items with this ID exist.`
       });
     }
 
-    const structure = structureArr[0];
+    // Fetch user data
     const userData = await getUserData(userId);
-    const userStructure = userData.structures.find(s => s.id === structureId);
+    const structureIndex = userData.structures.findIndex(s => s.id === structureId);
 
-    if (!userStructure) {
+    if (structureIndex === -1) {
       return handleMessage(context, {
         content: `⚠️ You don't own this structure.`
       });
     }
 
-    // Decrease user's ownership count
-    userData.structures = userData.structures.map(s => {
-      if (s.id === structureId) {
-        s.items -= 1;
-      }
-      return s;
-    }).filter(s => s.items > 0);
+    const userStructure = userData.structures[structureIndex];
 
-    // Add cash back to user
+    // Remove or update structure count
+    if (userStructure.items > 1) {
+      userData.structures[structureIndex].items -= 1;
+    } else {
+      userData.structures.splice(structureIndex, 1);
+    }
+
+    // Add cash and decrease maintenance
     userData.cash += Number(structure.price);
-    // Decrease maintenance for the sold structure
     userData.maintenance -= Number(structure.maintenance);
 
-    await updateUser(userId,
-      userData);
+    await updateUser(userId, userData);
 
+    // Create embed message
     const embed = new EmbedBuilder()
     .setColor('#e93535')
-    .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
+    .setTitle('🧾 Transaction Successful')
     .setDescription(
-      `**${username}** successfully sold a **${structure.name}** for <:kasiko_coin:1300141236841086977> **${structure.price.toLocaleString()}** 𝑪𝒂𝐬𝒉.\n` +
-      `Originally purchased that structure for <:kasiko_coin:1300141236841086977>${userStructure[0].purchasedPrice.toLocaleString()}.`
+      `**${username}** successfully sold a **${structure.name}** for <:kasiko_coin:1300141236841086977> **${Number(structure.price).toLocaleString()}** Cash.\n` +
+      `Originally purchased for <:kasiko_coin:1300141236841086977> **${Number(userStructure.purchasedPrice).toLocaleString()}**.`
     )
     .setFooter({
       text: `Kasiko`,
@@ -506,19 +508,17 @@ export async function sellstructure(context, structureId) {
     })
     .setTimestamp();
 
-    return handleMessage(context,
-      {
-        embeds: [embed]
-      });
+    return handleMessage(context, {
+      embeds: [embed]
+    });
+
   } catch (e) {
     console.error(e);
-    return handleMessage(context,
-      {
-        content: `⚠️ **${context.user?.username || context.author?.username}**, something went wrong while selling the structure!`
-      });
+    return handleMessage(context, {
+      content: `⚠️ **${context.user?.username || context.author?.username}**, something went wrong while selling the structure!`
+    });
   }
 }
-
 /**
 * Export all structure-related methods as a single object
 */

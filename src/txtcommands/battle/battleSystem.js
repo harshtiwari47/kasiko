@@ -61,7 +61,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
 
   // Function to generate the top embed
   const embedTop = new EmbedBuilder()
-  .setDescription(`## ⚔️ Battle Arena 🏴‍☠️🌊\n**${player1.name}**'s ***${player1.emoji}*** (Lvl ${player1.shipLvl}) & **${player2.name}**'s ***${player2.emoji}*** (Lvl ${player2.shipLvl})!`)
+  .setDescription(`## ⚔️ Battle Arena 🏴‍☠️\n**${player1.name}**'s ***${player1.emoji}*** (${player1.shipLvl}) vs **${player2.name}**'s ***${player2.emoji}*** (${player2.shipLvl})`)
   .addFields(
     {
       name: '🪝 Special Abilities',

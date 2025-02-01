@@ -19,6 +19,10 @@ import {
   viewUserJewelryCollection
 } from './viewUserJewelry.js';
 
+import {
+  Helper
+} from '../../../helper.js';
+
 export async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
   if (isInteraction) {

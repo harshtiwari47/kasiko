@@ -72,6 +72,14 @@ export const sendConfirmation = async (title, description, color, message, id) =
   return replyMessage; // Return the message
 };
 
+function getChildEmoji(gender, customEmojis = {}) {
+  const DEFAULT_BOY_EMOJI = '<:boy_child:1335131474055139430>';
+  const DEFAULT_GIRL_EMOJI = '<:girl_child:1335131494070489118>';
+
+  if (customEmojis[gender]) return customEmojis[gender];
+  return gender === 'B' ? DEFAULT_BOY_EMOJI: DEFAULT_GIRL_EMOJI;
+}
+
 export async function marriage(message) {
   try {
     let userData = await getUserData(message.author.id);
@@ -83,7 +91,7 @@ export async function marriage(message) {
         "username": "Failed to Fetch"
       };
 
-      let countdownInDays = Math.ceil((marrydate - currentDate) / (1000 * 60 * 60 * 24));
+      let countdownInDays = Math.ceil((currentDate - marrydate) / (1000 * 60 * 60 * 24));
 
       let mEmojies = [];
       const EmojiesList = [
@@ -98,7 +106,8 @@ export async function marriage(message) {
         500,
         2500,
         5000,
-        7500];
+        7500,
+        12500];
 
       const bondXP = userData.family.bondXP;
 
@@ -108,7 +117,11 @@ export async function marriage(message) {
       // Add emojis to mEmojies
       mEmojies = EmojiesList.slice(0, emojiCount).join(" ");
 
-      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}`);
+      const childrenNames = userData.family.children.map((child) => {
+        return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
+      })
+
+      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**`);
     } else {
       return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!");
     }
@@ -132,6 +145,8 @@ export async function marry(user, message) {
       return message.channel.send(`⚠️ You are already married! 🔫`);
     } else if (userData.family.spouse && userData.family.spouse === user) {
       return message.channel.send(`⚠️ You are __already married__ to each other.`);
+    } else if (userData.family.spouse) {
+      return message.channel.send(`⚠️ The user is __already married__.`);
     } else {
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
       const description = `<@${message.author.id}> has proposed 💐 to you! Do you accept **<@${guild.user.id}>**?`;
@@ -403,7 +418,7 @@ export async function dailyRewards(userId, username, context) {
       ];
 
       userData.family.bondXP += bondExpInc;
-      userData.cash += cashExt;
+      userData.cash += Math.min(cashExt + (userData.family.bondXP/5 || 0), 10000);
       userData.roses += rosesClaimed;
       userData.family.dailyReward = currentTime;
 

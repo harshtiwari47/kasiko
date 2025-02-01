@@ -154,7 +154,7 @@ export default {
   name: "cage",
   description: "View your animal collection in the cage or details about one animal.",
   aliases: ["animals",
-    "animalcage"],
+    "animalcage", "animal", "zoo"],
   args: "<animalName> (optional)",
   example: [
     "cage",

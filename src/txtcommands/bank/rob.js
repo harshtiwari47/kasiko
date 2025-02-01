@@ -31,7 +31,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
       const remainingTime = 12 - checkTimeGap(userData.lastRobbery, Date.now(), {
         format: 'hours'
       }).toFixed(2);
-      return message.channel.send(`<@${userId}>, you cannot rob again for another ${remainingTime.toFixed(1)} hours.`);
+      //  return message.channel.send(`<@${userId}>, you cannot rob again for another ${remainingTime.toFixed(1)} hours.`);
     }
 
     userData.lastRobbery = Date.now();
@@ -43,27 +43,26 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
     // Create the exciting embed for the robbery
     const embed = new EmbedBuilder()
-    .setColor('#980707') // Spicy red color
     .setTitle('👀🗝️ **𝐑𝐨𝐛𝐛𝐞𝐫𝐲 𝐀𝐭𝐭𝐞𝐦𝐩𝐭!**')
     .setDescription(
-      `**${message.author.username}**, you're attempting to **rob** **${message.mentions.users.first().username}**! 🙀\n` +
-      `Before you strike, solve this quick puzzle to **succeed**:\nWhat is **${num1} + ${num2}**? 💡`
+      `**${message.author.username}**, you're attempting to **rob** **${message.mentions.users.first().username}**! 🙀`
     )
+    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/robber.png`)
     .addFields(
-      {
-        name: '⚠️ **Be careful**!', value: 'If you fail, you risk getting caught and losing your cash!'
-      },
       {
         name: '⏳ **Time is ticking**...', value: 'Answer within **25 seconds** or the law catches up with you!'
       }
     )
+
+
+    const embedQues = new EmbedBuilder()
+    .setDescription(`Before you strike, solve this quick puzzle to **succeed**:\n## What is **${num1} + ${num2}**? 💡`)
     .setFooter({
-      text: 'Good luck! You might need it... 🔥'
+      text: '⚠ Failing risks capture and loss of cash!'
     })
-    .setTimestamp();
 
     const robberyMessage = await message.channel.send({
-      embeds: [embed]
+      embeds: [embed, embedQues]
     });
 
     // Start collecting the input from the robber
@@ -84,10 +83,13 @@ export async function attemptRobbery(userId, targetUserId, message) {
         const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
         await delay(2000); // Delay for suspense
-        await robberyMessage.edit(`${message.author.username} is entering the victim's cash values...`);
+        await robberyMessage.edit({
+          content: `**${message.author.username}** is _entering_ the victim's cash values... 🔓`,
+          embeds: [new EmbedBuilder().setDescription(`🗝️ 𝐑𝐨𝐛𝐛𝐞𝐫𝐲 𝐒𝐭𝐚𝐫𝐭𝐞𝐝!`)]
+        });
 
         await delay(4000); // Delay for suspense
-        await robberyMessage.edit(`${message.author.username} is putting money in their bag...`);
+        await robberyMessage.edit(`**${message.author.username}** is _putting money_ in their bag... 💵`);
 
         if (caughtChance < 0.3) {
           // 30% chance of getting caught
@@ -134,10 +136,9 @@ export async function attemptRobbery(userId, targetUserId, message) {
           await updateUser(targetUserId, targetData);
 
           const successEmbed = new EmbedBuilder()
-          .setColor('#32cd32') // Green for success
-          .setTitle('🎉 **𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥 𝐑𝐨𝐛𝐛𝐞𝐫𝐲!**')
+          .setTitle('💸 **𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥 𝐑𝐨𝐛𝐛𝐞𝐫𝐲!**')
           .setDescription(
-            `**${message.author.username}** successfully robbed <:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** from **${message.mentions.users.first().username}**! 💰💥`
+            `**${message.author.username}** successfully robbed <:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** from **${message.mentions.users.first().username}**! 💥`
           )
           .addFields(
             {
@@ -150,7 +151,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
           .setFooter({
             text: 'Enjoy your spoils! 🤑'
           })
-          .setTimestamp();
+          .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/robber.png`)
 
           return robberyMessage.edit({
             embeds: [successEmbed]

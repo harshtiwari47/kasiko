@@ -391,17 +391,20 @@ export async function viewAquarium(userId,
 
     collector.on("end",
       async (collected, reason) => {
-        collectorEnded = true;
-        const channel = context?.channel || context;
-        const fetchedMsg = await channel.messages.fetch(responseMessage.id);
-        if (!fetchedMsg) return;
-        const oldRow = fetchedMsg.components[0];
-        const row = ActionRowBuilder.from(oldRow);
-        row.components.forEach((btn) => btn.setDisabled(true));
+        try {
+          collectorEnded = true;
+          const channel = context?.channel || context;
+          if (!responseMessage || !responseMessage.id) return;
+          const fetchedMsg = await channel.messages.fetch(responseMessage.id);
+          if (!fetchedMsg) return;
+          const oldRow = fetchedMsg.components[0];
+          const row = ActionRowBuilder.from(oldRow);
+          row.components.forEach((btn) => btn.setDisabled(true));
 
-        await fetchedMsg.edit({
-          components: [row],
-        });
+          await fetchedMsg.edit({
+            components: [row],
+          });
+        } catch (e) {}
       });
 
   } catch (e) {

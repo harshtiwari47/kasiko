@@ -126,7 +126,7 @@ export async function playGate(id, channel, message) {
 
     // Determine the outcome
     if (userWins === hourlyPath[1].length) {
-      const prize = 1000; // Winning prize
+      const prize = 30000; // Winning prize
       userData.heaven[2] = 1;
       userData.cash += prize;
       await updateUser(id, userData);

@@ -8,7 +8,7 @@ export default {
   aliases: ["warinfo",
     "battlestats",
     "wi",
-    "bs"],
+    "bi"],
   args: "",
   example: [
     "battleinfo",

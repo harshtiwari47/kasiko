@@ -37,7 +37,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
         `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\nType **join <horse (optional)>** (horse1, horse2, horse3) to join the race. **<@${teammateId}>**, you have 25 seconds!`
       );
 
-      const filter = (m) => m.content.toLowerCase().startsWith("participate") && m.author.id === teammateId;
+      const filter = (m) => m.content.toLowerCase().startsWith("join") && m.author.id === teammateId;
       const collector = channel.createMessageCollector({
         filter, time: 25000
       });

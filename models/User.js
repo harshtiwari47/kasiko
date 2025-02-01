@@ -101,7 +101,7 @@ const userSchema = new mongoose.Schema({
     },
     family: {
       children: {
-        type: [String],
+        type: [Object],
       default: []
       },
       marriedOn: {
@@ -123,6 +123,16 @@ const userSchema = new mongoose.Schema({
       spouse: {
         type: String,
       default: null
+      },
+      customChildEmojis: {
+        B: {
+          type: String,
+        default: null
+        },
+        G: {
+          type: String,
+        default: null
+        }
       }
     },
     joined: {

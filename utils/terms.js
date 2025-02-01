@@ -97,6 +97,9 @@ export const termsAndcondition = async (message) => {
           // Disable the button when the collector times out
           const updatedButton = ButtonBuilder.from(button).setDisabled(true);
           const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
+
+          if (!sentMessage) return;
+
           return await sentMessage.edit({
             components: [updatedRow]
           });

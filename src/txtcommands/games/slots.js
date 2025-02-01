@@ -46,7 +46,6 @@ export async function slots(id, amount, channel) {
       '<a:slotsanim:1327959630915047556>',
       '<a:slotsanim:1327959630915047556>'];
     const slotBackground = `
-    ╔══════════╗
     🎰 **Slot Machine**
     ┌─────────────────┐
     ${spinResult.join(' | ')}
@@ -73,7 +72,6 @@ export async function slots(id, amount, channel) {
       // Lock the current position
       spinResult[i] = finalResult[i];
       const updatedBackground = `
-      ╔══════════╗
       🎰 **Slot Machine**
       ┌─────────────────┐
       ${spinResult.join(' | ')}

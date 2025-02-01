@@ -57,6 +57,14 @@ export async function badges(userData) {
   return `${badges}`;
 }
 
+function getChildEmoji(gender, customEmojis = {}) {
+  const DEFAULT_BOY_EMOJI = '<:boy_child:1335131474055139430>';
+  const DEFAULT_GIRL_EMOJI = '<:girl_child:1335131494070489118>';
+
+  if (customEmojis[gender]) return customEmojis[gender];
+  return gender === 'B' ? DEFAULT_BOY_EMOJI: DEFAULT_GIRL_EMOJI;
+}
+
 // create an embed card based on user data
 async function createUserEmbed(userId, username, userData, avatar, badges) {
   try {
@@ -90,6 +98,10 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
       };
     }
 
+    const childrenNames = userData.family.children.map((child) => {
+      return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
+    })
+
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     let EmbedColor = "#f6e59a";
@@ -121,7 +133,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
       // Personal Information
       {
         name: '👪 𝘍𝘢𝘮𝘪𝘭𝘺 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
-        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.family.children.length === 0 ? "0": userData.family.children.join(", ")}**`,
+        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**`,
         inline: true
       }
     );
@@ -131,8 +143,8 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     .setTitle(`⌞ ⌝ Assets ✨`)
     .setThumbnail(avatar)
     .setDescription(
-      `**ᯓ★𝐂𝐚𝐫𝐬**: ${totalCars}\n` +
-      `**ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬**: ${totalStructures}\n`+
+      `**ᯓ★𝐂𝐚𝐫𝐬**: **${totalCars}**\n` +
+      `**ᯓ★𝐇𝐨𝐮𝐬𝐞𝐬**: **${totalStructures}**\n`+
       `**ᯓ★𝐏𝐚𝐬𝐬𝐞𝐬**: ${userData.seasonalPasses.length ? userData.seasonalPasses.join(" "): "No Pass Found"}\n`+
       `⟡ ₊ .⋆ ✦⋆𓂁﹏ 𓂃⋆.˚⟡\n`
     )

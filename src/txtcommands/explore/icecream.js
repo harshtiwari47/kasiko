@@ -190,7 +190,7 @@ export default {
 
         try {
           await newShop.save();
-
+          
           const embed = new EmbedBuilder()
           .setColor("Random")
           .setTitle(`🍨 Welcome to **${shopName}**!`)
@@ -240,7 +240,6 @@ export default {
       }
 
       // Other commands (share, createFlavor, upgrade, status, dailyBonus) follow a similar structure.
-
 
       // Command: Share ice cream with a friend
       if (args[0] === "share") {

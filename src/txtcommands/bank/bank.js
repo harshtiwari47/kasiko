@@ -136,7 +136,7 @@ export const Bank = {
 
       const embed = new EmbedBuilder()
       .setColor('#dfe9fd') // Choose a color for the embed
-      .setImage(`https://harshtiwari47.github.io/kasiko-public/images/bank.jpg`)
+      .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/royal-bank.jpg`)
       .addFields(
         {
           name: '𝑫𝒆𝒑𝒐𝒔𝒊𝒕 ', value: `<:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`, inline: true
@@ -231,7 +231,8 @@ export default {
     "dep",
     "with",
     "withdraw",
-    "rob"],
+    "rob",
+    "bs", "ba"],
   args: "<action> [amount or target]",
   example: [
     "deposit/dep 500",
@@ -268,6 +269,10 @@ export default {
 
         // Call a function to deposit the amount
         return Bank.deposit(userId, depositAmount, message);
+
+      case "bs":
+      case "ba":
+        return Bank.showStatus(userId, message);
 
       case "withdraw":
       case "with":
@@ -311,7 +316,7 @@ export default {
             '`bank open`\n-# Open a bank account.\n' +
             '`deposit <amount>`\n-# Deposit funds into your bank.\n' +
             '`withdraw <amount>`\n-# Withdraw funds from your bank.\n' +
-            '`bank status`\n-# Check your bank status.\n' +
+            '`bank status`\n-# Check your bank status (you can use \`bs\` or \`ba\`).\n' +
             '`bank upgrade`\n-# Upgrade your bank level.'
           )
           .setFooter({

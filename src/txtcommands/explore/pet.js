@@ -346,10 +346,14 @@ export default {
       const pet = userPetData.pets[petId];
       const petImageUrls = getPetImage(pet.type, pet.level);
 
+      let currentLevel = Math.floor(Math.sqrt(pet.exp / threshold)) || 0;
+      let nextLevel = currentLevel + 1;
+      let nextLevelXP = nextLevel ** 2 * threshold;
+
       const petEmbed = new EmbedBuilder()
       .setTitle(`${pet.name} (𝑳𝒆𝒗𝒆𝒍  ${pet.level})`)
       .setColor("#FF00FF")
-      .setDescription(`**𝐴𝑛𝑖𝑚𝑎𝑙 **: ${pet.type}\n**𝐹𝑒𝑒𝑑**: ${pet.feed}\n**𝐸𝑥𝑝**: ${pet.exp}`)
+      .setDescription(`**𝐴𝑛𝑖𝑚𝑎𝑙 **: ${pet.type}\n**𝐹𝑒𝑒𝑑**: ${pet.feed}\n**𝐸𝑥𝑝**: ${pet.exp}/${nextLevelXP}`)
       .setThumbnail(petImageUrls ? petImageUrls[0]: null); // Add pet image if available
 
       return interaction.channel.send({
