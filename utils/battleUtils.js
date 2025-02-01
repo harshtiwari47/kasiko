@@ -282,7 +282,7 @@ async function endBattle(battle, channel, reason, bossHPLeft = null) {
     const sortedPlayers = [...battle.players].sort((a, b) => b.damageContributed - a.damageContributed);
     const highestDamageBy = sortedPlayers[0]?.userId || null;
     const secondDamageBy = sortedPlayers[1]?.userId || null;
-    
+
     let topPlayerReward = Number(battle.boss.level) * 15000
     let secondPlayerReward = Number(battle.boss.level) * 10000
     let otherPlayerReward = Number(battle.boss.level) * 5000
@@ -474,7 +474,7 @@ export async function handleUsePower( {
 
     if (player.health <= 0) {
       return {
-        replyContent: 'You have been defeated and cannot use abilities.',
+        replyContent: `⚰️ | **${user.username}**, you have been defeated and cannot use abilities.`,
         ephemeral: true
       }
     }

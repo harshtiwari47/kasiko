@@ -38,7 +38,7 @@ export async function toss(id, amount, channel, choice = "head") {
       `★ **${guild.user.username}'s** 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦! ★`);
 
     // Simulate a short delay to build suspense
-    await new Promise(resolve => setTimeout(resolve, 3000)); // 3-second delay for better effect
+    await new Promise(resolve => setTimeout(resolve, 2500)); // 2-second delay for better effect
 
     // Randomly decide the result of the coin toss
     let random = Math.floor(Math.random() * 2);

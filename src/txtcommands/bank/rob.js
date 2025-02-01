@@ -221,6 +221,26 @@ export async function attemptRobbery(userId, targetUserId, message) {
         return robberyMessage.edit({
           embeds: [failEmbed]
         });
+      } else {
+        const ownerPresentEmbed = new EmbedBuilder()
+        .setTitle('🚪 **𝐂𝐚𝐮𝐠𝐡𝐭 𝐢𝐧 𝐭𝐡𝐞 𝐀𝐜𝐭!**')
+        .setDescription(
+          `**${message.author.username}**, your robbery attempt was interrupted!\n` +
+          `**${message.mentions.users.first().username}** was present and stopped you before you could take anything. 😬`
+        )
+        .addFields(
+          {
+            name: '<:kasiko_coin:1300141236841086977> **No Cash Taken:**',
+            value: `You got caught, so nothing was stolen!`
+          }
+        )
+        .setFooter({
+          text: 'Maybe wait for a better moment? 👀'
+        })
+
+        return robberyMessage.edit({
+          embeds: [ownerPresentEmbed]
+        });
       }
     });
 

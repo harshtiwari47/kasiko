@@ -69,7 +69,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
 
       collector.on("end",
         async (collected, reason) => {
-          if (reason !== "opponent_joined") {
+          if (teammateData && reason !== "opponent_joined") {
             userData.cash += amount;
             if (teammateData) teammateData.cash += amount;
             // Save the updated cash to the database
@@ -130,24 +130,34 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
     if (horse1Pos >= trackLength || horse2Pos >= trackLength || horse3Pos >= trackLength) {
       clearInterval(raceInterval);
 
-      // Determine the winner
-      let winner = (horse1Pos >= trackLength && horse1Pos > horse2Pos) ? "horse1": "horse2";
-      if (winner === "horse1") {
-        if (horse3Pos >= trackLength && horse3Pos > horse1Pos) {
-          winner = "horse3";
-        }
+      // Get all horses that crossed the finish line
+      const crossedHorses = [{
+        name: "horse1",
+        pos: horse1Pos
+      },
+        {
+          name: "horse2",
+          pos: horse2Pos
+        },
+        {
+          name: "horse3",
+          pos: horse3Pos
+        }].filter(h => h.pos >= trackLength); // Only horses that finished
+
+      // Determine the winner (horse with the highest position)
+      let winner;
+      if (crossedHorses.length > 0) {
+        winner = crossedHorses.reduce((a, b) => a.pos > b.pos ? a: b).name;
       } else {
-        if (horse3Pos >= trackLength && horse3Pos > horse2Pos) {
-          winner = "horse3";
-        }
+        winner = "none"; // Edge case (race ended prematurely)
       }
+
       const winAmount = Math.floor(amount * 2);
       const teammateSplit = teammateId ? Math.floor(winAmount / 2): winAmount;
 
       if (winner === betOn) {
         userData.cash += amount + winAmount;
         await updateUser(userData.id, userData);
-        console.log("user Win")
 
         const embed = new EmbedBuilder()
         .setColor(0xFFD700) // Gold color

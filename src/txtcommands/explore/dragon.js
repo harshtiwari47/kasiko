@@ -91,7 +91,7 @@ export default {
         description: "Give a nickname to your dragon (less than 20 characters & no space)"
       },
       {
-        command: "dragon active <index>",
+        command: "active <index>",
         description: "Set your active dragon in battle to use its powers."
       },
     ];
@@ -1517,6 +1517,10 @@ export default {
 
     let userData = await getUserDataDragon(userId);
 
+    if (userData.dragons.length === 0) {
+      return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
+    }
+
     if (!args[1] || ! Number.isInteger(Number(args[1]))) {
       let targetDragon = userData.dragons[userData.active || 0];
 
@@ -1525,12 +1529,8 @@ export default {
 
     const index = parseInt(args[1]); // Dragon Index
 
+    const dragonIndex = Math.max(index - 1, 0);
 
-    if (userData.dragons.length === 0) {
-      return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
-    }
-
-    const dragonIndex = index - 1;
     if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
       return message.channel.send(`❗ Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`);
     }

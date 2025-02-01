@@ -69,137 +69,256 @@ async function myMetals(message) {
 }
 
 async function myPowers(message) {
-  const {
-    id,
-    username
-  } = message.author;
+  try {
+    const {
+      id,
+      username
+    } = message.author;
+    const userData = await getUserDataDragon(id);
 
-  const userData = await getUserDataDragon(id);
+    // Make sure the user has at least one dragon.
+    if (!userData.dragons || userData.dragons.length === 0) {
+      return message.channel.send(
+        `❗ **${username}**, you have no dragons. Use \`dragon summon\` to get started!`
+      );
+    }
 
-  if (!userData.dragons) userData.dragons = []
-
-  if (userData.dragons.length === 0) {
-    return message.channel.send(`❗ You have no dragons. Use \`dragon summon\` to get started!`);
-  }
-
-  if (userData.powers.length === 0) {
-    userData.dragons.forEach((dragon, index) => {
-      const chosenType = dragonTypes.find(t => t.id === dragon.typeId);
-
-      if (!userData.powers.some(power => power.typeId === chosenType.strengths[0])) {
-        userData.powers.push({
-          typeId: chosenType.strengths[0],
-          level: 1
-        });
-      }
-
-      if (!userData.powers.some(power => power.typeId === chosenType.strengths[1])) {
-        userData.powers.push({
-          typeId: chosenType.strengths[1],
-          level: 1
-        });
-      }
-    })
-
-    await saveUserData(id,
-      userData);
-  }
-
-  let powersDescriptions = [];
-
-  userData.powers.forEach((power, index) => {
-    const chosenType = powerTypes.find(t => t.name === power.typeId);
-
-    let description = `# ${chosenType.emoji} ${chosenType.name}\n` +
-    `-# **${chosenType.description}**\n` +
-    `**ID**: ${chosenType.id}\n` +
-    `**LEVEL**: ${power.level}\n` +
-    `**DAMAGE**: ${chosenType.dmg * power.level}\n` +
-    `**HEAL**: ${chosenType.heal * power.level}\n` +
-    `**DEFENCE**: ${chosenType.defence * power.level}\n` +
-    `**NEXT LVL COST**: ${chosenType.costType === "gold" ? goldIcon: chosenType.costType === "silver" ? silverIcon: bronzeIcon} **${chosenType.cost * power.level}**\n`;
-
-    powersDescriptions.push(description);
-  });
-
-  let currentPage = 1;
-  let totalPages = userData.powers.length;
-
-  const generateEmbed = (currentPage) => {
-    return new EmbedBuilder()
-    .setDescription(powersDescriptions[currentPage - 1])
-    .setColor("#0c0d16")
-    .setAuthor({
-      name: username + "'s metals",
-      iconURL: message.author.displayAvatarURL({
-        dynamic: true
-      })
-    })
-    .setFooter({
-      text: `Use \`dragon power upgrade <id>\` for an upgrade!`
-    });
-  }
-
-  const embedMessage = await message.channel.send({
-    embeds: [generateEmbed(currentPage)],
-    components: [
-      new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-        .setCustomId('prevPage')
-        .setLabel('Previous')
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(currentPage === 1),
-        new ButtonBuilder()
-        .setCustomId('nextPage')
-        .setLabel('Next')
-        .setStyle(ButtonStyle.Primary)
-        .setDisabled(currentPage === totalPages)
-      )
-    ]
-  });
-
-  const filter = (interaction) => {
-    return interaction.user.id === message.author.id && ['prevPage', 'nextPage'].includes(interaction.customId);
-  };
-
-  const collector = embedMessage.createMessageComponentCollector({
-    filter,
-    time: 60000,
-    componentType: ComponentType.Button
-  });
-
-  collector.on('collect',
-    async (interaction) => {
-      if (interaction.customId === 'prevPage') {
-        currentPage--;
-      } else if (interaction.customId === 'nextPage') {
-        currentPage++;
-      }
-
-      await interaction.update({
-        embeds: [generateEmbed(currentPage)],
-        components: [
-          new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-            .setCustomId('prevPage')
-            .setLabel('Previous')
-            .setStyle(ButtonStyle.Primary)
-            .setDisabled(currentPage === 1),
-            new ButtonBuilder()
-            .setCustomId('nextPage')
-            .setLabel('Next')
-            .setStyle(ButtonStyle.Primary)
-            .setDisabled(currentPage === totalPages)
-          )
-        ]
+    // If the user has no powers, grant them based on their dragons.
+    if (!userData.powers || userData.powers.length === 0) {
+      userData.dragons.forEach((dragon) => {
+        const chosenType = dragonTypes.find(t => t.id === dragon.typeId);
+        if (!userData.powers.some(power => power.typeId === chosenType.strengths[0])) {
+          userData.powers.push({
+            typeId: chosenType.strengths[0],
+            level: 1
+          });
+        }
+        if (!userData.powers.some(power => power.typeId === chosenType.strengths[1])) {
+          userData.powers.push({
+            typeId: chosenType.strengths[1],
+            level: 1
+          });
+        }
       });
+      await saveUserData(id,
+        userData);
+    }
+
+    if (userData.powers.length === 0) {
+      return message.channel.send(
+        `❗ **${username}**, you don't have any powers available.`
+      );
+    }
+
+    let currentPage = 1;
+    let totalPages = userData.powers.length;
+    const userName = username;
+    const userAvatar = message.author.displayAvatarURL({
+      dynamic: true
     });
 
-  collector.on('end',
-    async () => {
-      await embedMessage.edit({
-        components: [
-          new ActionRowBuilder().addComponents(
+    // A helper function that builds an embed for the currently viewed power.
+    const generateEmbed = (page) => {
+      const power = userData.powers[page - 1];
+      const chosenType = powerTypes.find(t => t.name === power.typeId);
+      if (!chosenType) {
+        return new EmbedBuilder()
+        .setDescription('❗ Unknown power data.')
+        .setColor("#ff0000");
+      }
+      const description =
+      `# ${chosenType.emoji} ${chosenType.name}\n` +
+      `- **${chosenType.description}**\n` +
+      `**ID**: ${chosenType.id}\n` +
+      `**LEVEL**: ${power.level}\n` +
+      `**DAMAGE**: ${chosenType.dmg * power.level}\n` +
+      `**HEAL**: ${chosenType.heal * power.level}\n` +
+      `**DEFENCE**: ${chosenType.defence * power.level}\n` +
+      `**NEXT LVL COST**: ${chosenType.costType === "gold" ? goldIcon:
+      chosenType.costType === "silver" ? silverIcon: bronzeIcon} **${chosenType.cost * power.level}**\n`;
+      return new EmbedBuilder()
+      .setDescription(description)
+      .setColor("#0c0d16")
+      .setAuthor({
+        name: `${userName}'s powers`, iconURL: userAvatar
+      })
+    };
+
+    // A helper function to build the four buttons.
+    const generateComponents = (page, total) => {
+      return [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+          .setCustomId('prevPage')
+          .setLabel('Previous')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(page === 1),
+          new ButtonBuilder()
+          .setCustomId('nextPage')
+          .setLabel('Next')
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(page === total),
+          new ButtonBuilder()
+          .setCustomId('upgradePower')
+          .setLabel('Upgrade')
+          .setStyle(ButtonStyle.Success),
+          new ButtonBuilder()
+          .setCustomId('viewMetals')
+          .setLabel('View Metals')
+          .setStyle(ButtonStyle.Secondary)
+        )
+      ];
+    };
+
+    // Send the initial embed message with buttons.
+    const embedMessage = await message.channel.send({
+      embeds: [generateEmbed(currentPage)],
+      components: generateComponents(currentPage, totalPages)
+    });
+
+    // Create a collector that listens for button clicks for 78 seconds.
+    const filter = (interaction) => {
+      return interaction.user.id === message.author.id &&
+      ['prevPage',
+        'nextPage',
+        'upgradePower',
+        'viewMetals'].includes(interaction.customId);
+    };
+
+    const collector = embedMessage.createMessageComponentCollector({
+      filter,
+      time: 78000,
+      componentType: ComponentType.Button
+    });
+
+    collector.on('collect', async (interaction) => {
+      try {
+        // Handle page navigation.
+        if (interaction.customId === 'prevPage') {
+          currentPage--;
+          await interaction.update({
+            embeds: [generateEmbed(currentPage)],
+            components: generateComponents(currentPage, totalPages)
+          });
+        } else if (interaction.customId === 'nextPage') {
+          currentPage++;
+          await interaction.update({
+            embeds: [generateEmbed(currentPage)],
+            components: generateComponents(currentPage, totalPages)
+          });
+        }
+        // Handle the "Upgrade" button.
+        else if (interaction.customId === 'upgradePower') {
+          // Defer the update immediately.
+          await interaction.deferUpdate();
+
+          // (Re)validate that the user has dragons and powers.
+          if (!userData.dragons || userData.dragons.length === 0) {
+            await interaction.followUp({
+              content: '❗ You have no dragons. Use `dragon summon` to get started!',
+              ephemeral: true
+            });
+            return;
+          }
+          if (!userData.powers || userData.powers.length === 0) {
+            await interaction.followUp({
+              content: '❗ You don’t have any powers. Use `dragon summon` to get started!',
+              ephemeral: true
+            });
+            return;
+          }
+
+          // Grab the power currently being viewed.
+          const currentPower = userData.powers[currentPage - 1];
+          const chosenType = powerTypes.find(t => t.name === currentPower.typeId);
+          if (!chosenType) {
+            await interaction.followUp({
+              content: '❗ Unknown power. No power was found with this ID!',
+              ephemeral: true
+            });
+            return;
+          }
+
+          const metalCost = chosenType.cost * currentPower.level;
+          if (userData.metals[chosenType.costType] < metalCost) {
+            await interaction.followUp({
+              content: `❗ **${username}**, you don't have ${chosenType.costType === "gold" ? goldIcon:
+              chosenType.costType === "silver" ? silverIcon: bronzeIcon} **${metalCost}**!`,
+              ephemeral: true
+            });
+            return;
+          }
+
+          // Deduct the metal cost and upgrade the power.
+          userData.metals[chosenType.costType] -= metalCost;
+          currentPower.level += 1;
+          await saveUserData(message.author.id, userData);
+
+          // Let the user know the upgrade succeeded.
+          await interaction.followUp({
+            content: `🎉 Congratulations, **${username}**! Your **${chosenType.emoji} ${chosenType.name}** has been upgraded to level ${currentPower.level}!`,
+            ephemeral: true
+          });
+
+          // Update the embed message to reflect the new power level.
+          await embedMessage.edit({
+            embeds: [generateEmbed(currentPage)],
+            components: generateComponents(currentPage, totalPages)
+          });
+        }
+        // Handle the "View Metals" button.
+        else if (interaction.customId === 'viewMetals') {
+          // Defer the reply (ephemeral).
+          await interaction.deferReply({
+            ephemeral: true
+          });
+          // Make sure the metals property exists.
+          if (!userData.metals) {
+            userData.metals = {
+              gold: 0,
+              silver: 0,
+              bronze: 0
+            };
+            await saveUserData(message.author.id, userData);
+          }
+          const metalsEmbed = new EmbedBuilder()
+          .setColor("#fbe789")
+          .setDescription(
+            `## ${goldIcon} **GOLD**: ${userData.metals.gold}\n` +
+            `## ${silverIcon} **SILVER**: ${userData.metals.silver}\n` +
+            `## ${bronzeIcon} **BRONZE**: ${userData.metals.bronze}`
+          )
+          .setAuthor({
+            name: `${username}'s metals`,
+            iconURL: userAvatar
+          })
+          .setFooter({
+            text: `Metals can be found through Dragon Adventures or mining.`
+          });
+          await interaction.editReply({
+            embeds: [metalsEmbed]
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        try {
+          if (!interaction.replied) {
+            await interaction.followUp({
+              content: 'An error occurred. Please try again later.',
+              ephemeral: true
+            });
+          }
+        } catch (error) {
+          console.error('Failed to send error message:', error);
+        }
+      }
+    });
+
+    collector.on('end',
+      async () => {
+        try {
+          // Disable all buttons after the timeout.
+          const disabledRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
             .setCustomId('prevPage')
             .setLabel('Previous')
@@ -209,11 +328,29 @@ async function myPowers(message) {
             .setCustomId('nextPage')
             .setLabel('Next')
             .setStyle(ButtonStyle.Primary)
+            .setDisabled(true),
+            new ButtonBuilder()
+            .setCustomId('upgradePower')
+            .setLabel('Upgrade')
+            .setStyle(ButtonStyle.Success)
+            .setDisabled(true),
+            new ButtonBuilder()
+            .setCustomId('viewMetals')
+            .setLabel('View Metals')
+            .setStyle(ButtonStyle.Secondary)
             .setDisabled(true)
-          )
-        ]
+          );
+          await embedMessage.edit({
+            components: [disabledRow]
+          });
+        } catch (err) {
+          console.error('Error disabling buttons:', err);
+        }
       });
-    });
+  } catch (err) {
+    console.error(err);
+    message.channel.send('An error occurred while displaying your powers. Please try again later.');
+  }
 }
 
 async function upgradePower(pid, message) {
@@ -227,11 +364,11 @@ async function upgradePower(pid, message) {
   if (!userData.dragons) userData.dragons = []
 
   if (userData.dragons.length === 0) {
-    return message.channel.send(`❗ You have no dragons. Use \`dragon summon\` to get started!`);
+    return message.channel.send(`❗ **${username}**, you have no dragons. Use \`dragon summon\` to get started!`);
   }
 
   if (userData.powers.length === 0) {
-    return message.channel.send(`❗ You don't have any power or dragons. Use \`dragon summon\` to get started!`);
+    return message.channel.send(`❗ **${username}**,  you don't have any power or dragons. Use \`dragon summon\` to get started!`);
   }
 
   const chosenType = powerTypes.find(t => t.id === pid);

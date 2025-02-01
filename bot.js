@@ -193,7 +193,7 @@ client.on('messageCreate', async (message) => {
     if (firstUserMention && !firstUserMention.bot) {
       let userExistenceMentioned = await userExists(firstUserMention.id);
       if (!userExistenceMentioned && command.category !== "🧩 Fun") {
-        return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas terms`.");
+        return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas help`.");
       }
     }
 
