@@ -61,14 +61,13 @@ export async function battle(interaction, player1, player2, friendly = false) {
 
   // Function to generate the top embed
   const embedTop = new EmbedBuilder()
-  .setDescription(`## ⚔️ Battle Arena 🏴‍☠️\n**${player1.name}**'s ***${player1.emoji}*** (${player1.shipLvl}) vs **${player2.name}**'s ***${player2.emoji}*** (${player2.shipLvl})`)
+  .setDescription(`## 𝙎𝙚𝙖 𝙤𝙛 𝙎𝙠𝙪𝙡𝙡𝙨🏴‍☠️\n**${player1.name}**'s ***${player1.emoji}*** (${player1.shipLvl}) vs\n**${player2.name}**'s ***${player2.emoji}*** (${player2.shipLvl})`)
   .addFields(
     {
       name: '🪝 Special Abilities',
       value: `${player1.name}: **${player1.special}** ✷ ${player2.name}: **${player2.special}**`,
       inline: false,
     })
-  .setColor('#698ff1');
 
   // Function to generate the battle state embed
   const generateEmbed = () => {

@@ -33,9 +33,9 @@ export async function toss(id, amount, channel, choice = "head") {
 
     // Send a suspenseful message
     const suspenseMessage = await channel.send(
-      `✧ **Betting ${amount} 𝒄𝒂𝒔𝒉 on ${choice}s!** ✧\n` +
+      `✧ **Betting ${amount} 𝒄𝒂𝒔𝒉 on ${choice}s!**\n` +
       `The ᑕOIＮ spins... ${spiningCoin}\n` +
-      `★ **${guild.user.username}'s** 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦! ★`);
+      `★ **${guild.user.username}'s** 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦!`);
 
     // Simulate a short delay to build suspense
     await new Promise(resolve => setTimeout(resolve, 2500)); // 2-second delay for better effect

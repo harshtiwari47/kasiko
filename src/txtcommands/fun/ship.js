@@ -129,7 +129,7 @@ export default {
       ctx.fillText("♥", circleX, circleY - 12);
 
       // Score text below the heart
-      ctx.fillStyle = "rgb(240,0,0)";
+      ctx.fillStyle = "rgb(196,0,0)";
       ctx.font = "30px sans-serif";
       ctx.fillText(`${score}%`, circleX, circleY + 50);
 
@@ -138,23 +138,22 @@ export default {
         name: "ship.png",
       });
 
-      // 6) Create an embed to display the results
-      const embed = new EmbedBuilder()
-      .setDescription(
-        `## 💘 𝓛𝓸𝓿𝓮 𝓣𝓮𝓼𝓽 𝓡𝓮𝓼𝓾𝓵𝓽𝓼!\n` +
-        `### **${user1.username}** ❤️ **${user2.username}**\n` +
-        `> ✧ ***\`Score: ${score}%\`***\n` +
-        `-# 💌 *${quote}*`
-      )
-      .setColor("#FFB6C1")
-      //   .setImage("attachment://ship.png") // reference the attachment Namespace
+      const msgDescription = `### 💘 **\`𝑾𝑰𝑵𝑫𝑺 𝑶𝑭 𝑨𝑭𝑭𝑬𝑪𝑻𝑰𝑶𝑵!\`**\n` +
+      `### **${user1.username}** ❤️ **${user2.username}**\n` +
+      `ᥫ᭡ ✧ ***_Score: ${score}%_***\n` +
+      `-# 💌 _${quote}_\n`;
 
       // 7) Reply with embed + image
       await message.channel.send({
-        embeds: [embed], files: [attachment]
+        content: msgDescription, files: [attachment]
       });
     } catch (e) {
       console.error(e);
+      try {
+        await message.channel.send("❗Something went wrong while shipping. Maybe there's an error caused while loading your PFP!");
+      } catch (err) {
+        console.error(err);
+      }
     }
   },
 };
@@ -200,7 +199,7 @@ export default {
     } else if (score < 20) {
       return "Maybe there's hope... but it's still a little awkward (･_･;) ⋆⁺₊❅";
     } else if (score < 30) {
-      return "Hmm, not much chemistry here… but who knows what the future holds? (｡•́︿•̀｡) ✨";
+      return "Hmm, not much chemistry here… but who knows what the future holds? (｡•́︿•̀｡)";
     } else if (score < 40) {
       return "There's a glimmer of something... but it's still uncertain (¬_¬) 𓂃 ࣪˖";
     } else if (score < 50) {
@@ -208,7 +207,7 @@ export default {
     } else if (score < 60) {
       return "Things are heating up! Could be something special (灬º‿º灬)♡ ⋆｡˚ ⋆";
     } else if (score < 70) {
-      return "You're getting there—love is blooming, slowly but surely! (っ˘ω˘ς) ✨";
+      return "You're getting there—love is blooming, slowly but surely! (っ˘ω˘ς)";
     } else if (score < 80) {
       return "You're quite the match! It's like destiny's at work (◍•ᴗ•◍)❤ 𓂃";
     } else if (score < 90) {
