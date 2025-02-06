@@ -170,33 +170,23 @@ async function handleProfile(ctx) {
         switch (interaction.customId) {
           case "alien_upgrade":
             return await handleUpgrade(ctx);
-
-            console.log("Upgrade button pressed");
             break;
           case "alien_harvest":
             return await handleHarvest(ctx);
-
-            // TODO: Insert your harvest logic here.
-            console.log("Harvest button pressed");
             break;
-          case "alien_manipulate":
-            return await handleManipulate(ctx);
-
-            // TODO: Insert your manipulate logic here.
-            console.log("Manipulate button pressed");
+          case "alien_help":
+            return await handleAlienHelp(ctx);
             break;
           case "alien_disguise":
             return await handleDisguise(ctx);
-
-            // TODO: Insert your disguise logic here.
-            console.log("Disguise button pressed");
             break;
           case "alien_battle":
             return await handleBattle(ctx, []);
-            // TODO: Insert your battle logic here.
-            console.log("Battle button pressed");
             break;
           default:
+            return await interaction.followUp({
+              content: "❗ Unknown command"
+            });
             break;
         }
       });
