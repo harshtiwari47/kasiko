@@ -123,8 +123,8 @@ async function prayToOrca(serverId, userId, username, guildName) {
 
   // Rewards
   const hunterReward = 50000;
-  const serverReward = 2500;
-  const otherReward = 1000;
+  const serverReward = 15000;
+  const otherReward = 5000;
 
   let message = '';
   // Are they the discoverer?
@@ -137,11 +137,11 @@ async function prayToOrca(serverId, userId, username, guildName) {
     // If same server
     if (orca.serverId === serverId) {
       userData.cash = (userData.cash || 0) + serverReward;
-      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **2,500** cash (same server reward)!`;
+      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **15,500** cash (same server reward)!`;
     } else {
       // Different server
       userData.cash = (userData.cash || 0) + otherReward;
-      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **1,000** cash (another server's Orca).`;
+      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **5,000** cash (another server's Orca).`;
     }
   }
 
@@ -168,7 +168,7 @@ async function buildOrcaEmbed(orca) {
     if (!orca.hunter) {
       discovered = true;
       // Orca exists but not claimed
-      desc = `# <:orca:1313094374921605172> An Orca has **spawned** but is not yet discovered! Be the first to **Claim** it!`;
+      desc = `## <:orca:1313094374921605172> An Orca has **spawned** but is not yet discovered!\n𝘉𝘦 𝘛𝘩𝘦 𝘍𝘪𝘳𝘴𝘵 𝘛𝘰 **𝘤𝘭𝘢𝘪𝘮** 𝘐𝘵!`;
     } else {
       const serverName = await client.guilds.fetch(orca.serverId);
       // Orca claimed

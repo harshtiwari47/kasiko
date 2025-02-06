@@ -63,9 +63,9 @@ async function bakeCookie(userId) {
   // Success! Bake +1 cookie
   userData.cookie.cookies = (userData.cookie.cookies || 0) + 1;
   await updateUser(userId, userData);
-  
+
   const burningFire = `<a:fire:1326388149957689435>`
-    
+
   return {
     success: true,
     message: `${burningFire} **Yay!** You ***successfully*** baked a 𝓬𝓸𝓸𝓴𝓲𝓮 . You now have 🍪 **${userData.cookie.cookies}** cookies!`
@@ -124,7 +124,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   return {
     success: true,
     message: `🍬 _So swᥱᥱt !_ **${authorUsername}** shared 🍪 **1 cookie** with <@${mentionedUserId}>.\n` +
-    `𝑇ℎ𝑒 𝑎𝑟𝑜𝑚𝑎 𝑖𝑠 𝑑𝑒𝑙𝑖𝑔ℎ𝑡𝑓𝑢𝑙, 𝑎𝑛𝑑 𝑦𝑜𝑢𝑟 𝑓𝑟𝑖𝑒𝑛𝑑𝑠ℎ𝑖𝑝 𝑔𝑟𝑜𝑤𝑠 𝑠𝑡𝑟𝑜𝑛𝑔𝑒𝑟!\n` +
+    `☺️ 𝑇ℎ𝑒 𝑎𝑟𝑜𝑚𝑎 𝑖𝑠 𝑑𝑒𝑙𝑖𝑔ℎ𝑡𝑓𝑢𝑙, 𝑎𝑛𝑑 𝑦𝑜𝑢𝑟 𝑓𝑟𝑖𝑒𝑛𝑑𝑠ℎ𝑖𝑝 𝑔𝑟𝑜𝑤𝑠 𝑠𝑡𝑟𝑜𝑛𝑔𝑒𝑟! 💖\n` +
     `ꜰʀɪᴇɴᴅʟʏ ꜱᴄᴏʀᴇ: +5`
   };
 }
@@ -138,7 +138,7 @@ async function buildCookieStatsEmbed(userId) {
   if (!userData.cookie || typeof userData.cookie !== 'object') {
     userData.cookie = {};
   }
-  
+
   const burningFire = `<a:fire:1326388149957689435>`
 
   const cookies = userData.cookie.cookies || 0;
@@ -217,7 +217,7 @@ export async function execute(args, message) {
   } = message;
   const userId = author.id;
   const ownerUsername = author.username;
-  
+
   // If user typed "!cookie @User" => share logic
   if (mentions.users.size > 0) {
     const mentionedUser = mentions.users.first();

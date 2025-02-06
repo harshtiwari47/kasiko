@@ -99,7 +99,7 @@ export async function huntCommand(context, {
       failMessages[Math.floor(Math.random() * failMessages.length)];
 
       const embed = new EmbedBuilder().setDescription(
-        `${chosenFailMessage}\n*(No animals caught, ammo used ${rubBulletEmoji} **1**)*`
+        `🌳 ${chosenFailMessage}\n*(No animals caught, ammo used ${rubBulletEmoji} **1**)*`
       );
       return handleMessage(context, {
         embeds: [embed],
@@ -215,7 +215,7 @@ export async function huntCommand(context, {
 
     // Construct the success embed
     const lines = [];
-    lines.push(`## 🅷🆄🅽🆃 💥\n**${username}** went hunting in **${location}**...`);
+    lines.push(`## 🅷🆄🅽🆃 💥\n**${username}** went hunting in **${location}**... 🌳`);
     if (usedBoosters.length > 0) {
       lines.push(
         `> *Used Boosters:* \`${usedBoosters.join(', ')}\``

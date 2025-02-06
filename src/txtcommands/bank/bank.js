@@ -17,7 +17,7 @@ const BankInfo = {
   security: 1,
   charge: 1.5,
   levelUpCost: 1000,
-  storage: 50000
+  storage: 100000
 }
 
 export const Bank = {

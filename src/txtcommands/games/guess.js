@@ -36,7 +36,7 @@ export async function guess(id, amount, number, channel) {
       winamount = Number(-1 * amount) || 0;
       userData.cash += Number(winamount);
       await updateUser(id, userData);
-      return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉. You guessed the wrong number. The number is **${random}**.`);
+      return channel.send(`🚨 Oops! **@${guild.user.username}**, you lost <:kasiko_coin:1300141236841086977>**${winamount.toLocaleString()}** 𝑪𝒂𝒔𝒉. You guessed the wrong number. 🎲 The number is **${random}**.`);
     }
 
   } catch (e) {

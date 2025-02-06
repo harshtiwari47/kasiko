@@ -222,7 +222,11 @@ export default {
   execute: async (args, message) => {
     if (!args[1]) {
       return message.channel.send(
-        "⚠️ You need to specify a difficulty! Example: `dungeon <difficulty>`. Available difficulties: easy, medium, hard, legendary."
+        "♦️ 𝘠𝘰𝘶 𝘯𝘦𝘦𝘥 𝘵𝘰 𝘴𝘱𝘦𝘤𝘪𝘧𝘺 𝘢 𝘥𝘪𝘧𝘧𝘪𝘤𝘶𝘭𝘵𝘺!" +
+        "\n**❔Example: **`dungeon <difficulty>`" +
+        "\n\n💀 **Available difficulties: **" +
+        "\n𖤓 easy 𖤓 medium" +
+        "\n𖤓 hard 𖤓 legendary."
       );
     }
 

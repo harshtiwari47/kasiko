@@ -61,7 +61,7 @@ export async function battle(interaction, player1, player2, friendly = false) {
 
   // Function to generate the top embed
   const embedTop = new EmbedBuilder()
-  .setDescription(`## 𝙎𝙚𝙖 𝙤𝙛 𝙎𝙠𝙪𝙡𝙡𝙨🏴‍☠️\n**${player1.name}**'s ***${player1.emoji}*** (${player1.shipLvl}) vs\n**${player2.name}**'s ***${player2.emoji}*** (${player2.shipLvl})`)
+  .setDescription(`## 𝙎𝙚𝙖 𝙤𝙛 𝙎𝙠𝙪𝙡𝙡𝙨 🏴‍☠️\n**${player1.name}**'s ***${player1.emoji}*** (${player1.shipLvl}) vs\n**${player2.name}**'s ***${player2.emoji}*** (${player2.shipLvl})`)
   .addFields(
     {
       name: '🪝 Special Abilities',

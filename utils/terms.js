@@ -68,7 +68,7 @@ export const termsAndcondition = async (message) => {
           let user = await createUser(message.author.id);
           if (user) {
             await interaction.editReply({
-              content: 'Thank you for accepting the Terms and Conditions!',
+              content: 'Thank you for accepting the Terms and Conditions!\nUse `kas help` for more information.',
               ephemeral: true
             });
 

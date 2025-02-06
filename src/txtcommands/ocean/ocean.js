@@ -226,7 +226,6 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         resultEmbed = new EmbedBuilder()
         .setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
         .setDescription(`**${message.author.username}** cast their line...\nbut all they hooked was a soggy boot — <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉 wasted.\nBetter luck next time! 🥾💦`)
-        .setColor('#620a0a')
       } else {
         // The fish is caught
         userData.cash -= cost;

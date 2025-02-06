@@ -156,13 +156,12 @@ export default {
     let amount;
 
     if (args[2] && args[2] !== "all") {
+      if (isNaN(amount)) {
+        return message.channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **rps**!`);
+      }
       amount = parseInt(args[2]);
       if (amount < 1 || amount > 200000) {
         return message.channel.send("⚠️ Bet must be between 1 and 200,000 cash.");
-      }
-
-      if (isNaN(amount)) {
-        return message.channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **rps**!`);
       }
     } else if (args[2] && args[2] === "all") {
       amount = "all";

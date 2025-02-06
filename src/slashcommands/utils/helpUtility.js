@@ -53,7 +53,7 @@ export function getHelpResponse(commandName = null) {
     }
   });
 
-  let response = "**All commands must be triggered with the prefix `kas`.\n\n";
+  let response = "**All commands must be triggered with the prefix `kas`**.\n\n";
   for (const [category, commands] of Object.entries(commandsByCategory)) {
     response += `**${category}**\n`;
     response += commands.filter(cmd => cmd.visible !== false).map(cmd => ` ${cmd.name}`).join(' ') + "\n";

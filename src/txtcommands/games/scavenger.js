@@ -129,7 +129,8 @@ export async function scavengerHunt(id, location, channel) {
 export default {
   name: "scavenger",
   description: "Go on a scavenger hunt to find treasures, rare items, or face traps!",
-  aliases: ["treasure", "sc"],
+  aliases: ["treasure",
+    "sc"],
   args: "<location>",
   example: ["scavenger forest",
     "hunt cave",
@@ -144,7 +145,10 @@ export default {
   execute: (args, message) => {
     if (!args[1]) {
       return message.channel.send(
-        "⚠️ You need to specify a location! Example: `scavenger <location>`. Available locations: forest, cave, beach, ruins, desert."
+        "♦️ 𝘠𝘰𝘶 𝘯𝘦𝘦𝘥 𝘵𝘰 𝘴𝘱𝘦𝘤𝘪𝘧𝘺 𝘢 𝘭𝘰𝘤𝘢𝘵𝘪𝘰𝘯!" +
+        "\n❔**Example: ** `scavenger <location>`" +
+        "\n\n🔍 **Available locations: **" +
+        "\nforest, cave, beach, ruins, desert."
       );
     }
 

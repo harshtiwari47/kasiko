@@ -273,6 +273,8 @@ export async function divorce(user, message) {
           userData.family.bondXP = 0;
           invitedUserData.family.spouse = null;
           invitedUserData.family.bondXP = 0;
+          userData.family.children = [];
+          invitedUserData.family.children = [];
 
           await updateUser(message.author.id, userData);
           await updateUser(user, invitedUserData);
@@ -398,7 +400,7 @@ export async function dailyRewards(userId, username, context) {
     } else {
       let rosesClaimed = (1 + Math.floor(Math.random() * 3));
       let bondExpInc = (1 + Math.floor(Math.random() * 11));
-      let cashExt = (1000 + Math.floor(Math.random() * 5000));
+      let cashExt = Math.min((1000 + Math.floor(Math.random() * 5000)) + (userData.family.bondXP/5), 10000);
       const loveMessages = [
         "Every moment with you feels like magic.",
         "You're the reason my heart skips a beat.",
@@ -418,7 +420,7 @@ export async function dailyRewards(userId, username, context) {
       ];
 
       userData.family.bondXP += bondExpInc;
-      userData.cash += Math.min(cashExt + (userData.family.bondXP/5 || 0), 10000);
+      userData.cash += cashExt;
       userData.roses += rosesClaimed;
       userData.family.dailyReward = currentTime;
 
