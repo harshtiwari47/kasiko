@@ -27,7 +27,7 @@ export const Bank = {
       if (amount === "all") amount = userData.cash;
       if (!userData || userData.cash < amount) {
         return message.channel.send(
-          `${message.author.username}, you don't have enough cash to deposit ${amount}.`
+          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
         );
       }
 
@@ -52,7 +52,7 @@ export const Bank = {
       });
 
       return message.channel.send(
-        `🏦 | **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n**New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**,\n**Remaining Cash**: <:kasiko_coin:1300141236841086977> **${userData.cash.toLocaleString()}**`
+        `🏦 **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**\n⤿ **Remaining Cash**: <:kasiko_coin:1300141236841086977> **${userData.cash.toLocaleString()}**`
       );
     } catch (err) {
       return message.channel.send(`Error depositing funds: ${err.message}`);
@@ -66,7 +66,7 @@ export const Bank = {
 
       if (!account) {
         return message.channel.send(
-          `**${message.author.username}**, you don't have a bank account yet. Open one first!`
+          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
         );
       }
 
@@ -102,7 +102,7 @@ export const Bank = {
       });
 
       await message.channel.send(
-        `🏦 | **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n**Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()},\n**New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()},\n**Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+        `🏦 **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n⚠ **Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()}\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}\n⤿ **Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
       );
       return;
     } catch (err) {
@@ -114,8 +114,11 @@ export const Bank = {
     try {
       const account = await getUserBankDetails(userId);
       if (!account) {
-        return message.channel.send(`**${message.author.username}**, you don't have a bank account yet.`);
+        return message.channel.send(
+          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        );
       }
+
 
       const userData = await getUserData(userId);
 
@@ -167,7 +170,9 @@ export const Bank = {
     try {
       const account = await getUserBankDetails(userId);
       if (!account) {
-        return message.channel.send(`**${message.author.username}**, you don't have a bank account yet.`);
+        return message.channel.send(
+          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        );
       }
 
       const currentLevel = account.level;
@@ -187,7 +192,7 @@ export const Bank = {
       });
 
       return message.channel.send(
-        `**${message.author.username}** upgraded their bank to level ${newLevel} successfully! Remaining bank balance: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
+        `🏦 **${message.author.username}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
       );
     } catch (err) {
       return message.channel.send(`Error upgrading bank: ${err.message}`);
@@ -232,7 +237,8 @@ export default {
     "with",
     "withdraw",
     "rob",
-    "bs", "ba"],
+    "bs",
+    "ba"],
   args: "<action> [amount or target]",
   example: [
     "deposit/dep 500",

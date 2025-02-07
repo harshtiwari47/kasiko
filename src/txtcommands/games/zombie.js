@@ -239,7 +239,7 @@ function createZombieEmbed(gameData) {
     `**⚙️ Metal:** ${gameData.resources.metal} units\n` +
     `**💊 Medkits:** ${gameData.resources.medkit} units\n` +
     `**🥕 Food:** ${gameData.resources.food} units\n` +
-    `-# \`kas help zombie\``
+    `-# \`kas zombie help\``
   )
   .setFooter({
     text: 'Zombie Resources Information'
@@ -541,11 +541,11 @@ export async function zombieSurvival(id, playerInfo, channel) {
         return interaction.update({
           embeds: [
             new EmbedBuilder()
-            .setTitle("☠️ You Died")
+            .setTitle("☠️ 𝒀𝒐𝒖 𝑫𝒊𝒆𝒅")
             .setDescription(
               `**${guild.user.username}** succumbed to the zombie horde...\n` +
-              `- Total Zombies Killed: **${gameData.zombiesKilled}**\n` +
-              `- Supplies Gathered: **${gameData.supplies}**`
+              `- 🧟 Total Zombies Killed: **${gameData.zombiesKilled}**\n` +
+              `- 📦 Supplies Gathered: **${gameData.supplies}**`
             )
             .setColor("DarkGrey")
           ],
@@ -592,12 +592,12 @@ export async function zombieSurvival(id, playerInfo, channel) {
         let reward = Math.random();
 
         if (reward > 0.9 && gameData.zombiesKilled > 7) {
-          let cash = 1000 + Math.floor(Math.random() * 16000);
+          let cash = 15000 + Math.floor(Math.random() * 15000);
           let wood = 20 + Math.floor(Math.random() * 30);
           let medkit = 1 + Math.floor(Math.random() * 2);
           let metal = 10 + Math.floor(Math.random() * 30);
 
-          rewardMessage = `**${guild.user.username}**, here are your rewards:\n` +
+          rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
           `- <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
           `- 🪵 Wood: **${wood}**\n` +
           `- 💊 Medkit: **${medkit}**\n` +
@@ -612,11 +612,13 @@ export async function zombieSurvival(id, playerInfo, channel) {
           await updateUser(id, userData);
 
         } else if (reward > 0.75 && gameData.zombiesKilled > 4) {
+          let cash = 10000 + Math.floor(Math.random() * 8000);
           let wood = 20 + Math.floor(Math.random() * 25);
           let medkit = 1 + Math.floor(Math.random() * 1);
           let metal = 10 + Math.floor(Math.random() * 25);
 
-          rewardMessage = `**${guild.user.username}**, here are your rewards:\n` +
+          rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
+          `- <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
           `- 🪵 Wood: **${wood}**\n` +
           `- 💊 Medkit: **${medkit}**\n` +
           `- ⚙️ Metal: **${metal}**`;
@@ -624,12 +626,19 @@ export async function zombieSurvival(id, playerInfo, channel) {
           playerInfo.resources.wood += wood;
           playerInfo.resources.medkit += medkit;
           playerInfo.resources.metal += metal;
+
+          let userData = await getUserData(id);
+          userData.cash += cash;
+          await updateUser(id, userData);
+
         } else if (reward > 0.5 && gameData.zombiesKilled > 3) {
+          let cash = 5000 + Math.floor(Math.random() * 5000);
           let wood = 20 + Math.floor(Math.random() * 10);
           let food = 1 + Math.floor(Math.random() * 20);
           let metal = 10 + Math.floor(Math.random() * 10);
 
-          rewardMessage = `**${guild.user.username}**, here are your rewards:\n` +
+          rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
+          `- <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
           `- 🪵 Wood: **${wood}**\n` +
           `- 🥕 Food: **${food}**\n` +
           `- ⚙️ Metal: **${metal}**`;
@@ -637,11 +646,16 @@ export async function zombieSurvival(id, playerInfo, channel) {
           playerInfo.resources.wood += wood;
           playerInfo.resources.food += food;
           playerInfo.resources.metal += metal;
+
+          let userData = await getUserData(id);
+          userData.cash += cash;
+          await updateUser(id, userData);
+
         } else if (gameData.zombiesKilled > 2) {
           let wood = 10 + Math.floor(Math.random() * 10);
           let food = 1 + Math.floor(Math.random() * 20);
 
-          rewardMessage = `**${guild.user.username}**, here are your rewards:\n` +
+          rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
           `- 🪵 Wood: **${wood}**\n` +
           `- 🥕 Food: **${food}**`;
 
@@ -655,7 +669,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
 
         await playerInfo.save();
 
-        await channel.send(`🧟 A horde of zombies swarms you! ${guild.user.username} couldn't escape in time ⏱️\n${rewardMessage}`);
+        await channel.send(`## 𝒁𝒐𝒎𝒃𝒊𝒆 𝑨𝒑𝒐𝒄𝒂𝒍𝒚𝒑𝒔𝒆 𝑺𝒕𝒓𝒊𝒌𝒆𝒔!\n<:zombie3:1318799748139974689> A horde of zombies swarms you! **${guild.user.username}** couldn't escape in time ⏱️\n${rewardMessage}`);
       });
   } catch (e) {
     console.error(e);

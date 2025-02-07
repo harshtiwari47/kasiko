@@ -86,9 +86,9 @@ export async function updateExpPoints(content, user, channel, guildId) {
     let lvlUpReward = 10;
     let lvlUp = false;
 
-    if (!(lvl === userData.level)) {
+    if (lvl > userData.level) {
       userData.level = lvl;
-      lvlUpReward = 1500 + userData.level * 1000;
+      lvlUpReward = 2000 + userData.level * 1250;
       userData.cash += lvlUpReward;
       lvlUp = true;
     }

@@ -27,7 +27,7 @@ export default {
     const power = args[0].toLowerCase();
 
     if (!['p1', 'p2'].includes(power)) {
-      return message.channel.send('⚠️ Invalid power specified. Choose either `p1` or `p2`.');
+      return message.channel.send("⚠️ Invalid __power__ specified to attack **Skyraid's boss**.\n▶ Please choose either `p1` or `p2`.");
     }
 
     // Call the shared battle logic

@@ -387,11 +387,9 @@ export const Ship = {
 
 
 export default {
-  name: "ship",
+  name: "ships",
   description: "Embark on thrilling pirate battles, attack rivals, activate your ship, upgrade its power, repair damages, and track your ship's stats!",
-  aliases: ["ship",
-    "ships",
-    "active"],
+  aliases: ["active"],
   // Aliases allow calling the command with different variations for battles or ships
   args: "<action> [target]",
   example: [

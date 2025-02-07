@@ -20,25 +20,11 @@ export default {
     const embed = new EmbedBuilder()
     .setTitle(`${target.tag}'s Avatar Information`)
     .setColor(0x00aaff)
-    .setThumbnail(avatarURL)
-    .addFields(
-      {
-        name: "Username", value: target.username, inline: true
-      },
-      {
-        name: "Tag", value: `#${target.discriminator}`, inline: true
-      },
-      {
-        name: "Avatar URL", value: `[Click here](${avatarURL})`, inline: true
-      },
-      {
-        name: "Avatar Type", value: avatarURL.endsWith(".gif") ? "GIF": "PNG", inline: true
-      },
-      {
-        name: "Avatar Size", value: "1024px (max size)", inline: true
-      }
-    )
-    .setTimestamp();
+    .setImage(avatarURL)
+    .setDescription(`
+      **[Avatar URL](<${avatarURL}>)**
+      **Avatar Type:** ${avatarURL.endsWith(".gif") ? "GIF": "PNG"}
+      `)
 
     await message.reply({
       embeds: [embed]

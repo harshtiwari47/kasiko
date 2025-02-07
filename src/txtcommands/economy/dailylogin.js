@@ -19,8 +19,8 @@ export async function dailylogin(message) {
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
 
       return message.channel.send(
-        `Sorry **${message.author.username}**, you have **already claimed** your daily reward for today.\n` +
-        `-# Next reward in ⏳ **${hours} hours and ${minutes} minutes**. 🎁`
+        `💠  Sorry **${message.author.username}**, you have **already claimed** your daily reward for today! 🍹\n\n` +
+        `🗯️ ***_Next reward_ in ⏳ ${hours} hours and ${minutes} minutes***. 🎁`
       );
     } else {
       // Calculate the last claim date

@@ -193,7 +193,7 @@ export default {
     if (Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2], message)) {
       give(message, message.author.id, args[1], Helper.extractUserId(args[2]));
     } else {
-      return message.channel.send("⚠️ Invalid cash amount or no user mentioned! Cash amount should be an integer. `Kas give <amount> <user>`");
+      return message.channel.send("⚠️ Invalid cash amount or no user mentioned! Cash amount should be an integer.\n**USE**: `give <amount> <user>`");
     }
   }
 };

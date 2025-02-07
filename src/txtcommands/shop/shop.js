@@ -31,7 +31,7 @@ export async function buyRoses(amount, message) {
   try {
     const userId = message.author.id;
     let userData = await getUserData(userId);
-    const rosesAmount = amount * 1000;
+    const rosesAmount = amount * 2500;
 
 
     if (userData.cash >= rosesAmount) {
@@ -134,7 +134,7 @@ export default {
             }
 
           default:
-            return message.channel.send("⚠️ Invalid category. Please specify one of: `car`, `structure`, `jewelry`, or `roses`.\nExample: `buy car <id>`");
+            return message.channel.send("## ⚠️ Invalid category.\nPlease specify one of:\n`car`, `structure`, `jewelry`, or `roses`.\n**Example:** `buy car <id>`");
           }
         } else {
           return message.channel.send("⚠️ Invalid purchase request.\nExample: `buy car <id>` or `buy roses <amount>`");
@@ -164,7 +164,7 @@ export default {
             return JEWELRY.sellJewelryItem(message, itemId);
 
           default:
-            return message.channel.send("⚠️ Invalid category. Please specify one of: `car`, `structure`, or `jewelry`.\nExample: `sell car <id>`");
+            return message.channel.send("## ⚠️ Invalid category.\nPlease specify one of:\n`car`, `structure`, or `jewelry`.\n**Example:** `sell car <id>`");
           }
         } else {
           return message.channel.send("⚠️ Invalid sell request.\nExample: `sell car <id>` or `sell jewelry <id>`");
@@ -205,24 +205,24 @@ export default {
         .addFields(
           {
             name: "❔ View Items",
-            value: `**\`\`\`✧ shop car  
-✧ shop structure  
-✧ shop jewelry\`\`\`**`,
+            value: `**\`\`\`✧ shop car
+            ✧ shop structure
+            ✧ shop jewelry\`\`\`**`,
             inline: false
           },
           {
             name: "❔ How to Buy",
             value: `**\`\`\`✧ buy car <car_id>
-✧ buy structure <structure_id>
-✧ buy jewelry <jewelry_id>
-✧ buy roses <amount>\`\`\`**`,
+            ✧ buy structure <structure_id>
+            ✧ buy jewelry <jewelry_id>
+            ✧ buy roses <amount>\`\`\`**`,
             inline: false
           },
           {
             name: "❔ How to Sell",
             value: `**\`\`\`✧ sell car <car_id>
-✧ sell structure <structure_id>
-✧ sell jewelry <jewelry_id>\`\`\`**`,
+            ✧ sell structure <structure_id>
+            ✧ sell jewelry <jewelry_id>\`\`\`**`,
             inline: false
           }
         )

@@ -5,12 +5,10 @@ import {
   ActionRowBuilder
 } from "discord.js";
 
-
 export default {
   name: "invite",
   description: "Provides the bot invite link.",
-  aliases: ["inv",
-    "botinvite"],
+  aliases: ["botinvite"],
   cooldown: 8000,
   category: "🔧 Utility",
 

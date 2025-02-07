@@ -19,14 +19,14 @@ async function sendUserStat(stat, message) {
     let cashStatus = "";
     const currentCash = Number(userData["networth"]);
 
-    if (currentCash < 1000000) cashStatus = `ᴺᴼᴺ-ᴹᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
-    if (currentCash > 1000000) cashStatus = `ᴹᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
-    if (currentCash > 5000000) cashStatus = `ᴮᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
-    if (currentCash > 10000000) cashStatus = `ᵀᴿᴵᴸᴸᴵᴼᴺᴬᴵᴿᴱ`;
-    if (currentCash > 15000000) cashStatus = `ᶜᴴᴵᴸᴸᴵᴺᴬᴵᴿᴱ`;
+    if (currentCash < 1000000) cashStatus = `ɴᴏɴ_ᴍɪʟʟɪᴏɴᴀɪʀᴇ`;
+    if (currentCash > 1000000) cashStatus = `ᴍɪʟʟɪᴏɴᴀɪʀᴇ`;
+    if (currentCash > 5000000) cashStatus = `ʙɪʟʟɪᴏɴᴀɪʀᴇ`;
+    if (currentCash > 10000000) cashStatus = `ᴛʀɪʟʟɪᴏɴᴀɪʀᴇ`;
+    if (currentCash > 15000000) cashStatus = `ᴄʜɪʟʟɪᴏɴᴀɪʀᴇ`;
 
     if (currentCash)
-      message.channel.send(`### 💳 **${message.author.username} 𝐁𝐚𝐥𝐚𝐧𝐜𝐞**\n` + `**<:kasiko_coin:1300141236841086977> | ${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉\n` + `-# ${cashStatus}`);
+      message.channel.send(`### 🜲 **${message.author.username} 𝐁𝐚𝐥𝐚𝐧𝐜𝐞**\n` + `**<:kasiko_coin:1300141236841086977> ⚡︎ ${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉\n` + `-# ⓘ ${cashStatus}`);
   }
   if (stat === "trust") {
     message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`);
@@ -36,14 +36,14 @@ async function sendUserStat(stat, message) {
     if (newNetWorth) {
       userData[stat] = newNetWorth;
     }
-    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** net worth.`);
+    message.channel.send(`🜲 **${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** net worth.`);
   }
   if (stat === "level") {
     // Calculate experience required for the next level
     const expRequiredNextLvl = (Math.pow(userData["level"] + 1, 2) * 100) - Number(userData["exp"]);
 
     message.channel.send(
-      `**${message.author.username}**, your level is 🏆 **${userData["level"]}**.\n` +
+      `亗 **${message.author.username}**, your level is 🏆 **${userData["level"]}**.\n` +
       `You need ✴️ **${expRequiredNextLvl}** more experience points to reach the next level!`
     );
   }

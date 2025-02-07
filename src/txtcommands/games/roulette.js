@@ -61,6 +61,10 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
     let opponentUsername = 'kasiko';
     let opponentUserId = '1300081477358452756'; // You can define or use any ID placeholder as your 'bot user ID'.
 
+    if (opponentUserId === opponentId) {
+      isBotOpponent = true;
+    }
+
     if (!isBotOpponent) {
       opponentUsername = opponentMember.user.username;
       opponentUserId = opponentMember.id;
@@ -305,9 +309,9 @@ async function startRoulette(
       err);
     return;
   }
-  
+
   let roundMsg = await channel.send(`The game is about to begin.`)
-    
+
 
   // 2) Load bullets randomly into a 6-chamber cylinder
   //    Example: array of 6 booleans, bulletCount of them = true
@@ -342,7 +346,7 @@ async function startRoulette(
   let winnerId = null;
   let loserId = null;
   let shotChamber = null;
-  
+
   // We'll allow up to 12 total shots (just in case it cycles multiple times)
   // But realistically, you won't go more than 6 in normal roulette logic
   for (let i = 0; i < 12; i++) {
@@ -354,8 +358,8 @@ async function startRoulette(
 
     // Send a short "firing" message
     await roundMsg.edit(`${gunEmoji}💨 **${shooter.member.user.username}** fires...`);
-    
-   await Helper.wait(3000);
+
+    await Helper.wait(3000);
 
     if (hasBullet) {
       // BANG! Shooter is shot
@@ -396,15 +400,17 @@ async function startRoulette(
     return channel.send('🚨 **Error**: Couldn’t fetch user data at the end of the match.');
   }
 
+  const botId = '1300081477358452756'; // You can define or use any ID placeholder as your 'bot user ID'.
+
   // If the loser was the bot, that implies "bot" has infinite or some artificial data
   // For simplicity, do not adjust if the bot lost, or you can handle it differently
-  if (!isBotOpponent || (isBotOpponent && loserId !== 'BOT_ID')) {
+  if (!isBotOpponent || (isBotOpponent && loserId !== botId)) {
     // Only do normal updates if the loser is a real user
     loserData.cash = Math.max(0, loserData.cash - betAmount);
     await updateUser(loserId, loserData);
   }
 
-  if (!isBotOpponent || (isBotOpponent && winnerId !== 'BOT_ID')) {
+  if (!isBotOpponent || (isBotOpponent && winnerId !== botId)) {
     // Only do normal updates if the winner is a real user
     winnerData.cash += betAmount;
     await updateUser(winnerId, winnerData);
@@ -456,7 +462,6 @@ export default {
 
     // If no valid opponent ID provided, we set the game to fight the bot
     if (!opponentId || !/^\d+$/.test(opponentId)) {
-      return message.channel.send('⚠️ You must specify a valid bet amount. `roulette <amount>  @opponent`');
       opponentId = '1300081477358452756'; // "bot ID" or a placeholder
     }
 

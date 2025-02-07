@@ -99,7 +99,7 @@ export async function huntCommand(context, {
       failMessages[Math.floor(Math.random() * failMessages.length)];
 
       const embed = new EmbedBuilder().setDescription(
-        `🌳 ${chosenFailMessage}\n*(No animals caught, ammo used ${rubBulletEmoji} **1**)*`
+        `🌳 ${chosenFailMessage}\n*(No animals caught, ammo used ${rubBulletEmoji} 𝟏)*`
       );
       return handleMessage(context, {
         embeds: [embed],

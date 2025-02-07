@@ -453,7 +453,7 @@ export async function handleUsePower( {
 
     if (!battle) {
       return {
-        replyContent: 'There is no active battle right now or you are not participating.',
+        replyContent: "ⓘ There is no active battle right now or you are not participating.\n➤  **USE {/} ** : `/skyraid new`\n-# A new battle can only start if there is no ongoing battle.",
         ephemeral: true,
       };
     }
@@ -461,7 +461,7 @@ export async function handleUsePower( {
     // Locate the player
     const player = battle.players.find((p) => p.userId === userId);
     if (!player) {
-      throw new Error('Player not found in battle.');
+      throw new Error(`ⓘ Player, **${user.username}**, not found in battle.`);
     }
 
     // Check if boss is defeated after the attack
@@ -474,7 +474,7 @@ export async function handleUsePower( {
 
     if (player.health <= 0) {
       return {
-        replyContent: `⚰️ | **${user.username}**, you have been defeated and cannot use abilities.`,
+        replyContent: `⚰️ **${user.username}**, you have been defeated and cannot use abilities.`,
         ephemeral: true
       }
     }
@@ -484,7 +484,7 @@ export async function handleUsePower( {
       (p) => p.id.toLowerCase() === power.toLowerCase()
     );
     if (!selectedPower) {
-      throw new Error('Invalid power selected.');
+      throw new Error('ⓘ Invalid power selected.');
     }
 
     // Apply power effects
@@ -611,7 +611,7 @@ export async function getPlayerSvInfo( {
   if (!battle) {
     return {
       success: false,
-      replyContent: 'There is no active battle right now.'
+      replyContent: "ⓘ There is no active battle right now or you are not participating.\n➤  **USE {/} ** : `/skyraid new`\n-# A new battle can only start if there is no ongoing battle."
     };
   }
 
@@ -619,14 +619,14 @@ export async function getPlayerSvInfo( {
   if (!player) {
     return {
       success: false,
-      replyContent: 'You are not participating in this battle.'
+      replyContent: `ⓘ **<@${player.userId}>**, you are not participating in this battle.`
     };
   }
 
   if (player.health <= 0) {
     return {
       success: false,
-      replyContent: 'You have been defeated and cannot use abilities.'
+      replyContent: `ⓘ **<@${player.userId}>**, you have been defeated and cannot use abilities.`
     }
   }
 

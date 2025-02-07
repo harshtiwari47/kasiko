@@ -109,7 +109,7 @@ async function handleProfile(ctx) {
       },
       {
         name: "🗯️ 𝖢𝖮𝖬𝖡𝖠𝖳 𝖲𝖳𝖠𝖳𝖲",
-        value: `**❤️ HP:** ${alien.battleStats.health}\n**💥 ATK:** ${alien.battleStats.attack}\n**🛡️ DEF:** ${alien.battleStats.defense}\n**🤖 AGI:** ${alien.battleStats.agility}`,
+        value: `**ꨄ︎ HP:** ${alien.battleStats.health}\n**✸ ATK:** ${alien.battleStats.attack}\n**⛨ DEF:** ${alien.battleStats.defense}\n**𖥂 AGI:** ${alien.battleStats.agility}`,
         inline: false
       },
       {
@@ -313,7 +313,7 @@ async function handleEnergyExchange(ctx, argsOrAmount) {
     }
 
     // Calculate cash gain
-    const cashGained = alien.tech * energyAmount;
+    const cashGained = alien.tech * energyAmount * 5;
 
     // Update values
     alien.energy -= energyAmount;
@@ -782,14 +782,15 @@ async function handleUpgrade(ctx) {
         content: `👽 **${getUsername(ctx)}**, you must join the cosmic collective first! Use \`alien join\`.`,
       });
     }
-    if (alien.resources < 150) {
+
+    if (alien.resources < 500) {
       return replyOrSend(ctx, {
-        content: `<:aliens_resource:1335537435341226024> **${alien.name}**, insufficient resources! You need **150 resources** to upgrade your alien tech.`,
+        content: `<:aliens_resource:1335537435341226024> **${alien.name}**, insufficient resources! You need **500 resources** to upgrade your alien tech.`,
       });
     }
 
     // Deduct the upgrade cost.
-    alien.resources -= 150;
+    alien.resources -= 500;
 
     // Determine which abilities the alien hasn't unlocked yet.
     // (This assumes alien.abilities is an array of objects with a "name" property.
