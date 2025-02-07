@@ -143,10 +143,9 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     .setTitle(`⌞ ⌝ Assets ✨`)
     .setThumbnail(avatar)
     .setDescription(
-      `**ᯓ 🚘 𝗖𝗔𝗥𝗦**: **${totalCars}**\n` +
-      `**ᯓ 🏡 𝗛𝗢𝗨𝗦𝗘𝗦**: **${totalStructures}**\n`+
-      `**ᯓ ⭐ 𝗣𝗔𝗦𝗦𝗘𝗦**: ${userData.seasonalPasses.length ? userData.seasonalPasses.join(" "): "0"}\n`+
-      `⟡ ₊ .⋆ ✦⋆𓂁﹏ 𓂃⋆.˚⟡\n`
+      `**⤿🚘 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
+      `**⤿🏡 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
+      `**⤿⭐ 𝖯𝖺𝗌𝗌𝖾𝗌**: ${userData.seasonalPasses.length ? userData.seasonalPasses.join(" "): "0"}\n`
     )
     .setFooter({
       text: `ɪɴᴠᴇꜱᴛɪɴɢ & ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ. 💰`

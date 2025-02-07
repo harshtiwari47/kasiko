@@ -21,7 +21,7 @@ export default {
     args.shift();
 
     if (!args[0]) {
-      return message.channel.send('⚠️ Please specify a power to use. Usage: `!use <p1|p2>`');
+      return message.channel.send("⚠️ Invalid __power__ specified to attack **Skyraid's boss**.\n▶ Please choose either `p1` or `p2`.");
     }
 
     const power = args[0].toLowerCase();
