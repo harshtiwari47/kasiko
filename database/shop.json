@@ -179,7 +179,7 @@
     "maintenance": 65000,
     "color": "White with Red Stripes",
     "emoji": "1324601046290530376",
-    "type": "car",
+    "type": "car"
   },
   "terra_rover": {
     "name": "Terra Rover",
@@ -194,7 +194,7 @@
     "maintenance": 70000,
     "color": "Black",
     "emoji": "1324601046290530377",
-    "type": "car",
+    "type": "car"
   },
   "house1": {
     "name": "Beachside Retreat",
