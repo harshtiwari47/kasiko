@@ -21,16 +21,39 @@ function updateHealthEmbed(health, difficulty) {
   .setColor(health > 50 ? "#85e6c0": health > 20 ? "#ffc107": "#f44336");
 }
 
-
 export async function mysteryDungeon(id, difficulty, channel) {
-  try {
-    const guild = await channel.guild.members.fetch(id);
-    let userData = await getUserData(id);
+  // Ensure that channel is provided and valid.
+  if (!channel || typeof channel.send !== "function") {
+    console.error("Channel is not provided or invalid.");
+    return;
+  }
 
-    if (!userData) {
-      return channel.send(`⚠️ **${guild.user.username}**, you need to register first to enter the dungeon!`);
+  try {
+    // Attempt to fetch the guild member.
+    let guildMember;
+    try {
+      guildMember = await channel.guild.members.fetch(id);
+    } catch (err) {
+      console.error("Error fetching guild member:", err);
+      return channel.send("An error occurred while fetching your guild data.");
     }
 
+    // Retrieve user data.
+    let userData;
+    try {
+      userData = await getUserData(id);
+    } catch (err) {
+      console.error("Error fetching user data:", err);
+      return channel.send("An error occurred while retrieving your data.");
+    }
+
+    if (!userData) {
+      return channel.send(
+        `⚠️ **${guildMember?.user?.username || "User"}**, you need to register first to enter the dungeon!`
+      );
+    }
+
+    // Define dungeon settings.
     const dungeons = {
       easy: {
         reward: [200,
@@ -63,11 +86,13 @@ export async function mysteryDungeon(id, difficulty, channel) {
         trapChance: 0.6,
         puzzleChance: 0.5,
         hpLoss: 40
-      },
+      }
     };
 
     if (!dungeons[difficulty]) {
-      return channel.send(`⚠️ Invalid difficulty! Choose one: ${Object.keys(dungeons).join(", ")}.`);
+      return channel.send(
+        `⚠️ Invalid difficulty! Choose one: ${Object.keys(dungeons).join(", ")}.`
+      );
     }
 
     const {
@@ -78,36 +103,62 @@ export async function mysteryDungeon(id, difficulty, channel) {
       hpLoss
     } = dungeons[difficulty];
 
-    await redisClient.set(`user:${id}:dungeonBattle`,
-      JSON.stringify(true),
-      {
-        EX: 120,
-        // Cache for 2 min
-      });
+    // Set a flag in Redis (with its own error handling).
+    try {
+      await redisClient.set(
+        `user:${id}:dungeonBattle`,
+        JSON.stringify(true),
+        {
+          EX: 120
+        } // Cache for 2 minutes.
+      );
+    } catch (err) {
+      console.error("Error setting redis dungeonBattle flag:", err);
+    }
 
-    if (!userData.hp) userData.hp = 100; // Default health
+    // Ensure the user has a valid HP value.
+    if (typeof userData.hp !== "number") userData.hp = 100;
     if (userData.hp <= 0) {
       return channel.send(
-        `💔 **${guild.user.username}**, you need to heal before entering the dungeon! Type \`heal\` to recover your health.`
+        `💔 **${guildMember?.user?.username || "User"}**, you need to heal before entering the dungeon! Type \`heal\` to recover your health.`
       );
     }
 
-    const suspenseMessage = await channel.send({
-      content: `<:dungeon:1317142898902437940> **${guild.user.username}** ventures into the **${difficulty.toUpperCase()} Dungeon** with **${userData.hp} HP**...`,
-      embeds: [updateHealthEmbed(userData.hp, difficulty)],
-    });
+    // Send the initial suspense message.
+    let suspenseMessage;
+    try {
+      suspenseMessage = await channel.send({
+        content: `<:dungeon:1317142898902437940> **${guildMember?.user?.username || "User"}** ventures into the **${difficulty.toUpperCase()} Dungeon** with **${userData.hp} HP**...`,
+        embeds: [updateHealthEmbed(userData.hp, difficulty)]
+      });
+    } catch (err) {
+      console.error("Error sending suspense message:", err);
+      return;
+    }
 
+    // Loop through up to 5 rooms (or until the user runs out of HP).
     let roomCount = 0;
     while (userData.hp > 0 && roomCount < 5) {
       roomCount++;
+      // Delay 2 seconds between rooms.
       await new Promise(resolve => setTimeout(resolve, 2000));
-      await suspenseMessage.edit(`🚪 Room ${roomCount}: What lies ahead...`);
+
+      let existingEmbeds = suspenseMessage.embeds; // Get current embeds
+      existingEmbeds.shift();
+
+      try {
+        await suspenseMessage.edit({
+          content: `🚪 Room ${roomCount}: What lies ahead...`
+        });
+      } catch (err) {
+        console.error("Error editing suspense message:", err);
+      }
 
       const encounterRoll = Math.random();
       let outcomeMessage = "";
 
       if (encounterRoll < trapChance) {
-        // Trap Encounter
+        // TRAP ENCOUNTER
         const traps = ["🪤 flaming arrows",
           "🪤 poisoned spikes",
           "🪤 falling boulders"];
@@ -116,13 +167,26 @@ export async function mysteryDungeon(id, difficulty, channel) {
 
         if (userData.hp <= 0) {
           userData.hp = 0;
-          outcomeMessage = `💔 **${guild.user.username}** was caught in **${trap}**, losing **${hpLoss} HP** and falling unconscious. Heal before returning!`;
+          outcomeMessage = `💔 **${guildMember?.user?.username || "User"}** was caught in **${trap}**, losing **${hpLoss} HP** and falling unconscious. Heal before returning!`;
         } else {
-          outcomeMessage = `🚨 **${guild.user.username}** triggered a **${trap}**, losing **${hpLoss} HP**. Remaining HP: **${userData.hp}**.`;
+          outcomeMessage = `🚨 **${guildMember?.user?.username || "User"}** triggered a **${trap}**, losing **${hpLoss} HP**. Remaining HP: **${userData.hp}**.`;
         }
+
+        try {
+          await suspenseMessage.edit({
+            content: outcomeMessage,
+            embeds: [updateHealthEmbed(userData.hp, difficulty), ...existingEmbeds],
+            components: [] // Remove any components.
+          });
+        } catch (err) {
+          console.error("Error updating suspense message after trap:", err);
+        }
+
       } else if (encounterRoll < monsterChance + trapChance) {
-        // Monster Encounter
-        const monsters = ["👹 Orc Warrior",
+        // MONSTER (VILLAIN) ENCOUNTER:
+        // Instead of sending a new message, we update the original suspenseMessage.
+        const monsters = [
+          "👹 Orc Warrior",
           "🧟 Cursed Sorcerer",
           "🎃 Shadow Beast",
           "🧛🏻 Vampire",
@@ -133,7 +197,8 @@ export async function mysteryDungeon(id, difficulty, channel) {
           "😈 Dark Devil",
           "💀 Dread Nexus",
           "👁️ Abyss Warden",
-          "🐍 Serpent King"];
+          "🐍 Serpent King"
+        ];
         const monster = monsters[Math.floor(Math.random() * monsters.length)];
 
         const monsterEmbed = new EmbedBuilder()
@@ -145,61 +210,104 @@ export async function mysteryDungeon(id, difficulty, channel) {
           new ButtonBuilder().setCustomId("flee").setLabel("Flee").setStyle(ButtonStyle.Danger)
         );
 
-        const monsterMessage = await channel.send({
-          embeds: [monsterEmbed], components: [buttons]
-        });
-
-        const filter = i => i.user.id === id && ["fight",
-          "flee"].includes(i.customId);
-        const interaction = await monsterMessage.awaitMessageComponent({
-          filter, time: 15000
-        }).catch(() => null);
-
-        if (interaction) {
-          if (interaction.customId === "fight") {
-            const winChance = Math.random() < 0.5; // 50% chance to win
-            if (winChance) {
-              const rewardAmount = Math.floor(Math.random() * (reward[1] - reward[0] + 1)) + reward[0];
-              userData.cash += rewardAmount;
-              outcomeMessage = `🎉 ⚔️ You defeated the **${monster}** and earned <:kasiko_coin:1300141236841086977> **${rewardAmount.toLocaleString()}**!`;
-            } else {
-              userData.hp -= hpLoss;
-              if (userData.hp <= 0) {
-                userData.hp = 0;
-                outcomeMessage = `💔 The **${monster}** overpowered you! You lost **${hpLoss} HP** and are now unconscious.`;
-              } else {
-                outcomeMessage = `😢 The **${monster}** was too strong. You lost **${hpLoss} HP** and fled. Remaining HP: **${userData.hp}**.`;
-              }
-            }
-          } else {
-            outcomeMessage = `🏃 **${guild.user.username}** fled from the **${monster}**. No rewards this time.`;
-          }
-          await interaction.update({
-            embeds: [monsterEmbed.setDescription(outcomeMessage)], components: []
+        try {
+          await suspenseMessage.edit({
+            // Keep the previous content or update as needed.
+            content: suspenseMessage.content,
+            embeds: [updateHealthEmbed(userData.hp, difficulty), ...existingEmbeds, monsterEmbed],
+            components: [buttons]
           });
-        } else {
-          await monsterMessage.edit({
-            embeds: [monsterEmbed.setDescription("❌ No decision was made in time.")], components: []
+        } catch (err) {
+          console.error("Error editing suspense message for monster encounter:", err);
+        }
+
+        // Wait for the user to decide.
+        let interaction;
+        try {
+          const filter = i => i.user.id === id && ["fight",
+            "flee"].includes(i.customId);
+          interaction = await suspenseMessage.awaitMessageComponent({
+            filter, time: 15000
           });
+        } catch (err) {
+          try {
+            await suspenseMessage.edit({
+              embeds: [updateHealthEmbed(userData.hp, difficulty), ...existingEmbeds, monsterEmbed.setDescription("❌ No decision was made in time.")],
+              components: []
+            });
+          } catch (editErr) {}
           break;
         }
-      } else {
-        outcomeMessage = `💰 You found a treasure chest containing <:kasiko_coin:1300141236841086977> **${Math.floor(Math.random() * (reward[1] - reward[0] + 1) + reward[0]).toLocaleString()}**!`;
-      }
 
-      await suspenseMessage.edit({
-        content: outcomeMessage, embeds: [updateHealthEmbed(userData.hp, difficulty)]});
+        // Process the player's choice.
+        if (interaction.customId === "fight") {
+          const winChance = Math.random() < 0.5; // 50% chance to win.
+          if (winChance) {
+            const rewardAmount = Math.floor(Math.random() * (reward[1] - reward[0] + 1)) + reward[0];
+            userData.cash = (userData.cash || 0) + rewardAmount;
+            outcomeMessage = `🎉 ⚔️ You defeated the **${monster}** and earned <:kasiko_coin:1300141236841086977> **${rewardAmount.toLocaleString()}**!`;
+          } else {
+            userData.hp -= hpLoss;
+            if (userData.hp <= 0) {
+              userData.hp = 0;
+              outcomeMessage = `💔 The **${monster}** overpowered you! You lost **${hpLoss} HP** and are now unconscious.`;
+            } else {
+              outcomeMessage = `😢 The **${monster}** was too strong. You lost **${hpLoss} HP** and fled. Remaining HP: **${userData.hp}**.`;
+            }
+          }
+        } else if (interaction.customId === "flee") {
+          outcomeMessage = `🏃 **${guildMember?.user?.username || "User"}** fled from the **${monster}**. No rewards this time.`;
+        }
+
+        // Update the message with the outcome.
+        try {
+          await interaction.update({
+            embeds: [updateHealthEmbed(userData.hp, difficulty), ...existingEmbeds, monsterEmbed.setDescription(outcomeMessage)],
+            components: []
+          });
+        } catch (err) {
+          console.error("Error updating suspense message after monster interaction:", err);
+        }
+
+      } else {
+        // TREASURE (or other) ENCOUNTER.
+        const treasureAmount = Math.floor(Math.random() * (reward[1] - reward[0] + 1)) + reward[0];
+        outcomeMessage = `💰 You found a treasure chest containing <:kasiko_coin:1300141236841086977> **${treasureAmount.toLocaleString()}**!`;
+        try {
+          await suspenseMessage.edit({
+            content: outcomeMessage,
+            embeds: [updateHealthEmbed(userData.hp, difficulty), ...existingEmbeds],
+            components: []
+          });
+        } catch (err) {
+          console.error("Error updating suspense message after treasure encounter:", err);
+        }
+      }
     }
 
-    await updateUser(id, userData);
-    channel.send(`⌛ **${guild.user.username}**, your dungeon adventure is complete! 🗡️`);
-  } catch (e) {
-    console.error(e);
+    // Save the updated user data.
     try {
-      let userData = await getUserData(id);
       await updateUser(id, userData);
-    } catch (err) {}
-    return channel.send("Oops! Something went wrong during your dungeon adventure. Please try again!");
+    } catch (err) {
+      console.error("Error updating user data:", err);
+    }
+
+    try {
+      await channel.send(`⌛ **${guildMember?.user?.username || "User"}**, your dungeon adventure is complete! 🗡️`);
+    } catch (err) {
+      console.error("Error sending completion message:", err);
+    }
+  } catch (e) {
+    console.error("Unexpected error during dungeon adventure:", e);
+    try {
+      const userData = await getUserData(id);
+      await updateUser(id, userData);
+    } catch (err) {
+      console.error("Error in recovery update:", err);
+    }
+    if (channel && typeof channel.send === "function") {
+      return channel.send("Oops! Something went wrong during your dungeon adventure. Please try again!");
+    }
   }
 }
 
@@ -233,7 +341,7 @@ export default {
     const cachedBattle = await redisClient.get(`user:${message.author.id}:dungeonBattle`);
 
     if (cachedBattle) {
-      return message.channel.send(`🕯️ **${message.author.username}**, please wait until the current dungeon ends or try again after 2 minutes!`);
+     return message.channel.send(`🕯️ **${message.author.username}**, please wait until the current dungeon ends or try again after 2 minutes!`);
     }
 
     const difficulty = args[1].toLowerCase();

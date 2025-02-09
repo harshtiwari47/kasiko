@@ -22,7 +22,7 @@ export async function dailylogin(message) {
         `💠  Sorry **${message.author.username}**, you have **already claimed** your daily reward for today! 🍹\n\n` +
         `🗯️ ***_Next reward_ in ⏳ ${hours} hours and ${minutes} minutes***. 🎁`
       );
-    } else {
+    } else if (userData) {
       // Calculate the last claim date
       const lastClaimDate = userData.dailyReward ? Number(userData.dailyReward): 0;
 
@@ -78,6 +78,8 @@ export async function dailylogin(message) {
         `🔥 Streak ~ **${userData.rewardStreak}** day(s).\n` +
         `⏱️ Next reward can be claimed tomorrow.`
       );
+    } else {
+      return;
     }
   } catch (e) {
     console.error(e);
