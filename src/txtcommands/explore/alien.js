@@ -109,7 +109,7 @@ async function handleProfile(ctx) {
       },
       {
         name: "🗯️ 𝖢𝖮𝖬𝖡𝖠𝖳 𝖲𝖳𝖠𝖳𝖲",
-        value: `**ꨄ︎ HP:** ${alien.battleStats.health}\n**✸ ATK:** ${alien.battleStats.attack}\n**⛨ DEF:** ${alien.battleStats.defense}\n**𖥂 AGI:** ${alien.battleStats.agility}`,
+        value: `- **ꨄ︎ HP:** ${alien.battleStats.health}\n- **✸ ATK:** ${alien.battleStats.attack}\n- **⛨ DEF:** ${alien.battleStats.defense}\n- **𖥂 AGI:** ${alien.battleStats.agility}`,
         inline: false
       },
       {
@@ -783,14 +783,16 @@ async function handleUpgrade(ctx) {
       });
     }
 
-    if (alien.resources < 500) {
+    const upgradeCost = Number((alien.tech * 2)) + 500;
+
+    if (alien.resources < upgradeCost) {
       return replyOrSend(ctx, {
-        content: `<:aliens_resource:1335537435341226024> **${alien.name}**, insufficient resources! You need **500 resources** to upgrade your alien tech.`,
+        content: `<:aliens_resource:1335537435341226024> **${alien.name}**, insufficient resources! You need **${upgradeCost} resources** to upgrade your alien tech.`,
       });
     }
 
     // Deduct the upgrade cost.
-    alien.resources -= 500;
+    alien.resources -= upgradeCost;
 
     // Determine which abilities the alien hasn't unlocked yet.
     // (This assumes alien.abilities is an array of objects with a "name" property.
@@ -903,7 +905,7 @@ async function handleManipulate(ctx) {
         ])
       });
     }
-    const resourceGain = 50 + (randomAbility.resourcesCollection ? randomAbility.resourcesCollection: 0);
+    const resourceGain = 25 + (randomAbility.resourcesCollection ? randomAbility.resourcesCollection: 0);
     alien.resources += resourceGain;
     alien.influence += 1;
     alien.manipulations += 1;
@@ -951,50 +953,96 @@ async function handleManipulate(ctx) {
 * @param {object} opponent - The opponent (an Alien document or an AI object).
 */
 async function simulateBattle(ctx, alien, opponent) {
-  try {
-    const battleEmbed = new EmbedBuilder()
-    .setTitle(`🛸 𝑪𝒐𝒔𝒎𝒊𝒄 𝑪𝒍𝒂𝒔𝒉: ${alien.name} vs ${opponent.name}`)
-    .setDescription("Prepare for battle, cosmic wanderer!\n\n🌟 **May the stars align in your favor.**");
+  // Rare events that can happen with some probability each round
+  const rareEvents = [{
+    description: "A rogue airship appears out of nowhere and blasts the battlefield, striking both sides for 5 damage!",
+    effect: (userHP, oppHP) => {
+      return {
+        userHP: userHP - 5,
+        oppHP: oppHP - 5
+      };
+    }
+  },
+    {
+      description: "A cosmic storm rages briefly, causing both fighters to lose 3 health!",
+      effect: (userHP, oppHP) => {
+        return {
+          userHP: userHP - 3,
+          oppHP: oppHP - 3
+        };
+      }
+    },
+    {
+      description: "A traveling space merchant drops health kits by mistake—both fighters regain 5 health!",
+      effect: (userHP, oppHP) => {
+        return {
+          userHP: userHP + 5,
+          oppHP: oppHP + 5
+        };
+      }
+    }];
 
-    // Defer reply if needed
+  // Attack descriptions
+  const attackMoves = [
+    "fires a plasma beam",
+    "launches an energy pulse",
+    "unleashes a cosmic ray",
+    "strikes with a neutron burst",
+    "fires a gravity cannon",
+    "charges up a dark matter blast"
+  ];
+
+  // Helper to generate a health bar with a percentage indicator
+  function generateHealthBar(hp, maxHP) {
+    const totalBars = 5;
+    const effectiveHP = Math.max(0, hp);
+    const filledBars = Math.round((effectiveHP / maxHP) * totalBars);
+    const percentage = Math.round((effectiveHP / maxHP) * 100);
+    return "🟩".repeat(filledBars) + "⬜".repeat(totalBars - filledBars) + ` (${percentage}%)`;
+  }
+
+  // Defer reply if needed
+  try {
     if (!ctx.author && !ctx.deferred && !ctx.replied && typeof ctx.deferReply === "function") {
       await ctx.deferReply();
     }
-    const battleMessage = await replyOrSend(ctx, {
-      embeds: [battleEmbed]
+  } catch (err) {
+    console.error("Unable to defer reply:", err);
+  }
+
+  try {
+    // Initial embed to announce the battle
+    const openingEmbed = new EmbedBuilder()
+    .setTitle(`🛸 𝑪𝒐𝒎𝒊𝒄 𝑪𝒍𝒂𝒔𝒉: ${alien.name} vs ${opponent.name}`)
+    .setDescription("Prepare for battle, cosmic wanderer!\n\n🌟 **May the stars align in your favor.**");
+
+    // Send the initial battle embed
+    await replyOrSend(ctx, {
+      embeds: [openingEmbed]
     });
 
-    // Save original maximum health values for percentage calculations.
+    // Save original maximum health for percentage calculations
     const userMaxHP = alien.battleStats.health;
     const oppMaxHP = opponent.battleStats.health;
 
     let userHP = userMaxHP;
     let oppHP = oppMaxHP;
 
-    // Attack descriptions
-    const attackMoves = [
-      "fires a plasma beam",
-      "launches an energy pulse",
-      "unleashes a cosmic ray",
-      "strikes with a neutron burst",
-      "fires a gravity cannon",
-      "charges up a dark matter blast"
-    ];
-
-    // Updated function to generate a health bar with a percentage indicator.
-    function generateHealthBar(hp, maxHP) {
-      const totalBars = 5;
-      const effectiveHP = Math.max(0, hp);
-      const filledBars = Math.round((effectiveHP / maxHP) * totalBars);
-      const percentage = Math.round((effectiveHP / maxHP) * 100);
-      return "🟩".repeat(filledBars) + "⬜".repeat(totalBars - filledBars) + ` (${percentage}%)`;
-    }
-
-    // Simulate 3 rounds
+    // Simulate 3 rounds, each with its own embed
     for (let round = 1; round <= 3; round++) {
       let roundLog = `**🛑 🆁🅾🆄🅽🅳 ${round} - Let the battle begin!**\n\n`;
 
-      // Challenger's attack
+      // 1) Possibly trigger a rare event
+      if (Math.random() < 0.2) {
+        // 20% chance for a random event each round
+        const event = rareEvents[Math.floor(Math.random() * rareEvents.length)];
+        roundLog += `**[RARE EVENT]** ${event.description}\n\n`;
+        const adjusted = event.effect(userHP, oppHP);
+        userHP = adjusted.userHP;
+        oppHP = adjusted.oppHP;
+      }
+
+      // 2) Challenger's attack
       if (Math.random() < opponent.battleStats.agility / 100) {
         roundLog += `❗ **${opponent.name} dodges** ${alien.name}'s attack at the last second! No damage taken.\n`;
       } else {
@@ -1016,17 +1064,22 @@ async function simulateBattle(ctx, alien, opponent) {
         ? `(${opponent.name}: ${generateHealthBar(oppHP, oppMaxHP)})\n`: `💀 **${opponent.name} is obliterated!**\n`;
       }
 
+      // Check if opponent died from the attack
       if (oppHP <= 0) {
-        battleEmbed.setDescription(roundLog);
-        await battleMessage.edit({
-          embeds: [battleEmbed]
+        // Send round embed and break
+        const roundEmbed = new EmbedBuilder()
+        .setTitle(`**Round ${round} Results**`)
+        .setDescription(roundLog);
+
+        await replyOrSend(ctx, {
+          embeds: [roundEmbed]
         });
         break;
       }
 
       roundLog += `\n`;
 
-      // Opponent's counterattack
+      // 3) Opponent's counterattack
       if (Math.random() < alien.battleStats.agility / 100) {
         roundLog += `❗ **${alien.name} dodges** ${opponent.name}'s counterattack! No damage taken.\n`;
       } else {
@@ -1048,45 +1101,63 @@ async function simulateBattle(ctx, alien, opponent) {
         ? `(${alien.name}: ${generateHealthBar(userHP, userMaxHP)})\n`: `💀 **${alien.name} has fallen!**\n`;
       }
 
-      battleEmbed.setDescription(roundLog);
-      await battleMessage.edit({
-        embeds: [battleEmbed]
+      // Send the embed for this round
+      const roundEmbed = new EmbedBuilder()
+      .setTitle(`**Round ${round} Results**`)
+      .setDescription(roundLog);
+
+      await replyOrSend(ctx, {
+        embeds: [roundEmbed]
       });
-      await new Promise((resolve) => setTimeout(resolve, 3000)); // Increased delay for better readability
+
+      // If the user died from the counterattack, break
+      if (userHP <= 0) break;
+
+      // Delay before next round (optional, for dramatic effect)
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
 
-    // Determine the battle outcome and append the final health statuses.
+    // 4th round - Final Outcome
+    const outcomeEmbed = new EmbedBuilder()
+    .setTitle(`**🛑 🆁🅾🆄🅽🅳 4 - Battle Outcome**`);
+
     let resultMessage = "";
     if (userHP <= 0) {
-      let penalty = Math.floor(Math.random() * 30) + 30;
+      // The user lost
+      const penalty = Math.floor(Math.random() * 30) + 30;
       alien.resources = Math.max(0, alien.resources - penalty);
-      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n⚠️ **${alien.name} lost ${penalty} ${alienResEmo} resources.**`;
+      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n⚠️ **${alien.name} lost ${penalty} resources.**`;
 
+      // If opponent is not AI, give them some reward
       if (opponent.userId !== "AI" && typeof opponent.save === "function") {
         opponent.resources += Math.floor(penalty / 2);
         opponent.influence += 1;
         await opponent.save();
       }
     } else if (oppHP <= 0) {
-      let reward = Math.floor(Math.random() * 50) + 50;
+      // The user won
+      const reward = Math.floor(Math.random() * 50) + 50;
       alien.resources += reward;
       alien.influence += 1;
-      resultMessage = `🏆 **Victory!** ${alien.name} has conquered the battlefield!\n🎖️ **Reward:** ${reward} ${alienResEmo} resources gained!`;
+      resultMessage = `🏆 **Victory!** ${alien.name} has conquered the battlefield!\n🎖️ **Reward:** ${reward} resources gained!`;
 
+      // If opponent is not AI, penalize them
       if (opponent.userId !== "AI" && typeof opponent.save === "function") {
         opponent.resources = Math.max(0, opponent.resources - Math.floor(reward / 2));
         opponent.influence = Math.max(1, opponent.influence - 1);
         await opponent.save();
       }
     } else {
-      // Both combatants still have HP. Determine winner by comparing remaining health.
+      // Both are still alive, compare HP
       if (userHP === oppHP) {
+        // It's a draw
         resultMessage = "🤝 **It's a Draw!** Both sides held strong amid the cosmic chaos.";
       } else if (userHP > oppHP) {
-        let reward = Math.floor(Math.random() * 50) + 50;
+        // User wins by HP lead
+        const reward = Math.floor(Math.random() * 50) + 50;
         alien.resources += reward;
         alien.influence += 1;
-        resultMessage = `🏆 **Victory!** ${alien.name} edges out the battle with superior endurance!\n🎖️ **Reward:** ${reward} ${alienResEmo} resources gained!`;
+        resultMessage = `🏆 **Victory by Endurance!** ${alien.name} survives with more HP!\n🎖️ **Reward:** ${reward} resources gained!`;
 
         if (opponent.userId !== "AI" && typeof opponent.save === "function") {
           opponent.resources = Math.max(0, opponent.resources - Math.floor(reward / 2));
@@ -1094,9 +1165,10 @@ async function simulateBattle(ctx, alien, opponent) {
           await opponent.save();
         }
       } else {
-        let penalty = Math.floor(Math.random() * 30) + 30;
+        // Opponent wins by HP lead
+        const penalty = Math.floor(Math.random() * 30) + 30;
         alien.resources = Math.max(0, alien.resources - penalty);
-        resultMessage = `💀 **Defeat...** ${opponent.name} overpowers ${alien.name} with higher endurance.\n⚠️ **${alien.name} lost ${penalty} ${alienResEmo} resources.**`;
+        resultMessage = `💀 **Defeat...** ${opponent.name} overpowers ${alien.name} with higher endurance.\n⚠️ **${alien.name} lost ${penalty} resources.**`;
 
         if (opponent.userId !== "AI" && typeof opponent.save === "function") {
           opponent.resources += Math.floor(penalty / 2);
@@ -1106,18 +1178,17 @@ async function simulateBattle(ctx, alien, opponent) {
       }
     }
 
-    // Append the final health status for both aliens.
-    resultMessage += `\n\n**𝐅𝐢𝐧𝐚𝐥 𝐇𝐞𝐚𝐥𝐭𝐡 𝐒𝐭𝐚𝐭𝐮𝐬:**\n`;
+    // Append final HP bars
+    resultMessage += `\n\n**Final Health Status:**\n`;
     resultMessage += `${alien.name}: ${generateHealthBar(userHP, userMaxHP)}\n`;
     resultMessage += `${opponent.name}: ${generateHealthBar(oppHP, oppMaxHP)}`;
 
-    battleEmbed.addFields({
-      name: "👾 𝗕𝗮𝘁𝘁𝗹𝗲 𝗢𝘂𝘁𝗰𝗼𝗺𝗲", value: resultMessage
-    });
-    await battleMessage.edit({
-      embeds: [battleEmbed]
+    outcomeEmbed.setDescription(resultMessage);
+    await replyOrSend(ctx, {
+      embeds: [outcomeEmbed]
     });
 
+    // Finally, save changes to the user
     await alien.save();
   } catch (error) {
     console.error(error);

@@ -1,4 +1,6 @@
-import { createClient } from 'redis';
+import {
+  createClient
+} from 'redis';
 import dotenv from 'dotenv';
 import winston from 'winston';
 
@@ -8,7 +10,9 @@ const logger = winston.createLogger({
   level: 'info', // Minimum log level
   format: winston.format.combine(
     winston.format.timestamp(),
-    winston.format.printf(({ timestamp, level, message }) => {
+    winston.format.printf(({
+      timestamp, level, message
+    }) => {
       return `${timestamp} [${level.toUpperCase()}]: ${message}`;
     })
   ),
@@ -26,9 +30,10 @@ if (!redisUri) {
 }
 
 // Create Redis client with enhanced configuration
-const redisClient = createClient({
+const redisClient = createClient( {
   url: redisUri,
   socket: {
+    keepAlive: true,
     reconnectStrategy: (retries) => {
       if (retries > 10) {
         logger.error('❌ Redis reconnection attempts exceeded.');
@@ -40,7 +45,9 @@ const redisClient = createClient({
       return delay;
     },
     // Optional: Enable TLS if connecting to a secured Redis instance
-    // tls: {},
+    tls: {
+      rejectUnauthorized: false
+    }
   },
   // Optional: Add password if your Redis instance requires authentication
   // password: process.env.REDIS_PASSWORD,

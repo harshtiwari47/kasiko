@@ -4,8 +4,8 @@ import {
 
 /**
 * Prefix command handler for 'use' command.
-* Usage: !use <power>
-* Example: !use p1
+* Usage: use <power>
+* Example: use p1
 */
 export default {
   name: 'use',
