@@ -18,6 +18,14 @@ import {
   Helper
 } from '../../../helper.js';
 
+import {
+  getAllJewelry
+} from '../shop/shopDataHelper.js';
+
+import {
+  getOrCreateShopDoc
+} from '../shop/viewUserJewelry.js';
+
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
   if (isInteraction) {
@@ -80,6 +88,74 @@ function getChildEmoji(gender, customEmojis = {}) {
   return gender === 'B' ? DEFAULT_BOY_EMOJI: DEFAULT_GIRL_EMOJI;
 }
 
+export async function setMarriageRing(message, ringId) {
+  try {
+    let userData = await getUserData(message.author.id);
+    if (userData?.family.spouse) {
+
+      const allJewelryItems = getAllJewelry();
+      const item = allJewelryItems.find(i => i.id.toLowerCase() === ringId.toLowerCase());
+      if (!item) {
+        await message.channel.send({
+          content: `No item found with ID "${ringId}".`
+        });
+        return;
+      }
+
+      if (item.type !== "ring") {
+        await message.channel.send({
+          content: `The item with ID "${ringId}" is not a valid ring type.`
+        });
+      }
+
+      if (userData?.family?.ring && userData.family.ring === item.id) {
+        await message.channel.send({
+          content: `***${message.author.username}***, your current wedding ring is already the same as the one you're about to set!`
+        });
+      }
+
+      const shopDoc = await getOrCreateShopDoc(message.author.id);
+
+      const subArrayRef = shopDoc.rings;
+
+      const owned = subArrayRef.find(x => x.id.toLowerCase() === ringId.toLowerCase());
+      if (!owned) {
+        return message.channel.send({
+          content: `⚠️ ***${message.author.username}***, you don't own any **${item.name}**!`
+        });
+      }
+
+      owned.amount -= 1;
+      if (owned.amount <= 0) {
+        subArrayRef.splice(subArrayRef.indexOf(owned), 1);
+      }
+
+      shopDoc.networth -= Math.floor(item.price);
+      if (shopDoc.networth < 0) shopDoc.networth = 0; // avoid negative
+
+      await shopDoc.save();
+
+      let spouseData = await getUserData(userData.family.spouse);
+      spouseData.family.ring = item.id;
+      userData.family.ring = item.id;
+
+      await updateUser(userData.family.spouse, spouseData);
+      await updateUser(message.author.id, userData);
+
+      return message.channel.send({
+        content: `💍✨ ***${message.author.username}***, you and your beloved have exchanged vows with a beautiful new wedding ring! <:${item.id}:${item.emoji}> *${item.name}* is now a symbol of your love. 💖\nYour love bond XP has grown by **${item.price / 100}**! 🌹\nCherish this moment, and remember—your wedding profile has been updated, but the previous ring won’t return to your jewelry collection. 💞`
+      });
+
+    } else {
+      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose 💐 to someone!");
+    }
+  } catch (e) {
+    console.error(e);
+    await message.channel.send(`⚠️ ***${message.author.username}***, something went wrong while setting your wedding ring!`);
+    return;
+  }
+}
+
 export async function marriage(message) {
   try {
     let userData = await getUserData(message.author.id);
@@ -109,7 +185,18 @@ export async function marriage(message) {
         7500,
         12500];
 
-      const bondXP = userData.family.bondXP;
+      const allJewelryItems = getAllJewelry();
+      let item;
+      let ring = "𝖣𝖤𝖥𝖠𝖴𝖫𝖳";
+
+      if (userData.family.ring) {
+        item = allJewelryItems.find(i => i.id === userData.family.ring);
+        if (item) {
+          ring = `<:${item.id}:${item.emoji}> *${item.name}*`;
+        }
+      }
+
+      const bondXP = (userData.family?.bondXP || 0) + (item?.price ? item.price / 100: 0);
 
       // Determine how many emojis to add
       const emojiCount = thresholds.filter(threshold => bondXP >= threshold).length - 1;
@@ -121,7 +208,9 @@ export async function marriage(message) {
         return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
       })
 
-      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${userData.family.bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**`);
+      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
+        `🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
+        `💍 **Ring:** ${ring}`);
     } else {
       return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!");
     }
@@ -275,6 +364,8 @@ export async function divorce(user, message) {
           invitedUserData.family.bondXP = 0;
           userData.family.children = [];
           invitedUserData.family.children = [];
+          userData.family.ring = null;
+          invitedUserData.family.ring = null;
 
           await updateUser(message.author.id, userData);
           await updateUser(user, invitedUserData);
@@ -471,6 +562,7 @@ export default {
     // Divorce a user
     "marriage",
     "marriage daily",
+    "marriage ring <ringId>",
     // View marriage status
     "roses <amount> <@user>",
     // Send roses to a user
@@ -528,7 +620,16 @@ export default {
         }
         return Marriage.roses(message); // Show the roses system info if no arguments are provided
       case "daily":
-        return dailyRewards(message.author.id, message.author.username, message)
+        return dailyRewards(message.author.id, message.author.username, message);
+
+      case "ring":
+        const ringId = args[2];
+
+        if (!ringId) {
+          return await message.channel.send(`⚠️ Please mention the 💍 ring ID you want to set on your marriage profile!`);
+        }
+
+        return setMarriageRing(message, ringId);
 
       default:
         const embed = new EmbedBuilder()

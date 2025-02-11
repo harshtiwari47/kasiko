@@ -51,7 +51,11 @@ export default {
       let target = args[2]?.toLowerCase(); // e.g. "all" or a channel mention
 
       if (!subCommand || !["on", "off"].includes(subCommand)) {
-        return message.channel.send("Please specify `on` or `off`, e.g. `channel on all` or `channel off #channel`.");
+        const currentChannelStatus = serverDoc.channels.find(ch => ch.id === message.channel.id)?.isAllowed;
+        return message.channel.send(
+          `Please specify \`on\` or \`off\`, e.g. \`channel on all\` or \`channel off #channel\`.\n\n` +
+          `★ **Current channel status:** Bot is **${currentChannelStatus ? "ALLOWED": "NOT ALLOWED"}** in this channel.`
+        );
       }
 
       if (!target) {

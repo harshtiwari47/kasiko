@@ -23,7 +23,7 @@ import {
 * Utility function:
 * Gets or creates a ShopItem doc for the given userId.
 */
-async function getOrCreateShopDoc(userId) {
+export async function getOrCreateShopDoc(userId) {
   let doc = await ShopItem.findOne({
     userId
   });
@@ -50,7 +50,7 @@ function formatItemList(items) {
   // Example line format: "• Gold Ring (ID: ring1) x2"
   return items.map((item) => {
     let itemsDetails = allItems.find(i => i.name === item.name);
-    return `• ${itemsDetails ? `<:${item.id}:${itemsDetails.emoji}>` : ""} **${item.name}** (ID: \`${item.id}\`) x**${item.amount}**`
+    return `• ${itemsDetails ? `<:${item.id}:${itemsDetails.emoji}>`: ""} **${item.name}** (ID: \`${item.id}\`) x**${item.amount}**`
   }).join('\n');
 }
 
@@ -71,7 +71,6 @@ export async function viewUserJewelryCollection(context, userId, type) {
     const embed = new EmbedBuilder()
     .setTitle(`<@${userId}>'𝙨 𝙅𝙚𝙬𝙚𝙡𝙧𝙮 𝘾𝙤𝙡𝙡𝙚𝙘𝙩𝙞𝙤𝙣`)
     .setColor('#F39C12')
-    .setTimestamp();
 
     if (type === 'all' || !type) {
       // Show all categories

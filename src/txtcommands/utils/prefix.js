@@ -20,10 +20,6 @@ export default {
   execute: async (args, message) => {
     try {
       args.shift();
-      // Check if the user has moderator permissions
-      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-        return message.reply("❌ You need `Manage Server` permissions to set a custom prefix.");
-      }
 
       // Ensure an argument is provided
       const newPrefix = args[0];
@@ -37,7 +33,12 @@ export default {
         }
         return message.reply(`☕ The current prefix for **Kasiko** in this server is **${prefix}**`);
       }
-
+      
+            // Check if the user has moderator permissions
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
+        return message.reply("❌ You need `Manage Server` permissions to set a custom prefix.");
+      }
+      
       // Validate the new prefix (max 20 chars, no special characters, etc.)
       const prefixRegex = /^[a-zA-Z0-9,@#$_&\-+()/*"':;!?,.~`|=^]{1,20}$/;
       if (!prefixRegex.test(newPrefix)) {

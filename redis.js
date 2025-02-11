@@ -31,8 +31,11 @@ if (!redisUri) {
 
 // Create Redis client with enhanced configuration
 const redisClient = createClient( {
-  url: redisUri,
+  username: 'default',
+  password: process.env.REDIS_PASSWORD,
   socket: {
+    port: 19353,
+    host: redisUri,
     keepAlive: true,
     reconnectStrategy: (retries) => {
       if (retries > 10) {
@@ -44,13 +47,7 @@ const redisClient = createClient( {
       logger.warn(`🔄 Redis client reconnecting in ${delay}ms...`);
       return delay;
     },
-    // Optional: Enable TLS if connecting to a secured Redis instance
-    tls: {
-      rejectUnauthorized: false
-    }
   },
-  // Optional: Add password if your Redis instance requires authentication
-  // password: process.env.REDIS_PASSWORD,
 });
 
 // Comprehensive Event Handling

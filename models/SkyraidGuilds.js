@@ -59,8 +59,7 @@ const bossDefeatedSchema = new Schema(
     players: [{
       type: Schema.Types.ObjectId,
       ref: "SkyraidUsers", // Reference to the FiredownUsers model
-    },
-    ],
+    }],
     badges: [{
       type: String,
     default: [],

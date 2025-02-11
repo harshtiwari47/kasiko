@@ -447,7 +447,7 @@ async function handleAbilitiesList(ctx) {
         `\n## **╰➤ ${ability.name}**` +
         `\n⟡ **𝖫𝖾𝗏𝖾𝗅:** ${ability.level}` +
         `\n⟡ **𝖱𝖾𝗌𝗈𝗎𝗋𝖼𝖾𝗌:** +${ability.resourcesCollection}` +
-        `\n⟡ **𝖬𝖺𝗇𝗂𝗉𝗎𝗅𝖺𝗍𝗂𝗈𝗇 %:** +${ability.manipulationRate ? ability.manipulationRate : 0}` +
+        `\n⟡ **𝖬𝖺𝗇𝗂𝗉𝗎𝗅𝖺𝗍𝗂𝗈𝗇 %:** +${ability.manipulationRate ? ability.manipulationRate: 0}` +
         `\n⟡ **𝖤𝗇𝖾𝗋𝗀𝗒:** +${ability.energyCollection}` +
         `\n⟡ **𝖳𝖾𝖼𝗁 𝖨𝗇𝖼𝗋𝖾𝗆𝖾𝗇𝗍:** +${ability.techIncrement}`
       )
@@ -1136,7 +1136,7 @@ async function simulateBattle(ctx, alien, opponent) {
       // The user lost
       const penalty = Math.floor(Math.random() * 30) + 30;
       alien.resources = Math.max(0, alien.resources - penalty);
-      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n⚠️ **${alien.name} lost ${penalty} resources.**`;
+      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n⚠️ **${alien.name} lost ${alienResEmo} ${penalty} resources.**`;
 
       // If opponent is not AI, give them some reward
       if (opponent.userId !== "AI" && typeof opponent.save === "function") {
@@ -1149,7 +1149,7 @@ async function simulateBattle(ctx, alien, opponent) {
       const reward = Math.floor(Math.random() * 50) + 50;
       alien.resources += reward;
       alien.influence += 1;
-      resultMessage = `🏆 **Victory!** ${alien.name} has conquered the battlefield!\n🎖️ **Reward:** ${reward} resources gained!`;
+      resultMessage = `🏆 **Victory!** ${alien.name} has conquered the battlefield!\n🎖️ **Reward:** ${alienResEmo} ${reward} resources gained!`;
 
       // If opponent is not AI, penalize them
       if (opponent.userId !== "AI" && typeof opponent.save === "function") {
@@ -1169,7 +1169,7 @@ async function simulateBattle(ctx, alien, opponent) {
         const reward = Math.floor(Math.random() * 50) + 50;
         alien.resources += reward;
         alien.influence += 1;
-        resultMessage = `🏆 **Victory by Endurance!**\n ***${alien.name}*** survives with more HP!\n🎖️ **Reward:** ${alienTechEmo} ${reward} resources gained!`;
+        resultMessage = `🏆 **Victory by Endurance!**\n ***${alien.name}*** survives with more HP!\n🎖️ **Reward:** ${alienResEmo} ${reward} resources gained!`;
 
         if (opponent.userId !== "AI" && typeof opponent.save === "function") {
           opponent.resources = Math.max(
@@ -1182,7 +1182,7 @@ async function simulateBattle(ctx, alien, opponent) {
       } else {
         const penalty = Math.floor(Math.random() * 30) + 30;
         alien.resources = Math.max(0, alien.resources - penalty);
-        resultMessage = `💀 **Defeat...** __${opponent.name}__ overpowers __${alien.name}__ with higher endurance.\n⚠️ **${alien.name} lost ${alienTechEmo} ${penalty} resources.**`;
+        resultMessage = `💀 **Defeat...** __${opponent.name}__ overpowers __${alien.name}__ with higher endurance.\n⚠️ **${alien.name} lost ${alienResEmo} ${penalty} resources.**`;
 
         if (opponent.userId !== "AI" && typeof opponent.save === "function") {
           opponent.resources += Math.floor(penalty / 2);

@@ -133,6 +133,10 @@ const userSchema = new mongoose.Schema({
           type: String,
         default: null
         }
+      },
+      ring: {
+        type: String,
+      default: null
       }
     },
     joined: {

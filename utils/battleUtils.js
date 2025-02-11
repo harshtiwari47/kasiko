@@ -324,7 +324,7 @@ async function endBattle(battle, channel, reason, bossHPLeft = null) {
     if (reason === 'boss') {
       // Players won
       const embed = new EmbedBuilder()
-      .setTitle('🎉 Battle Won! 🎉')
+      .setTitle('🎉 BATTLE WON!')
       .setDescription(`Congratulations! The **${battle.boss.typeId}** has been defeated.${badgesWon.length > 0 ? `\n## BADGES WON: ` + badgesWon.join(" "): ""}`)
       .setColor('#00FF00')
       .setTimestamp();

@@ -250,9 +250,10 @@ export async function usercars(context, targetUserId) {
 
         let description = '';
         description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n`;
-        description += `**Owns**: ${car.items}\n`;
-        description += `**Car**: <:${car.id}_car:${carDetails.emoji}> \n`;
-        description += `**Purchased Cost**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
+        description += `↪ **𝑶𝒘𝒏𝒔**: ${car.items}\n`;
+        description += `↪ **𝑪𝒂𝒓**: <:${car.id}_car:${carDetails.emoji}> \n`;
+        description += `↪ **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
+        description += `↪ **𝑰𝑫**: ${carDetails.id}\n`;
 
         embed.setDescription(description.trim());
 
@@ -293,7 +294,7 @@ export async function usercars(context, targetUserId) {
     });
 
     const collector = messageSent.createMessageComponentCollector({
-      time: 60000 // 1-minute timeout
+      time: 120000 // 2-minute timeout
     });
 
     collector.on('collect', interaction => {

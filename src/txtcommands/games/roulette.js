@@ -248,7 +248,8 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
           betAmount,
           bulletCount,
           channel,
-          true // isBot = true
+          true,
+          gameMsg
         );
       }
     });
@@ -292,15 +293,17 @@ async function startRoulette(
   const rubBulletEmoji = "<:rubber_bullet:1325711925656686626>"
 
   try {
-    if (gameMsgInitial) {
+    if (gameMsgInitial && gameMsgInitial.edit) {
       gameMsg = gameMsgInitial;
       gameMsg = await gameMsgInitial.edit(
-        `${gunEmoji} **Roulette is starting!**\n\n**${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
+        `## ${gunEmoji} **ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
         `${rubBulletEmoji} Bullets loaded: **${bulletCount}** / 6\nBet: <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
       );
+      console.log("yes")
     } else {
+      console.log("no")
       gameMsg = await channel.send(
-        `${gunEmoji} **Roulette is starting!**\n\n**${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
+        `## ${gunEmoji} **ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
         `${rubBulletEmoji} Bullets loaded: **${bulletCount}** / 6\nBet: <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
       );
     }
@@ -426,8 +429,8 @@ async function startRoulette(
 
   return channel.send(
     `💥${gunEmoji} **BANG!** ${cylEmoji} Chamber **${shotChamber}** had a bullet! ${rubBulletEmoji}\n` +
-    `- **${loserName}** got shot and \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 💸\n` +
-    `- **${winnerName}** _survives_ and \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**!`
+    `- 🪦 **${loserName}** got shot and \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**\n` +
+    `- 👑 **${winnerName}** _survives_ and \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 💸`
   );
 }
 

@@ -73,7 +73,7 @@ export default {
       }
 
       // 2) Calculate a stable love score based on user IDs (so it doesn't change)
-      const score = Math.min(100, (getLoveScore(user1.id, user2.id, user1.username, user2.username, 100, Math.max(30, Math.ceil(Math.random() * 45))) + Math.floor((Math.random() * 10))));
+      const score = Math.min(100, (getLoveScore(user1.id, user2.id, user1.username, user2.username, 100, Math.max(30, Math.ceil(Math.random() * 40))) + Math.floor((Math.random() * 10))));
 
       // 3) Generate a short love quote depending on the score
       const quote = pickQuote(score);

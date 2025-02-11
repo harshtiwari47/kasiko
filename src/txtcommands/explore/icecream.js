@@ -138,7 +138,7 @@ export default {
     "ice exchange <amount>",
     // Convert loyalty points into cash
     "ice leaderboard money|reputation|served",
-    // leaderboard 
+    // leaderboard
     "ice daily" // Claim your daily bonus
   ],
   related: ["stat",
@@ -165,7 +165,7 @@ export default {
 
       // Command: Create a new shop
       if (args[0] === "create") {
-        if (!args[1]) return message.channel.send("❌ Shop name not found! Please create your ice cream shop first using `icecream/ice create <shopname>`.");
+        if (!args[1]) return message.channel.send("❌ Shop name not found! Please create your ice cream shop first using `icecream create <shopname>`.");
         const shopName = args[1].substring(0, 15);
 
         if (playerShop) {
@@ -190,7 +190,7 @@ export default {
 
         try {
           await newShop.save();
-          
+
           const embed = new EmbedBuilder()
           .setColor("Random")
           .setTitle(`🍨 Welcome to **${shopName}**!`)
@@ -212,7 +212,13 @@ export default {
       }
 
       if (!playerShop) {
-        return message.channel.send(`🍧 **${message.author.username}**, you need to create an ice cream shop first using \`icecream/ice create <shopname>\`. The shop name must not contain spaces and must be within 15 characters.`);
+        return message.channel.send(`
+          🍧 **${message.author.username}**, you need to create an ice cream shop first!\n` +
+          `**Use the command:**\n` +
+          `\`ice create <shopname>\`\n\n` +
+
+          `*The shop name must be a single word (no spaces) and up to 15 characters long.*\n` +
+          `-# USE: **\`ice help\`** 𝘧𝘰𝘳 𝘮𝘰𝘳𝘦 𝘥𝘦𝘵𝘢𝘪𝘭𝘴!`);
       }
 
       if (message.guild && message.guild.id) {
@@ -270,7 +276,7 @@ export default {
           });
 
           if (!playerShop || !targetShop) {
-            return message.channel.send("🍦 Both users must own an ice cream shop to share ice cream. Use `icecream create <shop name>` to start your shop!");
+            return message.channel.send("🍦 Both users must own an ice cream shop to share ice cream.\n**Use:** `icecream create <shop name>` to start your shop!\n\n*The shop name must be a single word (no spaces) and up to 15 characters long.*");
           }
 
           const sharedIceCream = flavors.find(flavour => flavour.name === sharedIceCreamName);

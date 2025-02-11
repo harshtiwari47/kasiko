@@ -23,7 +23,7 @@ function capitalizeFirstLetter(word) {
 }
 
 function getLayout(lvl) {
-  if (lvl > 1) lvl = 1;
+  if (lvl > 2) lvl = 2;
   return layout[lvl - 1].image;
 }
 
@@ -109,7 +109,9 @@ export async function playerShopInfo(playerShop, flavors, userId, username, cont
       }
 
       if (interaction.customId === 'ice_help') {
-        await interaction.deferReply({ephemeral: true});
+        await interaction.deferReply({
+          ephemeral: true
+        });
         return await interaction.editReply({
           embeds: [helpEmbed]
         })

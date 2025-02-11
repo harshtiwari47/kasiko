@@ -259,8 +259,9 @@ export async function userstructures(context, targetUserId) {
 
         let description = '';
         description += `ᯓ★ 𝑵𝑨𝑴𝑬: **${propertyDetails.name}**\n`;
-        description += `**𝑶𝑾𝑵𝑺**: ${structure.items}\n`;
-        description += `**𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice.toLocaleString()}\n`;
+        description += `↪ **𝑶𝑾𝑵𝑺**: ${structure.items}\n`;
+        description += `↪ **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice.toLocaleString()}\n`;
+        description += `↪ **𝑰𝑫**: ${structure.id}\n`;
 
         embed.setDescription(description.trim());
 
@@ -302,8 +303,8 @@ export async function userstructures(context, targetUserId) {
 
     // Create collector
     const collector = messageSent.createMessageComponentCollector({
-      time: 60000
-    }); // 1 minute
+      time: 120000
+    }); // 2 minute
 
     collector.on('collect', interaction => {
       // Optional: restrict to the original user if needed
