@@ -30,7 +30,7 @@ export default {
   description: "Get a random discussion topic!",
   aliases: ["question",
     "prompt"],
-  cooldown: 3000,
+  cooldown: 10000,
   category: "🧩 Fun",
 
   execute: async (args, context) => {
@@ -71,18 +71,31 @@ export default {
           embeds: [embed], components: [row], fetchReply: true
         }): context.reply({
           embeds: [embed], components: [row]
-        }));
+        })
+      )
+
     } catch (error) {
       console.error("Error executing the topic command:",
         error);
       const errorMessage = "An error occurred while executing the command. Please try again later.";
 
       if (context.isInteraction) {
-        await context.reply({
-          content: errorMessage, ephemeral: true
-        });
+        try {
+          await context.reply({
+            content: errorMessage,
+            ephemeral: true
+          });
+        } catch (error) {
+          console.error("Failed to send reply:", error);
+        }
       } else {
-        await context.reply(errorMessage);
+        try {
+          await context.reply({
+            content: errorMessage, ephemeral: true
+          });
+        } catch (error) {
+          console.error("Failed to send reply:", error);
+        }
       }
     }
   },
@@ -101,9 +114,13 @@ export default {
           .setDisabled(true)
         );
 
-        await oldMessage.edit({
-          components: [disabledRow],
-        });
+        try {
+          await oldMessage.edit({
+            components: [disabledRow],
+          });
+        } catch (error) {
+          console.error("Failed to edit the message:", error);
+        }
 
         // Generate new topic
         const {
@@ -128,18 +145,26 @@ export default {
         );
 
         // Send a reply with the new embed and button
-        await interaction.reply({
-          embeds: [newEmbed],
-          components: [newRow],
-        });
+        try {
+          await interaction.reply({
+            embeds: [newEmbed],
+            components: [newRow],
+          });
+        } catch (error) {
+          console.error("Failed to send the reply:", error);
+        }
       }
     } catch (error) {
       console.error("Error handling button interaction:", error);
       if (!interaction.replied) {
-        await interaction.reply({
-          content: "An error occurred while fetching a new topic. Please try again later.",
-          ephemeral: true,
-        });
+        try {
+          await interaction.reply({
+            content: "An error occurred while fetching a new topic. Please try again later.",
+            ephemeral: true,
+          });
+        } catch (error) {
+          console.error("Failed to send an error response:", error);
+        }
       }
     }
   });

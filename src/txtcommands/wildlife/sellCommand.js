@@ -17,12 +17,12 @@ async function handleMessage(context, data) {
   if (isInteraction) {
     // If not already deferred, defer it.
     if (!context.deferred) {
-      await context.deferReply();
+      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
-    return context.editReply(data);
+    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
     // For normal text-based usage
-    return context.channel.send(data);
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -45,11 +45,19 @@ export async function sellCommand(context, {
 
     const userData = await getUserData(userId);
 
+    if (!userData) return;
+
+    if (!animalName || animalName === "") {
+      return handleMessage(context, {
+        content: `ⓘ You need to specify an animal name to sell! 🐰\n\n**For viewing the animal list, use:** \`cage\`\n**Example for selling:** \`sellanimal monkey\``
+      });
+    }
+
     // Find the animal to sell in the user's collection
     const animalToSellIndex = user.hunt.animals.findIndex(a => a.name.toLowerCase() === animalName.toLowerCase());
     if (animalToSellIndex === -1) {
       return handleMessage(context, {
-        content: `You don't have an animal named **${animalName}** to sell!`
+        content: `ⓘ You don't have an animal named **${animalName}** to sell! 🐰\n\n**For viewing the animal list, use:** \`cage\`\n**Example for selling:** \`sellanimal monkey\``
       });
     }
 
@@ -72,8 +80,14 @@ export async function sellCommand(context, {
 
     // Add the earned currency to the user's balance
     userData.cash += totalPrice;
-    await user.save();
-    await updateUser(userId, userData)
+    try {
+      await user.save();
+      await updateUser(userId, userData)
+    } catch (err) {
+      return handleMessage(context, {
+        content: `**Error**: ${err.message}`
+      });
+    }
 
     // Send a success message
     return handleMessage(context, {
@@ -97,13 +111,14 @@ export default {
     "as"],
   args: "[animalName]",
   example: [
-    "sell wolf",
-    "sell tiger"
+    "sellanimal wolf",
+    "sa tiger"
   ],
+  emoji: "🦊",
   related: ["hunt",
     "cage"],
   cooldown: 5000,
-  category: "🦌 Hunt",
+  category: "🦌 Wildlife",
 
   execute: async (args, context) => {
     try {

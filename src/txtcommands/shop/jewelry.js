@@ -415,6 +415,7 @@ export default {
     "necklaces",
     "watches",
     "strips"],
+  emoji: "💎",
   args: "[buy|sell] <item_id>",
   cooldown: 4000,
   category: "🛍️ Shop",

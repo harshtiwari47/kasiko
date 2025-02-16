@@ -81,76 +81,83 @@ async function claimOrca(serverId, userId, username, guildName) {
 *  - ensures you can't pray twice for the same Orca
 */
 async function prayToOrca(serverId, userId, username, guildName) {
-  const orca = await Orca.findOne();
-  if (!orca) {
-    return {
-      success: false,
-      message: `No Orca has been found or claimed yet. Please hunt first!`,
-    };
-  }
-  // If no discoverer yet, user can't pray for rewards
-  if (!orca.hunterId) {
-    return {
-      success: false,
-      message: `This Orca has not been claimed yet! Someone must **Claim** it first.`,
-    };
-  }
+  try {
+    const orca = await Orca.findOne();
+    if (!orca) {
+      return {
+        success: false,
+        message: `No Orca has been found or claimed yet. Please hunt first!`,
+      };
+    }
+    // If no discoverer yet, user can't pray for rewards
+    if (!orca.hunterId) {
+      return {
+        success: false,
+        message: `This Orca has not been claimed yet! Someone must **Claim** it first.`,
+      };
+    }
 
-  // Now we check user data
-  const userData = await getUserData(userId);
-  if (!userData.orca || typeof userData.orca !== 'object') {
-    userData.orca = {
-      id: '',
-      prayed: false,
-      count: 0
-    };
-  }
+    // Now we check user data
+    const userData = await getUserData(userId);
+    if (!userData.orca || typeof userData.orca !== 'object') {
+      userData.orca = {
+        id: '',
+        prayed: false,
+        count: 0
+      };
+    }
 
-  // If user already prayed for THIS orca
-  if (
-    userData.orca.id === orca._id.toString() &&
-    (userData.orca.prayed === true || userData.orca.prayed === "true")
-  ) {
-    return {
-      success: false,
-      message: `You have **already prayed** to the current Orca! Wait until a new one is discovered.`,
-    };
-  }
+    // If user already prayed for THIS orca
+    if (
+      userData.orca.id === orca._id.toString() &&
+      (userData.orca.prayed === true || userData.orca.prayed === "true")
+    ) {
+      return {
+        success: false,
+        message: `You have **already prayed** to the current Orca! Wait until a new one is discovered.`,
+      };
+    }
 
-  // Mark that user has prayed
-  userData.orca.id = orca._id.toString();
-  userData.orca.prayed = true;
+    // Mark that user has prayed
+    userData.orca.id = orca._id.toString();
+    userData.orca.prayed = true;
 
-  // Rewards
-  const hunterReward = 50000;
-  const serverReward = 15000;
-  const otherReward = 5000;
+    // Rewards
+    const hunterReward = 50000;
+    const serverReward = 15000;
+    const otherReward = 5000;
 
-  let message = '';
-  // Are they the discoverer?
-  const isHunter = (userId === orca.hunterId);
-  if (isHunter) {
-    userData.cash = (userData.cash || 0) + hunterReward;
-    userData.orca.count = (userData.orca.count || 0) + 1;
-    message = `**${username}** (the Orca discoverer) prayed and received <:kasiko_coin:1300141236841086977> **50,000** cash!`;
-  } else {
-    // If same server
-    if (orca.serverId === serverId) {
-      userData.cash = (userData.cash || 0) + serverReward;
-      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **15,500** cash (same server reward)!`;
+    let message = '';
+    // Are they the discoverer?
+    const isHunter = (userId === orca.hunterId);
+    if (isHunter) {
+      userData.cash = (userData.cash || 0) + hunterReward;
+      userData.orca.count = (userData.orca.count || 0) + 1;
+      message = `**${username}** (the Orca discoverer) prayed and received <:kasiko_coin:1300141236841086977> **50,000** cash!`;
     } else {
-      // Different server
-      userData.cash = (userData.cash || 0) + otherReward;
-      message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **5,000** cash (another server's Orca).`;
+      // If same server
+      if (orca.serverId === serverId) {
+        userData.cash = (userData.cash || 0) + serverReward;
+        message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **15,500** cash (same server reward)!`;
+      } else {
+        // Different server
+        userData.cash = (userData.cash || 0) + otherReward;
+        message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **5,000** cash (another server's Orca).`;
+      }
+    }
+
+    await updateUser(userId, userData);
+
+    return {
+      success: true,
+      message: message,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: `**Error during the Orca hunt**: ${err.message}`
     }
   }
-
-  await updateUser(userId, userData);
-
-  return {
-    success: true,
-    message: message,
-  };
 }
 
 /**
@@ -266,64 +273,70 @@ export async function execute(args, message) {
   });
 
   collector.on('collect', async (interaction) => {
-    // So we don't get "This interaction failed"
-    await interaction.deferUpdate({
-      ephemeral: false
-    });
-
-    // Let's see which button was clicked
-    let resultMessage = '';
-    const clickUser = interaction.user;
-    const clickUserId = clickUser.id;
-    const clickUsername = clickUser.username;
-
     try {
-      if (interaction.customId === 'hunt_orca') {
-        // Attempt to find/spawn the orca
-        orca = await huntForOrca(serverId);
-        if (!orca) {
-          resultMessage = `**${clickUsername}** tried hunting... but **no Orca** appeared this time. (15% chance)`;
-        } else if (!orca.hunter) {
-          // Orca spawned, not claimed
-          resultMessage = `**${clickUsername}** found an Orca lurking! First person to **Claim** gets to discover it.`;
-        } else {
-          // orca is claimed
-          resultMessage = `**${clickUsername}** found an **already claimed** Orca (by ${orca.hunter}). Use **Pray** to get rewards!`;
+      // So we don't get "This interaction failed"
+      await interaction.deferUpdate({
+        ephemeral: false
+      });
+
+      // Let's see which button was clicked
+      let resultMessage = '';
+      const clickUser = interaction.user;
+      const clickUserId = clickUser.id;
+      const clickUsername = clickUser.username;
+
+      try {
+        if (interaction.customId === 'hunt_orca') {
+          // Attempt to find/spawn the orca
+          orca = await huntForOrca(serverId);
+          if (!orca) {
+            resultMessage = `**${clickUsername}** tried hunting... but **no Orca** appeared this time. (15% chance)`;
+          } else if (!orca.hunter) {
+            // Orca spawned, not claimed
+            resultMessage = `**${clickUsername}** found an Orca lurking! First person to **Claim** gets to discover it.`;
+          } else {
+            // orca is claimed
+            resultMessage = `**${clickUsername}** found an **already claimed** Orca (by ${orca.hunter}). Use **Pray** to get rewards!`;
+          }
+        } else if (interaction.customId === 'claim_orca') {
+          // If there's an orca and no discoverer, set the discoverer
+          const claimResult = await claimOrca(serverId, clickUserId, clickUsername, guildName);
+          resultMessage = claimResult.message;
+        } else if (interaction.customId === 'pray_orca') {
+          // If orca is discovered, we do the pray logic
+          const prayResult = await prayToOrca(serverId, clickUserId, clickUsername, guildName);
+          resultMessage = prayResult.message;
         }
-      } else if (interaction.customId === 'claim_orca') {
-        // If there's an orca and no discoverer, set the discoverer
-        const claimResult = await claimOrca(serverId, clickUserId, clickUsername, guildName);
-        resultMessage = claimResult.message;
-      } else if (interaction.customId === 'pray_orca') {
-        // If orca is discovered, we do the pray logic
-        const prayResult = await prayToOrca(serverId, clickUserId, clickUsername, guildName);
-        resultMessage = prayResult.message;
+
+      } catch (err) {
+        console.error(err);
+        resultMessage = '❌ An error occurred. Please try again.';
       }
 
-    } catch (err) {
-      console.error(err);
-      resultMessage = '❌ An error occurred. Please try again.';
-    }
+      // Now re-fetch the orca from DB (in case we changed it in the previous steps)
+      orca = await Orca.findOne();
 
-    // Now re-fetch the orca from DB (in case we changed it in the previous steps)
-    orca = await Orca.findOne();
+      // Rebuild embed & buttons to reflect the *new* orca state
+      embed = await buildOrcaEmbed(orca);
+      components = buildOrcaButtons(orca);
 
-    // Rebuild embed & buttons to reflect the *new* orca state
-    embed = await buildOrcaEmbed(orca);
-    components = buildOrcaButtons(orca);
-
-    // Edit the control panel message
-    await controlMessage.edit({
-      embeds: [embed],
-      components,
-    });
-
-    // Send a short ephemeral response to the *clicking* user so we don't spam the channel
-    if (resultMessage) {
-      await interaction.followUp({
-        content: resultMessage,
-        ephemeral: true, // So only they see it
+      // Edit the control panel message
+      await controlMessage.edit({
+        embeds: [embed],
+        components,
       });
+
+      // Send a short ephemeral response to the *clicking* user so we don't spam the channel
+      if (resultMessage) {
+        await interaction.followUp({
+          content: resultMessage,
+          ephemeral: true, // So only they see it
+        });
+      }
+    } catch (e) {
+      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+        console.error(e);
+      }
     }
   });
 
@@ -354,6 +367,7 @@ export default {
   description: 'Hunt, Claim, and Pray for the Legendary Orca in quest.',
   aliases: ['orcahunt'],
   args: '',
+  emoji: "🐬",
   example: [],
   cooldown: 10000, // 10 seconds cooldown
   category: '🍬 Explore',

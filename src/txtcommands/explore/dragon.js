@@ -34,6 +34,7 @@ export default {
     'd'],
   cooldown: 10000,
   category: "🍬 Explore",
+  emoji: "🐉",
   example: [
     "dragon"
   ],

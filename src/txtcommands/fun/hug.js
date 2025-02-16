@@ -14,7 +14,7 @@ export default {
       // Get the mentioned user
       const target = message.mentions.users.first();
       if (!target) {
-        return message.reply("Please mention a valid user to hug.");
+        return message.reply("Please mention a valid user to hug.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // List of random texts
@@ -60,14 +60,12 @@ export default {
           dynamic: true
         })
       })
-      .setFooter({
-        text: `giphy`
-      })
       .setImage(randomGif); // Set a randomly selected GIF
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
     }

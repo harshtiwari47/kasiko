@@ -39,30 +39,40 @@ export async function give(message, userId, amount, recipientId) {
     if (userId === recipientId) {
       return message.channel.send(
         "¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯ Giving **yourself** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉?\nThat’s like trying to give your own reflection a high five—totally __unnecessary and a little weird__!"
-      );
+      )
     }
 
     let userData = await getUserData(userId);
     let recipientData = await getUserData(recipientId);
 
+    if (!userData) return;
+
+    if (!recipientData) {
+      return message.channel.send(`ⓘ **${username}**, mentioned user is not found!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    const username = message.author.username;
+
     if (userData.cash < amount) {
       return message.channel.send(
-        "⚠️🧾 You don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!"
-      );
+        `ⓘ 🧾 **${username}**, you don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!`
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const embed = await sendConfirmation(message, userId, amount, recipientId);
+
+    if (!embed) return;
 
     // Action row with buttons
     const row = new ActionRowBuilder()
     .addComponents(
       new ButtonBuilder()
       .setCustomId('confirmgiving')
-      .setLabel('Yes')
+      .setLabel('✅ YES')
       .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
       .setCustomId('cancelgiving')
-      .setLabel('No')
+      .setLabel('❌ NO')
       .setStyle(ButtonStyle.Danger)
     );
 
@@ -70,7 +80,7 @@ export async function give(message, userId, amount, recipientId) {
     const replyMessage = await message.channel.send({
       embeds: [embed],
       components: [row]
-    });
+    })
 
 
     // Create the collector
@@ -92,12 +102,12 @@ export async function give(message, userId, amount, recipientId) {
         const rowDisabled = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
           .setCustomId("confirmgiving")
-          .setLabel("Yes")
+          .setLabel("✅ YES")
           .setStyle(ButtonStyle.Success)
           .setDisabled(true),
           new ButtonBuilder()
           .setCustomId("cancelgiving")
-          .setLabel("No")
+          .setLabel("❌ NO")
           .setStyle(ButtonStyle.Danger)
           .setDisabled(true)
         );
@@ -110,15 +120,27 @@ export async function give(message, userId, amount, recipientId) {
           userData.cash -= Number(amount);
           userData.charity += Number(amount);
           recipientData.cash += Number(amount);
-          await updateUser(userId, userData);
-          await updateUser(recipientId, recipientData);
+
+          try {
+            await updateUser(userId, {
+              cash: userData.cash
+            });
+            await updateUser(recipientId, {
+              cash: recipientData.cash
+            });
+          } catch (upErr) {
+            await interaction.editReply({
+              content: "❌ Transaction error.",
+              components: [rowDisabled],
+            }).catch(console.error);
+          }
 
           // Send confirmation
           await interaction.editReply({
             content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to **<@${recipientId}>**!\n-# **💸 Keep spreading the wealth!**`,
             embeds: [],
             components: [],
-          });
+          })
 
           collector.stop();
         } else if (interaction.customId === "cancelgiving") {
@@ -126,18 +148,18 @@ export async function give(message, userId, amount, recipientId) {
           await interaction.editReply({
             content: "❌ Transaction cancelled.",
             components: [rowDisabled],
-          });
+          })
           collector.stop();
         }
       } catch (err) {
         console.error("Error handling interaction:", err);
         if (interaction.replied || interaction.deferred) {
-          await message.channel.send(`⚠️ An error occurred during the transaction!`)
+          await message.channel.send(`⚠️ An error occurred during the transaction!`).catch(console.error);
         } else {
           await interaction.update({
             content: "⚠️ An error occurred. Please try again.",
             ephemeral: true,
-          });
+          }).catch(console.error);
         }
       }
     });
@@ -160,40 +182,56 @@ export async function give(message, userId, amount, recipientId) {
               .setDisabled(true)
             );
 
-            return await replyMessage.edit({
+            if (!replyMessage || !replyMessage?.edit) return;
+
+            await replyMessage.edit({
               content: `⏱️ Transaction timeout!`,
               embeds: [],
               components: [rowDisabled],
-            });
+            })
+            return;
           } catch (err) {
             console.error("Error disabling buttons after timeout:", err);
           }
         }
       });
   } catch (e) {
-    console.error("Error in give function:",
-      e);
+    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+      console.error(e);
+    }
     return message.channel.send(
       "⚠️ Something went wrong while processing the transaction. Please try again."
-    );
+    ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
 export default {
   name: "give",
   description: "Transfer in-game cash to another user.",
-  aliases: ["send", "transfer"],
+  aliases: ["send",
+    "transfer"],
   args: "<amount> <user>",
   example: ["give 100 @user"],
-  related: ["daily", "cash"],
-  cooldown: 15000,
+  related: ["daily",
+    "cash"],
+  cooldown: 10000,
+  emoji: "🤝🏻",
   category: "🏦 Economy",
   execute: (args,
     message) => {
-    if (Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2], message)) {
-      give(message, message.author.id, args[1], Helper.extractUserId(args[2]));
-    } else {
-      return message.channel.send("⚠️ Invalid cash amount or no user mentioned! Cash amount should be an integer.\n**USE**: `give <amount> <user>`");
+
+    if (!message.mentions.users.size) {
+      return message.channel.send(
+        `ⓘ **${message.author.username}**, please mention a user to share cash with! The amount must be an integer.\n**Usage:** \`give <amount> @user\``
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
+
+    if (!args[1] || !Helper.isNumber(args[1])) {
+      return message.channel.send(
+        `ⓘ **${message.author.username}**, the cash amount is invalid! It must be a whole number.\n**Usage:** \`give <amount> @user\``
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    return give(message, message.author.id, args[1], message.mentions.users.first().id);
   }
 };

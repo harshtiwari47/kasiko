@@ -14,12 +14,15 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
   try {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
+
+    if (!userData) return;
+
     let teammateData = teammateId ? await getUserData(teammateId): null;
 
     if (amount === "all") amount = userData.cash;
     // Check if the user and teammate have enough cash
     if (userData.cash < amount || (teammateData && teammateData.cash < amount)) {
-      return channel.send(`⚠️ **${guild.user.username}**, you or your teammate don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **${amount.toLocaleString()}**.`);
+      return channel.send(`ⓘ  **${guild.user.username}**, you or your teammate doesn't have enough cash for a bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Deduct the bet amount
@@ -27,14 +30,24 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
     if (teammateData) teammateData.cash -= amount;
 
     // Save the updated cash to the database
-    userData = await updateUser(id, userData);
-    if (teammateData) teammateData = await updateUser(teammateId, teammateData);
+    userData = await updateUser(id, {
+      cash: userData.cash
+    });
+
+    if (teammateData) {
+      teammateData = await updateUser(teammateId, {
+        cash: teammateData.cash
+      });
+    }
 
     let gameMessage;
 
     if (teammateData) {
       gameMessage = await channel.send(
-        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\nType **join <horse (optional)>** (horse1, horse2, horse3) to join the race. **<@${teammateId}>**, you have 25 seconds!`
+        `🏇 **${guild.user.username}** has started a horse race and bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\n\n` +
+        `To join the race, type: **\`join [horse]\`**\n` +
+        `-# Horses available: \`horse1\`, \`horse2\`, \`horse3\`\n\n` +
+        `⏱️ **<@${teammateId}>**, you have ***25 seconds!***`
       );
 
       const filter = (m) => m.content.toLowerCase().startsWith("join") && m.author.id === teammateId;
@@ -43,28 +56,37 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
       });
 
       collector.on("collect", async (msg) => {
-        const opponent = msg.author;
+        try {
+          const opponent = msg.author;
+          const msgArgs = msg.content.slice("join".length).trim().split(/ +/);
+          let opponentBetOn;
 
-        const msgArgs = msg.content.slice("join".toLowerCase().length).trim().split(/ +/);
+          const availableHorses = ["horse1", "horse2", "horse3"];
 
-        if (msgArgs && msgArgs[0] && (msgArgs[0] === "horse1" || msgArgs[0] === "horse2" || msgArgs[0] === "horse3")) {
-          if (msgArgs === betOn) {
-            if (betOn === "horse1") opponentBetOn = "horse2"
-            if (betOn === "horse2") opponentBetOn = "horse3"
-            if (betOn === "horse3") opponentBetOn = "horse1"
-          } else {
+          // Remove the user's betOn from available choices
+          const remainingHorses = availableHorses.filter(horse => horse !== betOn);
+
+          // Check if a valid horse is chosen and ensure it's not the same as betOn
+          if (msgArgs.length > 0 && remainingHorses.includes(msgArgs[0])) {
             opponentBetOn = msgArgs[0];
+          } else {
+            // Assign the first remaining horse if input is invalid or the same as betOn
+            opponentBetOn = remainingHorses[0];
           }
-        } else {
-          if (betOn === "horse1") opponentBetOn = "horse2"
-          if (betOn === "horse2") opponentBetOn = "horse3"
-          if (betOn === "horse3") opponentBetOn = "horse1"
-        }
 
-        collector.stop("opponent_joined");
-        channel.send(`🎉 **${opponent.username}** has joined the race with bet on **${opponentBetOn}**! Let the race begin!`);
-        // Call the function to start the game here once the opponent joins
-        await startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild);
+          collector.stop("opponent_joined");
+
+          await channel.send(`🎉 **${opponent.username}** has joined the race, betting on **${opponentBetOn}**! 🏇 Let the race begin!`);
+
+          // Start the race
+          await startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild);
+          return;
+        } catch (error) {
+          if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
+            console.error("Error handling race join:", error);
+          }
+          await channel.send("⚠ An error occurred while processing the race entry. Please try again.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
       });
 
       collector.on("end",
@@ -73,10 +95,14 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
             userData.cash += amount;
             if (teammateData) teammateData.cash += amount;
             // Save the updated cash to the database
-            await updateUser(id, userData);
-            if (teammateData) await updateUser(teammateId, teammateData);
+            await updateUser(id, {
+              cash: userData.cash
+            });
+            if (teammateData) await updateUser(teammateId, {
+              cash: teammateData.cash
+            });
 
-            return channel.send(`⏱️ No one joined the race. The game has been canceled, and your bet has been refunded.`);
+            return channel.send(`⏱️ No one joined the race. The game has been canceled, and your bet has been refunded.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         });
     } else {
@@ -85,119 +111,134 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
     }
     return;
   } catch (e) {
-    console.error(e);
-    return channel.send("Oops! Something went wrong during the race!");
+    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+      console.error(e);
+    }
+    return channel.send(`⚠ Oops! Something went wrong during the horse race!\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
 // Function to start the race logic
 async function startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild, userId) {
-  amount = parseInt(amount)
-  const suspenseMessage = await channel.send(
-    `🏁 The race is about to begin!\n`
-  );
+  try {
+    amount = parseInt(amount)
+    const suspenseMessage = await channel.send(
+      `🏁 The race is about to begin!\n`
+    );
 
-  // Race details
-  const horse1 = "<a:runningHorse:1326785483866374265>";
-  const horse2 = "<a:runningHorse:1326785483866374265>";
-  const horse3 = "<a:runningHorse:1326785483866374265>";
+    // Race details
+    const horse1 = "<a:runningHorse:1326785483866374265>";
+    const horse2 = "<a:runningHorse:1326785483866374265>";
+    const horse3 = "<a:runningHorse:1326785483866374265>";
 
-  const trackLength = 20; // Length of the race track
-  let horse1Pos = 0;
-  let horse2Pos = 0;
-  let horse3Pos = 0;
+    const trackLength = 20; // Length of the race track
+    let horse1Pos = 0;
+    let horse2Pos = 0;
+    let horse3Pos = 0;
 
-  const raceInterval = setInterval(async () => {
-    horse1Pos += Math.floor(Math.random() * 8); // Random step for horse 1
-    horse2Pos += Math.floor(Math.random() * 8); // Random step for horse 2
-    horse3Pos += Math.floor(Math.random() * 8); // Random step for horse 3
+    const raceInterval = setInterval(async () => {
+      try {
+        horse1Pos += Math.floor(Math.random() * 8); // Random step for horse 1
+        horse2Pos += Math.floor(Math.random() * 8); // Random step for horse 2
+        horse3Pos += Math.floor(Math.random() * 8); // Random step for horse 3
 
-    // Update the track
-    let track1 = `${' '.repeat(horse1Pos)}${horse1}${' '.repeat(Math.max(0, trackLength - horse1Pos))}|`;
-    let track2 = `${' '.repeat(horse2Pos)}${horse2}${' '.repeat(Math.max(0, trackLength - horse2Pos))}|`;
-    let track3 = `${' '.repeat(horse3Pos)}${horse3}${' '.repeat(Math.max(0, trackLength - horse3Pos))}|`;
+        // Update the track
+        let track1 = `${' '.repeat(horse1Pos)}${horse1}${' '.repeat(Math.max(0, trackLength - horse1Pos))}|`;
+        let track2 = `${' '.repeat(horse2Pos)}${horse2}${' '.repeat(Math.max(0, trackLength - horse2Pos))}|`;
+        let track3 = `${' '.repeat(horse3Pos)}${horse3}${' '.repeat(Math.max(0, trackLength - horse3Pos))}|`;
 
-    const embedTitle = new EmbedBuilder()
-    .setDescription(`🏁 𝑻𝒉𝒆 𝒓𝒂𝒄𝒆 𝒊𝒔 𝒐𝒏!\n\n` + `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!` +
-      `${teammateId ? `\n**<@${teammateId}>** is teaming up with the same bet on **${opponentBetOn}**!`: ""}`);
-
-    await suspenseMessage.edit({
-      content: `\`\`\`Cheers for your horse 🐎\`\`\`\n`+`${track1}\n`+`${track2}\n`+`${track3}\n`,
-      embeds: [embedTitle]
-    });
-
-    // Check if any horse has finished
-    if (horse1Pos >= trackLength || horse2Pos >= trackLength || horse3Pos >= trackLength) {
-      clearInterval(raceInterval);
-
-      // Get all horses that crossed the finish line
-      const crossedHorses = [{
-        name: "horse1",
-        pos: horse1Pos
-      },
-        {
-          name: "horse2",
-          pos: horse2Pos
-        },
-        {
-          name: "horse3",
-          pos: horse3Pos
-        }].filter(h => h.pos >= trackLength); // Only horses that finished
-
-      // Determine the winner (horse with the highest position)
-      let winner;
-      if (crossedHorses.length > 0) {
-        winner = crossedHorses.reduce((a, b) => a.pos > b.pos ? a: b).name;
-      } else {
-        winner = "none"; // Edge case (race ended prematurely)
-      }
-
-      const winAmount = Math.floor(amount * 2);
-      const teammateSplit = teammateId ? Math.floor(winAmount / 2): winAmount;
-
-      if (winner === betOn) {
-        userData.cash += amount + winAmount;
-        await updateUser(userData.id, userData);
-
-        const embed = new EmbedBuilder()
-        .setColor(0xFFD700) // Gold color
-        .setTitle(`💸 ${guild.user.username}, your bet paid off!`)
-        .setDescription(
-          `Your bet on **${winner === "horse1" ? "<:horse_brown:1314077268447985725> Horse 1": winner === "horse2" ? "<:horse_red:1314077243881820241> Horse 2 ": horse3 + " Horse 3"}** paid off!\n` +
-          `**${winner === "horse1" ? horse1: horse2}** won the race! 🏆\n` +
-          `You earned <:kasiko_coin:1300141236841086977> **${winAmount.toLocaleString()}** cash${teammateId ? `, split with your teammate.`: '.'}`
-        )
-        .setFooter({
-          text: 'Congratulations on your win!'
-        });
+        const embedTitle = new EmbedBuilder()
+        .setDescription(`🏁 𝑻𝒉𝒆 𝒓𝒂𝒄𝒆 𝒊𝒔 𝒐𝒏!\n\n` + `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!` +
+          `${teammateId ? `\n**<@${teammateId}>** is teaming up with the same bet on **${opponentBetOn}**!`: ""}`);
 
         await suspenseMessage.edit({
-          embeds: [embed]
+          content: `\`\`\`Cheers for your horse 🐎\`\`\`\n`+`${track1}\n`+`${track2}\n`+`${track3}\n`,
+          embeds: [embedTitle]
         });
-      } else {
-        if (teammateData && winner === opponentBetOn) {
-          teammateData.cash += amount + winAmount;
-          await updateUser(teammateId, teammateData);
+
+        // Check if any horse has finished
+        if (horse1Pos >= trackLength || horse2Pos >= trackLength || horse3Pos >= trackLength) {
+          clearInterval(raceInterval);
+
+          // Get all horses that crossed the finish line
+          const crossedHorses = [{
+            name: "horse1",
+            pos: horse1Pos
+          },
+            {
+              name: "horse2",
+              pos: horse2Pos
+            },
+            {
+              name: "horse3",
+              pos: horse3Pos
+            }].filter(h => h.pos >= trackLength); // Only horses that finished
+
+          // Determine the winner (horse with the highest position)
+          let winner;
+          if (crossedHorses.length > 0) {
+            winner = crossedHorses.reduce((a, b) => a.pos > b.pos ? a: b).name;
+          } else {
+            winner = "none"; // Edge case (race ended prematurely)
+          }
+
+          const winAmount = Math.floor(amount * 2);
+          const teammateSplit = teammateId ? Math.floor(winAmount / 2): winAmount;
+
+          if (winner === betOn) {
+            userData.cash += amount + winAmount;
+            await updateUser(userData.id, userData);
+
+            const embed = new EmbedBuilder()
+            .setColor(0xFFD700) // Gold color
+            .setTitle(`💸 ${guild.user.username}, your bet paid off!`)
+            .setDescription(
+              `Your bet on **${winner === "horse1" ? "<:horse_brown:1314077268447985725> Horse 1": winner === "horse2" ? "<:horse_red:1314077243881820241> Horse 2 ": horse3 + " Horse 3"}** paid off!\n` +
+              `**${winner === "horse1" ? horse1: horse2}** won the race! 🏆\n` +
+              `You earned <:kasiko_coin:1300141236841086977> **${winAmount.toLocaleString()}** cash${teammateId ? `, split with your teammate.`: '.'}`
+            )
+            .setFooter({
+              text: 'Congratulations on your win!'
+            });
+
+            await suspenseMessage.edit({
+              embeds: [embed]
+            });
+          } else {
+            if (teammateData && winner === opponentBetOn) {
+              teammateData.cash += amount + winAmount;
+              await updateUser(teammateId, teammateData);
+            }
+
+            const embed = new EmbedBuilder()
+            .setColor(0xFF0000) // Red color for loss
+            .setTitle(`🚫 ${guild.user.username}${teammateData && winner !== opponentBetOn ? " & <@" + teammateId + ">": ""}, better luck next time!`)
+            .setDescription(
+              `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** didn't win...\n` +
+              `${teammateId && winner !== opponentBetOn ? `**<@${teammateId}>** bet on **${opponentBetOn}** didn't win too!`: ""}` +
+              `${teammateId && winner === opponentBetOn ? `**<@${teammateId}>**'s `: ""}**${winner === "horse1" ? horse1 + " Horse 1": winner === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** crossed the finish line first! Better luck next time!`
+            )
+            .setFooter({
+              text: 'Keep trying, your big win is just around the corner!'
+            });
+            await suspenseMessage.edit({
+              embeds: [embed]
+            });
+          }
         }
-
-        const embed = new EmbedBuilder()
-        .setColor(0xFF0000) // Red color for loss
-        .setTitle(`🚨 ${guild.user.username}${teammateData && winner !== opponentBetOn ? " & <@" + teammateId + ">": ""}, better luck next time!`)
-        .setDescription(
-          `**${guild.user.username}** bet on **${betOn === "horse1" ? horse1 + " Horse 1": betOn === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** didn't win...\n` +
-          `${teammateId && winner !== opponentBetOn ? `**<@${teammateId}>** bet on **${opponentBetOn}** didn't win too!`: ""}` +
-          `${teammateId && winner === opponentBetOn ? `**<@${teammateId}>**'s `: ""}**${winner === "horse1" ? horse1 + " Horse 1": winner === "horse2" ? horse2 + " Horse 2 ": horse3 + " Horse 3"}** crossed the finish line first! Better luck next time!`
-        )
-        .setFooter({
-          text: 'Keep trying, your big win is just around the corner!'
-        });
-        await suspenseMessage.edit({
-          embeds: [embed]
-        });
+      } catch (err) {
+        if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
+          console.error(err);
+        }
       }
+    },
+      2000); // Update every 2 seconds
+  } catch (e) {
+    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+      console.error(e);
     }
-  },
-    2000); // Update every 2 seconds
+    return channel.send(`⚠ Oops! Something went wrong during the horse race!\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  }
 }
 
 export default {
@@ -205,34 +246,48 @@ export default {
   description: "Bet on a horse race and win or lose based on the result.",
   aliases: ["hr"],
   args: "<amount> <bet (horse1/horse2)> [teammate (optional)]",
-  example: ["horserace 250 horse1", "hr 500 horse2 @Teammate"],
+  example: ["horserace 250 horse1",
+    "hr 500 horse2 @Teammate"],
   category: "🎲 Games",
-  cooldown: 20000, // 8 seconds cooldown
+  emoji: "🏇🏻",
+  cooldown: 20000,
+  // 8 seconds cooldown
 
   async execute(args,
     message) {
-    let betOn = args[2]?.toLowerCase() === "horse2" ? "horse2": "horse1";
-    betOn = args[2]?.toLowerCase() === "horse3" ? "horse3": betOn;
-    const teammateMention = message.mentions.users.first();
-    const teammateId = teammateMention ? teammateMention.id: null;
-
-    let amount;
-
-    if (args[1] && args[1] !== "all") {
-      amount = parseInt(args[1]);
-      if (amount > 300000 || amount < 1000) {
-        return message.channel.send(`The range for participating in the horse race is <:kasiko_coin:1300141236841086977> 1,000 to <:kasiko_coin:1300141236841086977> 300,000.`);
+    try {
+      if (!args[1]) {
+        return message.channel.send("ⓘ Please specify an amount. Use `horserace <amount/all> <horse1/horse2/horse3> [@teammate (optional)]`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      if (!Helper.isNumber(amount) || amount < 1) {
-        return message.channel.send("⚠️ Invalid amount! Use `horserace <amount> <horse1/horse2> [teammate (optional)]`.");
+      let betOn = "horse1";
+      const selectedHorse = args[2]?.toLowerCase();
+      if (["horse2", "horse3"].includes(selectedHorse)) {
+        betOn = selectedHorse;
       }
-    } else if (args[1] && args[1] === "all") {
-      amount = "all"
-    } else {
-      amount = 1000;
+
+      const teammateMention = message.mentions.users.first();
+      const teammateId = teammateMention ? teammateMention.id: null;
+
+      let amount;
+
+      if (args[1].toLowerCase() === "all") {
+        amount = "all";
+      } else {
+        amount = parseInt(args[1]);
+
+        if (isNaN(amount) || amount < 1000 || amount > 300000) {
+          return message.channel.send("⚠ Invalid amount! The betting range is between <:kasiko_coin:1300141236841086977> 1,000 and <:kasiko_coin:1300141236841086977> 300,000.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+      }
+
+      await horseRace(message.author.id, amount, message.channel, betOn, "horse2", teammateId);
+      return;
+    } catch (error) {
+      if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
+        console.error(error);
+      }
+      return message.channel.send(`⚠ An unexpected error occurred while processing your bet. Please try again later.\n-# **Error:** ${error.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
-
-    await horseRace(message.author.id, amount, message.channel, betOn, "horse2", teammateId);
   }
 };

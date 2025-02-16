@@ -53,16 +53,22 @@ export async function blackjack(id, amount, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
-    if (amount === "all") amount = userData.cash;
+    if (!userData) return;
+    if (!guild) return;
+
+    if (amount === "all") amount = userData.cash || 0;
     if (amount > 300000) amount = 300000;
 
     if (userData.cash < amount) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **${amount.toLocaleString()}**.`);
+      await channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Required: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`);
+      return;
     }
 
     // Deduct bet amount
     userData.cash -= amount;
-    await updateUser(id, userData);
+    await updateUser(id, {
+      cash: userData.cash
+    });
 
     // Initialize deck and shuffle
     let deck = [...cardDeck,
@@ -124,137 +130,159 @@ export async function blackjack(id, amount, channel) {
     });
 
     collector.on('collect', async (interaction) => {
-      if (interaction.customId === 'hit') {
-        playerHand.push(deck.pop());
-        const newPlayerValue = calculateHandValue(playerHand);
+      try {
+        if (interaction.customId === 'hit') {
+          playerHand.push(deck.pop());
+          const newPlayerValue = calculateHandValue(playerHand);
 
-        if (newPlayerValue > 21) {
-          const bustEmbed = new EmbedBuilder(embed)
-          .setColor("#f43d3d")
-          .setDescription(`> 🚨 **${guild.user.username}**, you busted! Your hand value is over 21.\n\n` +
+          if (newPlayerValue > 21) {
+            const bustEmbed = new EmbedBuilder(embed)
+            .setColor("#f43d3d")
+            .setDescription(`> 🚨 **${guild.user.username}**, you busted! Your hand value is over 21.\n\n` +
+              `**Your cards :**\n` +
+              `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+              `**Bot's cards:**\n` +
+              `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
+              `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+
+            await interaction.update({
+              embeds: [embedTitle, bustEmbed], components: []
+            });
+            collector.stop("busted")
+            return;
+          } else {
+            // Update the embed with new player hand
+            const newEmbed = new EmbedBuilder(embed)
+            .setDescription(`> **${guild.user.username}**, you hit!\n\n` +
+              `**Your cards :**\n` +
+              `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+              `**Bot's cards:**\n` +
+              `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
+              `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+
+            await interaction.update({
+              embeds: [embedTitle, newEmbed], components: [row]
+            });
+          }
+        } else if (interaction.customId === 'stand') {
+          // Reveal bot's hand and calculate values
+          let botHandFinalValue = calculateHandValue(botHand);
+          const finalPlayerHandValue = calculateHandValue(playerHand);
+
+          while (botHandFinalValue < 17) {
+            botHand.push(deck.pop());
+            botHandFinalValue = calculateHandValue(botHand);
+          }
+
+          // Determine winner
+          let resultMessage = '';
+          let color = "#f01d1d";
+          if (botHandFinalValue > 21) {
+            resultMessage = `🎉 **${guild.user.username}**, the bot busted! You win!`;
+            color = "#1df08b";
+            userData.cash += amount * 2; // Player wins double the bet
+          } else if (finalPlayerHandValue > botHandFinalValue) {
+            resultMessage = `🎉 **${guild.user.username}**, you win!`;
+            userData.cash += amount * 2; // Player wins double the bet
+            color = "#1df08b";
+          } else if (finalPlayerHandValue < botHandFinalValue) {
+            resultMessage = `🚨 **${guild.user.username}**, you lost. Bot wins.`;
+          } else {
+            color = "#a0adb7";
+            resultMessage = `🤝 **${guild.user.username}**, it's a tie!`;
+            userData.cash += amount; // Refund bet in case of tie
+          }
+
+          // Update user data
+          await updateUser(id, {
+            cash: userData.cash
+          });
+
+          // Final update to the embed
+          const finalEmbed = new EmbedBuilder(embed)
+          .setColor(color)
+          .setDescription(`> ${resultMessage}\n\n` +
             `**Your cards :**\n` +
-            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+            `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
             `**Bot's cards:**\n` +
-            `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
+            `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
             `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
           await interaction.update({
-            embeds: [embedTitle, bustEmbed], components: []
+            embeds: [embedTitle, finalEmbed], components: []
           });
-          collector.stop("busted")
+
+          collector.stop("result")
           return;
-        } else {
-          // Update the embed with new player hand
-          const newEmbed = new EmbedBuilder(embed)
-          .setDescription(`> **${guild.user.username}**, you hit!\n\n` +
-            `**Your cards :**\n` +
-            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-            `**Bot's cards:**\n` +
-            `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
-            `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
-
-          await interaction.update({
-            embeds: [embedTitle, newEmbed], components: [row]
-          });
         }
-      } else if (interaction.customId === 'stand') {
-        // Reveal bot's hand and calculate values
-        let botHandFinalValue = calculateHandValue(botHand);
-        const finalPlayerHandValue = calculateHandValue(playerHand);
-
-        while (botHandFinalValue < 17) {
-          botHand.push(deck.pop());
-          botHandFinalValue = calculateHandValue(botHand);
-        }
-
-        // Determine winner
-        let resultMessage = '';
-        let color = "#f01d1d";
-        if (botHandFinalValue > 21) {
-          resultMessage = `🎉 **${guild.user.username}**, the bot busted! You win!`;
-          color = "#1df08b";
-          userData.cash += amount * 2; // Player wins double the bet
-        } else if (finalPlayerHandValue > botHandFinalValue) {
-          resultMessage = `🎉 **${guild.user.username}**, you win!`;
-          userData.cash += amount * 2; // Player wins double the bet
-          color = "#1df08b";
-        } else if (finalPlayerHandValue < botHandFinalValue) {
-          resultMessage = `🚨 **${guild.user.username}**, you lost. Bot wins.`;
-        } else {
-          color = "#a0adb7";
-          resultMessage = `🤝 **${guild.user.username}**, it's a tie!`;
-          userData.cash += amount; // Refund bet in case of tie
-        }
-
-        // Update user data
-        await updateUser(id, userData);
-
-        // Final update to the embed
-        const finalEmbed = new EmbedBuilder(embed)
-        .setColor(color)
-        .setDescription(`> ${resultMessage}\n\n` +
-          `**Your cards :**\n` +
-          `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
-          `**Bot's cards:**\n` +
-          `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
-          `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
-
+      } catch (err) {
         await interaction.update({
-          embeds: [embedTitle, finalEmbed], components: []
-        });
-
-        collector.stop("result")
+          content: `ⓘ Something went wrong with your blackjack game!\n-# **Error**: ${err.message}`
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         return;
       }
     });
 
     collector.on('end',
-      (collected, reason) => {
+      async (collected, reason) => {
         // Handle timeout if the game ends with no interaction
-        if (!gameMessage.deleted && reason === "time") {
-          gameMessage.edit({
+        if (gameMessage && !gameMessage.deleted && reason === "time") {
+          await gameMessage.edit({
             embeds: [embedTitle, embed.setFooter({
               text: "⏱️ Timeout"
             }).setColor("#f43d3d")],
             components: []
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return;
         }
       });
   } catch (error) {
-    console.error(error);
-    return channel.send("Oops! Something went wrong during the Blackjack game.");
+    if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
+      console.error(e);
+    }
+    await channel.send(`ⓘ Oops! Something went wrong during the Blackjack game.\n**Error**: ${error.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return;
   }
 }
 
 export default {
   name: 'blackjack',
-  description: 'Play a game of Blackjack!',
+  description: "Play a game of Blackjack! Try your luck and beat the dealer by getting as close to 21 as possible without going over. Will you hit, stand, or go all in?",
   category: '🎲 Games',
-  example: ["blackjack 250", "bj 250"],
+  example: ["blackjack 250",
+    "bj 250"],
   aliases: ["bj"],
+  emoji: "🃏",
+  cooldown: 10000,
   execute: async (args,
     message) => {
-    args.shift();
-
-    let amount;
-    if (!args[0]) {
-      amount = 1;
-    }
-
-    if (args[0] !== "all") {
-      amount = parseInt(args[0] ? args[0] : amount);
-      if (amount > 200000 || amount < 1) {
-        return message.channel.send(`The range for participating in the blackjack is <:kasiko_coin:1300141236841086977> 1 to <:kasiko_coin:1300141236841086977> 200,000.`);
-      }
-    } else {
-      amount = "all";
-    }
-    
     try {
-      blackjack(message.author.id, amount, message.channel);
-    } catch (e) {
-      console.error(e);
-      message.channel.send(`⚠️ something went wrong with blackjack!`);
+      args.shift();
+
+      let amount;
+      if (!args[0]) {
+        amount = 1;
+      }
+
+      if (args[0] !== "all") {
+        amount = parseInt(args[0] ? args[0]: amount);
+        if (amount > 300000 || amount < 1) {
+          return message.channel.send(`ⓘ The range for participating in the blackjack is <:kasiko_coin:1300141236841086977> 1 to <:kasiko_coin:1300141236841086977> 300,000.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+      } else {
+        amount = "all";
+      }
+
+      try {
+        await blackjack(message.author.id, amount, message.channel);
+        return;
+      } catch (e) {
+        console.error(e);
+        await message.channel.send(`⚠️ something went wrong with blackjack!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return;
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
 }

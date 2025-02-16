@@ -39,7 +39,7 @@ export const termsAndcondition = async (message) => {
     // Create the accept button
     const button = new ButtonBuilder()
     .setCustomId('accept_terms')
-    .setLabel('Accept Rules')
+    .setLabel('✅ Accept Rules')
     .setStyle(ButtonStyle.Success);
 
     // Create the row with the button
@@ -68,18 +68,26 @@ export const termsAndcondition = async (message) => {
           let user = await createUser(message.author.id);
           if (user) {
             await interaction.editReply({
-              content: 'Thank you for accepting the Terms and Conditions!\nUse `kas help` for more information.',
+              content: "<:emoji_35:1332676884093337603> **Thank you** for accepting the __Terms and Conditions__! 💐\n\n" +
+              "➡️ You can start with `kas help` to see all commands.\n\n" +
+              "📌 **Usage:**  \n" +
+              "- `kas help <cmd>` → Get details about a specific command.  \n" +
+              "- `kas guide <cmd>` → View a guide (if available) for the command.\n\n" +
+              "> -# Stack up wealth, outsmart the market, and rule the game economy! 🐦‍🔥",
               ephemeral: true
             });
 
             // Disable the button after interaction
             const updatedButton = ButtonBuilder.from(button).setDisabled(true);
             const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
-            return await sentMessage.edit({
+
+            if (!sentMessage || !sentMessage?.edit) return;
+            await sentMessage.edit({
               components: [updatedRow]
             });
+            return;
           } else {
-            return message.editReply({
+            await message.editReply({
               content: '⚠️ Something went wrong! Please contact the support or try again',
               ephemeral: true
             });
@@ -98,11 +106,12 @@ export const termsAndcondition = async (message) => {
           const updatedButton = ButtonBuilder.from(button).setDisabled(true);
           const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
 
-          if (!sentMessage) return;
+          if (!sentMessage || !sentMessage?.edit) return;
 
-          return await sentMessage.edit({
+          await sentMessage.edit({
             components: [updatedRow]
           });
+          return;
         } catch (e) {
           console.error(e);
         }
@@ -111,14 +120,18 @@ export const termsAndcondition = async (message) => {
   } catch (error) {
     console.error('Error in termsAndcondition:',
       error);
-    return await message.channel.send(
-      'Your channel is missing the following permissions that the bot needs:\n' +
+    return message.channel.send(
+      'This channel might be missing the following permissions that the bot needs:\n' +
       '1. **Send Messages**\n' +
       '2. **Embed Links**\n' +
-      '3. **Read Message History**\n' +
-      '4. **View Channel**\n' +
-      '5. **Message Components (Buttons)**\n' +
+      '3. **External stickers | emojis**\n' +
+      '4. **Read Message History**\n' +
+      '5. **Add reactions**\n' +
+      '6. **Use Application Commands**\n' +
+      '7. **Attach Files**\n' +
       'Please update the bot permissions and try again!'
-    );
+    ).catch(err => ![50001,
+        50013,
+        10008].includes(err.code) && console.error(err));
   }
 };

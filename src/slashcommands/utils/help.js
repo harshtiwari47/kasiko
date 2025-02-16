@@ -2,49 +2,42 @@ import {
   SlashCommandBuilder
 } from '@discordjs/builders';
 import txtcommands from '../../textCommandHandler.js';
-import {
-  getHelpResponse
-} from './helpUtility.js';
-import {
-  EmbedBuilder
-} from 'discord.js';
 
 export default {
   data: new SlashCommandBuilder()
   .setName('help')
-  .setDescription('Get a list of available commands or detailed help for a specific command.')
+  .setDescription('Displays the list of commands or detailed info about a specific command.')
   .addStringOption(option =>
-    option.setName('command')
-    .setDescription('The name of the command to get detailed help for.')
+    option
+    .setName('command')
+    .setDescription('The command you want help with')
     .setRequired(false)
   ),
   async execute(interaction) {
     try {
-      // Defer the interaction if generating help might take longer than 3 seconds
-      await interaction.deferReply();
+      await interaction.deferReply({
+        ephemeral: true
+      });
 
       const commandName = interaction.options.getString('command');
-      const {
-        content,
-        embeds
-      } = getHelpResponse(commandName);
 
-      // Send the response
-      if (content) {
-        await interaction.editReply(content);
-      }
-      if (embeds.length > 0) {
-        embeds.forEach(embed => {
-          interaction.followUp({
-            embeds: [embed]
-          });
-        });
-
+      if (txtcommands.get("help")) {
+        await txtcommands.get("help").execute(commandName ? ["help", commandName] : ["help"], interaction);
         return;
+      } else {
+        return await interaction.editReply(`Failed to execute profile command!`);
       }
+
     } catch (error) {
-      console.error(error);
-      return await interaction.editReply('❌ An error occurred while executing the command.');
+      console.error('Error executing /help command:', error);
+      try {
+        await interaction.editReply({
+          content: '⚠️ An error occurred while fetching help information. Please try again later.',
+          ephemeral: true,
+        });
+      } catch (replyError) {
+        console.error('Error sending error message:', replyError);
+      }
     }
-  }
+  },
 };

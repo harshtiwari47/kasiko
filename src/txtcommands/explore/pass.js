@@ -21,7 +21,7 @@ import IceCreamShop from "../../../models/IceCream.js";
 import UserPet from "../../../models/Pet.js";
 import {
   Ship
-} from '../battle/shipsHandler.js';
+} from '../pirates/shipsHandler.js';
 
 
 const logger = winston.createLogger({
@@ -321,9 +321,9 @@ async function flushPendingUpdatesForUser(userId, message) {
         .setColor('#00FF00')
         .setTimestamp();
 
-        await message.channel.send({
+        return message.channel.send({
           embeds: [embed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
 
@@ -342,7 +342,7 @@ async function sendTaskListEmbed(author, message) {
   try {
     const userTask = await getUserPassTask(author.id);
     if (!userTask) {
-      return message.reply('No tasks found for you.');
+      return message.reply('No tasks found for you.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Get pending updates
@@ -423,31 +423,37 @@ async function sendTaskListEmbed(author, message) {
     });
 
     collector.on('collect', async (interaction) => {
-      if (interaction.customId === 'next' && currentPage < totalPages - 1) {
-        currentPage++;
-      } else if (interaction.customId === 'previous' && currentPage > 0) {
-        currentPage--;
-      }
+      try {
+        if (interaction.customId === 'next' && currentPage < totalPages - 1) {
+          currentPage++;
+        } else if (interaction.customId === 'previous' && currentPage > 0) {
+          currentPage--;
+        }
 
-      taskButtons.components[0].setDisabled(currentPage === 0);
-      taskButtons.components[1].setDisabled(currentPage >= totalPages - 1);
+        taskButtons.components[0].setDisabled(currentPage === 0);
+        taskButtons.components[1].setDisabled(currentPage >= totalPages - 1);
 
-      await interaction.update({
-        embeds: [sendTaskDetails(currentPage)],
-        components: [taskButtons],
-      });
+        await interaction.update({
+          embeds: [sendTaskDetails(currentPage)],
+          components: [taskButtons],
+        });
+      } catch (err) {}
     });
 
     collector.on('end',
       () => {
         taskButtons.components.forEach((button) => button.setDisabled(true));
-        msg.edit({
-          components: [taskButtons]
-        });
+        if (msg) {
+          msg.edit({
+            components: [taskButtons]
+          });
+        }
       });
   } catch (error) {
     logger.error(`[${new Date().toISOString()}] Error in sendTaskListEmbed for user ${author.id}: ${error.message}`);
-    return message.reply('❌ An error occurred while showing the tasks list.');
+    return message.reply('❌ An error occurred while showing the tasks list.').catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -456,7 +462,7 @@ async function showRoyalPass(userId, username, channel, author) {
   try {
     const royalPass = await getRoyalPass(userId);
     if (!royalPass) {
-      return channel.send(`**${username}**, no **Royal Pass** found. You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`);
+      return channel.send(`**${username}**, no **Royal Pass** found. You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Get pending updates
@@ -546,17 +552,17 @@ async function showRoyalPass(userId, username, channel, author) {
       .setColor('#00FF00')
       .setTimestamp();
 
-      await message.channel.send({
+      return message.channel.send({
         embeds: [embed]
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     return channel.send({
       embeds: [overviewEmbed, rewardsEmbed]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } catch (error) {
     logger.error(`[${new Date().toISOString()}] Error in showRoyalPass for user ${userId}: ${error.message}`);
-    return channel.send(`❌ An error occurred while retrieving your Royal Pass.`);
+    return channel.send(`❌ An error occurred while retrieving your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -565,27 +571,27 @@ async function claimReward(userId, level, message) {
   try {
     const royalPass = await getRoyalPass(userId);
     if (!royalPass) {
-      return message.reply('⚠️ No Royal Pass found. Activate one using `pass activate`.');
+      return message.reply('⚠️ No Royal Pass found. Activate one using `pass activate`.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const reward = Rewards[level];
     if (!reward) {
-      return message.reply('⚠️ Invalid reward level.');
+      return message.reply('⚠️ Invalid reward level.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (reward.isPremium && !royalPass.isPremium) {
-      return message.reply('⚠️ This reward is exclusive to Premium Royal Pass holders.');
+      return message.reply('⚠️ This reward is exclusive to Premium Royal Pass holders.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (level > royalPass.level) {
-      return message.reply('⚠️ Your Royal Pass level is too low to claim this reward.');
+      return message.reply('⚠️ Your Royal Pass level is too low to claim this reward.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const alreadyClaimed = royalPass.rewardsClaimed.find(r =>
       (r.id && r.id === reward.id));
 
     if (alreadyClaimed) {
-      return message.reply('⚠️ You have already claimed this reward.');
+      return message.reply('⚠️ You have already claimed this reward.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // cash
@@ -600,7 +606,7 @@ async function claimReward(userId, level, message) {
       });
 
       if (!playerShop) {
-        return message.reply("❌ Shop name not found! Please create your ice cream shop first. For guidance, use `icecream|ice help`! 🍧");
+        return message.reply("❌ Shop name not found! Please create your ice cream shop first. For guidance, use `icecream|ice help`! 🍧").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       playerShop.money += reward.amount;
@@ -621,7 +627,7 @@ async function claimReward(userId, level, message) {
       }
 
       if (userPetData.pets.some(pet => pet.petId === reward.details[0].petId)) {
-        return message.reply(`⚠️ You are already own this adorable pet!`)
+        return message.reply(`⚠️ You are already own this adorable pet!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       userPetData.pets.push(reward.details[0]);
@@ -650,7 +656,7 @@ async function claimReward(userId, level, message) {
     if (reward.type === 'ship') {
       let userShips = await Ship.getUserShipsData(userId);
       if (userShips.ships && userShips.ships.some(shipDetails => shipDetails.id && shipDetails.id === reward.details[0].id)) {
-        return message.reply("⚠️ You already own this ship, Captain!")
+        return message.reply("⚠️ You already own this ship, Captain!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
       userShips.ships.push(reward.details[0]);
       await Ship.modifyUserShips(userId, userShips);
@@ -714,11 +720,15 @@ async function claimReward(userId, level, message) {
         EX: REDIS_EXPIRY
       });
 
-    return message.reply(`✅ You have successfully claimed the reward: **${reward.emoji} ${reward.amount} ${(reward.name || "")}**.`);
+    return message.reply(`✅ You have successfully claimed the reward: **${reward.emoji} ${reward.amount} ${(reward.name || "")}**.`).catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
 
   } catch (error) {
     logger.error(`[${new Date().toISOString()}] Error in claimReward for user ${userId}: ${error.message}`);
-    return message.reply(`❌ An error occurred while claiming your reward.`);
+    return message.reply(`❌ An error occurred while claiming your reward.`).catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -732,28 +742,28 @@ export async function execute(args, message, client) {
   const username = author.username;
 
   if (args[1] === 'progress') {
-    return channel.send(`This action is handled by incrementTaskExp in the code.`);
+    return channel.send(`This action is handled by incrementTaskExp in the code.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else if (args[1] === 'status') {
     try {
       await showRoyalPass(userId, username, channel, author);
     } catch (error) {
       logger.error(`[${new Date().toISOString()}] Error showing Royal Pass for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while retrieving your Royal Pass.`);
+      return channel.send(`❌ An error occurred while retrieving your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } else if (args[1] === 'task') {
     try {
       await sendTaskListEmbed(author, message);
     } catch (error) {
       logger.error(`[${new Date().toISOString()}] Error sending task list for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while showing the tasks list.`);
+      return channel.send(`❌ An error occurred while showing the tasks list.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } else if (args[1] === 'activate') {
     try {
-      return channel.send(`❌  This month's pass is not available`);
+      return channel.send(`❌  This month's pass is not available`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       const userCash = await getUserCash(userId);
       if (userCash < FIRST_PASS_COST) {
-        return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`);
+        return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const currentMonth = new Date().getMonth();
@@ -761,7 +771,7 @@ export async function execute(args, message, client) {
       const royalPass = await initRoyalPass(userId, currentMonth);
 
       if (royalPass instanceof Error) {
-        return channel.send(`❌ **${username}**, you have insufficient cash to purchase your Royal Pass.`);
+        return channel.send(`❌ **${username}**, you have insufficient cash to purchase your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const embed = new EmbedBuilder()
@@ -771,27 +781,27 @@ export async function execute(args, message, client) {
 
       return message.reply({
         embeds: [embed]
-      })
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (error) {
       logger.error(`[${new Date().toISOString()}] Error activating Royal Pass for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while activating your Royal Pass.`);
+      return channel.send(`❌ An error occurred while activating your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } else if (args[1] === 'premium') {
     try {
       const userCash = await getUserCash(userId);
       if (userCash < PREMIUM_COST) {
-        return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${PREMIUM_COST.toLocaleString()} cash to upgrade to a Premium Royal Pass.`);
+        return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${PREMIUM_COST.toLocaleString()} cash to upgrade to a Premium Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const royalPass = await RoyalPass.findOne({
         userId, month: new Date().getMonth()
       }).lean();
       if (!royalPass) {
-        return channel.send(`You need to activate your Royal Pass first using \`pass activate\`.`);
+        return channel.send(`You need to activate your Royal Pass first using \`pass activate\`.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (royalPass.isPremium) {
-        return channel.send(`You already have a Premium Royal Pass.`);
+        return channel.send(`You already have a Premium Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       await deductUserCash(userId, PREMIUM_COST);
@@ -820,10 +830,10 @@ export async function execute(args, message, client) {
       await redisClient.set(`user:${userId}:royalpass`, JSON.stringify(updatedRoyalPass), {
         EX: REDIS_EXPIRY
       });
-      return channel.send(`✅ Your Royal Pass has been upgraded to Premium! Enjoy your exclusive rewards.`);
+      return channel.send(`✅ Your Royal Pass has been upgraded to Premium! Enjoy your exclusive rewards.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (error) {
       logger.error(`[${new Date().toISOString()}] Error upgrading to Premium Royal Pass for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while upgrading your Royal Pass.`);
+      return channel.send(`❌ An error occurred while upgrading your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } else if (args[1] === 'special') {
 
@@ -869,9 +879,9 @@ export async function execute(args, message, client) {
       text: 'Navigate the seas with confidence aboard Drago!'
     });
 
-    message.channel.send({
+    return message.channel.send({
       embeds: [shipEmbed]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
   } else if (args[1] === 'exclusive') {
     const premiumEmbed = new EmbedBuilder()
@@ -917,20 +927,20 @@ export async function execute(args, message, client) {
     )
 
     // Send embeds
-    message.channel.send({
+    return message.channel.send({
       embeds: [premiumEmbed, basicsEmbed]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
   } else if (args[1] === 'claim') {
     const level = args[2];
     if (!level) {
-      return channel.send('Please specify the level of the reward you want to claim. Usage: `pass claim <level>`');
+      return channel.send('Please specify the level of the reward you want to claim. Usage: `pass claim <level>`').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
     try {
       await claimReward(userId, level, message);
     } catch (error) {
       logger.error(`[${new Date().toISOString()}] Error claiming reward for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while claiming your reward.`);
+      return channel.send(`❌ An error occurred while claiming your reward.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } else {
     const firstEmbed = new EmbedBuilder()
@@ -954,7 +964,7 @@ export async function execute(args, message, client) {
 
     return channel.send({
       embeds: [firstEmbed, secondEmbed]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -963,6 +973,7 @@ export default {
   description: 'Monthly Royal Pass system',
   aliases: ['royalpass'],
   args: '<progress|status|task|activate|premium|claim>',
+  emoji: "⭐",
   cooldown: 5000,
   category: '🍬 Explore',
   execute,

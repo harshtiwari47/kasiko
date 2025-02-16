@@ -1,0 +1,14 @@
+export default {
+  command: "bank",
+  subcommands: {
+  default: [
+      "## Bank Command Guide – Page 1\n\nWelcome to the **Bank Command Guide**!\n\nThis guide helps you manage your funds with the following commands:\n\n- **bank open**: Open a new bank account (Cost: <:kasiko_coin:1300141236841086977> 1000).\n- **deposit <amount>**: Deposit cash into your bank account. Use `all` to deposit everything.\n- **withdraw <amount>**: Withdraw cash from your bank account. Note that a fee (interest) applies.\n- **bank status**: Check your current bank details including deposit, level, and cash on hand.\n- **bank upgrade**: Upgrade your bank to increase your storage capacity (requires a minimum deposit).\n\nMake sure you have enough cash and understand the fees before making transactions.",
+      "## Bank Command Guide – Page 2\n\n### Additional Details & Tips\n\n- **Fees & Charges:**\n  - Withdrawals incur a fee based on your bank level and, if applicable, premium benefits.\n  - The fee is automatically calculated; always verify that you have enough funds to cover both the withdrawal and the fee.\n\n- **Upgrading Your Bank:**\n  - Upgrades increase your bank's storage limit but cost a portion of your deposit.\n  - The cost scales with your current bank level.\n\n- **Error Handling:**\n  - In case of any errors, transactions may rollback to preserve your funds.\n\nUse these commands wisely to secure and grow your wealth!"
+    ],
+    withdraw: [
+      "## Withdraw Command Guide – Page 1\n\nThe **withdraw** command lets you take funds out of your bank account.\n\n**Usage Examples:**\n- `withdraw 500` – Withdraws 500 cash (plus a fee).\n- `withdraw all` – Withdraws your available funds after deducting the fee.\n\n**How It Works:**\n- The system calculates a fee (interest) based on your bank level and potential premium discounts.\n- The total amount deducted from your bank is the sum of your requested withdrawal plus the fee.",
+      "## Withdraw Command Guide – Page 2\n\n### Important Considerations for Withdrawals\n\n- **Sufficient Funds:**\n  - Your bank deposit must cover both the withdrawal amount and the fee. If not, the transaction will be rejected.\n\n- **Premium Benefits:**\n  - Premium users get a discount on withdrawal fees, lowering the overall cost.\n\n- **Fee Calculation Example:**\n  - If you withdraw 500 cash and the fee is 5%, the total deduction will be 500 + 25 = 525.\n\n- **Transaction Safety:**\n  - If an error occurs during withdrawal, your original cash balance is restored.\n\nDouble-check your amounts to ensure you always have the funds you need!"
+    ]
+    // You can add more subcommands (e.g., deposit, open, upgrade, status) with similar markdown guides.
+  }
+};

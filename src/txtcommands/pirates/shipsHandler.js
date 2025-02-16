@@ -402,7 +402,8 @@ export default {
     "stat",
     "profile"],
   cooldown: 8000,
-  category: "⚓ Battle",
+  emoji: "⛵",
+  category: "⚓ Pirates",
 
   // Execute function based on the command alias
   execute: (args,

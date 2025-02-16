@@ -3,7 +3,7 @@ export default {
   description: "Roast someone with a witty comeback!",
   aliases: ["burn",
     "insult"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     const roasts = [
@@ -128,6 +128,7 @@ export default {
     const target = args.length ? args.join(" "): "you";
     const randomRoast = roasts[Math.floor(Math.random() * roasts.length)];
 
-    await message.reply(`🔥 ${target.replace(args[0], "")}, ${randomRoast}`);
+    return message.reply(`🔥 ${target.replace(args[0], "")}, ${randomRoast}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return;
   },
 };

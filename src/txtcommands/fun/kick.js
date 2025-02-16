@@ -7,13 +7,13 @@ export default {
   description: "Playfully kick another user.",
   aliases: ["boot",
     "punt"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
       const target = message.mentions.users.first();
       if (!target) {
-        return message.reply("Please mention a valid user to kick.");
+        return message.reply("Please mention a valid user to kick.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const texts = [
@@ -50,15 +50,13 @@ export default {
           dynamic: true
         })
       })
-      .setFooter({
-        text: `giphy`
-      });
 
       if (randomGif) embed.setImage(randomGif); // Add GIF only if available
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
     }

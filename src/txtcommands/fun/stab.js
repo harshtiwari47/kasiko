@@ -7,13 +7,13 @@ export default {
   description: "Playfully stab another user.",
   aliases: ["poke",
     "jab"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
       const target = message.mentions.users.first();
       if (!target) {
-        return message.reply("Please mention a valid user to stab.");
+        return message.reply("Please mention a valid user to stab.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const texts = [
@@ -53,15 +53,14 @@ export default {
         })
       })
       .setImage(randomGif)
-      .setFooter({
-        text: `giphy`
-      });
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
+      return;
     }
   },
 };

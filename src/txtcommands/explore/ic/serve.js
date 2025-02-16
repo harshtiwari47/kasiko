@@ -10,10 +10,10 @@ function capitalizeFirstLetter(word) {
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
   if (isInteraction) {
-    if (!context.deferred) await context.deferReply();
-    return await context.editReply(data);
+    if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.send(data);
+    return context.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -86,10 +86,12 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
       ? "Not every customer loves the same flavor! Keep improving!": "Keep serving customers to grow your reputation!": "Try adding more flavors to meet customer preferences.",
     });
 
-    suspenseMessage.edit({
-      content: null,
-      embeds: [embed],
-    });
+    try {
+      suspenseMessage.edit({
+        content: null,
+        embeds: [embed],
+      });
+    } catch (err) {}
   },
     3000);
 }

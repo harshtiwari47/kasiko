@@ -27,7 +27,7 @@ import {
 
 import {
   Ship
-} from '../battle/shipsHandler.js';
+} from '../pirates/shipsHandler.js';
 
 import UserPet from "../../../models/Pet.js";
 
@@ -498,6 +498,7 @@ export default {
   ],
   related: ["aquarium",
     "catch"],
+  emoji: "🌊",
   cooldown: 10000,
   // Cooldown of 10 seconds
   category: "🌊 Ocean Life",

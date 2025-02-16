@@ -181,14 +181,16 @@ export async function profile(userId, context) {
     if (isInteraction) {
       // If the context is an interaction
       if (!context.deferred) await context.deferReply();
-      return await context.editReply({
+      await context.editReply({
         embeds: userProfile
       });
+      return;
     } else {
       // If the context is a text-based message
-      return await context.channel.send({
+      await context.channel.send({
         embeds: userProfile
       });
+      return;
     }
   } catch (e) {
     console.error("Error generating profile:", e);
@@ -196,9 +198,10 @@ export async function profile(userId, context) {
     const errorMessage = "Oops! Something went wrong while exploring the user's profile!";
     if (context.isCommand) {
       if (!context.deferred) await context.deferReply();
-      return await context.editReply(errorMessage);
+      await context.editReply(errorMessage).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return;
     } else {
-      return context.channel.send(errorMessage);
+      return context.channel.send(errorMessage).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 }
@@ -220,6 +223,7 @@ export default {
     "stat",
     "cash",
     "bank"],
+  emoji: "😎",
   cooldown: 10000,
   // Cooldown of 10 seconds
   category: "👤 User",

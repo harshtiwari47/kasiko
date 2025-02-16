@@ -6,28 +6,35 @@ export default {
   name: "avatar",
   description: "Displays detailed information about a user's avatar.",
   aliases: ["avatarinfo",
-    "avinfo"],
-  cooldown: 8000,
+    "avinfo",
+    "av"],
+  cooldown: 10000,
   category: "🔧 Utility",
 
   execute: async (args, message) => {
-    const target = message.mentions.users.first() || message.author;
+    try {
+      const target = message.mentions.users.first() || message.author;
 
-    const avatarURL = target.displayAvatarURL({
-      format: "png", dynamic: true, size: 1024
-    });
+      const avatarURL = target.displayAvatarURL({
+        format: "png", dynamic: true, size: 1024
+      });
 
-    const embed = new EmbedBuilder()
-    .setTitle(`${target.tag}'s Avatar Information`)
-    .setColor(0x00aaff)
-    .setImage(avatarURL)
-    .setDescription(`
-      **[Avatar URL](<${avatarURL}>)**
-      **Avatar Type:** ${avatarURL.endsWith(".gif") ? "GIF": "PNG"}
-      `)
+      const embed = new EmbedBuilder()
+      .setTitle(`${target.tag}'s Avatar Information`)
+      .setColor(0x00aaff)
+      .setImage(avatarURL)
+      .setDescription(`
+        **[Avatar URL](<${avatarURL}>)**
+        **Avatar Type:** ${avatarURL.endsWith(".gif") ? "GIF": "PNG"}
+        `)
 
-    await message.reply({
-      embeds: [embed]
-    });
+      await message.reply({
+        embeds: [embed]
+      });
+    } catch (e) {
+      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+        console.error(e);
+      }
+    }
   },
 };

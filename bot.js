@@ -65,7 +65,7 @@ const clientId = process.env.APP_ID;
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
   updateStatus(client);
-  await loadSlashCommands('./src/slashcommands', clientId, TOKEN);
+  await loadSlashCommands('./src/slashcommands', clientId, TOKEN, client);
 });
 
 client.on('messageCreate', async (message) => {
@@ -101,8 +101,7 @@ client.on('messageCreate', async (message) => {
     const isBanned = await redisClient.get(banKey).catch(() => null);
     if (isBanned) {
       const ttl = await redisClient.ttl(banKey);
-      await message.channel.send(`⛔ You're command-banned for ${Math.ceil(ttl/60)} minutes`).catch(() => {});
-      return;
+      return message.channel.send(`⛔ You're command-banned for ${Math.ceil(ttl/60)} minutes`).catch(() => {});
     }
 
     let args;
@@ -164,9 +163,9 @@ client.on('messageCreate', async (message) => {
         if (!message.client.user) return;
 
         if (!notAllowed.includes("SEND_MESSAGES") && (args[0] && args[0] !== "channel")) {
-          return await message.channel.send({
+          await message.channel.send({
             content: `I am missing the following permissions: ${notAllowed}`,
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         if (notAllowed.includes("SEND_MESSAGES")) {
@@ -174,7 +173,6 @@ client.on('messageCreate', async (message) => {
         }
       }
     } catch (e) {
-      console.error("There is an error while checking bot permissions!", e);
       return;
     }
 
@@ -193,7 +191,7 @@ client.on('messageCreate', async (message) => {
     if (firstUserMention && !firstUserMention.bot) {
       let userExistenceMentioned = await userExists(firstUserMention.id);
       if (!userExistenceMentioned && command.category !== "🧩 Fun") {
-        return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas help`.");
+        return message.channel.send("The mentioned user hasn't accepted the terms and conditions. They can accept them by typing `kas help`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
 
@@ -231,13 +229,15 @@ client.on('messageCreate', async (message) => {
         if (violations >= 5) {
           await redisClient.setEx(banKey, 600, '1'); // 10-minute ban
           await redisClient.del(violationsKey);
-          return message.channel.send(`⛔ Command access revoked for 10 minutes due to spamming`);
+          return message.channel.send(`⛔ Command access revoked for 10 minutes due to spamming`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         const ttl = await redisClient.ttl(cooldownKey);
-        const warning = await message.channel.send(
-          `⏱️ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
-        );
+        try {
+          const warning = await message.channel.send(
+            `⏱️ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
+          );
+        } catch (errMsg) {}
         setTimeout(() => warning.delete().catch(() => {}), 5000);
         return;
       }
@@ -250,7 +250,7 @@ client.on('messageCreate', async (message) => {
       command.execute(args, message);
     } catch (error) {
       console.error(error);
-      return message.reply("There was an error executing that command.");
+      return message.reply("There was an error executing that command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -268,14 +268,14 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.reply({
           content: 'I do not have permission to send messages in this channel.',
           ephemeral: true,
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (!botPermissions.has(PermissionsBitField.Flags.UseApplicationCommands)) {
         return interaction.reply({
           content: 'I do not have permission to use Slash commands in this channel.',
           ephemeral: true,
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
   } catch(e) {
@@ -295,7 +295,7 @@ client.on('interactionCreate', async (interaction) => {
     try {
       await interaction.reply({
         content: 'An error occurred while processing your command.', ephemeral: true
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (replyError) {
       console.error('Failed to send error reply:', replyError);
     }
@@ -310,6 +310,26 @@ client.on('interactionCreate', async (interaction) => {
       console.error(error);
     }
   }
+
+  if (interaction.isAutocomplete()) {
+    if (!client?.commands) {
+      console.error("⚠️ client.commands is not initialized!");
+      return;
+    }
+
+    const command = client.commands.get(interaction.commandName);
+    if (!command || !command.autocomplete) {
+      console.error(`⚠️ No autocomplete function found for ${interaction.commandName}`);
+      return;
+    }
+
+    try {
+      await command.autocomplete(interaction);
+    } catch (error) {
+      console.error("Error handling autocomplete:", error);
+    }
+  }
+
 });
 
 client.on('guildCreate', async (guild) => {
@@ -400,7 +420,7 @@ function getTotalUser(client, message) {
     console.log(`Server: ${guild.name}, Members: ${guild.memberCount}`);
   });
 
-  return message.channel.send(`Total Members: ${totalMembers}`);
+  return message.channel.send(`Total Members: ${totalMembers}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 }
 
 

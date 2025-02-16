@@ -12,19 +12,22 @@ export async function toss(id, amount, channel, choice = "head") {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
+    if (!userData) return;
+    if (!guild) return;
+
     if (amount === "all") amount = userData.cash;
 
     if (amount > 300000) amount = 300000;
 
     // Check if the user has enough cash and if the amount is valid
     if (userData.cash < 1) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (amount < 1) {
-      return channel.send("⚠️ Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **1**.");
+      return channel.send("⚠️ Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **1**.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (userData.cash < Number(amount)) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
+      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const spiningCoin = `<a:SpinningCoin:1326785405399597156>`;
@@ -56,7 +59,9 @@ export async function toss(id, amount, channel, choice = "head") {
     }
 
     // Save updated user data to the database
-    await updateUser(id, userData);
+    await updateUser(id, {
+      cash: userData.cash
+    });
 
     // Edit the initial "thinking" message to the final result
     if (random === 1 && choice === "head") {
@@ -64,12 +69,14 @@ export async function toss(id, amount, channel, choice = "head") {
     } else if (random === 0 && choice === "tail") {
       await suspenseMessage.edit(`✦ **${guild.user.nickname || guild.user.username}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵!\nThe ᑕOIＮ ${stillCoinTails} landed on _tails_!\n⤹ 𓂃 You \`won\` <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉! ⚘`);
     } else {
-      await suspenseMessage.edit(`༄ Oops, **${guild.user.nickname || guild.user.username}**, the ᑕOIＮ ${choice === "tail" ? stillCoin: stillCoinTails} landed on _${choice === "tail" ? "heads": "tails"}_... You \`lost\` <:kasiko_coin:1300141236841086977>**${Number(winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\n-# Better luck next time!`);
+      await suspenseMessage.edit(`ⓘ Oops, **${guild.user.nickname || guild.user.username}**, the ᑕOIＮ ${choice === "tail" ? stillCoin: stillCoinTails} landed on _${choice === "tail" ? "heads": "tails"}_... You \`lost\` <:kasiko_coin:1300141236841086977>**${Number(winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
     }
 
   } catch (e) {
-    console.log(e);
-    return channel.send("Oops! Something went wrong while tossing the coin 🪙!");
+    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+      console.error(e);
+    }
+    return channel.send(`ⓘ Oops! Something went wrong while tossing the coin! 🪙\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -88,41 +95,49 @@ export default {
     "cash",
     "dice",
     "guess"],
+  emoji: "🪙",
   cooldown: 8000,
   // 8 seconds cooldown
   category: "🎲 Games",
 
   // Main function to execute the coin toss logic
-  execute: (args, message) => {
-    // Check if a valid amount argument is provided
-    if ((args[1] && Helper.isNumber(args[1])) || args[1] === "all") {
+  execute: async (args, message) => {
+    try {
+      // Check if a valid amount argument is provided
+      if ((args[1] && Helper.isNumber(args[1])) || args[1] === "all") {
 
-      let amount;
+        let amount;
 
-      if (args[1] === "all") {
-        amount = "all";
+        if (args[1] === "all") {
+          amount = "all";
+        } else {
+          amount = parseInt(args[1]);
+        }
+
+        // Ensure amount is within valid range
+        if (amount !== "all" && amount < 1) {
+          await message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
+          return;
+        }
+
+        if (amount !== "all" && amount > 300000) {
+          await message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+          return;
+        }
+
+        let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";
+        // Call the Gamble module's toss function
+        toss(message.author.id, amount, message.channel, choice);
       } else {
-        amount = parseInt(args[1]);
+        // Send usage error if the amount argument is invalid
+        await message.channel.send("⚠️ Invalid cash amount! Amount should be an integer.\n\n"
+          + "**Use:** `tosscoin <amount> <choice>`\n"
+          + "- **Choice**: `heads(h) | tails(t)`\n"
+          + "-# Default choice is heads.");
+        return;
       }
-
-      // Ensure amount is within valid range
-      if (amount !== "all" && amount < 1) {
-        return message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
-      }
-
-      if (amount !== "all" && amount > 300000) {
-        return message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
-      }
-
-      let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";
-      // Call the Gamble module's toss function
-      toss(message.author.id, amount, message.channel, choice);
-    } else {
-      // Send usage error if the amount argument is invalid
-      return message.channel.send("⚠️ Invalid cash amount! Amount should be an integer.\n\n"
-        + "**Use:** `tosscoin <amount> <choice>`\n"
-        + "- **Choice**: `heads(h) | tails(t)`\n"
-        + "-# Default choice is heads.");
+    } catch (err) {
+      console.error(err);
     }
   }
 };

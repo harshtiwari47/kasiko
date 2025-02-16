@@ -7,13 +7,13 @@ export default {
   description: "Playfully bully another user.",
   aliases: ["tease",
     "mock"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
       const target = message.mentions.users.first();
       if (!target) {
-        return message.reply("Please mention a valid user to bully.");
+        return message.reply("Please mention a valid user to bully.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const texts = [
@@ -48,7 +48,8 @@ export default {
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
     }

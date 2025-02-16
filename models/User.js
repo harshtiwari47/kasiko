@@ -162,15 +162,8 @@ const userSchema = new mongoose.Schema({
       type: [Object],
     default: []
     },
-    aquaCollection: {
-      type: Object
-    },
     cookie: {
       type: Object
-    },
-    aquarium: {
-      type: [String],
-    default: []
     },
     bankAccount: {
       type: bankAccountSchema,
@@ -185,7 +178,11 @@ const userSchema = new mongoose.Schema({
     default: {
         id: null,
         prayed: false,
-        count: 0
+        count: 0,
+        dailyPrayed: {
+          type: [Date, Number],
+        default: [null, 0]
+        }
       }
     },
     badges: {

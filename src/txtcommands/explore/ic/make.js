@@ -15,10 +15,10 @@ function capitalizeFirstLetter(word) {
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
   if (isInteraction) {
-    if (!context.deferred) await context.deferReply();
-    return await context.editReply(data);
+    if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.send(data);
+    return context.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -33,9 +33,10 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
   let flavorDetails;
 
   if (playerShop.money < 10) {
-    return await handleMessage(content, {
+    await handleMessage(content, {
       content: `You don't have sufficient money (<:creamcash:1309495440030302282> 10) to make an ice cream! 🥺`
     })
+    return;
   }
 
   const machineTitleEmbed = new EmbedBuilder()
@@ -163,58 +164,60 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
 
   collector.on('end',
     async (collected, reason) => {
-      if (!selectedFlavor) {
-        await handleMessage(context, {
-          content: "⚠️ You didn't select a flavor. Try again!"
-        })
-      }
-
-      if (selectedFlavor && !selectedAmount) {
-        await handleMessage(context, {
-          content: "⚠️ You didn't select a amount. Try again!"
-        })
-      }
-
       try {
-        selectMessage.edit({
-          components: []
-        })
-      } catch (e) {
-        console.error(e);
-      }
-
-      if (!selectedFlavor || !selectedAmount) return
-
-      let iceIndex = playerShop.flavors.findIndex(flv => flv.name.toLowerCase() === selectedFlavor);
-
-      if (iceIndex !== -1) {
-        playerShop.flavors[iceIndex].items += Number(selectedAmount);
-      } else {
-        playerShop.flavors.push({
-          name: flavorDetails.name,
-          icecream: flavorDetails.icecream,
-          items: Number(selectedAmount)
-        });
-      }
-
-      playerShop.money -= flavorDetails.cost * Number(selectedAmount);
-      await playerShop.save();
-
-      const flavorEmbed = new EmbedBuilder()
-      .setTitle("🍧 ᑎEᗯ ᖴᒪᗩᐯOᖇ ᑕᖇEᗩTEᗪ!")
-      .setDescription(`**${username}**, you just created the flavor: **${flavorDetails.icecream}**!`)
-      .addFields(
-        {
-          name: "💰 Cash Spent", value: `<:creamcash:1309495440030302282> ${flavorDetails.cost * Number(selectedAmount)} cash`
+        if (!selectedFlavor) {
+          await handleMessage(context, {
+            content: "⚠️ You didn't select a flavor. Try again!"
+          })
         }
-      )
-      .setColor(0xffa500)
-      .setFooter({
-        text: "Keep innovating with new flavors!"
-      });
 
-      return await handleMessage(context, {
-        embeds: [flavorEmbed]
-      })
+        if (selectedFlavor && !selectedAmount) {
+          await handleMessage(context, {
+            content: "⚠️ You didn't select a amount. Try again!"
+          })
+        }
+
+        try {
+          selectMessage.edit({
+            components: []
+          })
+        } catch (e) {
+          console.error(e);
+        }
+
+        if (!selectedFlavor || !selectedAmount) return
+
+        let iceIndex = playerShop.flavors.findIndex(flv => flv.name.toLowerCase() === selectedFlavor);
+
+        if (iceIndex !== -1) {
+          playerShop.flavors[iceIndex].items += Number(selectedAmount);
+        } else {
+          playerShop.flavors.push({
+            name: flavorDetails.name,
+            icecream: flavorDetails.icecream,
+            items: Number(selectedAmount)
+          });
+        }
+
+        playerShop.money -= flavorDetails.cost * Number(selectedAmount);
+        await playerShop.save();
+
+        const flavorEmbed = new EmbedBuilder()
+        .setTitle("🍧 ᑎEᗯ ᖴᒪᗩᐯOᖇ ᑕᖇEᗩTEᗪ!")
+        .setDescription(`**${username}**, you just created the flavor: **${flavorDetails.icecream}**!`)
+        .addFields(
+          {
+            name: "💰 Cash Spent", value: `<:creamcash:1309495440030302282> ${flavorDetails.cost * Number(selectedAmount)} cash`
+          }
+        )
+        .setColor(0xffa500)
+        .setFooter({
+          text: "Keep innovating with new flavors!"
+        });
+
+        return await handleMessage(context, {
+          embeds: [flavorEmbed]
+        })
+      } catch (err) {}
     });
 }

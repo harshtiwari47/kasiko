@@ -25,10 +25,10 @@ const COAL_VALUE = 300; // 1 coal = 100 cash
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
   if (isInteraction) {
-    if (!context.deferred) await context.deferReply();
-    return await context.editReply(data);
+    if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.send(data);
+    return context.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -160,7 +160,7 @@ async function exchangeCoal(userId, context, username) {
   } catch (e) {
     console.error(e);
     return {
-      content: "⚠️ Something went wrong while exchanging your coals."
+      content: `⚠️ Something went wrong while exchanging your coals.\n-# **Error**: ${e.message}`
     };
   }
 }
@@ -220,7 +220,7 @@ async function viewMiningStatus(userId, context, username) {
         name: "Available to Collect", value: `${availableCoal} ${COAL_EMOJI}`, inline: true
       },
       {
-        name: "Upgrade Cost", value: `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`, inline: true
+        name: "Upgrade Cost", value: `${userMining.level >= 10 ? "MAX": "<:kasiko_coin:1300141236841086977> " + (5000 * userMining.level).toLocaleString()}`, inline: true
       }
     )
     .setFooter({
@@ -271,7 +271,7 @@ async function viewMiningStatus(userId, context, username) {
           return interaction.reply({
             content: 'You are not allowed to interact!',
             ephemeral: true,
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         if (interaction.customId === 'collect_mine') {
@@ -422,6 +422,7 @@ export default {
   name: "mine",
   description: "Start mining, collect resources, or exchange coal for cash. Type `mine help` for more info!",
   aliases: [],
+  emoji: "⛏️",
   category: "🍬 Explore",
   cooldown: 100000,
   execute: async (args, message) => {
@@ -437,14 +438,14 @@ export default {
         return await startMining(message.author.id, message.author.username);
         break;
       case "help":
-        return await message.channel.send(mineHelp());
+        return await message.channel.send(mineHelp()).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         break;
       default:
         return await viewMiningStatus(message.author.id, message.channel, message.author.username);
       }
     } catch (e) {
       console.error(e);
-      return message.channel.send(`⚠️ Oops, something went wrong in mining!`)
+      return message.channel.send(`⚠️ Oops, something went wrong in mining!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

@@ -71,11 +71,21 @@ export async function work(id, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
+    if (!userData || guild) {
+      return workMessage = ("Oops! Something went wrong while working 💼!");
+    }
+
     const earnedCash = Math.floor(Math.random() * 3000) + 500;
 
     userData.cash += earnedCash;
 
-    await updateUser(id, userData);
+    try {
+      await updateUser(id, {
+        cash: userData.cash
+      });
+    } catch (updErr) {
+      return workMessage = ("Oops! Something went wrong while working 💼!");
+    }
 
     let randomCarreer = Object.keys(careers)[Math.floor(Math.random() * Object.keys(careers).length)];
 
@@ -92,11 +102,13 @@ export default {
   name: "work",
   description: "Earn a random amount of cash by working.",
   aliases: ["job",
-    "earn", "w"],
+    "earn",
+    "w"],
   args: "",
   example: ["work",
     "job",
     "earn"],
+  emoji: "💼",
   related: ["tosscoin",
     "cash",
     "slots",
@@ -115,9 +127,11 @@ export default {
     })
     .setColor("#f8c6c6")
 
-    await message.channel.send({
-      embeds: [finalEmbed]
-    });
+    if (finalEmbed) {
+      await message.channel.send({
+        embeds: [finalEmbed]
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
 
     return;
   },
@@ -143,7 +157,7 @@ export default {
       // Respond to the slash command interaction
       await interaction.editReply({
         embeds: [finalEmbed]
-      });
+      })
 
       return;
     } catch (e) {
@@ -151,7 +165,7 @@ export default {
       // Handle any error and respond appropriately
       await interaction.editReply({
         content: "Oops! Something went wrong while working 💼. Please try again later!"
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       return;
     }
   }

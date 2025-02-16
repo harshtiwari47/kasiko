@@ -14,12 +14,12 @@ async function handleMessage(context, data) {
   if (isInteraction) {
     // If not already deferred, defer it.
     if (!context.deferred) {
-      await context.deferReply();
+      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
-    return context.editReply(data);
+    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
     // For normal text-based usage
-    return context.channel.send(data);
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -154,7 +154,9 @@ export default {
   name: "cage",
   description: "View your animal collection in the cage or details about one animal.",
   aliases: ["animals",
-    "animalcage", "animal", "zoo"],
+    "animalcage",
+    "animal",
+    "zoo"],
   args: "<animalName> (optional)",
   example: [
     "cage",
@@ -163,9 +165,10 @@ export default {
   ],
   related: ["hunt",
     "profile"],
+  emoji: "🪶",
   cooldown: 10000,
   // 10 seconds cooldown
-  category: "🦌 Hunt",
+  category: "🦌 Wildlife",
 
   execute: async (args, context) => {
     args.shift()

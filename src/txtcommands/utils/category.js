@@ -6,6 +6,10 @@ import {
 } from "discord.js";
 import redisClient from "../../../redis.js";
 
+import {
+  categoryMappings
+} from "../../categories.js";
+
 export default {
   name: "category",
   description: "Enable or disable the bot for specific categories.",
@@ -17,12 +21,12 @@ export default {
     "category off all"
   ],
   category: "🔧 Utility",
-
+  cooldown: 10000,
   execute: async (args, message) => {
     try {
       // Check if the user has moderator permissions
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-        return message.channel.send("❌ You need `Manage Server` permissions to run this command.");
+        return message.channel.send("❌ You need `Manage Server` permissions to run this command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Load the server doc from Mongo
@@ -44,23 +48,6 @@ export default {
       // Extract sub-command and category input
       const subCommand = args[1]?.toLowerCase(); // e.g., "on" or "off"
       const categoryInput = args[2]?.toLowerCase(); // e.g., "fun", "all", etc.
-
-      // Map user inputs to internal category names
-      const categoryMappings = {
-        fun: "🧩 Fun",
-        economy: "🏦 Economy",
-        utility: "🔧 Utility",
-        battle: "⚓ Battle",
-        explore: "🍬 Explore",
-        shop: "🛍️ Shop",
-        user: "👤 User",
-        games: "🎲 Games",
-        hunt: "🦌 Hunt",
-        ocean: "🌊 Ocean Life",
-        skyraid: "🐉 Skyraid",
-        information: "📰 Information",
-        all: "all",
-      };
 
       // Find or create channel info in serverDoc
       let channelIndex = serverDoc.channels.findIndex((ch) => ch.id === message.channel.id);
@@ -133,7 +120,7 @@ export default {
         // Provide usage/help in the content property
         return message.channel.send({
           embeds: [helpEmbed, embed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // If we reached here, we have a valid subCommand ("on"/"off") and a categoryInput
@@ -144,7 +131,7 @@ export default {
         return message.channel.send({
           content: `❌ Invalid category: \`${categoryInput}\`. Please provide a valid category.`,
           embeds: [embed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // "allowedFlag" is true if we're enabling a category, false if disabling.
@@ -166,7 +153,7 @@ export default {
 
         return message.channel.send(
           `✅ The bot is now **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in **all** categories for this channel.`
-        );
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Update a specific category
@@ -205,12 +192,14 @@ export default {
       // Finally, let the user know the update was successful
       return message.channel.send(
         `✅ The bot is now **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in the \`${categoryName}\` category for this channel.`
-      );
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (e) {
-      console.error(e);
+      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+        console.error(e);
+      }
       const botPermissions = message.channel.permissionsFor(message.client.user);
       if (botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
-        return message.channel.send("❌ An error occurred while updating the category settings.");
+        return message.channel.send("❌ An error occurred while updating the category settings.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
   },

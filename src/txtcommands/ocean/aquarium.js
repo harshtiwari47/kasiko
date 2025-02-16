@@ -702,6 +702,7 @@ export default {
   aliases: ["aqua",
     "aq"],
   args: "<action> <animal> <amount>",
+  emoji: "🐚",
   example: [
     "aquarium collect",
     "aquarium add <animal>",

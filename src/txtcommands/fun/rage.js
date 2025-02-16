@@ -65,9 +65,11 @@ export default {
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
+      return;
     }
   },
 };

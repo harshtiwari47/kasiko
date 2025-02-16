@@ -8,7 +8,7 @@ export default {
   aliases: ["joy",
     "smile",
     "laugh"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
@@ -45,15 +45,14 @@ export default {
         })
       })
       .setImage(randomGif) // Set a randomly selected happy GIF
-      .setFooter({
-        text: `giphy`
-      });
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
+      return;
     }
   },
 };

@@ -12,7 +12,7 @@ export async function scavengerHunt(id, location, channel) {
     let userData = await getUserData(id);
 
     if (!userData) {
-      return channel.send(`⚠️ **${guild.user.username}**, you need to register first to start a scavenger hunt!`);
+      return channel.send(`⚠️ **${guild.user.username}**, you need to register first to start a scavenger hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const locations = {
@@ -44,7 +44,7 @@ export async function scavengerHunt(id, location, channel) {
     };
 
     if (!locations[location]) {
-      return channel.send(`⚠️ Invalid location! Choose one of these: ${Object.keys(locations).join(", ")}.`);
+      return channel.send(`⚠️ Invalid location! Choose one of these: ${Object.keys(locations).join(", ")}.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const suspenseMessage = await channel.send(
@@ -53,9 +53,13 @@ export async function scavengerHunt(id, location, channel) {
 
     // Simulate suspenseful events
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await suspenseMessage.edit(`🔦 You hear strange noises in the **${location}**... Something is nearby...`);
+    if (suspenseMessage && suspenseMessage.edit) {
+      await suspenseMessage.edit(`🔦 You hear strange noises in the **${location}**... Something is nearby...`);
+    }
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await suspenseMessage.edit(`🔍 **${guild.user.username}**, you're getting closer to something...`);
+    if (suspenseMessage && suspenseMessage.edit) {
+      await suspenseMessage.edit(`🔍 **${guild.user.username}**, you're getting closer to something...`);
+    }
 
     // Randomize outcome
     const isTreasure = Math.random() < 0.6; // 60% chance for treasure
@@ -85,11 +89,16 @@ export async function scavengerHunt(id, location, channel) {
     }
 
     // Save updated user data
-    await updateUser(id, userData);
+    await updateUser(id, {
+      cash: userData.cash
+    });
 
     // Suspense before final message
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await suspenseMessage.edit(message);
+
+    if (suspenseMessage && suspenseMessage.edit) {
+      await suspenseMessage.edit(message);
+    }
 
     // Add chance for Double or Nothing
     if (isTreasure && Math.random() < 0.3) {
@@ -109,20 +118,29 @@ export async function scavengerHunt(id, location, channel) {
         if (doubleOrNothing) {
           const doubledReward = reward * 2;
           userData.cash += reward; // Add extra reward
-          await updateUser(id, userData);
+          await updateUser(id, {
+            cash: userData.cash
+          });
           await gambleMessage.edit(`🎉 Luck is on your side! You doubled your reward to <:kasiko_coin:1300141236841086977> **${doubledReward.toLocaleString()}**!`);
         } else {
           userData.cash -= reward; // Remove initial reward
-          await updateUser(id, userData);
+          await updateUser(id, {
+            cash: userData.cash
+          });
           await gambleMessage.edit(`😢 Oh no! The chest was a trap. You lost your <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}**. Better luck next time!`);
         }
       } else {
-        await gambleMessage.edit(`👍 **${guild.user.username}**, you played it safe and kept your <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}**.`);
+        if (gambleMessage && gambleMessage.edit) {
+          await gambleMessage.edit(`👍 **${guild.user.username}**, you played it safe and kept your <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}**.`);
+        }
       }
     }
   } catch (e) {
-    console.log(e);
-    return channel.send("Oops! Something went wrong during your scavenger hunt. Please try again!");
+    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+      console.error(e);
+    }
+    await channel.send(`ⓘ Oops! Something went wrong during your scavenger hunt. Please try again!\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return;
   }
 }
 
@@ -138,7 +156,8 @@ export default {
   related: ["tosscoin",
     "mine",
     "tosscoin"],
-  cooldown: 15000,
+  emoji: "🔦",
+  cooldown: 10000,
   // 15 seconds cooldown
   category: "🎲 Games",
 
@@ -149,7 +168,7 @@ export default {
         "\n❔**Example: ** `scavenger <location>`" +
         "\n\n🔍 **Available locations: **" +
         "\nforest, cave, beach, ruins, desert."
-      );
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err))
     }
 
     const location = args[1].toLowerCase();

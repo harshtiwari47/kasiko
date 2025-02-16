@@ -20,12 +20,12 @@ async function handleMessage(context, data) {
   if (isInteraction) {
     // If not already deferred, defer it.
     if (!context.deferred) {
-      await context.deferReply();
+      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
-    return context.editReply(data);
+    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
     // For normal text-based usage
-    return context.channel.send(data);
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -33,18 +33,43 @@ async function getTopUsers(userId, guildId = null, limit = 30) {
   try {
     if (guildId) {
       // Fetch top users by net worth within the guild
-      const users = await UserGuild.find({
-        guildId
-      })
-      .sort({
-        networth: -1
-      })
-      .limit(limit)
-      .select("userId networth cash level");
 
-      // Fetch the specific user's net worth in the guild
-      const user = await UserGuild.findOne({
-        userId, guildId
+      const users = await UserGuild.aggregate([{
+        $match: {
+          guildId
+        }
+      }, // Filter for guild users
+        {
+          $lookup: {
+            from: "users", // MongoDB collection name (lowercase plural by default)
+            localField: "userId",
+            foreignField: "id",
+            as: "userData"
+          }
+        },
+        {
+          $unwind: "$userData"
+        }, // Convert array into object
+        {
+          $sort: {
+            "userData.networth": -1
+          }
+        },
+        {
+          $limit: limit
+        },
+        {
+          $project: {
+            userId: 1,
+            guildId: 1,
+            networth: "$userData.networth",
+            cash: "$userData.cash",
+            level: "$userData.level"
+          }
+        }]);
+
+      const user = await User.findOne({
+        "id": userId
       }).select("networth");
 
       if (!user) {
@@ -54,16 +79,37 @@ async function getTopUsers(userId, guildId = null, limit = 30) {
         };
       }
 
-      // Determine the user's rank within the guild
-      const userRank = (await UserGuild.countDocuments({
-        networth: {
-          $gt: user.networth
-        }, guildId
-      })) + 1;
+      const userRank = (await UserGuild.aggregate([{
+        $match: {
+          guildId
+        } // Filter for guild users
+      },
+        {
+          $lookup: {
+            from: "users", // Join with 'users' collection
+            localField: "userId",
+            foreignField: "id",
+            as: "userData"
+          }
+        },
+        {
+          $unwind: "$userData" // Convert array to object
+        },
+        {
+          $match: {
+            "userData.networth": {
+              $gt: user.networth
+            } // Compare net worth
+          }
+        },
+        {
+          $count: "rank" // Count users with higher net worth
+        }]))?.[0]?.rank + 1 ?? 0; // Default rank to 0 if undefined
+
 
       return {
         users,
-        userRank,
+        userRank
       };
     } else {
       // Existing global ranking logic
@@ -156,7 +202,7 @@ async function createLeaderboardEmbed( {
       if (userIndex === 3) posIcon = "🥉";
 
       const globalRank = start + index + 1;
-      leaderboard += `${userIndex === 1 ? "## ": userIndex === 2 ? "### ": userIndex === 3 ? "### " : ""}**${posIcon}** **${userDetails.username}** - <:kasiko_coin:1300141236841086977> **\`${Number(user.networth.toFixed(1)).toLocaleString()}\`**\n`;
+      leaderboard += `${userIndex === 1 ? "## ": userIndex === 2 ? "### ": userIndex === 3 ? "### ": ""}**${posIcon}** **${userDetails.username}** - <:kasiko_coin:1300141236841086977> **\`${Number(user?.networth?.toFixed(1) || 0).toLocaleString()}\`**\n`;
     }
 
     // Find the position of the command invoker
@@ -259,48 +305,54 @@ export async function leaderboard(context) {
     });
 
     collector.on("collect", async (interaction) => {
-      await interaction.deferUpdate(); // Acknowledge the interaction
+      try {
+        await interaction.deferUpdate(); // Acknowledge the interaction
 
-      switch (interaction.customId) {
-        case "previous":
-          if (currentPage > 1) currentPage--;
-          break;
-        case "next":
-          if (currentPage < totalPages) currentPage++;
-          break;
-        case "server":
-          isServerFiltered = !isServerFiltered;
-          currentPage = 1; // Reset to first page when filter changes
-          break;
-        default:
-          break;
-      }
+        switch (interaction.customId) {
+          case "previous":
+            if (currentPage > 1) currentPage--;
+            break;
+          case "next":
+            if (currentPage < totalPages) currentPage++;
+            break;
+          case "server":
+            isServerFiltered = !isServerFiltered;
+            currentPage = 1; // Reset to first page when filter changes
+            break;
+          default:
+            break;
+        }
 
-      // Re-fetch the embed and totalPages after state changes
-      const {
-        embed: updatedEmbed,
-        totalPages: newTotalPages
-      } = await createLeaderboardEmbed( {
-          userId,
-          page: currentPage,
-          guildId: isServerFiltered ? guildId: null,
+        // Re-fetch the embed and totalPages after state changes
+        const {
+          embed: updatedEmbed,
+          totalPages: newTotalPages
+        } = await createLeaderboardEmbed( {
+            userId,
+            page: currentPage,
+            guildId: isServerFiltered ? guildId: null,
+          });
+
+        // Update totalPages in case it has changed due to filtering
+        totalPages = newTotalPages;
+
+        // Create the updated action row with new currentPage and totalPages
+        const updatedActionRow = createActionRow( {
+          isServerFiltered,
+          currentPage,
+          totalPages,
         });
 
-      // Update totalPages in case it has changed due to filtering
-      totalPages = newTotalPages;
-
-      // Create the updated action row with new currentPage and totalPages
-      const updatedActionRow = createActionRow( {
-        isServerFiltered,
-        currentPage,
-        totalPages,
-      });
-
-      // Edit the original message with the new embed and action row
-      await sentMessage.edit({
-        embeds: [updatedEmbed],
-        components: [updatedActionRow],
-      });
+        // Edit the original message with the new embed and action row
+        await sentMessage.edit({
+          embeds: [updatedEmbed],
+          components: [updatedActionRow],
+        })
+      } catch (e) {
+        if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+          console.error(e);
+        }
+      }
     });
 
     collector.on("end",
@@ -324,6 +376,7 @@ export async function leaderboard(context) {
           .setDisabled(true)
         );
 
+        if (!sentMessage?.edit) return;
         // Edit the message to disable buttons
         await sentMessage.edit({
           components: [disabledRow],
@@ -332,7 +385,7 @@ export async function leaderboard(context) {
   } catch (error) {
     console.error("Error fetching leaderboard:",
       error);
-    return await handleMessage(context,
+    await handleMessage(context,
       {
         content: "Oops! Something went wrong while fetching the leaderboard!",
       });
@@ -346,9 +399,10 @@ export default {
   "Displays the top 30 current global or server-specific leaderboard rankings according to users' net worth.",
   aliases: ["top", "ranking", "lb"],
   args: "",
+  emoji: "🏅",
   example: ["leaderboard"],
   related: ["leaderboard", "profile", "stat"],
-  cooldown: 30000, // Cooldown of 30 seconds
+  cooldown: 10000, // Cooldown of 10 seconds
   category: "📰 Information",
 
   execute: (args,

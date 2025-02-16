@@ -25,33 +25,32 @@ async function sendUserStat(stat, message) {
     if (currentCash > 10000000) cashStatus = `ᴛʀɪʟʟɪᴏɴᴀɪʀᴇ`;
     if (currentCash > 15000000) cashStatus = `ᴄʜɪʟʟɪᴏɴᴀɪʀᴇ`;
 
-    if (currentCash)
-      message.channel.send(`### 🜲 **${message.author.username} 𝐁𝐚𝐥𝐚𝐧𝐜𝐞**\n` + `**<:kasiko_coin:1300141236841086977> ⚡︎ ${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉\n` + `-# ⓘ ${cashStatus}`);
+    if (currentCash) return message.channel.send(`### 🜲 **${message.author.username} 𝐁𝐚𝐥𝐚𝐧𝐜𝐞**\n` + `**<:kasiko_coin:1300141236841086977> ⚡︎ ${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉\n` + `-# ⓘ ${cashStatus}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "trust") {
-    message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`);
+    return message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "networth") {
     let newNetWorth = await updateNetWorth(message.author.id);
     if (newNetWorth) {
       userData[stat] = newNetWorth;
     }
-    message.channel.send(`🜲 **${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** net worth.`);
+    return message.channel.send(`🜲 **${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** net worth.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "level") {
     // Calculate experience required for the next level
     const expRequiredNextLvl = (Math.pow(userData["level"] + 1, 2) * 100) - Number(userData["exp"]);
 
-    message.channel.send(
+    return message.channel.send(
       `亗 **${message.author.username}**, your level is 🏆 **${userData["level"]}**.\n` +
       `You need ✴️ **${expRequiredNextLvl}** more experience points to reach the next level!`
-    );
+    ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "exp") {
-    message.channel.send(`**${message.author.username}**'s current experience points are ✴️ **${userData[stat].toLocaleString()}**.`);
+    return message.channel.send(`**${message.author.username}**'s current experience points are ✴️ **${userData[stat].toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "charity") {
-    message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** charity.`);
+    return message.channel.send(`**${message.author.username}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** charity.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -87,6 +86,7 @@ export default {
     "balance"],
   // These aliases allow calling the command with any of the stats directly
   args: "<type>",
+  emoji: "🧗🏻",
   example: [
     "cash",
     "stat cash",
@@ -110,7 +110,7 @@ export default {
       const statType = args[1].toLowerCase();
       return handleUserStat(statType, message);
     } else {
-      return message.channel.send("⚠️ Invalid Command\nUse `stat cash`, `stat networth`, `stat trust`, `stat charity`, `stat level`, `stat exp`");
+      return message.channel.send("⚠️ Invalid Command\nUse `stat cash`, `stat networth`, `stat trust`, `stat charity`, `stat level`, `stat exp`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 };

@@ -17,12 +17,12 @@ export default {
     "channel off|on"
   ],
   category: "🔧 Utility",
-
+  cooldown: 10000,
   execute: async (args, message) => {
     try {
       // Check if the user has moderator permissions
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-        return message.channel.send("❌ You need `Manage Server` permissions to run this command.");
+        return message.channel.send("❌ You need `Manage Server` permissions to run this command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Load the server doc from Mongo
@@ -55,7 +55,7 @@ export default {
         return message.channel.send(
           `Please specify \`on\` or \`off\`, e.g. \`channel on all\` or \`channel off #channel\`.\n\n` +
           `★ **Current channel status:** Bot is **${currentChannelStatus ? "ALLOWED": "NOT ALLOWED"}** in this channel.`
-        );
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (!target) {
@@ -91,7 +91,9 @@ export default {
         await serverDoc.save();
         return message.channel.send(
           `All text channels have been set to **${allowed ? "ALLOWED": "NOT ALLOWED"}** for the bot.`
-        );
+        ).catch(err => ![50001,
+            50013,
+            10008].includes(err.code) && console.error(err));
       }
 
       // Otherwise, the user wants to enable/disable a specific channel
@@ -118,12 +120,14 @@ export default {
 
       return message.channel.send(
         `Bot has been set to **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in ${channelMention.toString()}.`
-      );
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (e) {
-      console.error(e);
+      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+        console.error(e);
+      }
       const botPermissions = message.channel.permissionsFor(message.client.user);
       if (botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
-        return message.channel.send("❌ An error occurred while toggling the bot in channel(s).");
+        return message.channel.send("❌ An error occurred while toggling the bot in channel(s).").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
   },

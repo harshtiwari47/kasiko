@@ -27,12 +27,12 @@ export async function buyStock(userId, username, stockName, amount, context) {
         content: "⚠️ Stock not found."
       });
     }
-     
+
     if (!userData.stocks) userData.stocks = {}
     // Calculate total unique stocks with shares > 0
     const totalUniqueStocks = Object.keys(userData.stocks.toJSON()).filter(stock => userData.stocks[stock] && userData.stocks[stock].shares > 0).length;
 
-    if (totalUniqueStocks >= 7) {
+    if (totalUniqueStocks >= 7 && !Object.keys(userData.stocks.toJSON()).find(stk => stk.toLowerCase() === stockName.toLowerCase() && userData.stocks[stk].shares > 0)) {
       return await handleMessage(context, {
         content: `⚠️ **${username}**, you can't own more than seven companies' stocks!`
       });

@@ -3,7 +3,6 @@ import {
   updateUser
 } from '../database.js';
 
-
 import {
   AttachmentBuilder
 } from 'discord.js'; // Import AttachmentBuilder from discord.js
@@ -96,7 +95,13 @@ export async function updateExpPoints(content, user, channel, guildId) {
     // Calculate experience required for the next level
     const expRequiredNextLvl = (Math.pow(lvl + 1, 2) * threshold) - Number(userData.exp);
 
-    await updateUser(user.id, userData, guildId);
+    try {
+      await updateUser(user.id, {
+        exp: userData.exp,
+        cash: userData.cash,
+        level: userData.level
+      }, guildId);
+    } catch (err) {}
 
     if (lvlUp) {
       const attachment = await generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, user.displayAvatarURL({
@@ -105,10 +110,11 @@ export async function updateExpPoints(content, user, channel, guildId) {
 
       // Send the image as an attachment
       if (attachment) {
-        return await channel.send({
+        await channel.send({
           content: `𓇼 **${user.username}**, congratulations! You've leveled up! 🎉`,
           files: [attachment]
         });
+        return;
       }
     }
 

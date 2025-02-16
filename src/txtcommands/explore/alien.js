@@ -62,12 +62,12 @@ function getUsername(ctx) {
 */
 async function replyOrSend(ctx, options) {
   if (ctx.author) {
-    return ctx.channel.send(options);
+    return ctx.channel.send(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (ctx.deferred || ctx.replied) {
-    return ctx.editReply(options);
+    return ctx.editReply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
-  return ctx.reply(options);
+  return ctx.reply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 }
 
 /**
@@ -157,37 +157,43 @@ async function handleProfile(ctx) {
       // Listen for interactions on the buttons.
       collector.on("collect", async (interaction) => {
         // Ensure only the profile owner can use these buttons.
-        if (interaction.user.id !== userId) {
-          return interaction.reply({
-            content: "These buttons aren't for you!", ephemeral: true
-          });
-        }
-
-        // Defer the update to acknowledge the button press.
-        await interaction.deferUpdate();
-
-        // Route interaction based on the customId.
-        switch (interaction.customId) {
-          case "alien_upgrade":
-            return await handleUpgrade(ctx);
-            break;
-          case "alien_harvest":
-            return await handleHarvest(ctx);
-            break;
-          case "alien_help":
-            return await handleAlienHelp(ctx);
-            break;
-          case "alien_disguise":
-            return await handleDisguise(ctx);
-            break;
-          case "alien_battle":
-            return await handleBattle(ctx, []);
-            break;
-          default:
-            return await interaction.followUp({
-              content: "❗ Unknown command"
+        try {
+          if (interaction.user.id !== userId) {
+            return interaction.reply({
+              content: "These buttons aren't for you!", ephemeral: true
             });
-            break;
+          }
+
+          // Defer the update to acknowledge the button press.
+          await interaction.deferUpdate();
+
+          // Route interaction based on the customId.
+          switch (interaction.customId) {
+            case "alien_upgrade":
+              return await handleUpgrade(ctx);
+              break;
+            case "alien_harvest":
+              return await handleHarvest(ctx);
+              break;
+            case "alien_help":
+              return await handleAlienHelp(ctx);
+              break;
+            case "alien_disguise":
+              return await handleDisguise(ctx);
+              break;
+            case "alien_battle":
+              return await handleBattle(ctx, []);
+              break;
+            default:
+              return await interaction.followUp({
+                content: "❗ Unknown command"
+              });
+              break;
+          }
+        } catch (e) {
+          if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+            console.error(e);
+          }
         }
       });
 
@@ -195,12 +201,12 @@ async function handleProfile(ctx) {
       collector.on("end",
         async () => {
           try {
-            await sentMessage.edit({
-              components: []
-            });
-          } catch (err) {
-            console.error("Failed to remove buttons", err);
-          }
+            if (sentMessage && sentMessage.edit) {
+              await sentMessage.edit({
+                components: []
+              });
+            }
+          } catch (err) {}
         });
     }
     return sentMessage;
@@ -331,7 +337,7 @@ async function handleEnergyExchange(ctx, argsOrAmount) {
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${getUsername(ctx)}**, an error occurred during energy exchange.`
+      content: `❌ **${getUsername(ctx)}**, an error occurred during energy exchange.\n-# **Error**: ${error.message}`
     });
   }
 }
@@ -498,112 +504,118 @@ async function handleAbilitiesList(ctx) {
     });
 
     collector.on('collect', async (interaction) => {
-      // Only allow the original user to interact.
-      if (interaction.user.id !== userId) {
-        return interaction.reply({
-          content: `❌ **${getUsername(ctx)}**, these buttons aren't for you!`,
-          ephemeral: true,
-        });
-      }
-
-      if (interaction.customId === 'prev') {
-        currentPage = currentPage > 0 ? currentPage - 1: totalPages - 1;
-      } else if (interaction.customId === 'next') {
-        currentPage = currentPage < totalPages - 1 ? currentPage + 1: 0;
-      } else if (interaction.customId === 'upgrade') {
-        // Since the original alien was fetched using lean(), we need a full document to update.
-        const alienDoc = await Alien.findOne({
-          userId
-        });
-        if (!alienDoc) {
+      try {
+        // Only allow the original user to interact.
+        if (interaction.user.id !== userId) {
           return interaction.reply({
-            content: `❌ **${getUsername(ctx)}**, something went wrong: alien not found.`,
+            content: `❌ **${getUsername(ctx)}**, these buttons aren't for you!`,
             ephemeral: true,
-          });
-        }
-        // Get the ability document from the mongoose array.
-        const abilityDoc = alienDoc.abilities[currentPage];
-        if (!abilityDoc) {
-          return interaction.reply({
-            content: `❌ **${alien.name}**, ability not found.`,
-            ephemeral: true,
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
-        // Check if the alien has enough inventory items for each requirement.
-        let missingItems = [];
-        for (const req of abilityDoc.upgradeRequirements) {
-          const invItem = alienDoc.inventory.find(item =>
-            item.itemName.toLowerCase() === req.itemName.toLowerCase()
-          );
-          if (!invItem || invItem.quantity < req.quantity) {
-            const currentQty = invItem ? invItem.quantity: 0;
-            missingItems.push(`${req.itemName} (need ${req.quantity - currentQty} more)`);
+        if (interaction.customId === 'prev') {
+          currentPage = currentPage > 0 ? currentPage - 1: totalPages - 1;
+        } else if (interaction.customId === 'next') {
+          currentPage = currentPage < totalPages - 1 ? currentPage + 1: 0;
+        } else if (interaction.customId === 'upgrade') {
+          // Since the original alien was fetched using lean(), we need a full document to update.
+          const alienDoc = await Alien.findOne({
+            userId
+          });
+          if (!alienDoc) {
+            return interaction.reply({
+              content: `❌ **${getUsername(ctx)}**, something went wrong: alien not found.`,
+              ephemeral: true,
+            }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
-        }
+          // Get the ability document from the mongoose array.
+          const abilityDoc = alienDoc.abilities[currentPage];
+          if (!abilityDoc) {
+            return interaction.reply({
+              content: `❌ **${alien.name}**, ability not found.`,
+              ephemeral: true,
+            }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
 
-        if (missingItems.length > 0) {
-          return interaction.reply({
-            content: `❌ **${alien.name}**, you lack the following items to upgrade **${abilityDoc.name}**:\n${missingItems.join('\n')}`,
+          // Check if the alien has enough inventory items for each requirement.
+          let missingItems = [];
+          for (const req of abilityDoc.upgradeRequirements) {
+            const invItem = alienDoc.inventory.find(item =>
+              item.itemName.toLowerCase() === req.itemName.toLowerCase()
+            );
+            if (!invItem || invItem.quantity < req.quantity) {
+              const currentQty = invItem ? invItem.quantity: 0;
+              missingItems.push(`${req.itemName} (need ${req.quantity - currentQty} more)`);
+            }
+          }
+
+          if (missingItems.length > 0) {
+            return interaction.reply({
+              content: `❌ **${alien.name}**, you lack the following items to upgrade **${abilityDoc.name}**:\n${missingItems.join('\n')}`,
+              ephemeral: true,
+            }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
+
+          // Deduct the required items from the inventory.
+          for (const req of abilityDoc.upgradeRequirements) {
+            const invItem = alienDoc.inventory.find(item =>
+              item.itemName.toLowerCase() === req.itemName.toLowerCase()
+            );
+            invItem.quantity -= req.quantity;
+          }
+
+          // Perform the upgrade: increase level and boost stats.
+          abilityDoc.level += 1;
+          abilityDoc.resourcesCollection += 1; // increase resource collection bonus.
+          abilityDoc.manipulationRate = (abilityDoc.manipulationRate || 0) + 0.05; // bump manipulation rate.
+          abilityDoc.energyCollection += 1; // increase energy collection.
+          abilityDoc.techIncrement += 2; // increase tech increment.
+
+          // Update the upgrade requirements for the next level.
+          abilityDoc.upgradeRequirements = abilityDoc.upgradeRequirements.map(req => ({
+            itemName: req.itemName,
+            quantity: req.quantity * 2
+          }));
+
+          // Save the updated alien document.
+          await alienDoc.save();
+
+          // Update our local copy used for the embed.
+          abilities[currentPage] = abilityDoc;
+
+          // Update the message embed and button states.
+          await interaction.update({
+            embeds: [generateEmbed(currentPage)],
+            components: [new ActionRowBuilder().addComponents(prevButton, upgradeButton, nextButton)]
+          });
+          // Send an ephemeral confirmation message.
+          await interaction.followUp({
+            content: `🚀 **${alien.name}** successfully upgraded **${abilityDoc.name}** to level ${abilityDoc.level}!`,
             ephemeral: true,
           });
+          return;
         }
 
-        // Deduct the required items from the inventory.
-        for (const req of abilityDoc.upgradeRequirements) {
-          const invItem = alienDoc.inventory.find(item =>
-            item.itemName.toLowerCase() === req.itemName.toLowerCase()
-          );
-          invItem.quantity -= req.quantity;
-        }
+        // Update the button disabled states based on current page.
+        prevButton.setDisabled(currentPage === 0);
+        nextButton.setDisabled(currentPage === totalPages - 1);
 
-        // Perform the upgrade: increase level and boost stats.
-        abilityDoc.level += 1;
-        abilityDoc.resourcesCollection += 1; // increase resource collection bonus.
-        abilityDoc.manipulationRate = (abilityDoc.manipulationRate || 0) + 0.05; // bump manipulation rate.
-        abilityDoc.energyCollection += 1; // increase energy collection.
-        abilityDoc.techIncrement += 2; // increase tech increment.
-
-        // Update the upgrade requirements for the next level.
-        abilityDoc.upgradeRequirements = abilityDoc.upgradeRequirements.map(req => ({
-          itemName: req.itemName,
-          quantity: req.quantity * 2
-        }));
-
-        // Save the updated alien document.
-        await alienDoc.save();
-
-        // Update our local copy used for the embed.
-        abilities[currentPage] = abilityDoc;
-
-        // Update the message embed and button states.
+        // Update the message with the new embed and buttons.
         await interaction.update({
           embeds: [generateEmbed(currentPage)],
-          components: [new ActionRowBuilder().addComponents(prevButton, upgradeButton, nextButton)]
+          components: [new ActionRowBuilder().addComponents(prevButton, upgradeButton, nextButton)],
         });
-        // Send an ephemeral confirmation message.
-        await interaction.followUp({
-          content: `🚀 **${alien.name}** successfully upgraded **${abilityDoc.name}** to level ${abilityDoc.level}!`,
-          ephemeral: true,
-        });
-        return;
+      } catch (e) {
+        if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+          console.error(e);
+        }
       }
-
-      // Update the button disabled states based on current page.
-      prevButton.setDisabled(currentPage === 0);
-      nextButton.setDisabled(currentPage === totalPages - 1);
-
-      // Update the message with the new embed and buttons.
-      await interaction.update({
-        embeds: [generateEmbed(currentPage)],
-        components: [new ActionRowBuilder().addComponents(prevButton, upgradeButton, nextButton)],
-      });
     });
 
     collector.on('end',
       async () => {
         // After timeout, disable the buttons if the message is still editable.
-        if (message.editable) {
+        if (message?.edit) {
           prevButton.setDisabled(true);
           upgradeButton.setDisabled(true);
           nextButton.setDisabled(true);
@@ -716,40 +728,47 @@ async function handleInventoryList(ctx) {
     });
 
     collector.on('collect', async (interaction) => {
-      // Only allow the original user to interact.
-      if (interaction.user.id !== userId) {
-        return interaction.reply({
-          content: `❌ **${getUsername(ctx)}**, these buttons aren't for you!`,
-          ephemeral: true,
+      try {
+        // Only allow the original user to interact.
+        if (interaction.user.id !== userId) {
+          await interaction.reply({
+            content: `❌ **${getUsername(ctx)}**, these buttons aren't for you!`,
+            ephemeral: true,
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return;
+        }
+
+        if (interaction.customId === 'prev') {
+          currentPage = currentPage > 0 ? currentPage - 1: totalPages - 1;
+        } else if (interaction.customId === 'next') {
+          currentPage = currentPage < totalPages - 1 ? currentPage + 1: 0;
+        } else {
+          await interaction.reply({
+            content: `❌ **${alien.name}**, no item available to use.`,
+            ephemeral: true,
+          });
+        }
+
+        // Update button disabled state if needed.
+        prevButton.setDisabled(currentPage === 0);
+        nextButton.setDisabled(currentPage === totalPages - 1);
+
+        // Update the message with the new embed and buttons.
+        await interaction.update({
+          embeds: [generateEmbed(currentPage)],
+          components: [new ActionRowBuilder().addComponents(prevButton, nextButton)],
         });
+      } catch (e) {
+        if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+          console.error(e);
+        }
       }
-
-      if (interaction.customId === 'prev') {
-        currentPage = currentPage > 0 ? currentPage - 1: totalPages - 1;
-      } else if (interaction.customId === 'next') {
-        currentPage = currentPage < totalPages - 1 ? currentPage + 1: 0;
-      } else {
-        await interaction.reply({
-          content: `❌ **${alien.name}**, no item available to use.`,
-          ephemeral: true,
-        });
-      }
-
-      // Update button disabled state if needed.
-      prevButton.setDisabled(currentPage === 0);
-      nextButton.setDisabled(currentPage === totalPages - 1);
-
-      // Update the message with the new embed and buttons.
-      await interaction.update({
-        embeds: [generateEmbed(currentPage)],
-        components: [new ActionRowBuilder().addComponents(prevButton, nextButton)],
-      });
     });
 
     collector.on('end',
       async () => {
         // Disable buttons after the collector expires.
-        if (message.editable) {
+        if (message?.edit) {
           prevButton.setDisabled(true);
           nextButton.setDisabled(true);
           const disabledRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
@@ -783,7 +802,7 @@ async function handleUpgrade(ctx) {
       });
     }
 
-    const upgradeCost = Number((alien.tech * 2)) + 500;
+    const upgradeCost = Number(Math.floor((alien.tech/10) * (alien.tech/10) * 25)) + 500;
 
     if (alien.resources < upgradeCost) {
       return replyOrSend(ctx, {
@@ -1543,6 +1562,7 @@ example: [
 "alien battle @target",
 "alien help"
 ],
+emoji: "👽",
 related: ["profile",
 "battle",
 "zombie"],

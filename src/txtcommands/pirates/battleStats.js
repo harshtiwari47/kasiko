@@ -16,8 +16,9 @@ export default {
   related: ["battle",
     "profile"],
   cooldown: 10000,
+  emoji: "📑",
   // 1 minute cooldown
-  category: "⚓ Battle",
+  category: "⚓ Pirates",
 
   // Execute function
   execute: (args, message) => {

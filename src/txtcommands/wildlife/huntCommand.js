@@ -20,11 +20,11 @@ async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
   if (isInteraction) {
     if (!context.deferred) {
-      await context.deferReply();
+      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
-    return context.editReply(data);
+    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.channel.send(data);
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -249,13 +249,13 @@ export default {
   aliases: ['h',
     'animalhunt'],
   args: '[location]',
-  example: ['hunt Forest',
-    'hunt Mountains'],
+  example: ['hunt', 'h'],
   related: ['cage',
     'sellanimal'],
+  emoji: "🎯",
   cooldown: 10000,
   // 10 seconds, as an example
-  category: '🦌 Hunt',
+  category: '🦌 Wildlife',
 
   execute: async (args, context) => {
     args.shift();

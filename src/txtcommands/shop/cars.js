@@ -555,6 +555,7 @@ export default {
     "cars <car_id>",
     // View details of a specific car by ID
   ],
+  emoji: "🚗",
   related: ["shop",
     "structures",
     "buildings",

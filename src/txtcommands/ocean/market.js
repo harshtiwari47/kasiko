@@ -309,6 +309,7 @@ export default {
   description: "Open the fish market to see which fishes are in demand!",
   aliases: ["fm",
     "fmarket"],
+  emoji: "🐠",
   cooldown: 10000,
   category: "🌊 Ocean Life",
 

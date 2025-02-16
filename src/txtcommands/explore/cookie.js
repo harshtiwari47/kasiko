@@ -24,52 +24,59 @@ import {
 *  - 50% chance of success each time
 */
 async function bakeCookie(userId) {
-  const userData = await getUserData(userId);
+  try {
+    const userData = await getUserData(userId);
 
-  // Initialize the cookie object if missing
-  if (!userData.cookie || typeof userData.cookie !== 'object') {
-    userData.cookie = {};
-  }
+    // Initialize the cookie object if missing
+    if (!userData.cookie || typeof userData.cookie !== 'object') {
+      userData.cookie = {};
+    }
 
-  const now = new Date();
-  const todayStr = now.toDateString();
+    const now = new Date();
+    const todayStr = now.toDateString();
 
-  // If 'lastBakeDate' is a different day, reset daily bakes to 0
-  if (userData.cookie.lastBakeDate !== todayStr) {
-    userData.cookie.dailyBakes = 0;
-    userData.cookie.lastBakeDate = todayStr;
-  }
+    // If 'lastBakeDate' is a different day, reset daily bakes to 0
+    if (userData.cookie.lastBakeDate !== todayStr) {
+      userData.cookie.dailyBakes = 0;
+      userData.cookie.lastBakeDate = todayStr;
+    }
 
-  // Make sure user hasn't exceeded 3 bakes per day
-  if (userData.cookie.dailyBakes >= 3) {
-    return {
-      success: false,
-      message: `❗ **Oh no!** You've already baked 🍪 **3 cookies** today! Come back tomorrow for more 🍭 delicious treats.`
-    };
-  }
+    // Make sure user hasn't exceeded 3 bakes per day
+    if (userData.cookie.dailyBakes >= 3) {
+      return {
+        success: false,
+        message: `❗ **Oh no!** You've already baked 🍪 **3 cookies** today! Come back tomorrow for more 🍭 delicious treats.`
+      };
+    }
 
-  // 50% chance to succeed
-  const success = Math.random() < 0.5;
-  userData.cookie.dailyBakes += 1; // Attempt used up, success or fail
+    // 50% chance to succeed
+    const success = Math.random() < 0.5;
+    userData.cookie.dailyBakes += 1; // Attempt used up, success or fail
 
-  if (!success) {
+    if (!success) {
+      await updateUser(userId, userData);
+      return {
+        success: false,
+        message: `😞 Oh dear! 𝑻𝒉𝒆 𝒄𝒐𝒐𝒌𝒊𝒆 🍪 dough **𝑏𝑢𝑟𝑛𝑒𝑑** to a crisp! 💥\n𝙱𝚎𝚝𝚝𝚎𝚛 𝚕𝚞𝚌𝚔 𝚗𝚎𝚡𝚝 𝚝𝚒𝚖𝚎!`
+      };
+    }
+
+    // Success! Bake +1 cookie
+    userData.cookie.cookies = (userData.cookie.cookies || 0) + 1;
     await updateUser(userId, userData);
+
+    const burningFire = `<a:fire:1326388149957689435>`
+
+    return {
+      success: true,
+      message: `${burningFire} **Yay!** You ***successfully*** baked a 𝓬𝓸𝓸𝓴𝓲𝓮 . You now have 🍪 **${userData.cookie.cookies}** cookies!`
+    };
+  } catch (err) {
     return {
       success: false,
-      message: `😞 Oh dear! 𝑻𝒉𝒆 𝒄𝒐𝒐𝒌𝒊𝒆 🍪 dough **𝑏𝑢𝑟𝑛𝑒𝑑** to a crisp! 💥\n𝙱𝚎𝚝𝚝𝚎𝚛 𝚕𝚞𝚌𝚔 𝚗𝚎𝚡𝚝 𝚝𝚒𝚖𝚎!`
-    };
+      message: `**Error:** ${err.message}`
+    }
   }
-
-  // Success! Bake +1 cookie
-  userData.cookie.cookies = (userData.cookie.cookies || 0) + 1;
-  await updateUser(userId, userData);
-
-  const burningFire = `<a:fire:1326388149957689435>`
-
-  return {
-    success: true,
-    message: `${burningFire} **Yay!** You ***successfully*** baked a 𝓬𝓸𝓸𝓴𝓲𝓮 . You now have 🍪 **${userData.cookie.cookies}** cookies!`
-  };
 }
 
 /**
@@ -87,6 +94,13 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   const authorData = await getUserData(authorId);
   const mentionedData = await getUserData(mentionedUserId);
 
+  if (!mentionedData) {
+    return {
+      success: false,
+      message: `⚠ Mentioned user not found! 🍪`
+    }
+  }
+
   // Initialize if missing
   if (!authorData.cookie || typeof authorData.cookie !== 'object') {
     authorData.cookie = {};
@@ -96,7 +110,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   }
 
   // Check if author has at least 1 cookie
-  if ((authorData.cookie.cookies || 0) < 1) {
+  if ((authorData.cookie?.cookies || 0) < 1) {
     return {
       success: false,
       message: `❗**${authorUsername}**, you don't have any 🍪 cookies to share!`
@@ -105,6 +119,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
 
   // Transfer cookie
   authorData.cookie.cookies -= 1;
+  if (authorData.cookie.cookies < 0) authorData.cookie.cookies = 0;
   authorData.friendly += 5;
   mentionedData.cookie.cookies = (mentionedData.cookie.cookies || 0) + 1;
 
@@ -117,15 +132,31 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   *        mentionedData.cookie.friendshipPoints = (mentionedData.cookie.friendshipPoints || 0) + 1;
   */
 
-  await updateUser(authorId, authorData);
-  await updateUser(mentionedUserId, mentionedData);
+  try {
+
+    await updateUser(authorId, {
+      'cookie.sharedCount': authorData.cookie.sharedCount,
+      'friendly': authorData.friendly,
+      'cookie.cookies': authorData.cookie.cookies
+    });
+    await updateUser(mentionedUserId, {
+      'cookie.cookies': mentionedData.cookie.cookies
+    });
+
+  } catch (e) {
+    return {
+      success: false,
+      message: `⚠ Something went wrong while sharing the cookie! 🍪\n-# **Error**: ${e.message}`
+    }
+  }
 
   // Return a cute success message (with optional reward text)
   return {
     success: true,
-    message: `🍬 _So swᥱᥱt !_ **${authorUsername}** shared 🍪 **1 cookie** with <@${mentionedUserId}>.\n` +
-    `☺️ 𝑇ℎ𝑒 𝑎𝑟𝑜𝑚𝑎 𝑖𝑠 𝑑𝑒𝑙𝑖𝑔ℎ𝑡𝑓𝑢𝑙, 𝑎𝑛𝑑 𝑦𝑜𝑢𝑟 𝑓𝑟𝑖𝑒𝑛𝑑𝑠ℎ𝑖𝑝 𝑔𝑟𝑜𝑤𝑠 𝑠𝑡𝑟𝑜𝑛𝑔𝑒𝑟! 💖\n` +
-    `ꜰʀɪᴇɴᴅʟʏ ꜱᴄᴏʀᴇ: +5`
+    message: `## 🍬 So swᥱᥱt !\n` +
+    `       ᥫ᭡. **${authorUsername}** shared 🍪 **1 cookie** with <@${mentionedUserId}>.\n` +
+    `-# 𓂃۶ৎ 𝑇ℎ𝑒 𝑎𝑟𝑜𝑚𝑎 𝑖𝑠 𝑑𝑒𝑙𝑖𝑔ℎ𝑡𝑓𝑢𝑙, 𝑎𝑛𝑑 𝑦𝑜𝑢𝑟 𝑓𝑟𝑖𝑒𝑛𝑑𝑠ℎ𝑖𝑝 𝑔𝑟𝑜𝑤𝑠 𝑠𝑡𝑟𝑜𝑛𝑔𝑒𝑟! 💖\n` +
+    `ꜰʀɪᴇɴᴅʟʏ ꜱᴄᴏʀᴇ: +5   ♥︎`
   };
 }
 
@@ -224,7 +255,7 @@ export async function execute(args, message) {
     const shareResult = await shareCookie(userId, mentionedUser.id, ownerUsername);
     return channel.send({
       content: shareResult.message
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 
   // Otherwise, show two embeds:
@@ -246,27 +277,35 @@ export async function execute(args, message) {
   });
 
   collector.on('collect', async (interaction) => {
-    // Only the user who triggered the command can press (optional check)
-    if (interaction.user.id !== userId) {
-      return interaction.reply({
-        content: `These cookies belong to <@${userId}>! Please use your own cookie command.`,
-        ephemeral: true
-      });
-    }
+    try {
+      // Only the user who triggered the command can press (optional check)
+      if (interaction.user.id !== userId) {
+        return interaction.reply({
+          content: `These cookies belong to <@${userId}>! Please use your own cookie command.`,
+          ephemeral: true
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
 
-    await interaction.deferUpdate();
+      await interaction.deferUpdate();
 
-    if (interaction.customId === 'bake_cookie') {
-      const bakeResult = await bakeCookie(userId);
+      if (interaction.customId === 'bake_cookie') {
+        const bakeResult = await bakeCookie(userId);
 
-      // Rebuild the embeds to reflect updated stats
-      const updatedStatsEmbed = await buildCookieStatsEmbed(userId);
-      const updatedHelpEmbed = buildCookieHelpEmbed(bakeResult.message); // Can remain same or add dynamic text
+        // Rebuild the embeds to reflect updated stats
+        const updatedStatsEmbed = await buildCookieStatsEmbed(userId);
+        const updatedHelpEmbed = buildCookieHelpEmbed(bakeResult.message); // Can remain same or add dynamic text
 
-      return await interaction.editReply({
-        embeds: [updatedStatsEmbed, updatedHelpEmbed],
-        components
-      });
+        await interaction.editReply({
+          embeds: [updatedStatsEmbed, updatedHelpEmbed],
+          components
+        });
+
+        return;
+      }
+    } catch (e) {
+      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+        console.error(e);
+      }
     }
   });
 
@@ -297,7 +336,8 @@ export default {
   description: 'Bake (up to 3/day), share, and check your cookies!',
   aliases: ['cookies'],
   args: '[mention user to share or none]',
-  cooldown: 5000,
+  cooldown: 10000,
+  emoji: "🍪",
   category: '🍬 Explore',
   execute,
 };

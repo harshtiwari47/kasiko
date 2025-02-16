@@ -1,134 +1,380 @@
 import txtcommands from '../../textCommandHandler.js';
 import {
-  EmbedBuilder
-} from "discord.js";
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  ComponentType
+} from 'discord.js';
+import path from 'path';
+import fs from 'fs';
+import {
+  fileURLToPath
+} from 'url';
+
+import {
+  categoriesArray
+} from "../../categories.js";
+
+async function replyOrSend(ctx, options) {
+  try {
+    if (ctx.author || typeof ctx.editReply !== 'function') {
+      return ctx.channel.send(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+    if (ctx.deferred || ctx.replied) {
+      return ctx.editReply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+    return ctx.reply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  } catch (e) {}
+}
+
+async function handleCategoryContext(ctx, options) {
+  try {
+    if (ctx.author || typeof ctx.editReply !== 'function') {
+      return ctx.channel.send(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+    if (!ctx.deferred || !ctx.replied) {
+      return ctx.update(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+    return ctx.reply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function handleCategory(authorId, ctx, chosenCategory, commandsByCategory, helpMessage, selectRow) {
+  try {
+    const commandsList = commandsByCategory[chosenCategory];
+    if (!commandsList || commandsList.length === 0) {
+      await handleCategoryContext(ctx, {
+        content: "❌ No commands found for this category.",
+        ephemeral: true
+      });
+      return null;
+    }
+
+    // Paginate the commands: five per page.
+    const pageSize = 5;
+    const pages = [];
+    for (let i = 0; i < commandsList.length; i += pageSize) {
+      const chunk = commandsList.slice(i, i + pageSize);
+      const pageContent = chunk
+      .map(cmd => `${cmd.emoji ? cmd.emoji + " ⤿ ": "⌘ ⤿ "} **${cmd.name}**\n-# ${cmd.description}\n`)
+      .join("\n");
+      pages.push(pageContent);
+    }
+
+    let currentPage = 0;
+
+    // Build the embed for the selected category.
+    const categoryEmbed = new EmbedBuilder()
+    .setTitle(`${chosenCategory} Commands`)
+    .setDescription(
+      `> Commands start with **\`kas\`**\n-# Example: kas profile\nUse **\`help <command>\`** for more details.\n\n` +
+      pages[currentPage]
+    )
+    .setFooter({
+      text: `Page ${currentPage + 1} of ${pages.length}`
+    });
+
+    // Create pagination buttons if needed.
+    let buttonRow = null;
+    const prevButton = new ButtonBuilder()
+    .setCustomId("prev_page")
+    .setLabel("Previous")
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(true);
+    const nextButton = new ButtonBuilder()
+    .setCustomId("next_page")
+    .setLabel("Next")
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(pages.length > 1 ? false: true);
+    buttonRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
+
+    // Update the message with the new embed and buttons.
+
+    if (!helpMessage) {
+      helpMessage = await handleCategoryContext(ctx, {
+        embeds: [categoryEmbed],
+        components: selectRow ? (buttonRow ? [selectRow, buttonRow]: [selectRow]): (buttonRow ? [buttonRow]: [])
+      });
+    } else {
+      await handleCategoryContext(ctx, {
+        embeds: [categoryEmbed],
+        components: selectRow ? (buttonRow ? [selectRow, buttonRow]: [selectRow]): (buttonRow ? [buttonRow]: [])
+      });
+    }
+
+    // Create a pagination collector for the buttons.
+    const paginationCollector = helpMessage.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+    });
+
+    paginationCollector.on('collect', async btnInteraction => {
+      if (btnInteraction.user.id !== authorId) {
+        await replyOrSend(btnInteraction, {
+          content: `You are not allowed to interact with someone else's help command!`
+        });
+
+        return;
+      }
+
+      if (btnInteraction.customId === "prev_page") {
+        currentPage = Math.max(currentPage - 1, 0);
+      } else if (btnInteraction.customId === "next_page") {
+        currentPage = Math.min(currentPage + 1, pages.length - 1);
+      }
+
+      // Update the disabled state of the buttons.
+      buttonRow.components[0].setDisabled(currentPage === 0);
+      buttonRow.components[1].setDisabled(currentPage === pages.length - 1);
+
+      // Update the embed content.
+      categoryEmbed.setDescription(pages[currentPage])
+      .setFooter({
+        text: `Page ${currentPage + 1} of ${pages.length}`
+      });
+
+      try {
+        if (!btnInteraction.replied || !btnInteraction.deferred) {
+          await btnInteraction.update({
+            embeds: [categoryEmbed],
+            components: selectRow ? [selectRow, buttonRow]: [buttonRow]
+          });
+        }
+      } catch (err) {
+        console.error("Pagination update error:", err);
+      }
+    });
+    // Return the new pagination collector so the caller can store it.
+    return paginationCollector;
+  } catch (err) {
+    console.error("Error in handleCategory:",
+      err);
+    await handleCategoryContext(ctx,
+      {
+        content: "❌ An error occurred while processing your selection.",
+        ephemeral: true
+      });
+    return null;
+  }
+}
 
 export default {
   name: "help",
-  description: "Provides a list of commands or detailed info on a specific command.",
-  aliases: ["commands",
-    "guide"],
+  description: "Provides an interactive help menu with command categories.",
+  aliases: ["commands"],
   args: "[command name]",
   example: [
     "help",
-    // Lists all commands
-    "help shop" // Shows details for the 'shop' command
+    "help bank" // Shows detailed help for the “bank” command.
   ],
   category: "🔧 Utility",
-  cooldown: 6000,
-  // 6 second cooldown
-
-  execute: (args, message) => {
-    // Check if a specific command is requested
-    const commandName = args[1] ? args[1].toLowerCase(): null;
-
-    // If a specific command name is provided
-    if (commandName) {
-      const command = txtcommands.get(commandName);
-
-      if (!command) {
-        return message.channel.send(`❌ Command \`${commandName}\` not found.`);
-      }
-
-      // Build detailed help response for the specified command
-      let response = `**Command: ${command.name}**\n`;
-      response += `**Description:** ${command.description}\n`;
-      if (command.aliases) response += `**Aliases:** ${command.aliases.join(', ')}\n`;
-      if (command.args) response += `**Usage:** ${command.name} ${command.args}\n`;
-      if (command.example && command.example.length > 0) {
-        response += `**Examples:**\n${command.example.map(ex => `- ${ex}`).join('\n')}\n`;
-      }
-      if (command.related && command.related.length > 0) {
-        response += `**Related Commands:** ${command.related.join(', ')}\n`;
-      }
-      response += `**Category:** ${command.category}\n`;
-      response += `**Cooldown:** ${command.cooldown / 1000} seconds\n`;
-
-      // Create embed
-      const embed = new EmbedBuilder()
-      .setTitle(`Command Help: ${command.name}`)
-      .setDescription(response)
-      .setColor(0x3498db)
-
-      // Check if the response length exceeds Discord's limit
-      if (embed.data.description.length > 6000) {
-        const parts = chunkString(response, 6000); // Split response into parts
-        parts.forEach((part, index) => {
-          const embedPart = new EmbedBuilder()
-          .setTitle(`Command Help: ${command.name} (Part ${index + 1})`)
-          .setDescription(part)
-          .setColor(0x3498db)
-          message.channel.send({
-            embeds: [embedPart]
+  cooldown: 10000,
+  execute: async (args,
+    message) => {
+    try {
+      // ─── SHOW DETAILED COMMAND HELP ─────────────────────────────
+      if (args[1] && (!categoriesArray.find(c => c.toLowerCase().includes(args[1].toLowerCase())) && !args[1].includes("shop") && !args[1].includes("ocean"))) {
+        const commandName = args[1].toLowerCase();
+        const command = txtcommands.get(commandName);
+        if (!command) {
+          await replyOrSend(message, {
+            content: `❌ Command \`${commandName}\` not found.`
           });
-        });
-      } else {
-        message.channel.send({
-          embeds: [embed]
-        });
-      }
-      return;
-    }
-
-    // General help - List all commands grouped by category, filtering out duplicates
-    const commandsByCategory = {};
-    const seenCommands = new Set();
-
-    txtcommands.forEach(cmd => {
-      // Only add the command if it hasn't been seen (i.e., avoid adding aliases as new commands)
-      if (!seenCommands.has(cmd.name)) {
-        seenCommands.add(cmd.name);
-
-        if (!commandsByCategory[cmd.category]) {
-          commandsByCategory[cmd.category] = [];
+          return;
         }
-        commandsByCategory[cmd.category].push(cmd);
-      }
-    });
 
-    // Build the response
-    let response = "All commands must be triggered with the prefix `kas`.\n\n";
-    for (const [category, commands] of Object.entries(commandsByCategory)) {
-      response += `**${category}**\n`;
-      response += commands.filter(cmd => cmd.visible !== false).map(cmd => ` ${cmd.name}`).join(' ') + "\n";
-    }
+        let response = `${command.emoji ? command.emoji + " ⤿ ": "⌘ ⤿ "}**${command.name}**\n`;
+        response += `-# ${command.description}\n`;
+        if (command.aliases) response += `\n✦ **𝗔𝗟𝗜𝗔𝗦𝗘𝗦:**\`\`\`${command.aliases.join(', ')}\`\`\`\n`;
+        if (command.args) response += `⚡︎ **𝗨𝗦𝗔𝗚𝗘:**\`\`\`${command.name} ${command.args}\`\`\`\n`;
+        if (command.example && command.example.length > 0) {
+          response += `⚘ **𝗘𝗫𝗔𝗠𝗣𝗟𝗘𝗦:**\n${command.example.map(ex => `- ${ex}`).join('\n')}\n`;
+        }
+        if (command.related && command.related.length > 0) {
+          response += `⤿ **𝗥𝗘𝗟𝗔𝗧𝗘𝗗:** ${command.related.join(', ')}\n`;
+        }
+        response += `\`⏱ \`**\`𝗖𝗢𝗢𝗟𝗗𝗢𝗪𝗡:\`** \`${command.cooldown / 1000} seconds\`\n`;
 
-    response += "\nUse `help <command name>` for detailed info on a command.";
+        const embed = new EmbedBuilder()
+        .setTitle(`𝘾𝙤𝙢𝙢𝙖𝙣𝙙 𝙃𝙚𝙡𝙥: ${command.name}`)
+        .setDescription(response)
+        .setFooter({
+          text: `𝗖𝗔𝗧𝗘𝗚𝗢𝗥𝗬: ${command.category}`
+        })
+        .setColor("#192144");
 
-    // Create embed for general help
-    const embed = new EmbedBuilder()
-    .setTitle('Command List')
-    .setDescription(response)
-    .setColor(0x491ab9)
+        // Create the “View Guide” button.
+        const guideButton = new ButtonBuilder()
+        .setCustomId(`viewGuide_${command.name}`)
+        .setLabel("🗒️ 𝙑𝙄𝙀𝙒 𝙂𝙐𝙄𝘿𝙀")
+        .setStyle(ButtonStyle.Secondary);
+        const guideRow = new ActionRowBuilder().addComponents(guideButton);
 
-    // Check if the response length exceeds Discord's limit
-    if (embed.data.description.length > 6000) {
-      const parts = chunkString(response, 6000); // Split response into parts
-      parts.forEach((part, index) => {
-        const embedPart = new EmbedBuilder()
-        .setTitle(`Available Commands (Part ${index + 1})`)
-        .setDescription(part)
-        .setColor(0x491ab9)
-        message.channel.send({
-          embeds: [embedPart]
+        const __filename = fileURLToPath(import.meta.url);
+        const __dirname = path.dirname(__filename);
+        const guideFilePath = path.join(__dirname, "../../help", `${command.name}.js`);
+
+        const sentMsg = await replyOrSend(message, {
+          embeds: [embed],
+          components: fs.existsSync(guideFilePath) ? [guideRow]: []
         });
+
+        // Listen for the guide button (active for 180 seconds)
+        const collector = sentMsg.createMessageComponentCollector({
+          componentType: ComponentType.Button,
+          time: 180000
+        });
+        collector.on('collect', async interaction => {
+          try {
+            if (interaction.customId === `viewGuide_${command.name}`) {
+              await interaction.deferUpdate(); // Acknowledge immediately.
+              await handleGuideCommand(command.name, message);
+            }
+          } catch (err) {
+            console.error("Guide button error:", err);
+            if (!interaction.deferred && !interaction.replied) {
+              await interaction.reply({
+                content: "❌ An error occurred while processing your request.", ephemeral: true
+              });
+            }
+          }
+        });
+        return;
+      }
+
+      // ─── NO ARGUMENT: SHOW INTERACTIVE CATEGORY MENU ─────────────
+      // Group commands by category, filtering out duplicates and hidden commands.
+      // Build the commands-by-category object.
+      const commandsByCategory = {};
+      const seenCommands = new Set();
+      txtcommands.forEach(cmd => {
+        if (seenCommands.has(cmd.name)) return;
+        seenCommands.add(cmd.name);
+        if (cmd.visible === false) return;
+        if (!commandsByCategory[cmd.category]) commandsByCategory[cmd.category] = [];
+        commandsByCategory[cmd.category].push(cmd);
       });
-    } else {
-      message.channel.send({
-        embeds: [embed]
+
+      const authorId = message.author ? message.author.id: message.user.id;
+
+      if (args[1]) {
+        const categoryName = Object.keys(commandsByCategory).find((cmds) => {
+          if (cmds.toLowerCase().includes(args[1].toLowerCase())) {
+            return true;
+          }
+        });
+
+        await handleCategory(authorId,
+          message,
+          categoryName,
+          commandsByCategory,
+          null,
+          null);
+
+        return;
+      }
+
+      // Build a select menu for all categories.
+      const selectOptions = Object.keys(commandsByCategory).map(category => ({
+        label: category,
+        value: category,
+        description: `Show commands in ${category}`
+      }));
+
+      const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId("help_select_category")
+      .setPlaceholder("Select a command category")
+      .addOptions(selectOptions);
+
+      const selectRow = new ActionRowBuilder().addComponents(selectMenu);
+
+      const embed = new EmbedBuilder()
+      .setTitle("Help Menu")
+      .setDescription(
+        `Select a category from the drop‐down below to view its commands.\n` +
+        `╰➤ Use **\`help <command>\`** for quick help on a command.\n` +
+        `╰➤ Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
+        `╰➤ All commands must be triggered with a prefix, e.g., **kas**.`
+      );
+
+      // Send the help menu.
+      const helpMessage = await replyOrSend(message,
+        {
+          embeds: [embed],
+          components: [selectRow]
+        });
+
+      // Global variable to keep track of the active pagination collector.
+      let activePaginationCollector = null;
+
+      // Listen for a category selection.
+      const menuCollector = helpMessage.createMessageComponentCollector({
+        componentType: ComponentType.StringSelect,
+        time: 180000
       });
+
+      menuCollector.on('collect',
+        async interaction => {
+
+          if (interaction.user.id !== authorId) {
+            await replyOrSend(interaction, {
+              content: `You are not allowed to interact with someone else's help command!`
+            });
+
+            return;
+          }
+
+          // Stop any existing pagination collector before starting a new one.
+          if (activePaginationCollector) {
+            //   activePaginationCollector.removeAllListeners('end');
+            activePaginationCollector.stop();
+            activePaginationCollector = null;
+          }
+
+          const chosenCategory = interaction.values[0];
+          // Call the new handler and update our active collector.
+          activePaginationCollector = await handleCategory(authorId, interaction, chosenCategory, commandsByCategory, helpMessage, selectRow);
+        });
+
+      menuCollector.on('end',
+        async () => {
+          // Disable the select menu after timeout.
+          try {
+            selectMenu.setDisabled(true);
+            await helpMessage.edit({
+              components: [new ActionRowBuilder().addComponents(selectMenu)]
+            });
+          } catch (err) {}
+        });
+    } catch (error) {
+      console.error(error);
+      await replyOrSend(message,
+        {
+          content: "❌ An unexpected error occurred while executing the help command."
+        });
+      return;
     }
   }
 };
-  // Function to chunk string into parts that fit Discord's limit (6000 characters max)
-  function chunkString(str, length) {
-    const chunks = [];
-    while (str.length > length) {
-      let index = str.lastIndexOf('\n', length);
-      if (index === -1) index = length;
-      chunks.push(str.substring(0, index));
-      str = str.substring(index).trim();
+
+  // ─── HELPER: SIMULATE CALLING THE GUIDE COMMAND ─────────────────────────────
+  async function handleGuideCommand(commandName,
+    message) {
+    try {
+      const guideCommand = (await import(`./guide.js`)).default;
+      // Pass an array where the first element is the command name.
+      guideCommand.execute(["guid",
+        commandName],
+        message);
+    } catch (err) {
+      console.error(err);
+      await replyOrSend(message,
+        {
+          content: "❌ There was an error loading the guide."
+        });
+      return;
     }
-    chunks.push(str);
-    return chunks;
   }

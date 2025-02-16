@@ -7,7 +7,7 @@ export default {
   description: "Send a random cat GIF.",
   aliases: ["kitty",
     "meow"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
@@ -59,12 +59,13 @@ export default {
       .setDescription("Here's a cute cat! 🐱")
       .setImage(randomGif) // Set a randomly selected cat GIF
       .setFooter({
-        text: `Requested by ${message.author.tag} |  | Gif: gipher`
+        text: `Requested by ${message.author.tag}`
       });
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
     }

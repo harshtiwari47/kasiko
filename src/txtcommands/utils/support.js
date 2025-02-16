@@ -9,7 +9,7 @@ export default {
   name: "support",
   description: "Provides a bot's support link and donation link.",
   aliases: ["assist"],
-  cooldown: 8000,
+  cooldown: 10000,
   category: "🔧 Utility",
 
   execute: async (args, message) => {
@@ -29,8 +29,8 @@ export default {
       .setURL("https://www.buymeacoffee.com/")
     );
 
-    await message.reply({
+    return message.reply({
       embeds: [embed], components: [row]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   },
 };

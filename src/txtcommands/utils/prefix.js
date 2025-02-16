@@ -12,7 +12,7 @@ export default {
   name: "prefix",
   description: "Set a custom prefix for the bot in the server.",
   aliases: ["changeprefix"],
-  cooldown: 5000,
+  cooldown: 10000,
   example: ["prefix",
     "prefix <custom prefix>"],
   category: "🔧 Utility",
@@ -31,20 +31,20 @@ export default {
         if (customPrefix) {
           prefix = customPrefix;
         }
-        return message.reply(`☕ The current prefix for **Kasiko** in this server is **${prefix}**`);
+        return message.reply(`☕ The current prefix for **Kasiko** in this server is **${prefix}**`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
-      
-            // Check if the user has moderator permissions
+
+      // Check if the user has moderator permissions
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-        return message.reply("❌ You need `Manage Server` permissions to set a custom prefix.");
+        return message.reply("❌ You need `Manage Server` permissions to set a custom prefix.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
-      
+
       // Validate the new prefix (max 20 chars, no special characters, etc.)
       const prefixRegex = /^[a-zA-Z0-9,@#$_&\-+()/*"':;!?,.~`|=^]{1,20}$/;
       if (!prefixRegex.test(newPrefix)) {
         return message.reply(
           "❌ Prefix must be under 20 characters long and contain no special characters."
-        );
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const lowerCasePrefix = newPrefix.toLowerCase();
@@ -96,7 +96,7 @@ export default {
         });
       } catch (err) {
         console.error("Error setting prefix:", err);
-        return message.reply("❌ An error occurred while setting the prefix. Please try again.");
+        return message.reply("❌ An error occurred while setting the prefix. Please try again.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (e) {
       console.error(e);

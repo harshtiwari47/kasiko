@@ -2,7 +2,7 @@ export default {
   name: "fliptable",
   description: "Flip or fix a table, depending on your mood `kas table <option>`.",
   aliases: ["table"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
@@ -15,9 +15,13 @@ export default {
         ],
         fix: [
           "┬─┬ ノ( ゜-゜ノ)",
-          "(╯°□°）╯︵ ┻━┻ → ┻━┻",
-          "┻━┻ ︵ ╯(°□°╯)",
-          "︵ 乁( •_• )ㄏ",
+          // Fixing the table
+          "(╯°□°）╯︵ ┻━┻ → ┬─┬",
+          // Fixing after flipping
+          "┻━┻ ︵ ╯(°□°╯) → ┬─┬",
+          // Returning the table
+          "︵ 乁( •_• )ㄏ ┬─┬",
+          // Another fixing method
         ],
       };
 
@@ -25,9 +29,11 @@ export default {
       const action = args[1] && args[1].toLowerCase() === "fix" ? "fix": "flip";
       const randomAction = actions[action][Math.floor(Math.random() * actions[action].length)];
 
-      await message.reply(randomAction);
+      await message.reply(randomAction)
+      return;
     } catch (e) {
       console.error(e);
+      return;
     }
   },
 };

@@ -43,7 +43,7 @@ export async function playGate(id, channel, message) {
     let userData = await getUserData(id);
 
     if (userData.cash < 10) {
-      return channel.send(`⚠️ **${message.author.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **10**.`);
+      return channel.send(`⚠️ **${message.author.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **10**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Fetch the hourly path
@@ -56,11 +56,11 @@ export async function playGate(id, channel, message) {
     }
 
     if (userData.heaven && userData.heaven[0] === hourlyPath[0] && parseInt(userData.heaven[1]) >= 3) {
-      return channel.send(`⛩️ **${message.author.username}**, you have reached the maximum limit for Heaven. Come back later!`);
+      return channel.send(`⛩️ **${message.author.username}**, you have reached the maximum limit for Heaven. Come back later!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (userData.heaven && parseInt(userData.heaven[2]) === 1) {
-      return channel.send(`⛩️ **${message.author.username}**, you have already completed the current Heaven. Come back later!`);
+      return channel.send(`⛩️ **${message.author.username}**, you have already completed the current Heaven. Come back later!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Deduct entry fee
@@ -80,7 +80,7 @@ export async function playGate(id, channel, message) {
     .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/heaven.jpg`);
     channel.send({
       embeds: [embed1]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     let gameMessage = await channel.send(`🌟 Starting the game... Get ready!`);
 
@@ -92,7 +92,10 @@ export async function playGate(id, channel, message) {
         "South",
         "East",
         "West"].includes(response.content.trim());
-      await gameMessage.edit(`🔮 **Round ${i}/5**: Choose your gate: \`North, South, East, West\``);
+
+      if (gameMessage && gameMessage.edit) {
+        await gameMessage.edit(`🔮 **Round ${i}/5**: Choose your gate: \`North, South, East, West\``)
+      }
 
       // Wait for user response
       const collected = await channel.awaitMessages({
@@ -105,9 +108,10 @@ export async function playGate(id, channel, message) {
       if (!collected) {
         userData.heaven[1] = Number(userData.heaven[1]) + 1;
         await updateUser(id, userData);
-        await gameMessage.edit(`⏱️ Time's up, **${message.author.username}**! You didn't choose a gate in time. Game over.`);
-        await channel.send(`⏱️ Time's up, **${message.author.username}**!`);
-        return;
+        if (gameMessage && gameMessage.edit) {
+          await gameMessage.edit(`⏱️ Time's up, **${message.author.username}**! You didn't choose a gate in time. Game over.`);
+        }
+        return channel.send(`⏱️ Time's up, **${message.author.username}**!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const userChoice = collected.first().content.trim();
@@ -115,11 +119,11 @@ export async function playGate(id, channel, message) {
       // Check if the user choice matches the correct path
       if (userChoice === correctPath) {
         userWins++;
-        await channel.send(`✅ **Correct!** The correct gate was \`${correctPath}\`. You've made it through round ${i}!`);
+        return channel.send(`✅ **Correct!** The correct gate was \`${correctPath}\`. You've made it through round ${i}!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       } else {
         userData.heaven[1] = Number(userData.heaven[1]) + 1;
         await updateUser(id, userData);
-        await channel.send(`❌ **Wrong!** The correct gate was \`${correctPath}\`. You chose \`${userChoice}\`. Game over.`);
+        return channel.send(`❌ **Wrong!** The correct gate was \`${correctPath}\`. You chose \`${userChoice}\`. Game over.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         break;
       }
     }
@@ -130,13 +134,15 @@ export async function playGate(id, channel, message) {
       userData.heaven[2] = 1;
       userData.cash += prize;
       await updateUser(id, userData);
-      await channel.send(`🎉 **Congratulations, ${message.author.username}!** You've completed all rounds and won <:kasiko_coin:1300141236841086977> ${prize.toLocaleString()} cash!`);
+      return channel.send(`🎉 **Congratulations, ${message.author.username}!** You've completed all rounds and won <:kasiko_coin:1300141236841086977> ${prize.toLocaleString()} cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      await channel.send(`🔚 Better luck next time, **${message.author.username}**! You completed ${userWins} round(s).`);
+      return channel.send(`🔚 Better luck next time, **${message.author.username}**! You completed ${userWins} round(s).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
-    console.error(e);
-    return channel.send("Oops! Something went wrong while playing the Gate game 🏰!");
+    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+      console.error(e);
+    }
+    return channel.send("Oops! Something went wrong while playing the Gate game 🏰!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -151,6 +157,7 @@ export default {
   related: ["tosscoin",
     "slots",
     "dice"],
+  emoji: "👼🏻",
   cooldown: 10000,
   // 10 seconds cooldown
   category: "🍬 Explore",

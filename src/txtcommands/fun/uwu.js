@@ -3,13 +3,13 @@ export default {
   description: "UwU-fies your message!",
   aliases: ["uwufy",
     "cuteify"],
-  cooldown: 3000,
+  cooldown: 10000,
   category: "🧩 Fun",
 
   execute: async (args, message) => {
     args.shift();
     if (!args.length) {
-      return message.reply("Pwease pwovide text to UwU-fy~ 🥺");
+      return message.reply("Pwease pwovide text to UwU-fy~ 🥺").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const uwuText = args
@@ -27,6 +27,6 @@ export default {
     .replace(/w{2,}/g, "w") // Reduce consecutive 'w's to one
     .trim() + " ~uwu~"; // Add a cute suffix for extra flair
 
-    await message.channel.send(`🌸 UwU-fied: "${uwuText}"`);
+    return message.channel.send(`🌸 UwU-fied: "${uwuText}"`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   },
 };

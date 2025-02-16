@@ -7,7 +7,7 @@ export default {
   description: "Show off your dance moves, with or without a partner.",
   aliases: ["boogie",
     "groove"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
@@ -82,7 +82,8 @@ export default {
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
     }

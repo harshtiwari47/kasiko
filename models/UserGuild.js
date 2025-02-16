@@ -2,23 +2,14 @@ import mongoose from "mongoose";
 
 const UserGuildSchema = new mongoose.Schema({
   userId: {
-    type: String, required: true
+    type: String, required: true, ref: 'User'
   },
   guildId: {
     type: String, required: true
   },
-  networth: {
-    type: Number, default: 0
-    },
-    cash: {
-      type: Number, default: 0
-    },
-    level: {
-      type: Number, default: 1
-    },
-    icecream: {
-      money: {
-        type: Number,
+  icecream: {
+    money: {
+      type: Number,
       default: 0
       },
       reputation: {

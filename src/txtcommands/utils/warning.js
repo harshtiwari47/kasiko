@@ -27,9 +27,9 @@ export default {
         embeds: [warningEmbed], ephemeral: true
       });
     } catch {
-      await message.reply({
+      return message.reply({
         embeds: [warningEmbed], ephemeral: true
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

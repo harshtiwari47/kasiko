@@ -17,110 +17,163 @@ const BankInfo = {
   security: 1,
   charge: 1.5,
   levelUpCost: 1000,
-  storage: 100000
+  storage: 300000
 }
 
 export const Bank = {
   async deposit(userId, amount, message) {
     try {
       const userData = await getUserData(userId);
-      if (amount === "all") amount = userData.cash;
-      if (!userData || userData.cash < amount) {
+
+      if (!userData) return;
+
+      if (amount && amount === "all") amount = Number(userData.cash || 0);
+
+      if (userData.cash < Number(amount)) {
         return message.channel.send(
-          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
-        );
+          `ⓘ **${message.author.username}**, you don't have enough cash to deposit that amount!`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      const account = await getUserBankDetails(userId);
-      if (!account) {
+      const account = userData.bankAccount;
+      if (!account || !account?.open) {
         return message.channel.send(
-          `${message.author.username}, you don't have a bank account yet. Open one first!`
-        );
+          `ⓘ **${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Deduct cash and increase bank deposit
-      userData.cash = userData.cash - amount;
+      userData.cash = Math.max(0, userData.cash - Number(amount));
       const newDeposit = account.deposit + amount;
+      const bankLimit = account.level * (BankInfo.storage || 300000);
 
-      if (newDeposit > account.level * BankInfo.storage) {
-        return message.channel.send(`⚠️ Oops! You can't deposit an amount exceeding your account's deposit limit.`);
+      if (newDeposit > bankLimit) {
+        return message.channel.send(`⚠️ Oops! ***${message.author.username}***, you can't deposit an amount exceeding your account's deposit limit of <:kasiko_coin:1300141236841086977> **${bankLimit}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      await updateUser(userId, userData);
-      await updateBankDetails(userId, {
-        deposit: newDeposit
-      });
+      try {
+        await updateUser(userId, {
+          cash: Math.max(0, userData.cash - Number(amount)),
+          'bankAccount.deposit': newDeposit
+        });
 
-      return message.channel.send(
-        `🏦 **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**\n⤿ **Remaining Cash**: <:kasiko_coin:1300141236841086977> **${userData.cash.toLocaleString()}**`
-      );
+        return message.channel.send(
+          `🏦 **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**\n⤿ **Remaining Cash**: <:kasiko_coin:1300141236841086977> **${(userData.cash - amount).toLocaleString()}**`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      } catch (err) {
+        console.error(`❌ Error updating bank details for ${message.author.username}:`, err);
+
+        // Rollback: If updating the bank fails, refund the cash amount back to the user
+        await updateUser(userId, {
+          cash: userData.cash
+        });
+
+        return message.channel.send(`⚠️ **${message.author.username}**, an error occurred while processing your deposit. Your cash balance has been restored.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
     } catch (err) {
-      return message.channel.send(`Error depositing funds: ${err.message}`);
+      return message.channel.send(`Error depositing funds: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 
   async withdraw(userId, amount, message) {
     try {
       const userData = await getUserData(userId);
-      const account = await getUserBankDetails(userId);
+      if (!userData) return;
+      const account = userData.bankAccount;
 
-      if (!account) {
+      if (!account || !account?.open) {
         return message.channel.send(
-          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
-        );
+          `ⓘ **${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      let Interest = Math.min(BankInfo.charge * account.level * 0.5, 30);
-
+      let Interest = Math.min((BankInfo.charge || 0) * account.level * 0.5, 30);
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
 
-      if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
+      if (
+        userData.pass &&
+        userData.pass.year === currentYear &&
+        userData.pass.month === currentMonth &&
+        userData.pass.type === "premium"
+      ) {
         let additionalReward = 0.20 * Interest;
         Interest -= additionalReward;
       }
 
-      if (amount === "all") amount = Math.max(0, account.deposit - Math.ceil((account.deposit * Interest) / 100));
-      const charge = Math.ceil((amount * Interest) / 100);
-
-      let totalWithdrawal;
-      totalWithdrawal = amount + charge;
-
-      if (totalWithdrawal > account.deposit) {
-        return message.channel.send(
-          `**${message.author.username}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit - charge).toLocaleString()}**`
+      if (amount === "all") {
+        amount = Math.max(
+          0,
+          account.deposit - Math.ceil((account.deposit * Interest) / 100)
         );
       }
 
-      // Deduct from bank and add to user cash
+      const charge = Math.ceil((amount * Interest) / 100);
+      const totalWithdrawal = amount + charge;
+
+      if (totalWithdrawal > account.deposit) {
+        return message.channel.send(
+          `ⓘ **${message.author.username}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit - charge).toLocaleString()}**`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+
+      // Calculate the new bank deposit and update the user's cash balance.
       const newDeposit = account.deposit - totalWithdrawal;
+      const originalCash = userData.cash; // Save original cash for potential rollback.
       userData.cash = userData.cash + amount;
 
-      await updateUser(userId, userData);
-      await updateBankDetails(userId, {
-        deposit: newDeposit
-      });
+      try {
+        await updateUser(userId, {
+          cash: userData.cash,
+          'bankAccount.deposit': newDeposit
+        });
 
-      await message.channel.send(
-        `🏦 **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n⚠ **Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()}\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}\n⤿ **Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
-      );
-      return;
+        return message.channel.send(
+          `🏦 **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n⚠ **Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()}\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}\n⤿ **Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      } catch (err) {
+        console.error(
+          `❌ Error updating bank details for ${message.author.username}:`,
+          err
+        );
+
+        // Rollback: Restore the user's original cash balance if something goes wrong.
+        try {
+          await updateUser(userId, {
+            cash: originalCash
+          });
+        } catch (rollbackError) {
+          console.error(
+            `❌ Rollback failed for ${message.author.username}:`,
+            rollbackError
+          );
+        }
+
+        return message.channel.send(
+          `⚠️ **${message.author.username}**, an error occurred while processing your withdrawal. Your cash balance has been restored.`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
     } catch (err) {
-      return message.channel.send(`Error withdrawing funds: ${err.message}`);
+      if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
+        console.error(err);
+      }
+      return message.channel.send(`Error withdrawing funds: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 
   async showStatus(userId, message) {
     try {
-      const account = await getUserBankDetails(userId);
+      const userData = await getUserData(userId);
+
+      if (!userData) return;
+
+      const account = userData.bankAccount;
+
       if (!account) {
         return message.channel.send(
-          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
-        );
+          `ⓘ **${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
-
-
-      const userData = await getUserData(userId);
 
       let Interest = Math.min(BankInfo.charge * account.level * 0.5, 30);
       let specialInterest = 0;
@@ -160,9 +213,9 @@ export const Bank = {
 
       return message.channel.send({
         embeds: [emebedHeader, embed]
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (err) {
-      return message.channel.send(`Error fetching bank status: ${err.message}`);
+      return message.channel.send(`Error fetching bank status: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 
@@ -172,7 +225,7 @@ export const Bank = {
       if (!account) {
         return message.channel.send(
           `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
-        );
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const currentLevel = account.level;
@@ -181,7 +234,7 @@ export const Bank = {
       if (account.deposit < upgradeCost) {
         return message.channel.send(
           `${message.author.username}, you need <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()} cash in Bank to upgrade to the next level.`
-        );
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const newLevel = currentLevel + 1;
@@ -193,9 +246,9 @@ export const Bank = {
 
       return message.channel.send(
         `🏦 **${message.author.username}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
-      );
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (err) {
-      return message.channel.send(`Error upgrading bank: ${err.message}`);
+      return message.channel.send(`Error upgrading bank: ${err.message}`).catch(console.error);
     }
   },
 
@@ -203,34 +256,51 @@ export const Bank = {
     try {
       const userData = await getUserData(userId);
 
-      if (!userData || userData.cash < 1000) {
+      if (!userData) return;
+
+      if (userData.cash < 1000) {
         return message.channel.send(
           `**${message.author.username}**, you need at least <:kasiko_coin:1300141236841086977> 1000 cash to open a bank account.`
-        );
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      let isOpened = await openBankAccount(userId);
+      if (userData.bankAccount && userData.bankAccount.open) {
+        return message.channel.send(`**${message.author.username}**, you already have a bank account.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+
+      let isOpened;
+
+      if (userData.bankAccount && !userData?.bankAccount?.open) {
+        if (userData.cash > 1000) {
+          userData.cash -= 1000;
+          userData.bankAccount.open = true;
+
+          try {
+            await updateUser(userId, {
+              cash: userData.cash,
+              'userData.bankAccount.open': true
+            });
+            isOpened = true;
+          } catch (error) {
+            return message.channel.send(`Error opening bank account: ${err.message}\nⓘ Please try again!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
+        }
+      }
 
       if (isOpened) {
-        message.channel.send(
+        return message.channel.send(
           `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
-        );
-      } else {
-        message.channel.send(`**${message.author.username}**, you already have a bank account.`);
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (err) {
-      if (err.message.includes("already has a bank account")) {
-        message.channel.send(`**${message.author.username}**, you already have a bank account.`);
-      } else {
-        message.channel.send(`Error opening bank account: ${err.message}`);
-      }
+      return message.channel.send(`Error opening bank account: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 };
 
 export default {
   name: "bank",
-  description: "Banking system for depositing, withdrawing, opening your bank account, and upgrading your bank.",
+  description: "Secure your cash from robbery while managing deposits, withdrawals, accounts, and upgrades.",
   aliases: ["bank",
     "deposit",
     "dep",
@@ -241,16 +311,17 @@ export default {
     "ba"],
   args: "<action> [amount or target]",
   example: [
-    "deposit/dep 500",
-    "withdraw/with 200",
-    "bank account/status",
+    "deposit 500",
+    "withdraw 200",
+    "bank account",
     "bank upgrade",
-    "bank open (Open your bank account)",
+    "bank open",
   ],
   related: ["cash",
     "withdraw",
     "rob",
     "deposit"],
+  emoji: "🏦",
   cooldown: 10000,
   category: "🏦 Economy",
 
@@ -259,6 +330,7 @@ export default {
     try {
       const action = args[0] ? args[0].toLowerCase(): null;
       const userId = message.author.id;
+      const username = message.author.username;
 
       switch (action) {
       case "deposit":
@@ -267,7 +339,7 @@ export default {
         if (args[1] !== "all") {
           depositAmount = parseInt(args[1], 10);
           if (isNaN(depositAmount) || depositAmount <= 0) {
-            return message.channel.send("Please specify a valid amount to deposit.");
+            return message.channel.send(`ⓘ **${username}**, please specify a valid amount to deposit.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else {
           depositAmount = "all";
@@ -283,11 +355,10 @@ export default {
       case "withdraw":
       case "with":
         let withdrawAmount;
-
         if (args[1] !== "all") {
           withdrawAmount = parseInt(args[1], 10);
           if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
-            return message.channel.send("Please specify a valid amount to withdraw.");
+            return message.channel.send(`ⓘ **${username}**, please specify a valid amount to withdraw.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else {
           withdrawAmount = "all";
@@ -301,41 +372,43 @@ export default {
         switch (subcommand) {
         case "status":
         case "account":
-          // Call a function to display the user's bank status
           return Bank.showStatus(userId, message);
 
         case "open":
-          // Call a function to open a user's bank account
           return Bank.openAccount(userId, message);
 
         case "upgrade":
-          // Call a function to upgrade the user's bank
           return Bank.upgrade(userId, message);
 
         default:
-
           const bankEmbed = new EmbedBuilder()
           .setColor('#d4e6f6')
           .setTitle('🏦 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝑩𝒂𝒏𝒌')
           .setDescription(
-            'Manage your bank using the following commands:\n\n' +
-            '`bank open`\n-# Open a bank account.\n' +
-            '`deposit <amount>`\n-# Deposit funds into your bank.\n' +
-            '`withdraw <amount>`\n-# Withdraw funds from your bank.\n' +
-            '`bank status`\n-# Check your bank status (you can use \`bs\` or \`ba\`).\n' +
-            '`bank upgrade`\n-# Upgrade your bank level.'
+            `Hello **${username}**, manage your bank using the following commands:\n\n` +
+            '`bank open`\n- Open a bank account.\n' +
+            '`deposit <amount>`\n- Deposit funds into your bank.\n' +
+            '`withdraw <amount>`\n- Withdraw funds from your bank.\n' +
+            '`bank status`\n- Check your bank status (you can use \`bs\` or \`ba\`).\n' +
+            '`bank upgrade`\n- Upgrade your bank level.'
           )
           .setFooter({
             text: 'Use your bank wisely!'
-          })
-
-          message.channel.send({
-            embeds: [bankEmbed]
           });
-        };
+
+          return message.channel.send({
+            embeds: [bankEmbed]
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+
+      default:
+        return message.channel.send(`ⓘ **${username}**, please provide a valid bank action (e.g., \`deposit\`, \`withdraw\`, \`bank status\`).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (e) {
-      console.error(e);
+      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+        console.error(e);
+      }
+      return message.channel.send(`⚠️ **${message.author.username}**, an unexpected error occurred. Please try again later.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 };

@@ -183,85 +183,97 @@ async function collectFlowers(userId, username) {
 * Exchange all flowers in storage for cash.
 */
 async function exchangeFlowers(userId, username) {
-  const userGarden = await Garden.findOne({
-    userId
-  });
-  if (!userGarden) {
-    return `⛲ | No garden found, **${username}**. Use \`garden\` to start one.`;
-  }
-
-  let totalCash = 0;
-  let summaryLines = [];
-  for (const f of flowersData) {
-    const count = userGarden.flowers[f.key];
-    if (count > 0) {
-      const earned = count * f.value;
-      totalCash += earned;
-      summaryLines.push(`${count}x${f.emoji} => ${earned}`);
+  try {
+    const userGarden = await Garden.findOne({
+      userId
+    });
+    if (!userGarden) {
+      return `⛲ | No garden found, **${username}**. Use \`garden\` to start one.`;
     }
+
+    let totalCash = 0;
+    let summaryLines = [];
+    for (const f of flowersData) {
+      const count = userGarden.flowers[f.key];
+      if (count > 0) {
+        const earned = count * f.value;
+        totalCash += earned;
+        summaryLines.push(`${count}x${f.emoji} => ${earned}`);
+      }
+    }
+
+    if (totalCash === 0) {
+      return `⛲ | You have no flowers to exchange, **${username}**.`;
+    }
+
+    // Add money to user
+    const userData = await getUserData(userId);
+    userData.cash += totalCash;
+    await updateUser(userId, userData);
+
+    // Reset stored flowers
+    for (const f of flowersData) {
+      userGarden.flowers[f.key] = 0;
+    }
+    await userGarden.save();
+
+    return (
+      `⛲ | **${username}**, you exchanged all your flowers 💐 for <:kasiko_coin:1300141236841086977> **${totalCash}** 𝒄𝒂𝒔𝒉.\n` +
+      `Breakdown:\n${summaryLines.join('\n')}`
+    );
+  } catch (err) {
+    return (
+      `⚠ Something went wrong during the flower exchange!\n-# **Error:** ${err.message}`
+    )
   }
-
-  if (totalCash === 0) {
-    return `⛲ | You have no flowers to exchange, **${username}**.`;
-  }
-
-  // Add money to user
-  const userData = await getUserData(userId);
-  userData.cash += totalCash;
-  await updateUser(userId, userData);
-
-  // Reset stored flowers
-  for (const f of flowersData) {
-    userGarden.flowers[f.key] = 0;
-  }
-  await userGarden.save();
-
-  return (
-    `⛲ | **${username}**, you exchanged all your flowers 💐 for <:kasiko_coin:1300141236841086977> **${totalCash}** 𝒄𝒂𝒔𝒉.\n` +
-    `Breakdown:\n${summaryLines.join('\n')}`
-  );
 }
 
 /**
 * Upgrade garden level -> higher capacity and faster base collection.
-* Cost formula: 2500 * currentLevel
+* Cost formula: 5000 * currentLevel
 */
 async function upgradeGarden(userId, username) {
-  const userGarden = await Garden.findOne({
-    userId
-  });
-  if (!userGarden) {
-    return `⛲ | No garden found, **${username}**. Use \`garden\` to start one.`;
-  }
+  try {
+    const userGarden = await Garden.findOne({
+      userId
+    });
+    if (!userGarden) {
+      return `⛲ | No garden found, **${username}**. Use \`garden\` to start one.`;
+    }
 
-  const maxLevel = 20;
-  if (userGarden.level >= maxLevel) {
-    return `⛲ | Your garden is already at max level (${maxLevel}), **${username}**.`;
-  }
+    const maxLevel = 20;
+    if (userGarden.level >= maxLevel) {
+      return `⛲ | Your garden is already at max level (${maxLevel}), **${username}**.`;
+    }
 
-  const upgradeCost = 2500 * userGarden.level;
-  const userData = await getUserData(userId);
-  if (userData.cash < upgradeCost) {
+    const upgradeCost = 5000 * userGarden.level;
+    const userData = await getUserData(userId);
+    if (userData.cash < upgradeCost) {
+      return (
+        `⛲ | You need <:kasiko_coin:1300141236841086977> ${upgradeCost} 𝒄𝒂𝒔𝒉 to upgrade, but you only have ${userData.cash}, **${username}**.`
+      );
+    }
+
+    // Deduct cost
+    userData.cash -= upgradeCost;
+    await updateUser(userId, userData);
+
+    // Increase level
+    userGarden.level += 1;
+    await userGarden.save();
+
+    const newCapacity = getGardenCapacity(userGarden.level);
+    const nextCost = 5000 * userGarden.level;
     return (
-      `⛲ | You need <:kasiko_coin:1300141236841086977> ${upgradeCost} 𝒄𝒂𝒔𝒉 to upgrade, but you only have ${userData.cash}, **${username}**.`
+      `⛲ | **${username}**, your garden is now **Level ${userGarden.level}**! 💐\n` +
+      `Capacity: **${newCapacity}** flowers.\n` +
+      `You spent <:kasiko_coin:1300141236841086977> **${upgradeCost}** 𝒄𝒂𝒔𝒉. Next upgrade will cost ${nextCost}.`
+    );
+  } catch (err) {
+    return (
+      `⚠ Something went wrong while upgrading the garden!\n-# **Error:** ${err.message}`
     );
   }
-
-  // Deduct cost
-  userData.cash -= upgradeCost;
-  await updateUser(userId, userData);
-
-  // Increase level
-  userGarden.level += 1;
-  await userGarden.save();
-
-  const newCapacity = getGardenCapacity(userGarden.level);
-  const nextCost = 2500 * userGarden.level;
-  return (
-    `⛲ | **${username}**, your garden is now **Level ${userGarden.level}**! 💐\n` +
-    `Capacity: **${newCapacity}** flowers.\n` +
-    `You spent <:kasiko_coin:1300141236841086977> **${upgradeCost}** 𝒄𝒂𝒔𝒉. Next upgrade will cost ${nextCost}.`
-  );
 }
 
 /**
@@ -421,7 +433,7 @@ async function viewGardenStatus(userId, username) {
 *   garden           -> view garden status (auto-start if none)
 *   garden collect   -> collect flowers
 *   garden exchange  -> exchange flowers for cash
-*   garden upgrade   -> upgrade the garden (cost = 2500 * currentLevel)
+*   garden upgrade   -> upgrade the garden (cost = 5000 * currentLevel)
 *   garden water     -> water your garden (next collect is +50%)
 *   garden share @user <flowerType> <amount>
 */
@@ -430,6 +442,7 @@ export default {
   description: "Manage your flower garden.",
   aliases: ["g"],
   example: ["graden help"],
+  emoji: "🎍",
   category: "🍬 Explore",
   cooldown: 10000,
   // seconds, if you want
@@ -444,28 +457,28 @@ export default {
       case "collect":
         {
           const response = await collectFlowers(userId, username);
-          return message.channel.send(response);
+          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "e":
       case "exchange":
         {
           const response = await exchangeFlowers(userId, username);
-          return message.channel.send(response);
+          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "u":
       case "upgrade":
         {
           const response = await upgradeGarden(userId, username);
-          return message.channel.send(response);
+          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "w":
       case "water":
         {
           const response = await waterGarden(userId, username);
-          return message.channel.send(response);
+          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "s":
@@ -476,7 +489,7 @@ export default {
           const flowerType = args[3];
           const amount = args[4];
           const response = await shareFlowers(userId, username, mention, flowerType, amount);
-          return message.channel.send(response);
+          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "h":
@@ -492,7 +505,7 @@ export default {
             `\`garden\` - View status/start\n` +
             `\`garden collect\` - Harvest flowers (10min cooldown)\n` +
             `\`garden exchange\` - Sell flowers for 𝒄𝒂𝒔𝒉\n` +
-            `\`garden upgrade\` - Increase capacity (Cost: <:kasiko_coin:1300141236841086977> 2500 × level)\n` +
+            `\`garden upgrade\` - Increase capacity (Cost: <:kasiko_coin:1300141236841086977> 5000 × level)\n` +
             `\`garden water\` - +50% next harvest (6hr cooldown)\n` +
             `\`garden share @user flower amount\` - Gift flowers`
           },
@@ -520,16 +533,18 @@ export default {
 
         return message.channel.send({
           embeds: [helpEmbed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       default:
         // Show the garden status or start if none
         const response = await viewGardenStatus(userId, username);
-        return message.channel.send(response);
+        return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (error) {
-      console.error("Error in garden command:", error);
-      return message.channel.send(`Oops! Something went wrong: \`${error.message}\``);
+      if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
+        console.error("Error in garden command:", error);
+      }
+      return message.channel.send(`Oops! Something went wrong: \`${error.message}\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

@@ -441,6 +441,7 @@ export default {
     "baby"],
   description: "Manage and interact with your children (if married).",
   example: ["children help"],
+  emoji: "👶🏻",
   category: "👤 User",
   async execute(args, message) {
     try {

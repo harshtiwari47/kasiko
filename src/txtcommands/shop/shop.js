@@ -81,6 +81,7 @@ export default {
     "sell jewelry <jewelry_id>"
     // Sell a specific jewelry item
   ],
+  emoji: "🏬",
   related: ["cars",
     "structures",
     "jewelry",

@@ -5,9 +5,8 @@ import {
 export default {
   name: "drive",
   description: "Drive a car with a specified action.",
-  aliases: ["car",
-    "ride"],
-  cooldown: 4000,
+  aliases: ["ride"],
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
@@ -80,13 +79,14 @@ export default {
       .setColor('Random')
       .setDescription(`**${message.author.username}** ${randomAction.action}`)
       .setFooter({
-        text: `Requested by ${message.author.tag} | Gif: gifdb`
+        text: `Requested by ${message.author.tag}`
       })
       .setImage(randomAction.gifUrl); // Set the corresponding GIF for the action
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
     }

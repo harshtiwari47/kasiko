@@ -4,7 +4,7 @@ import {
 
 export default {
   name: "current",
-  description: "Check your current dragon, powers, and health while a match is active.",
+  description: "Check your current dragon, powers, and health while a **Skyraid** match is active.",
   aliases: ["matchinfo"],
   args: "",
   example: ["current"],

@@ -567,6 +567,7 @@ export default {
     "roses <amount> <@user>",
     // Send roses to a user
   ],
+  emoji: "💍",
   related: ["marriage",
     "marry",
     "divorce",

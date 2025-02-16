@@ -12,7 +12,7 @@ export default {
   description: "Test the love score between two users!",
   aliases: ["love",
     "match"],
-  cooldown: 3000,
+  cooldown: 10000,
   category: "🧩 Fun",
 
   execute: async (args, message) => {
@@ -25,7 +25,7 @@ export default {
       // Make sure we're in a guild channel
       // Ensure we're in a guild channel
       if (!message.guild) {
-        return message.reply("This command can only be used in servers.");
+        return message.reply("This command can only be used in servers.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const allMembers = await message.guild.members.fetch();
@@ -34,7 +34,7 @@ export default {
         if (!allMembers || allMembers.size <= 1) {
           return message.reply(
             "Not enough members to perform `ship random`. At least 2 members are required!"
-          );
+          ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -69,7 +69,7 @@ export default {
       else {
         return message.reply(
           "Please mention one/two users or use `ship random` (in a server with enough members) to test a love score!"
-        );
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // 2) Calculate a stable love score based on user IDs (so it doesn't change)
@@ -149,11 +149,7 @@ export default {
       });
     } catch (e) {
       console.error(e);
-      try {
-        await message.channel.send("❗Something went wrong while shipping. Maybe there's an error caused while loading your PFP!");
-      } catch (err) {
-        console.error(err);
-      }
+      return message.channel.send("❗Something went wrong while shipping. Maybe there's an error caused while loading your PFP!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

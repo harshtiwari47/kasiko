@@ -17,7 +17,7 @@ const slashCommands = new Collection(); // Store all loaded slash commands
 /**
 * Load and register slash commands from the specified directory
 */
-const loadSlashCommands = async (directory, clientId, token) => {
+const loadSlashCommands = async (directory, clientId, token, client) => {
   const commands = []; // To register commands globally
   const categories = await fs.promises.readdir(directory);
 
@@ -50,7 +50,10 @@ const loadSlashCommands = async (directory, clientId, token) => {
   } catch (error) {
     console.error('Error registering slash commands:', error);
   }
+
+  client.commands = slashCommands;
 };
+
 
 /**
 * Handle interaction events for slash commands

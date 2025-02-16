@@ -19,7 +19,7 @@ export async function getRecentNews(channel) {
       createdAt: -1
     }).limit(5);
     if (recentNews.length === 0) {
-      return channel.send("📰 No recent news available at the moment.");
+      return channel.send("📰 No recent news available at the moment.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     let newsList = recentNews
@@ -35,24 +35,26 @@ export async function getRecentNews(channel) {
       return `${index + 1}. ${news.message}\n-#  🗓️ DATE: ${publishDate}`;
     })
     .join('\n\n');
-    
+
     const newsEmbed = new EmbedBuilder()
     .setDescription(`📰 **Top 5 Recent Developer News:**\n\n${newsList}`)
     .setColor("#e0e6ed");
-    
+
     return channel.send({
       embeds: [newsEmbed]
-    })
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } catch (err) {
-    console.error(err);
-    return channel.send("⚠️ An error occurred while fetching the news.");
+    if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
+      console.error(err);
+    }
+    return channel.send("⚠️ An error occurred while fetching the news.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
 export async function createNews(userId, message, channel) {
   try {
     if (!message || message.trim().length === 0) {
-      return channel.send("⚠️ News message cannot be empty.");
+      return channel.send("⚠️ News message cannot be empty.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const newNews = new News( {
@@ -61,10 +63,12 @@ export async function createNews(userId, message, channel) {
     });
     await newNews.save();
 
-    return channel.send(`✅ News created successfully! 📰\n"${message}" has been added to the developer news.`);
+    return channel.send(`✅ News created successfully! 📰\n"${message}" has been added to the developer news.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } catch (err) {
-    console.error(err);
-    return channel.send("⚠️ Failed to create news. Please try again.");
+    if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
+      console.error(err);
+    }
+    return channel.send("⚠️ Failed to create news. Please try again.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -74,6 +78,7 @@ export default {
   aliases: ["newspaper"],
   args: "<list|stocks>",
   example: ["news list"],
+  emoji: "🗞️",
   category: "📰 Information",
   cooldown: 5000,
   // 5 seconds cooldown
@@ -87,18 +92,18 @@ export default {
     } else if (args[1] === "create") {
       // Allow only the developer to create a news entry
       if (message.author.id !== DEVELOPER_ID) {
-        return message.channel.send("⚠️ You are not authorized to use this command.");
+        return message.channel.send("⚠️ You are not authorized to use this command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (args.length < 3) {
-        return message.channel.send("⚠️ Usage: `news create <message>` to create a news article.");
+        return message.channel.send("⚠️ Usage: `news create <message>` to create a news article.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const newsMessage = args.slice(2).join(" ");
       return createNews(message.author.id, newsMessage, message.channel);
     } else {
       // Invalid usage
-      return message.channel.send("⚠️ Invalid subcommand! Use `news list` or `news stocks` to view the latest developer news.");
+      return message.channel.send("⚠️ Invalid subcommand! Use `news list` or `news stocks` to view the latest developer news.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

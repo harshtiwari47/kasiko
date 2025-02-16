@@ -8,7 +8,7 @@ export default {
   aliases: ["tears",
     "sob",
     "sad"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {
@@ -64,13 +64,11 @@ export default {
         })
       })
       .setImage(randomGif) // Set a randomly selected crying GIF
-      .setFooter({
-        text: `giphy`
-      });
 
       await message.channel.send({
         embeds: [embed]
-      });
+      })
+      return;
     } catch (e) {
       console.error(e);
     }

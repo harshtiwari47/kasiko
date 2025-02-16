@@ -85,7 +85,7 @@ export default {
       // Reply with the embed
       await message.reply({
         embeds: [embed],
-      });
+      })
     } catch (e) {
       console.error(e);
     }

@@ -12,6 +12,8 @@ export async function dailylogin(message) {
 
     const userData = await getUserData(message.author.id);
 
+    if (!userData) return;
+
     if (userData && userData.dailyReward && (currentTime - Number(userData.dailyReward)) < nextClaim) {
       // Calculate remaining time
       const timeLeft = nextClaim - (currentTime - Number(userData.dailyReward));
@@ -21,7 +23,7 @@ export async function dailylogin(message) {
       return message.channel.send(
         `💠  Sorry **${message.author.username}**, you have **already claimed** your daily reward for today! 🍹\n\n` +
         `🗯️ ***_Next reward_ in ⏳ ${hours} hours and ${minutes} minutes***. 🎁`
-      );
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (userData) {
       // Calculate the last claim date
       const lastClaimDate = userData.dailyReward ? Number(userData.dailyReward): 0;
@@ -35,11 +37,6 @@ export async function dailylogin(message) {
 
       // Calculate reward amount
       let rewardAmount = 2550 + userData.rewardStreak * 300;
-
-      if (userData.family.spouse) {
-        let additionalReward = 0.25 * rewardAmount;
-        rewardAmount += additionalReward;
-      }
 
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
@@ -66,30 +63,35 @@ export async function dailylogin(message) {
           id: message.author.id,
         })
       }
+
       userPetData.food += 2;
 
-      await userPetData.save();
-
-      // Save the updated user data
-      await updateUser(message.author.id, userData);
+      try {
+        await userPetData.save();
+        // Save the updated user data
+        await updateUser(message.author.id, userData);
+      } catch (updateErr) {
+        await message.channel.send(`ⓘ **${message.author.username}**, an unexpected error occurred while claiming daily reward!\n-# **Error"": ${updateErr}`).catch(console.error);
+        return;
+      }
 
       return message.channel.send(
         `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount}** Cash & 🍖 **2** pet food.\n` +
         `🔥 Streak ~ **${userData.rewardStreak}** day(s).\n` +
         `⏱️ Next reward can be claimed tomorrow.`
-      );
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
       return;
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("Something went wrong while **claiming daily login reward**!");
+    return message.channel.send("Something went wrong while **claiming daily login reward**!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
 export default {
   name: "daily",
-  description: "Claim your daily login reward. Married users can enjoy an additional 0.25 boost to their rewards.",
+  description: "Claim your daily login reward. Pass users receive an additional 0.25x boost to their rewards. Includes a bonus of pet food!",
   aliases: ["dailylogin",
     "dlogin",
     "dr",
@@ -99,6 +101,7 @@ export default {
   related: ["give",
     "cash",
     "profile"],
+  emoji: "⏳",
   cooldown: 86400000,
   category: "🏦 Economy",
 

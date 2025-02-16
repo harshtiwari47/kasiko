@@ -141,6 +141,7 @@ export default {
     // leaderboard
     "ice daily" // Claim your daily bonus
   ],
+  emoji: "🍧",
   related: ["stat",
     "profile",
     "help",
@@ -165,11 +166,11 @@ export default {
 
       // Command: Create a new shop
       if (args[0] === "create") {
-        if (!args[1]) return message.channel.send("❌ Shop name not found! Please create your ice cream shop first using `icecream create <shopname>`.");
+        if (!args[1]) return message.channel.send("❌ Shop name not found! Please create your ice cream shop first using `icecream create <shopname>`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         const shopName = args[1].substring(0, 15);
 
         if (playerShop) {
-          return message.channel.send(`⚠️🍧 **${message.author.username}**, you already have a shop!`);
+          return message.channel.send(`⚠️🍧 **${message.author.username}**, you already have a shop!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         const newShop = new IceCreamShop( {
@@ -204,10 +205,10 @@ export default {
 
           return message.channel.send({
             embeds: [embed]
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (err) {
           console.error(err);
-          return message.channel.send("There was an issue creating your shop. Please try again.");
+          return message.channel.send("There was an issue creating your shop. Please try again.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -218,7 +219,7 @@ export default {
           `\`ice create <shopname>\`\n\n` +
 
           `*The shop name must be a single word (no spaces) and up to 15 characters long.*\n` +
-          `-# USE: **\`ice help\`** 𝘧𝘰𝘳 𝘮𝘰𝘳𝘦 𝘥𝘦𝘵𝘢𝘪𝘭𝘴!`);
+          `-# USE: **\`ice help\`** 𝘧𝘰𝘳 𝘮𝘰𝘳𝘦 𝘥𝘦𝘵𝘢𝘪𝘭𝘴!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (message.guild && message.guild.id) {
@@ -255,7 +256,7 @@ export default {
           if (!args[2]) {
             return message.channel.send(
               `⚠️ **${message.author.username}**, please mention the ice cream 🍨 name you want to share with your friend!\n\`icecream share @username <icecream>\``
-            );
+            ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           sharedIceCreamName = capitalizeFirstLetter(args[2].toLowerCase());
@@ -263,12 +264,12 @@ export default {
           if (!playerShop.flavors.some(flavour => flavour.name === sharedIceCreamName && flavour.items > 0)) {
             return message.channel.send(
               `⚠️ **${message.author.username}**, no ice cream 🍨 with this name was found in your collection, or you don't have any left. Please check your collection and try again!`
-            );
+            ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const targetUser = message.mentions.users.first();
           if (!targetUser) {
-            return message.channel.send("👥 Please mention a user to share your ice cream with.");
+            return message.channel.send("👥 Please mention a user to share your ice cream with.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const targetShop = await IceCreamShop.findOne({
@@ -276,7 +277,7 @@ export default {
           });
 
           if (!playerShop || !targetShop) {
-            return message.channel.send("🍦 Both users must own an ice cream shop to share ice cream.\n**Use:** `icecream create <shop name>` to start your shop!\n\n*The shop name must be a single word (no spaces) and up to 15 characters long.*");
+            return message.channel.send("🍦 Both users must own an ice cream shop to share ice cream.\n**Use:** `icecream create <shop name>` to start your shop!\n\n*The shop name must be a single word (no spaces) and up to 15 characters long.*").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const sharedIceCream = flavors.find(flavour => flavour.name === sharedIceCreamName);
@@ -285,7 +286,7 @@ export default {
           if (targetShop.shopLevel < sharedIceCream.level) {
             return message.channel.send(
               `⚠️ **${message.author.username}**, your friend's shop level is too low to receive this ice cream 🍨. Encourage them to level up their shop and try again!`
-            );
+            ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           if (targetIceCream) {
@@ -328,10 +329,10 @@ export default {
 
           return message.channel.send({
             embeds: [shareEmbed]
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (e) {
           console.error(e);
-          return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while sharing ice cream 🍯!`)
+          return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while sharing ice cream 🍯!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -342,7 +343,7 @@ export default {
 
         return message.channel.send({
           embeds: [embed2]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (args[0] === "flavours" || args[0] === "flavour") {
@@ -352,7 +353,7 @@ export default {
 
         return message.channel.send({
           embeds: [embed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Command: Create a new flavor for your shop
@@ -371,19 +372,19 @@ export default {
         if (upgradeType === "machine") {
           upgradeCost = 200 * playerShop.shopLevel;
           if (playerShop.money < upgradeCost) {
-            return message.channel.send(`💸 **${message.author.username}**, you don't have enough cash to upgrade your machine (Cost: <:creamcash:1309495440030302282> ${upgradeCost} cash).`);
+            return message.channel.send(`💸 **${message.author.username}**, you don't have enough cash to upgrade your machine (Cost: <:creamcash:1309495440030302282> ${upgradeCost} cash).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
           playerShop.shopLevel += 1;
           upgradeMessage = "machine";
         } else if (upgradeType === "layout") {
           upgradeRoyaltyCost = 200 * playerShop.shopLayout * playerShop.shopLayout/2;
           if (playerShop.loyaltyPoints < upgradeRoyaltyCost) {
-            return message.channel.send(`💸 **${message.author.username}**, don't have enough ✪⁠ loyalty points to upgrade your layout (Cost: ✪⁠ 150 points).`);
+            return message.channel.send(`💸 **${message.author.username}**, don't have enough ✪⁠ loyalty points to upgrade your layout (Cost: ✪⁠ 150 points).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
           playerShop.shopLayout += 1;
           upgradeMessage = "layout";
         } else {
-          return message.channel.send("❌ Invalid upgrade type! Use `ice upgrade machine` or `ice upgrade layout`.");
+          return message.channel.send("❌ Invalid upgrade type! Use `ice upgrade machine` or `ice upgrade layout`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         playerShop.money -= upgradeCost;
@@ -408,7 +409,7 @@ export default {
 
         return message.channel.send({
           embeds: [upgradeEmbed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Command: Layout
@@ -421,7 +422,7 @@ export default {
           if (level > 2 || level < 0) {
             return message.channel.send(
               `⚠️ Currently, only the up to \`level 2\` layout is available!`
-            );
+            ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const embed = new EmbedBuilder()
@@ -434,11 +435,11 @@ export default {
 
           return message.channel.send({
             embeds: [embed]
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
           return message.channel.send(
             `⚠️ **${message.author.username}**, please provide a valid level (1-2) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
-          );
+          ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -448,7 +449,7 @@ export default {
           let amount = parseInt(args[1]);
 
           if (playerShop.loyaltyPoints < amount) {
-            return message.channel.send(`⚠️ **${message.author.username}**, your shop doesn't have ✪⁠ ${amount} loyalty points.`);
+            return message.channel.send(`⚠️ **${message.author.username}**, your shop doesn't have ✪⁠ ${amount} loyalty points.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const user = await User.findOne({
@@ -456,7 +457,7 @@ export default {
           });
 
           if (!user) {
-            return message.channel.send(`⚠️ **${message.author.username}**, your account doesn't exist in Kasiko.`);
+            return message.channel.send(`⚠️ **${message.author.username}**, your account doesn't exist in Kasiko.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           user.cash += amount * 50;
@@ -465,9 +466,9 @@ export default {
           await updateUser(userId, user);
           await playerShop.save();
 
-          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount * 50).toLocaleString()} cash!`);
+          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount * 50).toLocaleString()} cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(`⚠️ **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``);
+          return message.channel.send(`⚠️ **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -482,7 +483,7 @@ export default {
 
         const timeElapsed = Date.now() - playerShop.lastVisit;
         if (timeElapsed < 86400000 && playerShop.dailyBonusClaimed) {
-          return message.channel.send(`🕒 **${message.author.username}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`);
+          return message.channel.send(`🕒 **${message.author.username}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         const userData = await getUserData(message.author.id);
@@ -526,7 +527,7 @@ export default {
 
           return suspenseMessage.edit({
             embeds: [bonusEmbed], content: null
-          });
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         },
           2000); // Adding suspense with a 2-second delay
       }
@@ -535,16 +536,17 @@ export default {
       if (args[0] === "help") {
         return message.channel.send({
           embeds: [helpEmbed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (!args[0] || args[0] === "status" || args[0] === "shop") {
-        return await playerShopInfo(playerShop, flavors, message.author.id, message.author.username, message.channel);
+        await playerShopInfo(playerShop, flavors, message.author.id, message.author.username, message.channel);
+        return;
       }
 
     } catch (e) {
       console.error(e);
-      return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while executing the ice cream shop command! 🍧🍯`);
+      return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while executing the ice cream shop command! 🍧🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

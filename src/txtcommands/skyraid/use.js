@@ -9,7 +9,7 @@ import {
 */
 export default {
   name: 'use',
-  description: 'Use a dragon ability during the battle.',
+  description: 'Use a dragon ability during the **Skyraid** battle.',
   aliases: [],
   args: '<power>',
   usage: 'use <p1|p2>',

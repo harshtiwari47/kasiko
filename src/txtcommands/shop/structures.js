@@ -569,6 +569,7 @@ export default {
     // View structures of a mentioned user
     "structures <id>" // View details of a specific structure by ID
   ],
+  emoji: "🏠",
   related: ["shop",
     "properties",
     "market"],
