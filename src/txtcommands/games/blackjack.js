@@ -238,7 +238,7 @@ export async function blackjack(id, amount, channel) {
       });
   } catch (error) {
     if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
-      console.error(e);
+      console.error(error);
     }
     await channel.send(`ⓘ Oops! Something went wrong during the Blackjack game.\n**Error**: ${error.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     return;

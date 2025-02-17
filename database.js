@@ -207,109 +207,104 @@ export const userExists = async (userId) => {
 * @returns {Promise<Mongoose.Document>} The updated user document.
 */
 export const updateUser = async (userId, userData, guildId = null) => {
-  let session;
+  // Start a session for our transaction.
+  const session = await mongoose.startSession();
+
   try {
-
-    if (!userData || typeof userData !== 'object') {
-      throw new Error('No valid user data provided for update.');
-    }
-
-    // Determine if userData is a Mongoose document.
-    // (Mongoose documents have a modifiedPaths() function.)
-    const isMongooseDoc = typeof userData.modifiedPaths === 'function';
-
-    // Build the "updates" object from the input.
-    let updates = {};
-
-    if (isMongooseDoc) {
-      // For a Mongoose doc, check if it’s been modified at all.
-      if (!userData.isModified()) {
-        // Nothing to update; return the document as-is.
-        return userData;
+    // Execute our operations in a transaction with built-in retry logic.
+    const result = await session.withTransaction(async () => {
+      if (!userData || typeof userData !== 'object') {
+        throw new Error('No valid user data provided for update.');
       }
-      // Collect only the modified fields.
-      userData.modifiedPaths().forEach((path) => {
-        updates[path] = userData[path];
-      });
-    } else {
-      // For a plain object, assume the whole object is meant for updating.
-      updates = {
-        ...userData
+
+      // Build the updates object.
+      let updates = {};
+      const isMongooseDoc = typeof userData.modifiedPaths === 'function';
+
+      if (isMongooseDoc) {
+        // If it’s a Mongoose document and nothing was modified, return it as-is.
+        if (!userData.isModified()) {
+          return userData;
+        }
+        // Otherwise, only include modified fields.
+        userData.modifiedPaths().forEach((path) => {
+          updates[path] = userData[path];
+        });
+      } else {
+        // For plain objects, assume all fields should be updated.
+        updates = {
+          ...userData
+        };
+      }
+
+      // Optionally recalc the net worth.
+      const newNetWorth = await updateNetWorth(userId);
+      if (newNetWorth && newNetWorth > 0) {
+        updates.networth = newNetWorth;
+      }
+
+      // Ensure cash and networth are rounded and not negative.
+      if (updates.hasOwnProperty('cash')) {
+        updates.cash = Math.max(Number(parseFloat(updates.cash).toFixed(1)), 0);
+      }
+      if (updates.hasOwnProperty('networth')) {
+        updates.networth = Math.max(Number(parseFloat(updates.networth).toFixed(1)), 0);
+      }
+
+      // If a guildId is provided, upsert the UserGuild record.
+      if (guildId) {
+        await UserGuild.findOneAndUpdate(
+          {
+            userId, guildId
+          },
+          {}, // No field changes; just ensuring the record exists.
+          {
+            upsert: true, setDefaultsOnInsert: true, new: true, session
+          }
+        );
+      }
+
+      // Atomically update the User document.
+      const filter = {
+        id: userId
       };
-    }
-
-    // (Optionally) recalc the net worth.
-    const newNetWorth = await updateNetWorth(userId);
-    if (newNetWorth && newNetWorth > 0) {
-      updates.networth = newNetWorth;
-    }
-
-    // Ensure cash and networth are rounded and not negative.
-    if (updates.hasOwnProperty('cash')) {
-      updates.cash = Math.max(Number(parseFloat(updates.cash).toFixed(1)), 0);
-    }
-    if (updates.hasOwnProperty('networth')) {
-      updates.networth = Math.max(Number(parseFloat(updates.networth).toFixed(1)), 0);
-    }
-
-    // If a guildId is provided, update (or upsert) the UserGuild record.
-    if (guildId) {
-      await UserGuild.findOneAndUpdate(
+      const updatedUser = await User.findOneAndUpdate(
+        filter,
         {
-          userId, guildId
+          $set: updates
         },
-        {}, // No field changes; just ensuring the record exists.
         {
-          upsert: true, setDefaultsOnInsert: true, new: true
+          new: true, session
         }
       );
-    }
 
-    // Begin a session for a transaction across collections
-    session = await mongoose.startSession();
-    session.startTransaction();
-
-    // Determine which identifier to use when updating the User.
-    const filter = {
-      id: userId
-    };
-
-    // Perform an atomic update using $set. The { new: true } option returns the updated document.
-    const updatedUser = await User.findOneAndUpdate(
-      filter,
-      {
-        $set: updates
-      },
-      {
-        new: true, session
+      if (!updatedUser) {
+        throw new Error('User not found for update.');
       }
-    );
 
-    if (!updatedUser) {
-      throw new Error('User not found for update.');
-    }
+      // Return the updated document; this will be the result of the transaction.
+      return updatedUser;
+    },
+      {
+        readPreference: 'primary'
+      }); // You can add additional options if needed
 
-    // Commit the transaction.
-    await session.commitTransaction();
-    session.endSession();
-
-    // Update Redis cache asynchronously (fire-and-forget).
+    // Outside the transaction: update the Redis cache asynchronously.
     redisClient
-    .set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
-      EX: 60
-    })
+    .set(`user:${userId}`,
+      JSON.stringify(result.toObject()),
+      {
+        EX: 60
+      })
     .catch((err) => console.error('Redis cache update error:', err));
 
-
-    return updatedUser;
+    return result;
   } catch (error) {
-    // Abort the transaction if needed.
-    if (session) {
-      await session.abortTransaction();
-      session.endSession();
-    }
-    console.error('Error updating user:', error);
+    console.error('Error updating user:',
+      error);
     throw error;
+  } finally {
+    session.endSession();
   }
 };
 
