@@ -25,21 +25,6 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
       return channel.send(`ⓘ  **${guild.user.username}**, you or your teammate doesn't have enough cash for a bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
-    // Deduct the bet amount
-    userData.cash -= amount;
-    if (teammateData) teammateData.cash -= amount;
-
-    // Save the updated cash to the database
-    userData = await updateUser(id, {
-      cash: userData.cash
-    });
-
-    if (teammateData) {
-      teammateData = await updateUser(teammateId, {
-        cash: teammateData.cash
-      });
-    }
-
     let gameMessage;
 
     if (teammateData) {
@@ -92,16 +77,6 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
       collector.on("end",
         async (collected, reason) => {
           if (teammateData && reason !== "opponent_joined") {
-            userData.cash += amount;
-            if (teammateData) teammateData.cash += amount;
-            // Save the updated cash to the database
-            await updateUser(id, {
-              cash: userData.cash
-            });
-            if (teammateData) await updateUser(teammateId, {
-              cash: teammateData.cash
-            });
-
             return channel.send(`⏱️ No one joined the race. The game has been canceled, and your bet has been refunded.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         });
@@ -125,6 +100,24 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
     const suspenseMessage = await channel.send(
       `🏁 The race is about to begin!\n`
     );
+
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    await delay(2000);
+
+    // Deduct the bet amount
+    userData.cash -= amount;
+    if (teammateData) teammateData.cash -= amount;
+
+    // Save the updated cash to the database
+    userData = await updateUser(id, {
+      cash: userData.cash
+    });
+
+    if (teammateData) {
+      teammateData = await updateUser(teammateId, {
+        cash: teammateData.cash
+      });
+    }
 
     // Race details
     const horse1 = "<a:runningHorse:1326785483866374265>";
