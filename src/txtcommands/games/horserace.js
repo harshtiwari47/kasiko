@@ -109,7 +109,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
     if (teammateData) teammateData.cash -= amount;
 
     // Save the updated cash to the database
-    userData = await updateUser(id, {
+    userData = await updateUser(userId, {
       cash: userData.cash
     });
 
