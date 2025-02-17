@@ -71,7 +71,7 @@ export async function work(id, channel) {
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
-    if (!userData || guild) {
+    if (!userData || !guild) {
       return workMessage = ("Oops! Something went wrong while working 💼!");
     }
 
