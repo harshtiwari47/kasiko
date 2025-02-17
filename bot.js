@@ -237,9 +237,9 @@ client.on('messageCreate', async (message) => {
           const warning = await message.channel.send(
             `⏱️ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
           );
+          setTimeout(() => warning.delete().catch(() => {}), 5000);
+          return;
         } catch (errMsg) {}
-        setTimeout(() => warning.delete().catch(() => {}), 5000);
-        return;
       }
 
       // Reset violation counter on successful command

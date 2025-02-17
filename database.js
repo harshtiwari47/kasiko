@@ -210,7 +210,6 @@ export const updateUser = async (userId, userData, guildId = null) => {
   let session;
   try {
 
-    const start = performance.now();
     if (!userData || typeof userData !== 'object') {
       throw new Error('No valid user data provided for update.');
     }
@@ -302,9 +301,6 @@ export const updateUser = async (userId, userData, guildId = null) => {
     .catch((err) => console.error('Redis cache update error:', err));
 
 
-    const end = performance.now();
-
-    console.log(end-start)
     return updatedUser;
   } catch (error) {
     // Abort the transaction if needed.
