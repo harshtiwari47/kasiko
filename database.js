@@ -207,37 +207,40 @@ export const userExists = async (userId) => {
 * @returns {Promise<Mongoose.Document>} The updated user document.
 */
 export const updateUser = async (userId, userData, guildId = null) => {
-  // Start a session for our transaction.
-  const session = await mongoose.startSession();
+  const maxRetries = 3;
+  let attempt = 0;
 
-  try {
-    // Execute our operations in a transaction with built-in retry logic.
-    const result = await session.withTransaction(async () => {
+  while (attempt < maxRetries) {
+    let session;
+    try {
+      attempt++;
+
       if (!userData || typeof userData !== 'object') {
         throw new Error('No valid user data provided for update.');
       }
 
-      // Build the updates object.
-      let updates = {};
+      // Determine if userData is a Mongoose document.
       const isMongooseDoc = typeof userData.modifiedPaths === 'function';
 
+      // Build the "updates" object.
+      let updates = {};
       if (isMongooseDoc) {
-        // If it’s a Mongoose document and nothing was modified, return it as-is.
+        // If nothing was modified, return the document.
         if (!userData.isModified()) {
           return userData;
         }
-        // Otherwise, only include modified fields.
+        // Only collect modified fields.
         userData.modifiedPaths().forEach((path) => {
           updates[path] = userData[path];
         });
       } else {
-        // For plain objects, assume all fields should be updated.
+        // For a plain object, assume the whole object is for updating.
         updates = {
           ...userData
         };
       }
 
-      // Optionally recalc the net worth.
+      // Optionally recalc net worth.
       const newNetWorth = await updateNetWorth(userId);
       if (newNetWorth && newNetWorth > 0) {
         updates.networth = newNetWorth;
@@ -257,17 +260,23 @@ export const updateUser = async (userId, userData, guildId = null) => {
           {
             userId, guildId
           },
-          {}, // No field changes; just ensuring the record exists.
+          {},
           {
-            upsert: true, setDefaultsOnInsert: true, new: true, session
+            upsert: true, setDefaultsOnInsert: true, new: true
           }
         );
       }
 
-      // Atomically update the User document.
+      // Begin a session and start a transaction.
+      session = await mongoose.startSession();
+      session.startTransaction();
+
+      // Determine which identifier to use when updating the User.
       const filter = {
         id: userId
       };
+
+      // Perform an atomic update using $set.
       const updatedUser = await User.findOneAndUpdate(
         filter,
         {
@@ -282,29 +291,34 @@ export const updateUser = async (userId, userData, guildId = null) => {
         throw new Error('User not found for update.');
       }
 
-      // Return the updated document; this will be the result of the transaction.
-      return updatedUser;
-    },
-      {
-        readPreference: 'primary'
-      }); // You can add additional options if needed
+      // Commit the transaction.
+      await session.commitTransaction();
+      session.endSession();
 
-    // Outside the transaction: update the Redis cache asynchronously.
-    redisClient
-    .set(`user:${userId}`,
-      JSON.stringify(result.toObject()),
-      {
+      // Update Redis cache asynchronously (fire-and-forget).
+      redisClient
+      .set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
         EX: 60
       })
-    .catch((err) => console.error('Redis cache update error:', err));
+      .catch((err) => console.error('Redis cache update error:', err));
 
-    return result;
-  } catch (error) {
-    console.error('Error updating user:',
-      error);
-    throw error;
-  } finally {
-    session.endSession();
+      return updatedUser;
+    } catch (error) {
+      // If a session was started, abort the transaction and end the session.
+      if (session) {
+        await session.abortTransaction();
+        session.endSession();
+      }
+
+      // If we've reached the maximum retry count, log and throw the error.
+      if (attempt >= maxRetries) {
+        console.error(`Error updating user after ${attempt} attempts:`, error);
+        throw error;
+      }
+
+      // Optionally wait before retrying (e.g., 1 second delay).
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
   }
 };
 
