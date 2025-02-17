@@ -278,7 +278,7 @@ export const Bank = {
           try {
             await updateUser(userId, {
               cash: userData.cash,
-              'userData.bankAccount.open': true
+              'bankAccount.open': true
             });
             isOpened = true;
           } catch (error) {

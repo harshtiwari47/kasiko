@@ -20,6 +20,7 @@ export default {
         "Here are some important links and guidelines for using the bot:\n\n" +
         "**Important Links**:\n" +
         "[Terms and Conditions](https://kasiko-bot.vercel.app/terms.html) | " +
+        "[Policy](https://kasiko-bot.vercel.app/privacy.html) | " +
         "[Support](https://kasiko-bot.vercel.app/contact.html)"
       )
       .setColor(0x00AE86);
