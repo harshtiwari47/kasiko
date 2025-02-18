@@ -116,7 +116,8 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
             try {
               await updateUser(userId, {
-                cash: userData.cash
+                cash: userData.cash,
+                lastRobbery: userData.lastRobbery
               });
               await updateUser(targetUserId, {
                 cash: targetData.cash
@@ -162,7 +163,8 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
             try {
               await updateUser(userId, {
-                cash: userData.cash
+                cash: userData.cash,
+                lastRobbery: userData.lastRobbery
               });
               await updateUser(targetUserId, {
                 cash: targetData.cash
@@ -205,7 +207,8 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
           try {
             await updateUser(userId, {
-              cash: userData.cash
+              cash: userData.cash,
+              lastRobbery: userData.lastRobbery
             });
             await updateUser(targetUserId, {
               cash: targetData.cash
@@ -247,7 +250,8 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
           try {
             await updateUser(userId, {
-              cash: userData.cash
+              cash: userData.cash,
+              lastRobbery: userData.lastRobbery
             });
             await updateUser(targetUserId, {
               cash: targetData.cash

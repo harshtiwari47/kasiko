@@ -54,11 +54,11 @@ export const Bank = {
       try {
         await updateUser(userId, {
           cash: Math.max(0, userData.cash - Number(amount)),
-          'bankAccount.deposit': newDeposit
+          'bankAccount.deposit': Math.abs(newDeposit)
         });
 
         return message.channel.send(
-          `🏦 **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**\n⤿ **Remaining Cash**: <:kasiko_coin:1300141236841086977> **${Math.abs(userData.cash - amount).toLocaleString()}**`
+          `🏦 **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**\n⤿ **Remaining Cash**: <:kasiko_coin:1300141236841086977> **${Math.abs(userData.cash).toLocaleString()}**`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       } catch (err) {
         console.error(`❌ Error updating bank details for ${message.author.username}:`, err);
