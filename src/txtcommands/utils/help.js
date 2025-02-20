@@ -188,7 +188,7 @@ export default {
 
         let response = `${command.emoji ? command.emoji + " ⤿ ": "⌘ ⤿ "}**${command.name}**\n`;
         response += `-# ${command.description}\n`;
-        if (command.aliases) response += `\n✦ **𝗔𝗟𝗜𝗔𝗦𝗘𝗦:**\`\`\`${command.aliases.join(', ')}\`\`\`\n`;
+        if (command.aliases.length) response += `\n✦ **𝗔𝗟𝗜𝗔𝗦𝗘𝗦:**\`\`\`${command.aliases.join(', ')}\`\`\`\n`;
         if (command.args) response += `⚡︎ **𝗨𝗦𝗔𝗚𝗘:**\`\`\`${command.name} ${command.args}\`\`\`\n`;
         if (command.example && command.example.length > 0) {
           response += `⚘ **𝗘𝗫𝗔𝗠𝗣𝗟𝗘𝗦:**\n${command.example.map(ex => `- ${ex}`).join('\n')}\n`;

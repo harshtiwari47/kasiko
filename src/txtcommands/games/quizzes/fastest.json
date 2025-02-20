@@ -1,0 +1,1172 @@
+[{
+  "question": "What is the capital of France?",
+  "answer": "Paris"
+},
+  {
+    "question": "What is the largest planet in our solar system?",
+    "answer": "Jupiter"
+  },
+  {
+    "question": "What is the largest country by area?",
+    "answer": "Russia"
+  },
+  {
+    "question": "What is the smallest country in the world?",
+    "answer": "Vatican City"
+  },
+  {
+    "question": "What is the longest river in the world?",
+    "answer": "Nile"
+  },
+  {
+    "question": "What is the highest mountain in the world?",
+    "answer": "Mount Everest"
+  },
+  {
+    "question": "Which continent is known as the Dark Continent?",
+    "answer": "Africa"
+  },
+  {
+    "question": "Which country has the most population?",
+    "answer": "China"
+  },
+  {
+    "question": "What is the capital of Japan?",
+    "answer": "Tokyo"
+  },
+  {
+    "question": "What is the capital of Australia?",
+    "answer": "Canberra"
+  },
+  {
+    "question": "What is the largest desert in the world?",
+    "answer": "Sahara"
+  },
+  {
+    "question": "Which ocean is the largest?",
+    "answer": "Pacific"
+  },
+  {
+    "question": "Which ocean is the smallest?",
+    "answer": "Arctic"
+  },
+  {
+    "question": "What is the capital of Italy?",
+    "answer": "Rome"
+  },
+  {
+    "question": "What is the capital of Spain?",
+    "answer": "Madrid"
+  },
+  {
+    "question": "What is the capital of Germany?",
+    "answer": "Berlin"
+  },
+  {
+    "question": "What is the capital of Canada?",
+    "answer": "Ottawa"
+  },
+  {
+    "question": "What is the capital of Brazil?",
+    "answer": "Brasilia"
+  },
+  {
+    "question": "What is the capital of India?",
+    "answer": "New Delhi"
+  },
+  {
+    "question": "What is the capital of Russia?",
+    "answer": "Moscow"
+  },
+  {
+    "question": "What is the capital of China?",
+    "answer": "Beijing"
+  },
+  {
+    "question": "Which continent is known as the birthplace of Western civilization?",
+    "answer": "Europe"
+  },
+  {
+    "question": "What is the largest lake in the world by area?",
+    "answer": "Caspian Sea"
+  },
+  {
+    "question": "What is the largest island in the world?",
+    "answer": "Greenland"
+  },
+  {
+    "question": "What is the official language of Brazil?",
+    "answer": "Portuguese"
+  },
+  {
+    "question": "What is the currency of the United Kingdom?",
+    "answer": "Pound sterling"
+  },
+  {
+    "question": "Which country is known as the Land of the Rising Sun?",
+    "answer": "Japan"
+  },
+  {
+    "question": "What is the capital of Egypt?",
+    "answer": "Cairo"
+  },
+  {
+    "question": "What country has the largest number of time zones?",
+    "answer": "France"
+  },
+  {
+    "question": "Which continent has the most countries?",
+    "answer": "Africa"
+  },
+  {
+    "question": "What is the capital of South Korea?",
+    "answer": "Seoul"
+  },
+  {
+    "question": "Who was the first President of the United States?",
+    "answer": "George Washington"
+  },
+  {
+    "question": "In which year did World War II end?",
+    "answer": "1945"
+  },
+  {
+    "question": "Who discovered America?",
+    "answer": "Christopher Columbus"
+  },
+  {
+    "question": "Who was the first man to walk on the Moon?",
+    "answer": "Neil Armstrong"
+  },
+  {
+    "question": "Which ancient civilization built the pyramids?",
+    "answer": "Egyptians"
+  },
+  {
+    "question": "Who wrote the Declaration of Independence?",
+    "answer": "Thomas Jefferson"
+  },
+  {
+    "question": "Who was known as the Maid of Orléans?",
+    "answer": "Joan of Arc"
+  },
+  {
+    "question": "Which war was fought between the North and South in the United States?",
+    "answer": "Civil War"
+  },
+  {
+    "question": "Who was the British Prime Minister during most of World War II?",
+    "answer": "Winston Churchill"
+  },
+  {
+    "question": "What ancient empire was ruled by Julius Caesar?",
+    "answer": "Roman Empire"
+  },
+  {
+    "question": "Who was the first Emperor of Rome?",
+    "answer": "Augustus"
+  },
+  {
+    "question": "Which country was formerly known as Persia?",
+    "answer": "Iran"
+  },
+  {
+    "question": "Who invented the printing press?",
+    "answer": "Johannes Gutenberg"
+  },
+  {
+    "question": "In which year did the Berlin Wall fall?",
+    "answer": "1989"
+  },
+  {
+    "question": "Who was the leader of the Soviet Union during World War II?",
+    "answer": "Joseph Stalin"
+  },
+  {
+    "question": "Which battle is considered a turning point in the American Revolutionary War?",
+    "answer": "Battle of Saratoga"
+  },
+  {
+    "question": "Who was the founder of the Mongol Empire?",
+    "answer": "Genghis Khan"
+  },
+  {
+    "question": "Which war was known as 'The Great War'?",
+    "answer": "World War I"
+  },
+  {
+    "question": "Who was the first female Prime Minister of the United Kingdom?",
+    "answer": "Margaret Thatcher"
+  },
+  {
+    "question": "Which country was divided by the Iron Curtain?",
+    "answer": "Germany"
+  },
+  {
+    "question": "Who painted the Mona Lisa?",
+    "answer": "Leonardo da Vinci"
+  },
+  {
+    "question": "What was the name of the ship on which the Pilgrims traveled to America?",
+    "answer": "Mayflower"
+  },
+  {
+    "question": "Who wrote 'Romeo and Juliet'?",
+    "answer": "William Shakespeare"
+  },
+  {
+    "question": "Which empire was known as the 'Sun Never Sets' empire?",
+    "answer": "British Empire"
+  },
+  {
+    "question": "Who was the leader of the Indian independence movement?",
+    "answer": "Mahatma Gandhi"
+  },
+  {
+    "question": "In which year did the Titanic sink?",
+    "answer": "1912"
+  },
+  {
+    "question": "Who was the ancient Greek god of war?",
+    "answer": "Ares"
+  },
+  {
+    "question": "Which ancient philosopher taught Plato?",
+    "answer": "Socrates"
+  },
+  {
+    "question": "Who was the first Emperor of China?",
+    "answer": "Qin Shi Huang"
+  },
+  {
+    "question": "Which war was fought from 1950 to 1953?",
+    "answer": "Korean War"
+  },
+  {
+    "question": "What is the chemical symbol for water?",
+    "answer": "H2O"
+  },
+  {
+    "question": "What planet is known as the Red Planet?",
+    "answer": "Mars"
+  },
+  {
+    "question": "What is the speed of light?",
+    "answer": "299,792 km/s"
+  },
+  {
+    "question": "What gas do plants absorb from the atmosphere?",
+    "answer": "Carbon dioxide"
+  },
+  {
+    "question": "What is the hardest natural substance on Earth?",
+    "answer": "Diamond"
+  },
+  {
+    "question": "What is the center of an atom called?",
+    "answer": "Nucleus"
+  },
+  {
+    "question": "What force keeps us on the ground?",
+    "answer": "Gravity"
+  },
+  {
+    "question": "What is the boiling point of water in Celsius?",
+    "answer": "100"
+  },
+  {
+    "question": "What is the process by which plants make food?",
+    "answer": "Photosynthesis"
+  },
+  {
+    "question": "What is the most abundant gas in the Earth's atmosphere?",
+    "answer": "Nitrogen"
+  },
+  {
+    "question": "What part of the cell contains genetic material?",
+    "answer": "Nucleus"
+  },
+  {
+    "question": "What planet is the hottest in our solar system?",
+    "answer": "Venus"
+  },
+  {
+    "question": "What is the chemical symbol for gold?",
+    "answer": "Au"
+  },
+  {
+    "question": "What is the chemical symbol for iron?",
+    "answer": "Fe"
+  },
+  {
+    "question": "What is the largest organ in the human body?",
+    "answer": "Skin"
+  },
+  {
+    "question": "What is the process by which a liquid turns into a gas?",
+    "answer": "Evaporation"
+  },
+  {
+    "question": "What organ pumps blood through the body?",
+    "answer": "Heart"
+  },
+  {
+    "question": "What is the study of living organisms called?",
+    "answer": "Biology"
+  },
+  {
+    "question": "What planet is known for its rings?",
+    "answer": "Saturn"
+  },
+  {
+    "question": "What is the chemical formula for table salt?",
+    "answer": "NaCl"
+  },
+  {
+    "question": "What is the center of our solar system?",
+    "answer": "Sun"
+  },
+  {
+    "question": "What is the process by which rocks are broken down by weather?",
+    "answer": "Erosion"
+  },
+  {
+    "question": "What force opposes motion between two surfaces in contact?",
+    "answer": "Friction"
+  },
+  {
+    "question": "What is the most common element in the universe?",
+    "answer": "Hydrogen"
+  },
+  {
+    "question": "What device is used to measure temperature?",
+    "answer": "Thermometer"
+  },
+  {
+    "question": "What is the main source of energy for Earth?",
+    "answer": "Sunlight"
+  },
+  {
+    "question": "What is the study of the universe called?",
+    "answer": "Astronomy"
+  },
+  {
+    "question": "What kind of energy is stored in food?",
+    "answer": "Chemical energy"
+  },
+  {
+    "question": "What is the process of cell division called?",
+    "answer": "Mitosis"
+  },
+  {
+    "question": "What is the smallest unit of life?",
+    "answer": "Cell"
+  },
+  {
+    "question": "Who is known as the King of Pop?",
+    "answer": "Michael Jackson"
+  },
+  {
+    "question": "Which movie features the character 'Darth Vader'?",
+    "answer": "Star Wars"
+  },
+  {
+    "question": "What is the highest-grossing film of all time?",
+    "answer": "Avatar"
+  },
+  {
+    "question": "Which superhero is known as the Dark Knight?",
+    "answer": "Batman"
+  },
+  {
+    "question": "Who wrote the Harry Potter series?",
+    "answer": "J.K. Rowling"
+  },
+  {
+    "question": "Which planet is home to Superman?",
+    "answer": "Krypton"
+  },
+  {
+    "question": "Who is the creator of Mickey Mouse?",
+    "answer": "Walt Disney"
+  },
+  {
+    "question": "What is the name of the fictional wizarding school in Harry Potter?",
+    "answer": "Hogwarts"
+  },
+  {
+    "question": "Which actor played Jack in 'Titanic'?",
+    "answer": "Leonardo DiCaprio"
+  },
+  {
+    "question": "What is the title of the first James Bond film?",
+    "answer": "Dr. No"
+  },
+  {
+    "question": "What is the capital of Argentina?",
+    "answer": "Buenos Aires"
+  },
+  {
+    "question": "What is the largest continent by land area?",
+    "answer": "Asia"
+  },
+  {
+    "question": "What is the capital of Indonesia?",
+    "answer": "Jakarta"
+  },
+  {
+    "question": "What is the capital of Colombia?",
+    "answer": "Bogotá"
+  },
+  {
+    "question": "What is the largest river in Europe?",
+    "answer": "Volga"
+  },
+  {
+    "question": "What is the capital of Sweden?",
+    "answer": "Stockholm"
+  },
+  {
+    "question": "What is the capital of Norway?",
+    "answer": "Oslo"
+  },
+  {
+    "question": "What is the largest island in the Mediterranean Sea?",
+    "answer": "Sicily"
+  },
+  {
+    "question": "What is the capital of Greece?",
+    "answer": "Athens"
+  },
+  {
+    "question": "What is the capital of Poland?",
+    "answer": "Warsaw"
+  },
+  {
+    "question": "What is the largest bay in the world?",
+    "answer": "Bay of Bengal"
+  },
+  {
+    "question": "What is the capital of Saudi Arabia?",
+    "answer": "Riyadh"
+  },
+  {
+    "question": "What is the highest waterfall in the world?",
+    "answer": "Angel Falls"
+  },
+  {
+    "question": "What is the capital of New Zealand?",
+    "answer": "Wellington"
+  },
+  {
+    "question": "What is the largest peninsula in the world?",
+    "answer": "Arabian Peninsula"
+  },
+  {
+    "question": "Which country is known as the Land of a Thousand Lakes?",
+    "answer": "Finland"
+  },
+  {
+    "question": "What is the capital of Denmark?",
+    "answer": "Copenhagen"
+  },
+  {
+    "question": "What is the largest city in South America?",
+    "answer": "São Paulo"
+  },
+  {
+    "question": "What is the currency used in Japan?",
+    "answer": "Yen"
+  },
+  {
+    "question": "Which country is known as the Land of the Rising Sun?",
+    "answer": "Japan"
+  },
+  {
+    "question": "What is the capital of South Korea?",
+    "answer": "Seoul"
+  },
+  {
+    "question": "What is the capital of Mexico?",
+    "answer": "Mexico City"
+  },
+  {
+    "question": "Who was the first woman to win a Nobel Prize?",
+    "answer": "Marie Curie"
+  },
+  {
+    "question": "Who was the first President of India?",
+    "answer": "Rajendra Prasad"
+  },
+  {
+    "question": "In which year did the American Civil War begin?",
+    "answer": "1861"
+  },
+  {
+    "question": "Who was the leader of the Nazi Party?",
+    "answer": "Adolf Hitler"
+  },
+  {
+    "question": "Who was the first person to circumnavigate the globe?",
+    "answer": "Ferdinand Magellan"
+  },
+  {
+    "question": "What ancient civilization built Machu Picchu?",
+    "answer": "Inca"
+  },
+  {
+    "question": "Who was the first woman to fly solo across the Atlantic?",
+    "answer": "Amelia Earhart"
+  },
+  {
+    "question": "Which war was fought between the Soviet Union and Finland?",
+    "answer": "Winter War"
+  },
+  {
+    "question": "Who was the famous civil rights leader in the United States?",
+    "answer": "Martin Luther King Jr."
+  },
+  {
+    "question": "Who was the first black President of South Africa?",
+    "answer": "Nelson Mandela"
+  },
+  {
+    "question": "Which empire was led by Charlemagne?",
+    "answer": "Holy Roman Empire"
+  },
+  {
+    "question": "In which year did the French Revolution begin?",
+    "answer": "1789"
+  },
+  {
+    "question": "Who was the Greek goddess of wisdom?",
+    "answer": "Athena"
+  },
+  {
+    "question": "Which civilization built the Colosseum?",
+    "answer": "Romans"
+  },
+  {
+    "question": "Who was the first European to reach India by sea?",
+    "answer": "Vasco da Gama"
+  },
+  {
+    "question": "Which battle marked the end of Napoleon's rule?",
+    "answer": "Waterloo"
+  },
+  {
+    "question": "Who was the founder of the Ottoman Empire?",
+    "answer": "Osman I"
+  },
+  {
+    "question": "Which country was formerly known as Ceylon?",
+    "answer": "Sri Lanka"
+  },
+  {
+    "question": "Who was the leader of the Bolshevik Revolution?",
+    "answer": "Vladimir Lenin"
+  },
+  {
+    "question": "Who was the first woman to win a Pulitzer Prize?",
+    "answer": "Edith Wharton"
+  },
+  {
+    "question": "Who wrote 'The Communist Manifesto'?",
+    "answer": "Karl Marx"
+  },
+  {
+    "question": "Who was the first Emperor of the Holy Roman Empire?",
+    "answer": "Otto I"
+  },
+  {
+    "question": "Who led the Allied forces in Europe during World War II?",
+    "answer": "Dwight D. Eisenhower"
+  },
+  {
+    "question": "Who was the famous conqueror known as 'Alexander the Great'?",
+    "answer": "Alexander III of Macedon"
+  },
+  {
+    "question": "In which century was the Renaissance period?",
+    "answer": "15th century"
+  },
+  {
+    "question": "Who discovered penicillin?",
+    "answer": "Alexander Fleming"
+  },
+  {
+    "question": "Which battle was fought in 1066?",
+    "answer": "Battle of Hastings"
+  },
+  {
+    "question": "Who was the first Chancellor of Germany?",
+    "answer": "Konrad Adenauer"
+  },
+  {
+    "question": "Which civilization built the temple complex of Angkor Wat?",
+    "answer": "Khmer"
+  },
+  {
+    "question": "Who was the leader of the French during the Napoleonic Wars?",
+    "answer": "Napoleon Bonaparte"
+  },
+  {
+    "question": "What is the powerhouse of the cell?",
+    "answer": "Mitochondria"
+  },
+  {
+    "question": "What is the chemical symbol for oxygen?",
+    "answer": "O"
+  },
+  {
+    "question": "What is the chemical symbol for carbon?",
+    "answer": "C"
+  },
+  {
+    "question": "What is the primary gas in Earth's atmosphere?",
+    "answer": "Nitrogen"
+  },
+  {
+    "question": "What is the boiling point of water in Fahrenheit?",
+    "answer": "212"
+  },
+  {
+    "question": "What is the freezing point of water in Celsius?",
+    "answer": "0"
+  },
+  {
+    "question": "What type of energy is produced by the sun?",
+    "answer": "Solar energy"
+  },
+  {
+    "question": "What instrument is used to measure atmospheric pressure?",
+    "answer": "Barometer"
+  },
+  {
+    "question": "What is the most abundant element in the universe?",
+    "answer": "Hydrogen"
+  },
+  {
+    "question": "What is the study of fossils called?",
+    "answer": "Paleontology"
+  },
+  {
+    "question": "What particle has a negative charge?",
+    "answer": "Electron"
+  },
+  {
+    "question": "What planet is known as the Morning Star?",
+    "answer": "Venus"
+  },
+  {
+    "question": "What unit is used to measure electric current?",
+    "answer": "Ampere"
+  },
+  {
+    "question": "What is the chemical symbol for sodium?",
+    "answer": "Na"
+  },
+  {
+    "question": "What is the process of a solid turning directly into a gas?",
+    "answer": "Sublimation"
+  },
+  {
+    "question": "What force pulls objects toward the center of the Earth?",
+    "answer": "Gravity"
+  },
+  {
+    "question": "What is the study of fungi called?",
+    "answer": "Mycology"
+  },
+  {
+    "question": "What is the most common blood type?",
+    "answer": "O"
+  },
+  {
+    "question": "What is the basic unit of matter?",
+    "answer": "Atom"
+  },
+  {
+    "question": "What is the process by which a gas turns into a liquid?",
+    "answer": "Condensation"
+  },
+  {
+    "question": "Who painted the ceiling of the Sistine Chapel?",
+    "answer": "Michelangelo"
+  },
+  {
+    "question": "Who is the author of '1984'?",
+    "answer": "George Orwell"
+  },
+  {
+    "question": "Which band released the album 'Abbey Road'?",
+    "answer": "The Beatles"
+  },
+  {
+    "question": "Who directed the movie 'Jaws'?",
+    "answer": "Steven Spielberg"
+  },
+  {
+    "question": "Which singer is known as the 'Queen of Pop'?",
+    "answer": "Madonna"
+  },
+  {
+    "question": "What is the highest-grossing animated film?",
+    "answer": "The Lion King"
+  },
+  {
+    "question": "Who created the comic character Spider-Man?",
+    "answer": "Stan Lee"
+  },
+  {
+    "question": "Which novel begins with 'Call me ___'?",
+    "answer": "Ishmael"
+  },
+  {
+    "question": "Who is the author of 'The Lord of the Rings'?",
+    "answer": "J.R.R. Tolkien"
+  },
+  {
+    "question": "Which TV show features a character named Sheldon Cooper?",
+    "answer": "The Big Bang Theory"
+  },
+  {
+    "question": "Who is known as the 'King of Rock and Roll'?",
+    "answer": "Elvis Presley"
+  },
+  {
+    "question": "What is the name of the wizarding sport in Harry Potter?",
+    "answer": "Quidditch"
+  },
+  {
+    "question": "Which film features a character named Forrest Gump?",
+    "answer": "Forrest Gump"
+  },
+  {
+    "question": "Who directed the movie 'Titanic'?",
+    "answer": "James Cameron"
+  },
+  {
+    "question": "Which superhero is part of the Avengers and can shrink?",
+    "answer": "Ant-Man"
+  },
+  {
+    "question": "Who is the creator of the Star Wars franchise?",
+    "answer": "George Lucas"
+  },
+  {
+    "question": "Which film features the quote 'I'm the king of the world'?",
+    "answer": "Titanic"
+  },
+  {
+    "question": "Who played the character of Iron Man in the Marvel films?",
+    "answer": "Robert Downey Jr."
+  },
+  {
+    "question": "Which film is known for the quote 'Why so serious?'",
+    "answer": "The Dark Knight"
+  },
+  {
+    "question": "What animated film features a princess named Elsa?",
+    "answer": "Frozen"
+  },
+  {
+    "question": "What is the largest animal on Earth?",
+    "answer": "Blue whale"
+  },
+  {
+    "question": "What is the fastest land animal?",
+    "answer": "Cheetah"
+  },
+  {
+    "question": "What is the tallest mammal?",
+    "answer": "Giraffe"
+  },
+  {
+    "question": "What is the most widely spoken language in the world?",
+    "answer": "Mandarin"
+  },
+  {
+    "question": "What is the most common element in the Earth's crust?",
+    "answer": "Oxygen"
+  },
+  {
+    "question": "What is the hardest rock?",
+    "answer": "Diamond"
+  },
+  {
+    "question": "What is the primary ingredient in guacamole?",
+    "answer": "Avocado"
+  },
+  {
+    "question": "What is the largest organ inside the human body?",
+    "answer": "Liver"
+  },
+  {
+    "question": "What vitamin is produced when a person is exposed to sunlight?",
+    "answer": "Vitamin D"
+  },
+  {
+    "question": "What gas do humans breathe in?",
+    "answer": "Oxygen"
+  },
+  {
+    "question": "What is the main ingredient of traditional Japanese sushi?",
+    "answer": "Rice"
+  },
+  {
+    "question": "What is the most popular sport in the world?",
+    "answer": "Soccer"
+  },
+  {
+    "question": "How many continents are there on Earth?",
+    "answer": "Seven"
+  },
+  {
+    "question": "How many planets are in our solar system?",
+    "answer": "Eight"
+  },
+  {
+    "question": "What is the most abundant mineral in the Earth's crust?",
+    "answer": "Quartz"
+  },
+  {
+    "question": "Which animal is known as the 'Ship of the Desert'?",
+    "answer": "Camel"
+  },
+  {
+    "question": "Which bird is known for its colorful tail and dance?",
+    "answer": "Peacock"
+  },
+  {
+    "question": "Which animal is known for its black and white stripes?",
+    "answer": "Zebra"
+  },
+  {
+    "question": "Which insect produces honey?",
+    "answer": "Bee"
+  },
+  {
+    "question": "What is the most famous clock tower in London?",
+    "answer": "Big Ben"
+  },
+  {
+    "question": "Which country is famous for tulips and windmills?",
+    "answer": "Netherlands"
+  },
+  {
+    "question": "What is the capital of Switzerland?",
+    "answer": "Bern"
+  },
+  {
+    "question": "What is the highest mountain in Africa?",
+    "answer": "Kilimanjaro"
+  },
+  {
+    "question": "Which country hosted the 2016 Summer Olympics?",
+    "answer": "Brazil"
+  },
+  {
+    "question": "What is the largest city in the United States by population?",
+    "answer": "New York City"
+  },
+  {
+    "question": "Which U.S. state is known as the 'Sunshine State'?",
+    "answer": "Florida"
+  },
+  {
+    "question": "What is the name of the fairy in Peter Pan?",
+    "answer": "Tinker Bell"
+  },
+  {
+    "question": "Which instrument has 88 keys?",
+    "answer": "Piano"
+  },
+  {
+    "question": "Which fruit is known to keep the doctor away?",
+    "answer": "Apple"
+  },
+  {
+    "question": "What is the national sport of Japan?",
+    "answer": "Sumo wrestling"
+  },
+  {
+    "question": "What is the largest bone in the human body?",
+    "answer": "Femur"
+  },
+  {
+    "question": "Which ocean is located on the east coast of the United States?",
+    "answer": "Atlantic"
+  },
+  {
+    "question": "Which ocean is located on the west coast of the United States?",
+    "answer": "Pacific"
+  },
+  {
+    "question": "What is the smallest planet in our solar system?",
+    "answer": "Mercury"
+  },
+  {
+    "question": "Which element is represented by the symbol 'O'?",
+    "answer": "Oxygen"
+  },
+  {
+    "question": "Which country is known for the Great Barrier Reef?",
+    "answer": "Australia"
+  },
+  {
+    "question": "What is the national flower of Japan?",
+    "answer": "Cherry blossom"
+  },
+  {
+    "question": "What is the chemical symbol for silver?",
+    "answer": "Ag"
+  },
+  {
+    "question": "Which sport is played with a bat and ball and involves hitting a home run?",
+    "answer": "Baseball"
+  },
+  {
+    "question": "What is the primary ingredient in a traditional omelette?",
+    "answer": "Eggs"
+  },
+  {
+    "question": "Which city is known as the City of Light?",
+    "answer": "Paris"
+  },
+  {
+    "question": "Which fruit is known for its high potassium content?",
+    "answer": "Banana"
+  },
+  {
+    "question": "Which country is famous for its pyramids?",
+    "answer": "Egypt"
+  },
+  {
+    "question": "What is the fastest aquatic animal?",
+    "answer": "Sailfish"
+  },
+  {
+    "question": "Which metal is liquid at room temperature?",
+    "answer": "Mercury"
+  },
+  {
+    "question": "What is the largest volcano in the world?",
+    "answer": "Mauna Loa"
+  },
+  {
+    "question": "What is the longest river in Asia?",
+    "answer": "Yangtze"
+  },
+  {
+    "question": "Which planet has the most moons?",
+    "answer": "Saturn"
+  },
+  {
+    "question": "What is the capital of Denmark?",
+    "answer": "Copenhagen"
+  },
+  {
+    "question": "What is the currency used in Japan?",
+    "answer": "Yen"
+  },
+  {
+    "question": "Which country is known as the Land of a Thousand Hills?",
+    "answer": "Rwanda"
+  },
+  {
+    "question": "What is the capital of Malaysia?",
+    "answer": "Kuala Lumpur"
+  },
+  {
+    "question": "What is the currency of the European Union?",
+    "answer": "Euro"
+  },
+  {
+    "question": "What is the highest mountain in North America?",
+    "answer": "Denali"
+  },
+  {
+    "question": "Which desert is the largest in Asia?",
+    "answer": "Gobi Desert"
+  },
+  {
+    "question": "Which country is known as the Land of Fire and Ice?",
+    "answer": "Iceland"
+  },
+  {
+    "question": "What is the capital of Thailand?",
+    "answer": "Bangkok"
+  },
+  {
+    "question": "Which river runs through London?",
+    "answer": "Thames"
+  },
+  {
+    "question": "Which sea lies between Europe and Africa?",
+    "answer": "Mediterranean Sea"
+  },
+  {
+    "question": "Which is the largest country in the Middle East?",
+    "answer": "Saudi Arabia"
+  },
+  {
+    "question": "What is the longest mountain range in the world?",
+    "answer": "Andes"
+  },
+  {
+    "question": "What is the highest waterfall in North America?",
+    "answer": "Yosemite Falls"
+  },
+  {
+    "question": "Which country is known for the Taj Mahal?",
+    "answer": "India"
+  },
+  {
+    "question": "What is the national dish of Spain?",
+    "answer": "Paella"
+  },
+  {
+    "question": "Which instrument is known as the 'king of instruments'?",
+    "answer": "Organ"
+  },
+  {
+    "question": "What is the most popular social media platform?",
+    "answer": "Facebook"
+  },
+  {
+    "question": "Which country is famous for its fjords?",
+    "answer": "Norway"
+  },
+  {
+    "question": "What is the largest museum in the world?",
+    "answer": "The Louvre"
+  },
+  {
+    "question": "Which famous tower is located in Paris?",
+    "answer": "Eiffel Tower"
+  },
+  {
+    "question": "Who is known as the father of modern physics?",
+    "answer": "Albert Einstein"
+  },
+  {
+    "question": "Which element has the highest atomic number naturally?",
+    "answer": "Uranium"
+  },
+  {
+    "question": "Which planet is known for its blue color due to methane?",
+    "answer": "Neptune"
+  },
+  {
+    "question": "What is the largest ocean on Earth?",
+    "answer": "Pacific Ocean"
+  },
+  {
+    "question": "Which country hosted the 2018 FIFA World Cup?",
+    "answer": "Russia"
+  },
+  {
+    "question": "Which animal is known as man's best friend?",
+    "answer": "Dog"
+  },
+  {
+    "question": "Which animal is known for its trunk?",
+    "answer": "Elephant"
+  },
+  {
+    "question": "Which fruit is red and often associated with love?",
+    "answer": "Strawberry"
+  },
+  {
+    "question": "Which vegetable is known for making you cry?",
+    "answer": "Onion"
+  },
+  {
+    "question": "What is the most popular ice cream flavor?",
+    "answer": "Vanilla"
+  },
+  {
+    "question": "Which sport is known as 'the beautiful game'?",
+    "answer": "Soccer"
+  },
+  {
+    "question": "What is the main ingredient in hummus?",
+    "answer": "Chickpeas"
+  },
+  {
+    "question": "Which beverage is made from fermented grapes?",
+    "answer": "Wine"
+  },
+  {
+    "question": "Which country is famous for its pasta?",
+    "answer": "Italy"
+  },
+  {
+    "question": "Which instrument is played with a bow?",
+    "answer": "Violin"
+  },
+  {
+    "question": "Which continent is also a country?",
+    "answer": "Australia"
+  },
+  {
+    "question": "What is the capital of Belgium?",
+    "answer": "Brussels"
+  },
+  {
+    "question": "Which gas is used in balloons to make them float?",
+    "answer": "Helium"
+  },
+  {
+    "question": "Which bird is a symbol of peace?",
+    "answer": "Dove"
+  },
+  {
+    "question": "What is the primary ingredient in beer?",
+    "answer": "Barley"
+  },
+  {
+    "question": "Which ocean is the warmest?",
+    "answer": "Indian Ocean"
+  },
+  {
+    "question": "What is the currency of South Korea?",
+    "answer": "Won"
+  },
+  {
+    "question": "Which famous structure is located in India and is known as a symbol of love?",
+    "answer": "Taj Mahal"
+  },
+  {
+    "question": "Which country is known for its maple syrup?",
+    "answer": "Canada"
+  },
+  {
+    "question": "What is the capital of Ireland?",
+    "answer": "Dublin"
+  },
+  {
+    "question": "Which festival is known for vibrant colors in India?",
+    "answer": "Holi"
+  },
+  {
+    "question": "Which natural phenomenon is measured by the Richter scale?",
+    "answer": "Earthquake"
+  },
+  {
+    "question": "Which state in the USA is known as the 'Golden State'?",
+    "answer": "California"
+  },
+  {
+    "question": "What is the chemical formula for carbon dioxide?",
+    "answer": "CO2"
+  },
+  {
+    "question": "Which country is the origin of the martial art Karate?",
+    "answer": "Japan"
+  },
+  {
+    "question": "Which popular video game features characters called Mario and Luigi?",
+    "answer": "Super Mario Bros"
+  }]

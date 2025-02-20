@@ -135,7 +135,7 @@ export default {
     "guess"],
   emoji: "🎰",
   cooldown: 10000,
-  // 8 seconds cooldown
+  // 10 seconds cooldown
   category: "🎲 Games",
 
   // Main function to execute the slots game logic

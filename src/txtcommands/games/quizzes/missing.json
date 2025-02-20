@@ -1,0 +1,800 @@
+[{
+  "question": "May the Force be with ____.",
+  "answer": "you"
+},
+  {
+    "question": "I'm gonna make him an offer he can't ____.",
+    "answer": "refuse"
+  },
+  {
+    "question": "You can't handle the ____.",
+    "answer": "truth"
+  },
+  {
+    "question": "I'll be ____.",
+    "answer": "back"
+  },
+  {
+    "question": "Here's looking at you, ____.",
+    "answer": "kid"
+  },
+  {
+    "question": "Houston, we have a ____.",
+    "answer": "problem"
+  },
+  {
+    "question": "I'm king of the ____!",
+    "answer": "world"
+  },
+  {
+    "question": "Frankly, my dear, I don't give a ____.",
+    "answer": "damn"
+  },
+  {
+    "question": "Say hello to my little ____.",
+    "answer": "friend"
+  },
+  {
+    "question": "E.T. phone ____.",
+    "answer": "home"
+  },
+  {
+    "question": "To infinity and ____.",
+    "answer": "beyond"
+  },
+  {
+    "question": "Just keep ____.",
+    "answer": "swimming"
+  },
+  {
+    "question": "You're gonna need a bigger ____.",
+    "answer": "boat"
+  },
+  {
+    "question": "Life is like a box of ____.",
+    "answer": "chocolates"
+  },
+  {
+    "question": "Nobody puts Baby in the ____.",
+    "answer": "corner"
+  },
+  {
+    "question": "Here's Johnny ____.",
+    "answer": "comes"
+  },
+  {
+    "question": "I see dead ____.",
+    "answer": "people"
+  },
+  {
+    "question": "Carpe ____.",
+    "answer": "diem"
+  },
+  {
+    "question": "Keep your friends close, but your enemies ____.",
+    "answer": "closer"
+  },
+  {
+    "question": "Wax on, wax ____.",
+    "answer": "off"
+  },
+  {
+    "question": "You're tearing me ____.",
+    "answer": "apart"
+  },
+  {
+    "question": "In space, no one can hear you ____.",
+    "answer": "scream"
+  },
+  {
+    "question": "Elementary, my dear ____.",
+    "answer": "Watson"
+  },
+  {
+    "question": "You talking to ____?",
+    "answer": "me"
+  },
+  {
+    "question": "Just when I thought I was out, they pull me back ____.",
+    "answer": "in"
+  },
+  {
+    "question": "Hasta la vista, ____.",
+    "answer": "baby"
+  },
+  {
+    "question": "You had me at ____.",
+    "answer": "hello"
+  },
+  {
+    "question": "I feel the need—the need for ____.",
+    "answer": "speed"
+  },
+  {
+    "question": "Show me the ____!",
+    "answer": "money"
+  },
+  {
+    "question": "All's well that ends ____.",
+    "answer": "well"
+  },
+  {
+    "question": "A picture is worth a thousand ____.",
+    "answer": "words"
+  },
+  {
+    "question": "When in Rome, do as the ____ do.",
+    "answer": "Romans"
+  },
+  {
+    "question": "The early bird catches the ____.",
+    "answer": "worm"
+  },
+  {
+    "question": "Actions speak louder than ____.",
+    "answer": "words"
+  },
+  {
+    "question": "Beauty is in the eye of the ____.",
+    "answer": "beholder"
+  },
+  {
+    "question": "Better late than ____.",
+    "answer": "never"
+  },
+  {
+    "question": "Practice makes ____.",
+    "answer": "perfect"
+  },
+  {
+    "question": "Two heads are better than ____.",
+    "answer": "one"
+  },
+  {
+    "question": "Don't count your ____ before they hatch.",
+    "answer": "chicks"
+  },
+  {
+    "question": "The pen is mightier than the ____.",
+    "answer": "sword"
+  },
+  {
+    "question": "When the going gets tough, the tough get ____.",
+    "answer": "going"
+  },
+  {
+    "question": "No pain, no ____.",
+    "answer": "gain"
+  },
+  {
+    "question": "Easy come, easy ____.",
+    "answer": "go"
+  },
+  {
+    "question": "Birds of a feather flock ____.",
+    "answer": "together"
+  },
+  {
+    "question": "There's no place like ____.",
+    "answer": "home"
+  },
+  {
+    "question": "All is fair in love and ____.",
+    "answer": "war"
+  },
+  {
+    "question": "It's alive! It's ____!",
+    "answer": "alive"
+  },
+  {
+    "question": "Toto, I've got a feeling we're not in ____ anymore.",
+    "answer": "Kansas"
+  },
+  {
+    "question": "After all, tomorrow is another ____.",
+    "answer": "day"
+  },
+  {
+    "question": "There's no crying in ____.",
+    "answer": "baseball"
+  },
+  {
+    "question": "Don't judge a book by its ____.",
+    "answer": "cover"
+  },
+  {
+    "question": "Better safe than ____.",
+    "answer": "sorry"
+  },
+  {
+    "question": "Absence makes the heart grow ____.",
+    "answer": "fonder"
+  },
+  {
+    "question": "A watched pot never ____.",
+    "answer": "boils"
+  },
+  {
+    "question": "You can't have your ____ and eat it too.",
+    "answer": "cake"
+  },
+  {
+    "question": "Laughter is the best ____.",
+    "answer": "medicine"
+  },
+  {
+    "question": "Time flies when you're having ____.",
+    "answer": "fun"
+  },
+  {
+    "question": "Money can't buy ____.",
+    "answer": "happiness"
+  },
+  {
+    "question": "All that glitters is not ____.",
+    "answer": "gold"
+  },
+  {
+    "question": "Out of sight, out of ____.",
+    "answer": "mind"
+  },
+  {
+    "question": "Don't put all your eggs in one ____.",
+    "answer": "basket"
+  },
+  {
+    "question": "The grass is always greener on the other ____.",
+    "answer": "side"
+  },
+  {
+    "question": "What goes up must ____.",
+    "answer": "come"
+  },
+  {
+    "question": "You reap what you ____.",
+    "answer": "sow"
+  },
+  {
+    "question": "Don't bite the hand that ____ you.",
+    "answer": "feeds"
+  },
+  {
+    "question": "It takes two to ____.",
+    "answer": "tango"
+  },
+  {
+    "question": "Every cloud has a silver ____.",
+    "answer": "lining"
+  },
+  {
+    "question": "The best things in life are ____.",
+    "answer": "free"
+  },
+  {
+    "question": "There's no time like the ____.",
+    "answer": "present"
+  },
+  {
+    "question": "Beauty is only skin ____.",
+    "answer": "deep"
+  },
+  {
+    "question": "The more things change, the more they ____.",
+    "answer": "same"
+  },
+  {
+    "question": "Practice what you ____.",
+    "answer": "preach"
+  },
+  {
+    "question": "You can't make an omelette without breaking ____.",
+    "answer": "eggs"
+  },
+  {
+    "question": "Variety is the ____ of life.",
+    "answer": "spice"
+  },
+  {
+    "question": "A journey of a thousand miles begins with a single ____.",
+    "answer": "step"
+  },
+  {
+    "question": "Better the devil you know than the devil you ____.",
+    "answer": "unknown"
+  },
+  {
+    "question": "If you can't beat them, join ____.",
+    "answer": "them"
+  },
+  {
+    "question": "Let sleeping dogs ____.",
+    "answer": "lie"
+  },
+  {
+    "question": "A penny saved is a penny ____.",
+    "answer": "earned"
+  },
+  {
+    "question": "Beggars can't be ____.",
+    "answer": "choosers"
+  },
+  {
+    "question": "A problem shared is a problem ____.",
+    "answer": "halved"
+  },
+  {
+    "question": "Don't cry over spilled ____.",
+    "answer": "milk"
+  },
+  {
+    "question": "The road to hell is paved with ____.",
+    "answer": "intentions"
+  },
+  {
+    "question": "When life gives you lemons, make ____.",
+    "answer": "lemonade"
+  },
+  {
+    "question": "Two wrongs don't make a ____.",
+    "answer": "right"
+  },
+  {
+    "question": "Laughter is contagious, so ____ it.",
+    "answer": "spread"
+  },
+  {
+    "question": "A friend in need is a friend ____.",
+    "answer": "indeed"
+  },
+  {
+    "question": "Where there's smoke, there's ____.",
+    "answer": "fire"
+  },
+  {
+    "question": "Don't put the cart before the ____.",
+    "answer": "horse"
+  },
+  {
+    "question": "Every rose has its ____.",
+    "answer": "thorn"
+  },
+  {
+    "question": "A rolling stone gathers no ____.",
+    "answer": "moss"
+  },
+  {
+    "question": "If it sounds too good to be true, it probably ____.",
+    "answer": "is"
+  },
+  {
+    "question": "Still waters run ____.",
+    "answer": "deep"
+  },
+  {
+    "question": "Haste makes ____.",
+    "answer": "waste"
+  },
+  {
+    "question": "Look before you ____.",
+    "answer": "leap"
+  },
+  {
+    "question": "A stitch in time saves ____.",
+    "answer": "nine"
+  },
+  {
+    "question": "Too many cooks spoil the ____.",
+    "answer": "broth"
+  },
+  {
+    "question": "Home is where the ____ is.",
+    "answer": "heart"
+  },
+  {
+    "question": "Music is the universal ____.",
+    "answer": "language"
+  },
+  {
+    "question": "Keep calm and ____ on.",
+    "answer": "carry"
+  },
+  {
+    "question": "The sky is ____.",
+    "answer": "blue"
+  },
+  {
+    "question": "Grass is ____.",
+    "answer": "green"
+  },
+  {
+    "question": "Snow is ____.",
+    "answer": "white"
+  },
+  {
+    "question": "The ocean is ____.",
+    "answer": "vast"
+  },
+  {
+    "question": "The sun is ____.",
+    "answer": "bright"
+  },
+  {
+    "question": "Clouds are ____.",
+    "answer": "white"
+  },
+  {
+    "question": "Water is ____.",
+    "answer": "wet"
+  },
+  {
+    "question": "Fire is ____.",
+    "answer": "hot"
+  },
+  {
+    "question": "Ice is ____.",
+    "answer": "cold"
+  },
+  {
+    "question": "Chocolate is ____.",
+    "answer": "sweet"
+  },
+  {
+    "question": "Lemons are ____.",
+    "answer": "sour"
+  },
+  {
+    "question": "Coffee is ____.",
+    "answer": "bitter"
+  },
+  {
+    "question": "Tea is ____.",
+    "answer": "warm"
+  },
+  {
+    "question": "Bread is ____.",
+    "answer": "fresh"
+  },
+  {
+    "question": "The earth is ____.",
+    "answer": "round"
+  },
+  {
+    "question": "Time is ____.",
+    "answer": "precious"
+  },
+  {
+    "question": "Love is ____.",
+    "answer": "powerful"
+  },
+  {
+    "question": "Hope is ____.",
+    "answer": "essential"
+  },
+  {
+    "question": "Life is ____.",
+    "answer": "beautiful"
+  },
+  {
+    "question": "Music is ____.",
+    "answer": "universal"
+  },
+  {
+    "question": "Laughter is ____.",
+    "answer": "contagious"
+  },
+  {
+    "question": "Knowledge is ____.",
+    "answer": "power"
+  },
+  {
+    "question": "Imagination is ____.",
+    "answer": "limitless"
+  },
+  {
+    "question": "Dreams are ____.",
+    "answer": "inspiring"
+  },
+  {
+    "question": "Courage is ____.",
+    "answer": "important"
+  },
+  {
+    "question": "Friendship is ____.",
+    "answer": "priceless"
+  },
+  {
+    "question": "Family is ____.",
+    "answer": "forever"
+  },
+  {
+    "question": "Education is ____.",
+    "answer": "empowering"
+  },
+  {
+    "question": "Books are ____.",
+    "answer": "knowledge"
+  },
+  {
+    "question": "Art is ____.",
+    "answer": "expressive"
+  },
+  {
+    "question": "A picture is worth a thousand ____.",
+    "answer": "words"
+  },
+  {
+    "question": "Silence is ____.",
+    "answer": "golden"
+  },
+  {
+    "question": "Actions speak louder than ____.",
+    "answer": "words"
+  },
+  {
+    "question": "Beauty is in the eye of the ____.",
+    "answer": "beholder"
+  },
+  {
+    "question": "Practice makes ____.",
+    "answer": "perfect"
+  },
+  {
+    "question": "Better late than ____.",
+    "answer": "never"
+  },
+  {
+    "question": "Honesty is the best ____.",
+    "answer": "policy"
+  },
+  {
+    "question": "Curiosity killed the ____.",
+    "answer": "cat"
+  },
+  {
+    "question": "Don't count your ____ before they hatch.",
+    "answer": "chicks"
+  },
+  {
+    "question": "Rome wasn't built in a ____.",
+    "answer": "day"
+  },
+  {
+    "question": "When in Rome, do as the ____ do.",
+    "answer": "Romans"
+  },
+  {
+    "question": "The pen is mightier than the ____.",
+    "answer": "sword"
+  },
+  {
+    "question": "No pain, no ____.",
+    "answer": "gain"
+  },
+  {
+    "question": "A rolling stone gathers no ____.",
+    "answer": "moss"
+  },
+  {
+    "question": "The early bird catches the ____.",
+    "answer": "worm"
+  },
+  {
+    "question": "Birds of a feather flock ____.",
+    "answer": "together"
+  },
+  {
+    "question": "When the going gets tough, the tough get ____.",
+    "answer": "going"
+  },
+  {
+    "question": "Don't judge a book by its ____.",
+    "answer": "cover"
+  },
+  {
+    "question": "Absence makes the heart grow ____.",
+    "answer": "fonder"
+  },
+  {
+    "question": "All that glitters is not ____.",
+    "answer": "gold"
+  },
+  {
+    "question": "You can't have your cake and ____ it too.",
+    "answer": "eat"
+  },
+  {
+    "question": "Better safe than ____.",
+    "answer": "sorry"
+  },
+  {
+    "question": "A watched pot never ____.",
+    "answer": "boils"
+  },
+  {
+    "question": "You reap what you ____.",
+    "answer": "sow"
+  },
+  {
+    "question": "Two heads are better than ____.",
+    "answer": "one"
+  },
+  {
+    "question": "It takes two to ____.",
+    "answer": "tango"
+  },
+  {
+    "question": "Don't bite the hand that ____ you.",
+    "answer": "feeds"
+  },
+  {
+    "question": "The best things in life are ____.",
+    "answer": "free"
+  },
+  {
+    "question": "Laughter is the best ____.",
+    "answer": "medicine"
+  },
+  {
+    "question": "An apple a day keeps the doctor ____.",
+    "answer": "away"
+  },
+  {
+    "question": "The squeaky wheel gets the ____.",
+    "answer": "grease"
+  },
+  {
+    "question": "If at first you don't succeed, try ____.",
+    "answer": "again"
+  },
+  {
+    "question": "All's well that ends ____.",
+    "answer": "well"
+  },
+  {
+    "question": "A journey of a thousand miles begins with a single ____.",
+    "answer": "step"
+  },
+  {
+    "question": "Better the devil you know than the devil you ____.",
+    "answer": "unknown"
+  },
+  {
+    "question": "You miss 100% of the ____ you don't take.",
+    "answer": "shots"
+  },
+  {
+    "question": "What goes up must ____.",
+    "answer": "come down"
+  },
+  {
+    "question": "Beauty is only skin ____.",
+    "answer": "deep"
+  },
+  {
+    "question": "Out of sight, out of ____.",
+    "answer": "mind"
+  },
+  {
+    "question": "Don't put all your eggs in one ____.",
+    "answer": "basket"
+  },
+  {
+    "question": "Where there's smoke, there's ____.",
+    "answer": "fire"
+  },
+  {
+    "question": "Don't count your chickens before they ____.",
+    "answer": "hatch"
+  },
+  {
+    "question": "A stitch in time saves ____.",
+    "answer": "nine"
+  },
+  {
+    "question": "Too many cooks spoil the ____.",
+    "answer": "broth"
+  },
+  {
+    "question": "Variety is the ____ of life.",
+    "answer": "spice"
+  },
+  {
+    "question": "Don't put off until tomorrow what you can do ____.",
+    "answer": "today"
+  },
+  {
+    "question": "You can lead a horse to water, but you can't make it ____.",
+    "answer": "drink"
+  },
+  {
+    "question": "Don't judge a man until you've walked a mile in his ____.",
+    "answer": "shoes"
+  },
+  {
+    "question": "Home is where the ____ is.",
+    "answer": "heart"
+  },
+  {
+    "question": "The grass is always greener on the other ____.",
+    "answer": "side"
+  },
+  {
+    "question": "Good things come to those who ____.",
+    "answer": "wait"
+  },
+  {
+    "question": "If it ain't broke, don't ____ it.",
+    "answer": "fix"
+  },
+  {
+    "question": "Money doesn't grow on ____.",
+    "answer": "trees"
+  },
+  {
+    "question": "There's no place like ____.",
+    "answer": "home"
+  },
+  {
+    "question": "All's fair in love and ____.",
+    "answer": "war"
+  },
+  {
+    "question": "It takes a village to raise a ____.",
+    "answer": "child"
+  },
+  {
+    "question": "Truth is stranger than ____.",
+    "answer": "fiction"
+  },
+  {
+    "question": "An ounce of prevention is worth a pound of ____.",
+    "answer": "cure"
+  },
+  {
+    "question": "You can't make an omelet without breaking ____.",
+    "answer": "eggs"
+  },
+  {
+    "question": "A chain is only as strong as its ____.",
+    "answer": "weakest link"
+  },
+  {
+    "question": "Beggars can't be ____.",
+    "answer": "choosers"
+  },
+  {
+    "question": "Don't put the cart before the ____.",
+    "answer": "horse"
+  },
+  {
+    "question": "Many hands make ____ work.",
+    "answer": "light"
+  },
+  {
+    "question": "A penny saved is a penny ____.",
+    "answer": "earned"
+  },
+  {
+    "question": "Good fences make good ____.",
+    "answer": "neighbors"
+  },
+  {
+    "question": "A fool and his money are soon ____.",
+    "answer": "spent"
+  },
+  {
+    "question": "You can't always get what you ____.",
+    "answer": "want"
+  },
+  {
+    "question": "Every cloud has a silver ____.",
+    "answer": "lining"
+  },
+  {
+    "question": "When one door closes, another ____.",
+    "answer": "opens"
+  },
+  {
+    "question": "Keep your friends close and your ____ closer.",
+    "answer": "enemies"
+  }]
