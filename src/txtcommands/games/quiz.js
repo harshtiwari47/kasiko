@@ -161,7 +161,7 @@ export default {
 
       // Wrap the collector in a Promise so we can await its end.
       await new Promise(resolve => {
-        collector.on("collect", m => {
+        collector.on("collect", async m => {
           // Compare answer (case-insensitive, trimmed)
           const userAnswer = m.content.trim().toLowerCase();
           const correctAnswer = questionData.answer.trim().toLowerCase();
@@ -169,7 +169,9 @@ export default {
             // Update score for the user.
             const currentScore = gameState.scores.get(m.author.id) || 0;
             gameState.scores.set(m.author.id, currentScore + 1);
-            channel.send(`${m.author} got it right! ദ്ദി`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
+            m.author.send(`${m.author} got it right! ദ്ദി \nYou correctly answered the quiz question.\n**Question:** ${questionData.question}\n-# (This message was sent in DMs to keep the results private.)`)
+            .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         });
         collector.on("end",
