@@ -195,13 +195,6 @@ export async function buyJewelryItem(context, itemId) {
       });
     }
 
-    // 4) Check networth if item is legendary
-    if (item.rarity === 'legendary' && shopDoc.networth < 500000) {
-      return handleMessage(context, {
-        content: `⚠️ **${username}**, your networth is too low to buy this legendary item. (Need &ge; 500,000)`
-      });
-    }
-
     // 5) Deduct the user’s cash
     userData.cash -= item.price;
     await updateUser(userId, userData);

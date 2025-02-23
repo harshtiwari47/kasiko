@@ -143,7 +143,7 @@ export async function setMarriageRing(message, ringId) {
       await updateUser(message.author.id, userData);
 
       return message.channel.send({
-        content: `💍✨ ***${message.author.username}***, you and your beloved have exchanged vows with a beautiful new wedding ring! <:${item.id}:${item.emoji}> *${item.name}* is now a symbol of your love. 💖\nYour love bond XP has grown by **${item.price / 100}**! 🌹\nCherish this moment, and remember—your wedding profile has been updated, but the previous ring won’t return to your jewelry collection. 💞`
+        content: `💍✨ ***${message.author.username}***, you and your beloved have exchanged vows with a beautiful new wedding ring! <:${item.id}:${item.emoji}> *${item.name}* is now a symbol of your love. 💖\nYour love bond XP has grown by **${item.price / 100}**! <:rose:1343097565738172488>\nCherish this moment, and remember—your wedding profile has been updated, but the previous ring won’t return to your jewelry collection. 💞`
       });
 
     } else {
@@ -234,7 +234,7 @@ export async function marry(user, message) {
       return message.channel.send(`⚠️ You are already married! 🔫`);
     } else if (userData.family.spouse && userData.family.spouse === user) {
       return message.channel.send(`⚠️ You are __already married__ to each other.`);
-    } else if (userData.family.spouse) {
+    } else if (invitedUserData.family.spouse) {
       return message.channel.send(`⚠️ The user is __already married__.`);
     } else {
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
@@ -417,9 +417,9 @@ export async function roses(message) {
 
     // Check if roses data exists
     if (userData && typeof userData.roses === 'number') {
-      return message.channel.send(`✦ **${message.author.username}**, you have **${userData.roses}** roses! 🌹\n➺ Share roses: \`roses <amount> <@user>\``);
+      return message.channel.send(`# ✦ **${message.author.username}**, you have **${userData.roses}** roses! <:rose:1343097565738172488>\n➺ Share roses: \`roses <amount> <@user>\``);
     } else {
-      return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` 🌹`);
+      return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` <:rose:1343097565738172488>`);
     }
   } catch (e) {
     console.error(e);
@@ -445,13 +445,13 @@ export async function sendRoses(toUser, amount, message) {
         await updateUser(toUser, recipientData);
         await updateUser(message.author.id, senderData);
 
-        return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing 💞 bondXP by ${amount * 10}! 🌹`);
+        return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing 💞 bondXP by ${amount * 10}! <:rose:1343097565738172488>`);
       } else {
         recipientData.roses = (recipientData.roses || 0) + amount;
         await updateUser(toUser, recipientData);
         await updateUser(message.author.id, senderData);
 
-        return message.channel.send(`🌹 | **${message.author.username}** has sent **${amount}** roses to <@${toUser}>! 🌹`);
+        return message.channel.send(`<:rose:1343097565738172488> | **${message.author.username}** has sent **${amount}** roses to <@${toUser}>! <:rose:1343097565738172488>`);
       }
 
     } else {
@@ -520,7 +520,7 @@ export async function dailyRewards(userId, username, context) {
       let messageForm = {
         content: `🎁💍 **𝓓𝓪𝓲𝓵𝔂 𝓶𝓪𝓻𝓻𝓲𝓪𝓰𝓮 𝓻𝓮𝔀𝓪𝓻𝓭 𝓬𝓵𝓪𝓲𝓶𝓮𝓭!**\n**${username}** received:\n` +
         `+ <:kasiko_coin:1300141236841086977> **${cashExt}**\n` +
-        `+ 🌹 **${rosesClaimed}**\n` +
+        `+ <:rose:1343097565738172488> **${rosesClaimed}**\n` +
         `+ 💞 **${bondExpInc}**\n` +
         `-# 💌 ${loveMessages[Math.floor(Math.random() * loveMessages.length)]}`
       }
@@ -648,7 +648,7 @@ export default {
             name: '💒 Marriage Info', value: 'marriage or m'
           },
           {
-            name: '🌹 Send Roses', value: 'roses <@username (optional)> <amount>'
+            name: '<:rose:1343097565738172488> Send Roses', value: 'roses <@username (optional)> <amount>'
           }
         )
 

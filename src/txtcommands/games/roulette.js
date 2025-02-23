@@ -312,7 +312,7 @@ async function startRoulette(
       if (gameMsgInitial && gameMsgInitial.edit) {
         gameMsg = gameMsgInitial;
         gameMsg = await gameMsgInitial.edit(
-          `## ${gunEmoji} **ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
+          `## ${gunEmoji} **ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n\n` +
           `${rubBulletEmoji} Bullets loaded: **${bulletCount}** / 6\nBet: <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
         );
       } else {

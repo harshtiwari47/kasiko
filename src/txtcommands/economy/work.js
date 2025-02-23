@@ -65,10 +65,10 @@ const careers = {
   }
 };
 
-export async function work(id, channel) {
+export async function work(id, channel, user) {
   let workMessage;
   try {
-    const guild = await channel.guild.members.fetch(id);
+    const guild = user;
     let userData = await getUserData(id);
 
     if (!userData || !guild) {
@@ -116,7 +116,7 @@ export default {
   cooldown: 10000,
   category: "🏦 Economy",
   execute: async (args, message) => {
-    let workReply = await work(message.author.id, message.channel);
+    let workReply = await work(message.author.id, message.channel, message.author);
 
     const finalEmbed = new EmbedBuilder()
     .setDescription(`${workReply}`)
@@ -140,10 +140,11 @@ export default {
   interact: async (interaction) => {
     try {
       const userId = interaction.user.id;
+      const user = interaction.user;
       const channel = interaction.channel;
 
       // Call the work function
-      let workReply = await work(userId, channel);
+      let workReply = await work(userId, channel, user);
 
       const finalEmbed = new EmbedBuilder()
       .setDescription(`${workReply}`)
