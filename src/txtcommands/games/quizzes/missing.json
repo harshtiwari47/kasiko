@@ -797,4 +797,805 @@
   {
     "question": "Keep your friends close and your ____ closer.",
     "answer": "enemies"
-  }]
+  },
+  {
+    "question": "Beauty begins the moment you decide to be ____.",
+    "answer": "yourself"
+  },
+  {
+    "question": "Better to remain silent and be thought a ____.",
+    "answer": "fool"
+  },
+  {
+    "question": "What doesn't kill you makes you ____.",
+    "answer": "stronger"
+  },
+  {
+    "question": "The only constant in life is ____.",
+    "answer": "change"
+  },
+  {
+    "question": "Fortune favors the ____.",
+    "answer": "bold"
+  },
+  {
+    "question": "There's no such thing as a free ____.",
+    "answer": "lunch"
+  },
+  {
+    "question": "Don't cross the bridge until you come to ____.",
+    "answer": "it"
+  },
+  {
+    "question": "Out of the frying pan and into the ____.",
+    "answer": "fire"
+  },
+  {
+    "question": "Strike while the ____ is hot.",
+    "answer": "iron"
+  },
+  {
+    "question": "Every dog has its ____.",
+    "answer": "day"
+  },
+  {
+    "question": "Don't bite off more than you can ____.",
+    "answer": "chew"
+  },
+  {
+    "question": "When in doubt, follow your ____.",
+    "answer": "heart"
+  },
+  {
+    "question": "All good things must come to an ____.",
+    "answer": "end"
+  },
+  {
+    "question": "Too little, too ____.",
+    "answer": "late"
+  },
+  {
+    "question": "In for a penny, in for a ____.",
+    "answer": "pound"
+  },
+  {
+    "question": "Don't make a mountain out of a ____.",
+    "answer": "molehill"
+  },
+  {
+    "question": "One man's trash is another man's ____.",
+    "answer": "treasure"
+  },
+  {
+    "question": "Time heals all ____.",
+    "answer": "wounds"
+  },
+  {
+    "question": "The more you know, the more you ____.",
+    "answer": "realize"
+  },
+  {
+    "question": "What goes around comes ____.",
+    "answer": "around"
+  },
+  {
+    "question": "It's not over until the fat lady ____.",
+    "answer": "sings"
+  },
+  {
+    "question": "The truth will set you ____.",
+    "answer": "free"
+  },
+  {
+    "question": "If you want something done right, do it ____.",
+    "answer": "yourself"
+  },
+  {
+    "question": "You only live ____.",
+    "answer": "once"
+  },
+  {
+    "question": "Don't let the bastards get you ____.",
+    "answer": "down"
+  },
+  {
+    "question": "Live every day like it's your ____.",
+    "answer": "last"
+  },
+  {
+    "question": "The road less traveled leads to ____.",
+    "answer": "adventure"
+  },
+  {
+    "question": "Where there's a will, there's a ____.",
+    "answer": "way"
+  },
+  {
+    "question": "If the shoe fits, wear ____.",
+    "answer": "it"
+  },
+  {
+    "question": "If you can't stand the heat, get out of the ____.",
+    "answer": "kitchen"
+  },
+  {
+    "question": "A leopard can't change its ____.",
+    "answer": "spots"
+  },
+  {
+    "question": "Never look a gift horse in the ____.",
+    "answer": "mouth"
+  },
+  {
+    "question": "Do unto others as you would have them do ____.",
+    "answer": "unto you"
+  },
+  {
+    "question": "Good things come in small ____.",
+    "answer": "packages"
+  },
+  {
+    "question": "Beauty fades, but ____ lasts forever.",
+    "answer": "character"
+  },
+  {
+    "question": "All that is gold does not ____.",
+    "answer": "glitter"
+  },
+  {
+    "question": "The early bird may get the worm, but the second mouse gets the ____.",
+    "answer": "cheese"
+  },
+  {
+    "question": "No man is an ____.",
+    "answer": "island"
+  },
+  {
+    "question": "There's more than one way to skin a ____.",
+    "answer": "cat"
+  },
+  {
+    "question": "The best defense is a good ____.",
+    "answer": "offense"
+  },
+  {
+    "question": "You can't always choose your ____.",
+    "answer": "family"
+  },
+  {
+    "question": "The bigger they are, the harder they ____.",
+    "answer": "fall"
+  },
+  {
+    "question": "A little knowledge is a dangerous ____.",
+    "answer": "thing"
+  },
+  {
+    "question": "Don't put your best ____ forward.",
+    "answer": "foot"
+  },
+  {
+    "question": "A bird in the hand is worth two in the ____.",
+    "answer": "bush"
+  },
+  {
+    "question": "Money is the root of all ____.",
+    "answer": "evil"
+  },
+  {
+    "question": "Don't throw the baby out with the ____.",
+    "answer": "bathwater"
+  },
+  {
+    "question": "Opportunity knocks but once, so ____.",
+    "answer": "answer"
+  },
+  {
+    "question": "When the student is ready, the teacher will ____.",
+    "answer": "appear"
+  },
+  {
+    "question": "Fools rush in where angels ____.",
+    "answer": "tread"
+  },
+  {
+    "question": "Live and let ____.",
+    "answer": "live"
+  },
+  {
+    "question": "If you want something done, ask a busy ____.",
+    "answer": "person"
+  },
+  {
+    "question": "Don't rest on your ____.",
+    "answer": "laurels"
+  },
+  {
+    "question": "When opportunity knocks, open the ____.",
+    "answer": "door"
+  },
+  {
+    "question": "Don't make promises you can't ____.",
+    "answer": "keep"
+  },
+  {
+    "question": "Live, laugh, and ____.",
+    "answer": "love"
+  },
+  {
+    "question": "What we do in life echoes in ____.",
+    "answer": "eternity"
+  },
+  {
+    "question": "When life gets complicated, find your ____.",
+    "answer": "balance"
+  },
+  {
+    "question": "Don't burn your ____.",
+    "answer": "bridges"
+  },
+  {
+    "question": "No news is ____.",
+    "answer": "good"
+  },
+  {
+    "question": "The darkest hour is just before the ____.",
+    "answer": "dawn"
+  },
+  {
+    "question": "If you lie down with dogs, you will ____.",
+    "answer": "fleas"
+  },
+  {
+    "question": "Better the ____ you know than the unknown.",
+    "answer": "devil"
+  },
+  {
+    "question": "He who laughs last, laughs ____.",
+    "answer": "best"
+  },
+  {
+    "question": "If wishes were horses, beggars would ride ____.",
+    "answer": "high"
+  },
+  {
+    "question": "Early to bed and early to rise makes a man ____.",
+    "answer": "healthy"
+  },
+  {
+    "question": "A little ____ goes a long way.",
+    "answer": "kindness"
+  },
+  {
+    "question": "One swallow does not a ____ make.",
+    "answer": "summer"
+  },
+  {
+    "question": "Familiarity breeds ____.",
+    "answer": "contempt"
+  },
+  {
+    "question": "Keep your nose to the ____.",
+    "answer": "grindstone"
+  },
+  {
+    "question": "Don't throw good ____ after bad.",
+    "answer": "money"
+  },
+  {
+    "question": "The enemy of my enemy is my ____.",
+    "answer": "friend"
+  },
+  {
+    "question": "It's not the destination, it's the ____.",
+    "answer": "journey"
+  },
+  {
+    "question": "Empty vessels make the most ____.",
+    "answer": "noise"
+  },
+  {
+    "question": "A watched clock never ____.",
+    "answer": "ticks"
+  },
+  {
+    "question": "All that is necessary for the triumph of evil is that good men do ____.",
+    "answer": "nothing"
+  },
+  {
+    "question": "If you want to keep a secret, you must also keep it ____.",
+    "answer": "safe"
+  },
+  {
+    "question": "There's no such thing as bad ____.",
+    "answer": "weather"
+  },
+  {
+    "question": "The proof of the pudding is in the ____.",
+    "answer": "eating"
+  },
+  {
+    "question": "One man's meat is another man's ____.",
+    "answer": "poison"
+  },
+  {
+    "question": "You can't make a silk purse out of a ____.",
+    "answer": "sow's ear"
+  },
+  {
+    "question": "Dreams don't work unless you ____.",
+    "answer": "do"
+  },
+  {
+    "question": "Winners never ____.",
+    "answer": "quit"
+  },
+  {
+    "question": "Quitters never ____.",
+    "answer": "win"
+  },
+  {
+    "question": "Work hard, play ____.",
+    "answer": "hard"
+  },
+  {
+    "question": "Turn your wounds into ____.",
+    "answer": "wisdom"
+  },
+  {
+    "question": "Don't sweat the small ____.",
+    "answer": "stuff"
+  },
+  {
+    "question": "You are what you ____.",
+    "answer": "eat"
+  },
+  {
+    "question": "The best revenge is ____.",
+    "answer": "success"
+  },
+  {
+    "question": "The best way to predict the future is to ____ it.",
+    "answer": "create"
+  },
+  {
+    "question": "You can't change the past, but you can ____ your future.",
+    "answer": "shape"
+  },
+  {
+    "question": "Every ending is a new ____.",
+    "answer": "beginning"
+  },
+  {
+    "question": "Knowledge is power, but wisdom is ____.",
+    "answer": "timeless"
+  },
+  {
+    "question": "Success is a journey, not a ____.",
+    "answer": "destination"
+  },
+  {
+    "question": "The only way to do great work is to ____ what you do.",
+    "answer": "love"
+  },
+  {
+    "question": "Don't watch the clock; do what it ____.",
+    "answer": "does"
+  },
+  {
+    "question": "Every moment is a fresh ____.",
+    "answer": "beginning"
+  },
+  {
+    "question": "Life is a journey, not a ____.",
+    "answer": "race"
+  },
+  {
+    "question": "Mind over ____.",
+    "answer": "matter"
+  },
+  {
+    "question": "Success comes to those who ____.",
+    "answer": "hustle"
+  },
+  {
+    "question": "Don't count the days, make the ____ count.",
+    "answer": "days"
+  },
+  {
+    "question": "No guts, no ____.",
+    "answer": "glory"
+  },
+  {
+    "question": "Every accomplishment starts with the decision to ____.",
+    "answer": "try"
+  },
+  {
+    "question": "The best view comes after the hardest ____.",
+    "answer": "climb"
+  },
+  {
+    "question": "Your attitude determines your ____.",
+    "answer": "direction"
+  },
+  {
+    "question": "Don't stop when you're tired, stop when you're ____.",
+    "answer": "done"
+  },
+  {
+    "question": "Obstacles are those frightful things you see when you take your eyes off the ____.",
+    "answer": "prize"
+  },
+  {
+    "question": "The harder you work, the ____ you become.",
+    "answer": "better"
+  },
+  {
+    "question": "Great things never come from your comfort ____.",
+    "answer": "zone"
+  },
+  {
+    "question": "Don't wait for opportunity, ____ it.",
+    "answer": "seize"
+  },
+  {
+    "question": "Success is not final, failure is not ____.",
+    "answer": "fatal"
+  },
+  {
+    "question": "Do something today that your future ____ will thank you for.",
+    "answer": "self"
+  },
+  {
+    "question": "A goal without a ____ is just a wish.",
+    "answer": "plan"
+  },
+  {
+    "question": "The secret of getting ahead is ____.",
+    "answer": "starting"
+  },
+  {
+    "question": "Great minds think ____.",
+    "answer": "alike"
+  },
+  {
+    "question": "When nothing goes right, go ____.",
+    "answer": "left"
+  },
+  {
+    "question": "The best time to plant a tree was 20 years ago. The second best time is ____.",
+    "answer": "now"
+  },
+  {
+    "question": "Your limitation—it's only your ____.",
+    "answer": "imagination"
+  },
+  {
+    "question": "Sometimes later becomes ____.",
+    "answer": "never"
+  },
+  {
+    "question": "Dream big and dare to ____.",
+    "answer": "fail"
+  },
+  {
+    "question": "Don't stop until you're ____.",
+    "answer": "proud"
+  },
+  {
+    "question": "Push yourself, because no one else is going to ____ you.",
+    "answer": "do"
+  },
+  {
+    "question": "Sometimes we're tested not to show our weaknesses, but to discover our ____.",
+    "answer": "strengths"
+  },
+  {
+    "question": "If you want to fly, you have to give up ____.",
+    "answer": "gravity"
+  },
+  {
+    "question": "The key to success is to focus on goals, not on ____.",
+    "answer": "obstacles"
+  },
+  {
+    "question": "Don't be pushed around by the fears in your ____.",
+    "answer": "mind"
+  },
+  {
+    "question": "Success is walking from failure to failure with ____.",
+    "answer": "enthusiasm"
+  },
+  {
+    "question": "Every strike brings you closer to ____.",
+    "answer": "success"
+  },
+  {
+    "question": "Don't let yesterday take up too much of ____.",
+    "answer": "today"
+  },
+  {
+    "question": "You don't have to be great to start, but you have to start to be ____.",
+    "answer": "great"
+  },
+  {
+    "question": "Little by little, a little becomes ____.",
+    "answer": "more"
+  },
+  {
+    "question": "Don't limit your challenges, challenge your ____.",
+    "answer": "limits"
+  },
+  {
+    "question": "The only person you are destined to become is the person you ____.",
+    "answer": "decide"
+  },
+  {
+    "question": "Hard work beats talent when talent doesn't ____.",
+    "answer": "work"
+  },
+  {
+    "question": "Success usually comes to those who are too busy to be ____.",
+    "answer": "looking"
+  },
+  {
+    "question": "Don't wait for the perfect moment, take the ____.",
+    "answer": "chance"
+  },
+  {
+    "question": "Every expert was once a ____.",
+    "answer": "beginner"
+  },
+  {
+    "question": "Don't fear failure; fear ____.",
+    "answer": "regret"
+  },
+  {
+    "question": "Believe you can and you're ____ there.",
+    "answer": "halfway"
+  },
+  {
+    "question": "Opportunities don't happen, you ____ them.",
+    "answer": "pursue"
+  },
+  {
+    "question": "Sometimes the smallest step in the right direction ends up being the biggest ____.",
+    "answer": "difference"
+  },
+  {
+    "question": "The only limit to our realization of tomorrow is our ____ today.",
+    "answer": "doubts"
+  },
+  {
+    "question": "It always seems impossible until it's ____.",
+    "answer": "done"
+  },
+  {
+    "question": "Success is not measured by money or ____.",
+    "answer": "fame"
+  },
+  {
+    "question": "A diamond is just a piece of coal that did ____ under pressure.",
+    "answer": "shine"
+  },
+  {
+    "question": "Your life does not get better by chance, it gets better by ____.",
+    "answer": "effort"
+  },
+  {
+    "question": "A goal is not always meant to be reached; it often serves as a ____.",
+    "answer": "target"
+  },
+  {
+    "question": "It's not whether you get knocked down, it's whether you ____.",
+    "answer": "get up"
+  },
+  {
+    "question": "When you feel like quitting, remember why you ____ started.",
+    "answer": "began"
+  },
+  {
+    "question": "Do what you can, with what you have, where you ____.",
+    "answer": "are"
+  },
+  {
+    "question": "The harder the battle, the sweeter the ____.",
+    "answer": "victory"
+  },
+  {
+    "question": "Life begins at the end of your ____.",
+    "answer": "zone"
+  },
+  {
+    "question": "If you want to lift yourself up, lift up someone ____.",
+    "answer": "else"
+  },
+  {
+    "question": "Sometimes you win, sometimes you ____.",
+    "answer": "learn"
+  },
+  {
+    "question": "Success doesn't come from what you do occasionally, it comes from what you do ____.",
+    "answer": "consistently"
+  },
+  {
+    "question": "A river cuts through rock not because of its power, but its ____.",
+    "answer": "persistence"
+  },
+  {
+    "question": "If you want to achieve greatness, stop asking for ____.",
+    "answer": "permission"
+  },
+  {
+    "question": "I am not a product of my circumstances. I am a product of my ____.",
+    "answer": "decisions"
+  },
+  {
+    "question": "The only way to achieve the impossible is to believe it is ____.",
+    "answer": "possible"
+  },
+  {
+    "question": "Don't be pushed around by the fears in your mind, be guided by your ____.",
+    "answer": "dreams"
+  },
+  {
+    "question": "What you do today can improve all your ____ tomorrow.",
+    "answer": "tomorrows"
+  },
+  {
+    "question": "Success is not for the lazy, it's for the ____.",
+    "answer": "determined"
+  },
+  {
+    "question": "Great minds discuss ideas; average minds discuss ____.",
+    "answer": "events"
+  },
+  {
+    "question": "The only place where success comes before work is in the ____.",
+    "answer": "dictionary"
+  },
+  {
+    "question": "Success is not measured by wealth, but by ____.",
+    "answer": "impact"
+  },
+  {
+    "question": "Don't count the years, make the ____ count.",
+    "answer": "moments"
+  },
+  {
+    "question": "Every great achievement begins with the courage to ____.",
+    "answer": "begin"
+  },
+  {
+    "question": "Don't let success go to your ____.",
+    "answer": "head"
+  },
+  {
+    "question": "Failure is simply the opportunity to begin ____.",
+    "answer": "again"
+  },
+  {
+    "question": "The secret of success is to do the common things uncommonly ____.",
+    "answer": "well"
+  },
+  {
+    "question": "Your future is created by what you do today, not tomorrow, so start ____.",
+    "answer": "immediately"
+  },
+  {
+    "question": "Don't let the fear of losing be greater than the excitement of ____.",
+    "answer": "winning"
+  },
+  {
+    "question": "Success is the sum of small efforts, repeated ____.",
+    "answer": "daily"
+  },
+  {
+    "question": "The only thing standing between you and your goal is your ____.",
+    "answer": "doubt"
+  },
+  {
+    "question": "Don't be afraid to take a big ____.",
+    "answer": "step"
+  },
+  {
+    "question": "Dreams are the seedlings of ____.",
+    "answer": "reality"
+  },
+  {
+    "question": "The best way to get started is to ____.",
+    "answer": "begin"
+  },
+  {
+    "question": "The future belongs to those who believe in the beauty of their ____.",
+    "answer": "dreams"
+  },
+  {
+    "question": "You are never too old to set another ____.",
+    "answer": "goal"
+  },
+  {
+    "question": "Don't wait for the right opportunity, create your own ____.",
+    "answer": "opportunity"
+  },
+  {
+    "question": "Success isn't just about what you accomplish in your life, it's about what you inspire others to ____.",
+    "answer": "do"
+  },
+  {
+    "question": "The only real mistake is the one from which we learn ____.",
+    "answer": "nothing"
+  },
+  {
+    "question": "Don't be afraid to stand for ____.",
+    "answer": "something"
+  },
+  {
+    "question": "Success is the result of preparation meeting ____.",
+    "answer": "opportunity"
+  },
+  {
+    "question": "The secret to getting ahead is getting ____.",
+    "answer": "started"
+  },
+  {
+    "question": "Believe in yourself and all that you are. Know that there is something inside you that is greater than any ____.",
+    "answer": "obstacle"
+  },
+  {
+    "question": "The only journey is the journey within. Discover your ____.",
+    "answer": "self"
+  },
+  {
+    "question": "Don't measure success by what you have, but by what you ____.",
+    "answer": "give"
+  },
+  {
+    "question": "The only thing that stands between you and your dreams is the ____ to try.",
+    "answer": "courage"
+  },
+  {
+    "question": "Every success story begins with a ____.",
+    "answer": "dream"
+  },
+  {
+    "question": "The harder the struggle, the greater the ____.",
+    "answer": "triumph"
+  },
+  {
+    "question": "Don’t wait for someone else to make your ____ come true.",
+    "answer": "dreams"
+  },
+  {
+    "question": "A strong work ethic can turn a ____ into a success.",
+    "answer": "challenge"
+  },
+  {
+    "question": "Failure is just a stepping stone to ____.",
+    "answer": "success"
+  },
+  {
+    "question": "Success is not about luck, it's about ____.",
+    "answer": "perseverance"
+  },
+  {
+    "question": "A goal properly set is ____ half reached.",
+    "answer": "already"
+  },
+  {
+    "question": "Success is sweetest when you've known ____.",
+    "answer": "defeat"
+  },
+  {
+    "question": "Every setback is a setup for a ____.",
+    "answer": "comeback"
+  },
+  {
+    "question": "If you want to succeed, you must first ____.",
+    "answer": "believe"
+  },
+  {
+    "question": "The best investment you can make is in your own ____.",
+    "answer": "self"
+  }
+]
