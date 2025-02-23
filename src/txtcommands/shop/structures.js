@@ -497,7 +497,7 @@ export async function sellstructure(context, structureId) {
 
     await updateUser(userId, {
       cash: userData.cash,
-      maintenance: userData,
+      maintenance: userData.maintenance,
       structures: userData.structures
     });
 
