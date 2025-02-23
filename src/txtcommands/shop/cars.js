@@ -465,12 +465,14 @@ export async function sellcar(context, carId) {
         content: `⚠️ You don't own this car.`
       });
     }
+    
+    const amountToAdd = Math.floor(Number(car[0].price || 0) - (0.18 * Number(car[0].price || 0)))
 
     const embed = new EmbedBuilder()
     .setColor('#e93535')
     .setTitle('🧾 𝐓𝐫𝐚𝐧𝐬𝐢𝐭𝐢𝐨𝐧 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥')
     .setDescription(
-      `**${username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${car[0].price.toLocaleString()}** 𝑪𝒂𝒔𝒉.\n` +
+      `**${username}** successfully sold a <:${car[0].id}_car:${car[0].emoji}> **${car[0].name}** car for <:kasiko_coin:1300141236841086977> **${amountToAdd.toLocaleString()}** 𝑪𝒂𝒔𝒉.\n` +
       `Originally purchased that car for <:kasiko_coin:1300141236841086977>${userCar.purchasedPrice}.`
     )
     .setFooter({
@@ -486,10 +488,14 @@ export async function sellcar(context, carId) {
     }
 
     // Give user back the full price (if that’s the logic you want)
-    userData.cash += Number(car[0].price);
+    userData.cash += amountToAdd;
     userData.maintenance -= Number(car[0].maintenance);
 
-    await updateUser(userId, userData);
+    await updateUser(userId, {
+      cash: userData.cash,
+      maintenance: userData.maintenance,
+      cars: userData.cars
+    });
 
     return handleMessage(context,
       {

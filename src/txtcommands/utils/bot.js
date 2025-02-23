@@ -36,7 +36,7 @@ export default {
           name: "Bot Tag", value: `#${client.user.discriminator}`, inline: true
         },
         {
-          name: "Bot Version", value: "1.0.6", inline: true
+          name: "Bot Version", value: "1.1.0", inline: true
         },
         {
           name: "Uptime", value: `${hours} hours, ${minutes} minutes, ${seconds} seconds`, inline: true

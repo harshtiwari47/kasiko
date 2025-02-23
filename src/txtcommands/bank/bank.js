@@ -53,7 +53,7 @@ export const Bank = {
 
       try {
         await updateUser(userId, {
-          cash: Math.max(0, userData.cash - Number(amount)),
+          cash: Math.max(0, userData.cash),
           'bankAccount.deposit': Math.abs(newDeposit)
         });
 

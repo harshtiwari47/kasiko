@@ -68,7 +68,6 @@ const careers = {
 export async function work(id, channel, user) {
   let workMessage;
   try {
-    const guild = user;
     let userData = await getUserData(id);
 
     if (!userData || !guild) {
@@ -91,7 +90,7 @@ export async function work(id, channel, user) {
 
     const randomMessage = careers[randomCarreer].messages[Math.floor(Math.random() * careers[randomCarreer].messages.length)];
 
-    return workMessage = (randomMessage.replace("{username}", guild.user.username).replace("{cash}", earnedCash.toLocaleString()));
+    return workMessage = (randomMessage.replace("{username}", user.username).replace("{cash}", earnedCash.toLocaleString()));
   } catch (e) {
     console.log(e);
     return workMessage = ("Oops! Something went wrong while working 💼!");

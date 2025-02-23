@@ -1169,4 +1169,604 @@
   {
     "question": "Which popular video game features characters called Mario and Luigi?",
     "answer": "Super Mario Bros"
+  },
+  {
+    "question": "Who directed 'Inception'?",
+    "answer": "Christopher Nolan"
+  },
+  {
+    "question": "Who starred as Tony Stark in the Marvel Cinematic Universe?",
+    "answer": "Robert Downey Jr."
+  },
+  {
+    "question": "Who played Jack Sparrow in 'Pirates of the Caribbean'?",
+    "answer": "Johnny Depp"
+  },
+  {
+    "question": "Who created 'Breaking Bad'?",
+    "answer": "Vince Gilligan"
+  },
+  {
+    "question": "Who starred as Batman in 'The Dark Knight'?",
+    "answer": "Christian Bale"
+  },
+  {
+    "question": "Which series features supernatural events in Hawkins, Indiana?",
+    "answer": "Stranger Things"
+  },
+  {
+    "question": "Who directed 'Titanic'?",
+    "answer": "James Cameron"
+  },
+  {
+    "question": "Who wrote the 'A Song of Ice and Fire' books that inspired 'Game of Thrones'?",
+    "answer": "George R. R. Martin"
+  },
+  {
+    "question": "Who directed 'Pulp Fiction'?",
+    "answer": "Quentin Tarantino"
+  },
+  {
+    "question": "Who starred in 'Forrest Gump'?",
+    "answer": "Tom Hanks"
+  },
+  {
+    "question": "Which film features the quote 'I'll be back'?",
+    "answer": "The Terminator"
+  },
+  {
+    "question": "Who is the lead actor in 'John Wick'?",
+    "answer": "Keanu Reeves"
+  },
+  {
+    "question": "Which film features the character Neo?",
+    "answer": "The Matrix"
+  },
+  {
+    "question": "Who directed 'Avatar' (2009)?",
+    "answer": "James Cameron"
+  },
+  {
+    "question": "Who directed 'The Lord of the Rings' trilogy?",
+    "answer": "Peter Jackson"
+  },
+  {
+    "question": "Who portrayed Gandalf in 'The Lord of the Rings'?",
+    "answer": "Ian McKellen"
+  },
+  {
+    "question": "Who starred as Wonder Woman in the 2017 film?",
+    "answer": "Gal Gadot"
+  },
+  {
+    "question": "Who played Spider-Man in 'Spider-Man: Homecoming'?",
+    "answer": "Tom Holland"
+  },
+  {
+    "question": "Who directed 'The Shawshank Redemption'?",
+    "answer": "Frank Darabont"
+  },
+  {
+    "question": "Who starred as Maximus in 'Gladiator'?",
+    "answer": "Russell Crowe"
+  },
+  {
+    "question": "Who starred in 'The Revenant'?",
+    "answer": "Leonardo DiCaprio"
+  },
+  {
+    "question": "Who directed 'Interstellar'?",
+    "answer": "Christopher Nolan"
+  },
+  {
+    "question": "Who portrayed the Joker in 'The Dark Knight'?",
+    "answer": "Heath Ledger"
+  },
+  {
+    "question": "Who starred as Jason Bourne in 'The Bourne Identity'?",
+    "answer": "Matt Damon"
+  },
+  {
+    "question": "Who directed 'Fight Club'?",
+    "answer": "David Fincher"
+  },
+  {
+    "question": "Who starred alongside Ryan Gosling in 'La La Land'?",
+    "answer": "Emma Stone"
+  },
+  {
+    "question": "Who directed 'The Social Network'?",
+    "answer": "David Fincher"
+  },
+  {
+    "question": "Who portrayed Mark Zuckerberg in 'The Social Network'?",
+    "answer": "Jesse Eisenberg"
+  },
+  {
+    "question": "Which film features Katniss Everdeen?",
+    "answer": "The Hunger Games"
+  },
+  {
+    "question": "Who played Katniss Everdeen?",
+    "answer": "Jennifer Lawrence"
+  },
+  {
+    "question": "Who directed 'The Matrix'?",
+    "answer": "The Wachowskis"
+  },
+  {
+    "question": "Which film series features mutants with extraordinary abilities?",
+    "answer": "X-Men"
+  },
+  {
+    "question": "Who starred as Indiana Jones in 'Raiders of the Lost Ark'?",
+    "answer": "Harrison Ford"
+  },
+  {
+    "question": "Who directed 'Jurassic Park'?",
+    "answer": "Steven Spielberg"
+  },
+  {
+    "question": "Which film features a dinosaur theme park?",
+    "answer": "Jurassic Park"
+  },
+  {
+    "question": "Who starred as James Bond in 'Casino Royale' (2006)?",
+    "answer": "Daniel Craig"
+  },
+  {
+    "question": "Who directed 'Schindler's List'?",
+    "answer": "Steven Spielberg"
+  },
+  {
+    "question": "Who starred in 'The Wolf of Wall Street'?",
+    "answer": "Leonardo DiCaprio"
+  },
+  {
+    "question": "Which film features a high-stakes heist led by Danny Ocean?",
+    "answer": "Ocean's Eleven"
+  },
+  {
+    "question": "Who directed 'The Godfather'?",
+    "answer": "Francis Ford Coppola"
+  },
+  {
+    "question": "Who starred as Michael Corleone in 'The Godfather'?",
+    "answer": "Al Pacino"
+  },
+  {
+    "question": "Which animated series features the Simpson family?",
+    "answer": "The Simpsons"
+  },
+  {
+    "question": "Who voices Homer Simpson?",
+    "answer": "Dan Castellaneta"
+  },
+  {
+    "question": "Which film popularized the quote 'May the Force be with you'?",
+    "answer": "Star Wars"
+  },
+  {
+    "question": "Who directed 'Star Wars: A New Hope'?",
+    "answer": "George Lucas"
+  },
+  {
+    "question": "Who starred as Luke Skywalker?",
+    "answer": "Mark Hamill"
+  },
+  {
+    "question": "Which film series features the conflict between the Rebel Alliance and the Galactic Empire?",
+    "answer": "Star Wars"
+  },
+  {
+    "question": "Who starred as Black Panther in the Marvel Cinematic Universe?",
+    "answer": "Chadwick Boseman"
+  },
+  {
+    "question": "Which film introduces Captain America in the MCU?",
+    "answer": "Captain America: The First Avenger"
+  },
+  {
+    "question": "Who played Captain America in the MCU?",
+    "answer": "Chris Evans"
+  },
+  {
+    "question": "Who directed 'Guardians of the Galaxy'?",
+    "answer": "James Gunn"
+  },
+  {
+    "question": "Who starred as Star-Lord in 'Guardians of the Galaxy'?",
+    "answer": "Chris Pratt"
+  },
+  {
+    "question": "Which film features the character Deadpool?",
+    "answer": "Deadpool"
+  },
+  {
+    "question": "Who played Deadpool?",
+    "answer": "Ryan Reynolds"
+  },
+  {
+    "question": "Who directed 'Logan'?",
+    "answer": "James Mangold"
+  },
+  {
+    "question": "Which film is known as Wolverine's final solo adventure?",
+    "answer": "Logan"
+  },
+  {
+    "question": "Who played Black Widow in the MCU?",
+    "answer": "Scarlett Johansson"
+  },
+  {
+    "question": "Which film features the quote 'With great power comes great responsibility'?",
+    "answer": "Spider-Man"
+  },
+  {
+    "question": "Who directed 'The Avengers'?",
+    "answer": "Joss Whedon"
+  },
+  {
+    "question": "Which film unites several Marvel superheroes in one movie?",
+    "answer": "The Avengers"
+  },
+  {
+    "question": "Who starred as Doctor Strange in the MCU?",
+    "answer": "Benedict Cumberbatch"
+  },
+  {
+    "question": "Who directed 'Doctor Strange'?",
+    "answer": "Scott Derrickson"
+  },
+  {
+    "question": "Which film features the superhero team known as the Fantastic Four?",
+    "answer": "Fantastic Four"
+  },
+  {
+    "question": "Which animated film features multiple Spider-People from different dimensions?",
+    "answer": "Spider-Man: Into the Spider-Verse"
+  },
+  {
+    "question": "Who starred as Wolverine in the X-Men series?",
+    "answer": "Hugh Jackman"
+  },
+  {
+    "question": "Which film features a man who discovers his life is a TV show?",
+    "answer": "The Truman Show"
+  },
+  {
+    "question": "Who starred in 'The Truman Show'?",
+    "answer": "Jim Carrey"
+  },
+  {
+    "question": "Which film features a space survival story after a shuttle malfunction?",
+    "answer": "Gravity"
+  },
+  {
+    "question": "Who starred in 'Gravity'?",
+    "answer": "Sandra Bullock"
+  },
+  {
+    "question": "Which film features a character named V in a dystopian setting?",
+    "answer": "V for Vendetta"
+  },
+  {
+    "question": "Who starred as V in 'V for Vendetta'?",
+    "answer": "Hugo Weaving"
+  },
+  {
+    "question": "Which film is about an underdog boxer from Philadelphia?",
+    "answer": "Rocky"
+  },
+  {
+    "question": "Who starred as Rocky Balboa?",
+    "answer": "Sylvester Stallone"
+  },
+  {
+    "question": "Which film features a famous outlaw duo during the Great Depression?",
+    "answer": "Bonnie and Clyde"
+  },
+  {
+    "question": "Who starred as Clyde Barrow in 'Bonnie and Clyde'?",
+    "answer": "Warren Beatty"
+  },
+  {
+    "question": "Which film stars Arnold Schwarzenegger in a dystopian action role?",
+    "answer": "The Running Man"
+  },
+  {
+    "question": "Who starred in 'The Running Man'?",
+    "answer": "Arnold Schwarzenegger"
+  },
+  {
+    "question": "Which film is set in a post-apocalyptic wasteland with road warriors?",
+    "answer": "Mad Max: Fury Road"
+  },
+  {
+    "question": "Who starred as Max in 'Mad Max: Fury Road'?",
+    "answer": "Tom Hardy"
+  },
+  {
+    "question": "Which film features a character with scissor hands?",
+    "answer": "Edward Scissorhands"
+  },
+  {
+    "question": "Who starred as Edward in 'Edward Scissorhands'?",
+    "answer": "Johnny Depp"
+  },
+  {
+    "question": "Which film features a time travel adventure with a DeLorean?",
+    "answer": "Back to the Future"
+  },
+  {
+    "question": "Who starred as Marty McFly in 'Back to the Future'?",
+    "answer": "Michael J. Fox"
+  },
+  {
+    "question": "Which film features a teenager bitten by a radioactive spider?",
+    "answer": "Spider-Man"
+  },
+  {
+    "question": "Who starred as Peter Parker in 'Spider-Man' (2002)?",
+    "answer": "Tobey Maguire"
+  },
+  {
+    "question": "Which film features a dark and gritty version of Batman released in 2022?",
+    "answer": "The Batman"
+  },
+  {
+    "question": "Who starred as Batman in 'The Batman' (2022)?",
+    "answer": "Robert Pattinson"
+  },
+  {
+    "question": "Which film features an alien who befriends a young boy?",
+    "answer": "E.T. the Extra-Terrestrial"
+  },
+  {
+    "question": "Who directed 'E.T. the Extra-Terrestrial'?",
+    "answer": "Steven Spielberg"
+  },
+  {
+    "question": "Which animated film features a clownfish searching for his son?",
+    "answer": "Finding Nemo"
+  },
+  {
+    "question": "Who voiced Dory in 'Finding Nemo'?",
+    "answer": "Ellen DeGeneres"
+  },
+  {
+    "question": "Which film features a couple erasing memories of their relationship?",
+    "answer": "Eternal Sunshine of the Spotless Mind"
+  },
+  {
+    "question": "Who starred in 'Eternal Sunshine of the Spotless Mind'?",
+    "answer": "Jim Carrey and Kate Winslet"
+  },
+  {
+    "question": "Which film is set in a futuristic city and features a fight for survival?",
+    "answer": "Blade Runner 2049"
+  },
+  {
+    "question": "Who directed 'Blade Runner 2049'?",
+    "answer": "Denis Villeneuve"
+  },
+  {
+    "question": "Which animated film features a family of superheroes?",
+    "answer": "The Incredibles"
+  },
+  {
+    "question": "Who directed 'The Incredibles'?",
+    "answer": "Brad Bird"
+  },
+  {
+    "question": "Which film features a rat who dreams of becoming a chef?",
+    "answer": "Ratatouille"
+  },
+  {
+    "question": "Who directed 'Ratatouille'?",
+    "answer": "Brad Bird"
+  },
+  {
+    "question": "Which film features a treasure hunt led by Benjamin Franklin Gates?",
+    "answer": "National Treasure"
+  },
+  {
+    "question": "Who starred as Benjamin Franklin Gates in 'National Treasure'?",
+    "answer": "Nicolas Cage"
+  },
+  {
+    "question": "Which film features a journey to destroy a powerful ring?",
+    "answer": "The Lord of the Rings: The Fellowship of the Ring"
+  },
+  {
+    "question": "Who starred as Frodo Baggins in 'The Lord of the Rings'?",
+    "answer": "Elijah Wood"
+  },
+  {
+    "question": "Which film adaptation is based on George Orwell's novel about a dystopian society?",
+    "answer": "1984"
+  },
+  {
+    "question": "Who starred in the film adaptation of '1984'?",
+    "answer": "John Hurt"
+  },
+  {
+    "question": "Which series is a mockumentary about a paper company?",
+    "answer": "The Office"
+  },
+  {
+    "question": "Who starred as Michael Scott in 'The Office' (US)?",
+    "answer": "Steve Carell"
+  },
+  {
+    "question": "Which series is a mockumentary-style sitcom about a suburban family?",
+    "answer": "Modern Family"
+  },
+  {
+    "question": "Who starred as Claire Dunphy in 'Modern Family'?",
+    "answer": "Julie Bowen"
+  },
+  {
+    "question": "Which animated series is set in the 31st century and features a delivery boy and a robot?",
+    "answer": "Futurama"
+  },
+  {
+    "question": "Who created 'Futurama'?",
+    "answer": "Matt Groening"
+  },
+  {
+    "question": "Which series is a dark, modern adaptation of Archie Comics?",
+    "answer": "Riverdale"
+  },
+  {
+    "question": "Who stars as Archie Andrews in 'Riverdale'?",
+    "answer": "KJ Apa"
+  },
+  {
+    "question": "Which film features a duo of brothers on a road trip across America?",
+    "answer": "O Brother, Where Art Thou?"
+  },
+  {
+    "question": "Who directed 'O Brother, Where Art Thou?'",
+    "answer": "Joel and Ethan Coen"
+  },
+  {
+    "question": "Which film is about a man who ages in reverse?",
+    "answer": "The Curious Case of Benjamin Button"
+  },
+  {
+    "question": "Who starred as Benjamin Button in 'The Curious Case of Benjamin Button'?",
+    "answer": "Brad Pitt"
+  },
+  {
+    "question": "Which film features an astronaut stranded on Mars?",
+    "answer": "The Martian"
+  },
+  {
+    "question": "Who starred in 'The Martian'?",
+    "answer": "Matt Damon"
+  },
+  {
+    "question": "Which film features a crime boss and a mafia family in New York?",
+    "answer": "Goodfellas"
+  },
+  {
+    "question": "Who directed 'Goodfellas'?",
+    "answer": "Martin Scorsese"
+  },
+  {
+    "question": "Which film features a narrative about dreams within dreams?",
+    "answer": "Inception"
+  },
+  {
+    "question": "Who starred as Dom Cobb in 'Inception'?",
+    "answer": "Leonardo DiCaprio"
+  },
+  {
+    "question": "Which series is a historical drama about Queen Elizabeth II?",
+    "answer": "The Crown"
+  },
+  {
+    "question": "Who starred as Queen Elizabeth II in the first two seasons of 'The Crown'?",
+    "answer": "Claire Foy"
+  },
+  {
+    "question": "Which film features a magical nanny who helps a family in need?",
+    "answer": "Mary Poppins"
+  },
+  {
+    "question": "Who starred as Mary Poppins?",
+    "answer": "Julie Andrews"
+  },
+  {
+    "question": "Which film features a group of kids on an adventure to find treasure?",
+    "answer": "The Goonies"
+  },
+  {
+    "question": "Who starred as Mikey in 'The Goonies'?",
+    "answer": "Sean Astin"
+  },
+  {
+    "question": "Which film launched a popular high school musical franchise?",
+    "answer": "High School Musical"
+  },
+  {
+    "question": "Who starred as Troy Bolton in 'High School Musical'?",
+    "answer": "Zac Efron"
+  },
+  {
+    "question": "Which animated film features the song 'Let It Go'?",
+    "answer": "Frozen"
+  },
+  {
+    "question": "Which film features a futuristic world where people can relive their memories?",
+    "answer": "Total Recall"
+  },
+  {
+    "question": "Who starred in 'Total Recall' (1990)?",
+    "answer": "Arnold Schwarzenegger"
+  },
+  {
+    "question": "Which film features a battle between humans and alien invaders on Earth?",
+    "answer": "Independence Day"
+  },
+  {
+    "question": "Who starred in 'Independence Day'?",
+    "answer": "Will Smith"
+  },
+  {
+    "question": "Which series features a bounty hunter known as the Mandalorian?",
+    "answer": "The Mandalorian"
+  },
+  {
+    "question": "Who stars as the Mandalorian?",
+    "answer": "Pedro Pascal"
+  },
+  {
+    "question": "Which film features a quirky inventor and his giant robot friend?",
+    "answer": "The Iron Giant"
+  },
+  {
+    "question": "Who directed 'The Iron Giant'?",
+    "answer": "Brad Bird"
+  },
+  {
+    "question": "Which animated film features a princess with long magical hair?",
+    "answer": "Tangled"
+  },
+  {
+    "question": "Who voiced Rapunzel in 'Tangled'?",
+    "answer": "Mandy Moore"
+  },
+  {
+    "question": "Which film features a haunted hotel with supernatural events?",
+    "answer": "The Shining"
+  },
+  {
+    "question": "Who directed 'The Shining'?",
+    "answer": "Stanley Kubrick"
+  },
+  {
+    "question": "Which film features the iconic quote 'I'm the king of the world'?",
+    "answer": "Titanic"
+  },
+  {
+    "question": "Which film features the epic battle at Helm's Deep?",
+    "answer": "The Lord of the Rings: The Two Towers"
+  },
+  {
+    "question": "Who directed 'The Lord of the Rings: The Two Towers'?",
+    "answer": "Peter Jackson"
+  },
+  {
+    "question": "Which film features the iconic character Iron Man?",
+    "answer": "Iron Man"
+  },
+  {
+    "question": "Who starred as Iron Man in 'Iron Man' (2008)?",
+    "answer": "Robert Downey Jr."
+  },
+  {
+    "question": "Which series features a deadly competition where contestants play children's games?",
+    "answer": "Squid Game"
   }]

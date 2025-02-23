@@ -489,18 +489,24 @@ export async function sellstructure(context, structureId) {
       userData.structures.splice(structureIndex, 1);
     }
 
+    const amountToAdd = Math.floor(Number(structure.price || 0) - (0.25 * Number(structure.price || 0)));
+
     // Add cash and decrease maintenance
-    userData.cash += Number(structure.price);
+    userData.cash += amountToAdd;
     userData.maintenance -= Number(structure.maintenance);
 
-    await updateUser(userId, userData);
+    await updateUser(userId, {
+      cash: userData.cash,
+      maintenance: userData,
+      structures: userData.structures
+    });
 
     // Create embed message
     const embed = new EmbedBuilder()
     .setColor('#e93535')
     .setTitle('🧾 Transaction Successful')
     .setDescription(
-      `**${username}** successfully sold a **${structure.name}** for <:kasiko_coin:1300141236841086977> **${Number(structure.price).toLocaleString()}** Cash.\n` +
+      `**${username}** successfully sold a **${structure.name}** for <:kasiko_coin:1300141236841086977> **${Number(amountToAdd).toLocaleString()}** Cash.\n` +
       `Originally purchased for <:kasiko_coin:1300141236841086977> **${Number(userStructure.purchasedPrice).toLocaleString()}**.`
     )
     .setFooter({
