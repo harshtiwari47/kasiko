@@ -60,8 +60,8 @@ const WelcomeMsg = {
           {
             name: '**Important Links**',
             value:
-            `[Terms and Conditions](https://kasiko-bot.vercel.app/terms.html) | ` +
-            `[Support](https://kasiko-bot.vercel.app/contact.html)`
+            `[Terms and Conditions](https://kasiko.vercel.app/terms.html) | ` +
+            `[Support](https://kasiko.vercel.app/contact.html)`
           },
           {
             name: '**Getting Started**',

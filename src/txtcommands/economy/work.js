@@ -70,7 +70,7 @@ export async function work(id, channel, user) {
   try {
     let userData = await getUserData(id);
 
-    if (!userData || !guild) {
+    if (!userData || !user) {
       return workMessage = ("Oops! Something went wrong while working 💼!");
     }
 

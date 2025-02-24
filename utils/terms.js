@@ -22,7 +22,7 @@ export const termsAndcondition = async (message) => {
     .setTitle('Terms and Conditions Agreement')
     .setDescription(
       'Welcome to **Kasiko**! Before proceeding, please ***carefully read and accept our Terms and Conditions***.\n\n' +
-      '**[Click here to read the full Terms and Conditions](https://kasiko-bot.vercel.app/terms.html)**\n\n' +
+      '**[Click here to read the full Terms and Conditions](https://kasiko.vercel.app/terms.html)**\n\n' +
       '**Important:** Violating the terms may result in severe consequences including _temporary or permanent bans_ from the bot.'
     )
     .addFields({
