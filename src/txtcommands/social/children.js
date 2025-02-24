@@ -484,14 +484,14 @@ export default {
         }
       case "feed": {
           if (!args[1] || !args[2]) {
-            return message.channel.send("Usage: `children feed <childIndex> <times>`");
+            return message.channel.send("Usage: `children feed <childIndex>`");
           }
           const index = Number(args[1]);
-          const amount = Number(args[2]);
+          const amount = 1;
           if (isNaN(index) || isNaN(amount) || amount <= 0) {
-            return message.channel.send("Please provide valid numbers for `<childIndex>` and `<times>`.");
+            return message.channel.send("Please provide valid numbers for `<childIndex>`.");
           }
-          return feedChild(message, index, amount);
+          return feedChild(message, index, 1);
         }
       case "pat": {
           if (!args[1]) {
