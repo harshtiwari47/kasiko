@@ -13,6 +13,11 @@ import {
   client
 } from "../../../bot.js";
 
+import {
+  getAllJewelry
+} from '../shop/shopDataHelper.js';
+
+
 // Default emojis if no custom emojis are set for the family.
 const DEFAULT_BOY_EMOJI = '<:boy_child:1335131474055139430>';
 const DEFAULT_GIRL_EMOJI = '<:girl_child:1335131494070489118>';
@@ -41,7 +46,15 @@ export async function checkForNewChildren(userId) {
   const userData = await getUserData(userId);
   if (!userData?.family?.spouse) return; // Only proceed if married
 
-  const bondXP = userData.family.bondXP || 0;
+  const allJewelryItems = getAllJewelry();
+  let item;
+
+  if (userData.family.ring) {
+    item = allJewelryItems.find(i => i.id === userData.family.ring);
+  }
+
+  const bondXP = (userData.family?.bondXP || 0) + (item?.price ? item.price / 100: 0);
+
   let children = userData.family.children || [];
 
   // If the children are stored in the old comma‐separated string format, convert them:
