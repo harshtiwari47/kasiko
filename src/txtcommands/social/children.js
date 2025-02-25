@@ -483,7 +483,7 @@ export default {
           }
         }
       case "feed": {
-          if (!args[1] || !args[2]) {
+          if (!args[1]) {
             return message.channel.send("Usage: `children feed <childIndex>`");
           }
           const index = Number(args[1]);

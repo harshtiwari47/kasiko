@@ -10,7 +10,7 @@ import UserGuild from "./models/UserGuild.js";
 import redisClient from "./redis.js";
 
 import {
-  updateNetWorth
+  calculateNetWorth
 } from './utils/updateNetworth.js';
 
 dotenv.config();
@@ -209,6 +209,9 @@ export const userExists = async (userId) => {
 export const updateUser = async (userId, userData, guildId = null) => {
   const maxRetries = 3;
   let attempt = 0;
+  const filter = {
+    id: userId
+  };
 
   while (attempt < maxRetries) {
     let session;
@@ -219,31 +222,20 @@ export const updateUser = async (userId, userData, guildId = null) => {
         throw new Error('No valid user data provided for update.');
       }
 
-      // Determine if userData is a Mongoose document.
       const isMongooseDoc = typeof userData.modifiedPaths === 'function';
-
-      // Build the "updates" object.
       let updates = {};
       if (isMongooseDoc) {
-        // If nothing was modified, return the document.
         if (!userData.isModified()) {
           return userData;
         }
-        // Only collect modified fields.
         userData.modifiedPaths().forEach((path) => {
           updates[path] = userData[path];
         });
       } else {
-        // For a plain object, assume the whole object is for updating.
+        // For a plain object, assume all fields are to be updated.
         updates = {
           ...userData
         };
-      }
-
-      // Optionally recalc net worth.
-      const newNetWorth = await updateNetWorth(userId);
-      if (newNetWorth && newNetWorth > 0) {
-        updates.networth = newNetWorth;
       }
 
       // Ensure cash and networth are rounded and not negative.
@@ -254,7 +246,11 @@ export const updateUser = async (userId, userData, guildId = null) => {
         updates.networth = Math.max(Number(parseFloat(updates.networth).toFixed(1)), 0);
       }
 
-      // If a guildId is provided, upsert the UserGuild record.
+      // Begin a session and start a transaction.
+      session = await mongoose.startSession();
+      session.startTransaction();
+
+      // If a guildId is provided, upsert the UserGuild record using the same session.
       if (guildId) {
         await UserGuild.findOneAndUpdate(
           {
@@ -262,21 +258,31 @@ export const updateUser = async (userId, userData, guildId = null) => {
           },
           {},
           {
-            upsert: true, setDefaultsOnInsert: true, new: true
+            upsert: true, setDefaultsOnInsert: true, new: true, session
           }
         );
       }
 
-      // Begin a session and start a transaction.
-      session = await mongoose.startSession();
-      session.startTransaction();
+      // Get the current user data within the transaction.
+      const currentUser = await User.findOne(filter).session(session);
+      if (!currentUser) {
+        throw new Error('User not found for update.');
+      }
 
-      // Determine which identifier to use when updating the User.
-      const filter = {
-        id: userId
+      // Merge the pending updates into the current data (simulate the final state).
+      const finalUserData = {
+        ...currentUser.toObject(),
+        ...updates
       };
 
-      // Perform an atomic update using $set.
+      // Recalculate net worth based on the simulated final state.
+      let newNetWorth;
+
+      if (updates.cash) {
+        newNetWorth = await calculateNetWorth(finalUserData);
+        updates.networth = newNetWorth;
+      }
+
       const updatedUser = await User.findOneAndUpdate(
         filter,
         {
@@ -286,16 +292,15 @@ export const updateUser = async (userId, userData, guildId = null) => {
           new: true, session
         }
       );
-
       if (!updatedUser) {
-        throw new Error('User not found for update.');
+        throw new Error('User not found after update.');
       }
 
       // Commit the transaction.
       await session.commitTransaction();
       session.endSession();
 
-      // Update Redis cache asynchronously (fire-and-forget).
+      // Update Redis cache asynchronously.
       redisClient
       .set(`user:${userId}`, JSON.stringify(updatedUser.toObject()), {
         EX: 60
@@ -304,19 +309,15 @@ export const updateUser = async (userId, userData, guildId = null) => {
 
       return updatedUser;
     } catch (error) {
-      // If a session was started, abort the transaction and end the session.
       if (session) {
         await session.abortTransaction();
         session.endSession();
       }
-
-      // If we've reached the maximum retry count, log and throw the error.
       if (attempt >= maxRetries) {
         console.error(`Error updating user after ${attempt} attempts:`, error);
         throw error;
       }
-
-      // Optionally wait before retrying (e.g., 1 second delay).
+      // Optionally wait before retrying.
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }

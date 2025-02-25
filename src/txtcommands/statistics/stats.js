@@ -8,7 +8,7 @@ import {
 } from '../../../helper.js';
 
 import {
-  updateNetWorth
+  calculateNetWorth
 } from '../../../utils/updateNetworth.js';
 
 
@@ -31,7 +31,7 @@ async function sendUserStat(stat, message) {
     return message.channel.send(`**${message.author.username}** has total **${userData[stat]}** Trust Score.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "networth") {
-    let newNetWorth = await updateNetWorth(message.author.id);
+    let newNetWorth = await calculateNetWorth(userData);
     if (newNetWorth) {
       userData[stat] = newNetWorth;
     }

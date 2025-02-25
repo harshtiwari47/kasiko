@@ -245,7 +245,7 @@ client.on('messageCreate', async (message) => {
       // Reset violation counter on successful command
       await redisClient.del(`violations:${userId}`);
 
-      await incrementTaskExp(message.author.id, "command", message);
+      // await incrementTaskExp(message.author.id, "command", message);
 
       command.execute(args, message);
     } catch (error) {

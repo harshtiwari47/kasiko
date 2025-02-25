@@ -515,15 +515,16 @@ export async function sellstructure(context, structureId) {
     })
     .setTimestamp();
 
-    return handleMessage(context, {
+    await handleMessage(context, {
       embeds: [embed]
     });
-
+    return;
   } catch (e) {
     console.error(e);
-    return handleMessage(context, {
+    await handleMessage(context, {
       content: `⚠️ **${context.user?.username || context.author?.username}**, something went wrong while selling the structure!`
     });
+    return;
   }
 }
 /**

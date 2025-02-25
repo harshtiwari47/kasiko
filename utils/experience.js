@@ -96,11 +96,16 @@ export async function updateExpPoints(content, user, channel, guildId) {
     const expRequiredNextLvl = (Math.pow(lvl + 1, 2) * threshold) - Number(userData.exp);
 
     try {
-      await updateUser(user.id, {
+      let updateData = {
         exp: userData.exp,
-        cash: userData.cash,
         level: userData.level
-      }, guildId);
+      }
+
+      if (lvlUp) {
+        updateData.cash = userData.cash;
+      }
+
+      await updateUser(user.id, updateData, guildId);
     } catch (err) {}
 
     if (lvlUp) {

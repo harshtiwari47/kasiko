@@ -465,7 +465,7 @@ export async function sellcar(context, carId) {
         content: `⚠️ You don't own this car.`
       });
     }
-    
+
     const amountToAdd = Math.floor(Number(car[0].price || 0) - (0.18 * Number(car[0].price || 0)))
 
     const embed = new EmbedBuilder()
@@ -497,16 +497,20 @@ export async function sellcar(context, carId) {
       cars: userData.cars
     });
 
-    return handleMessage(context,
+    await handleMessage(context,
       {
         embeds: [embed]
       });
+
+    return;
   } catch (e) {
     console.error(e);
-    return handleMessage(context,
+    await handleMessage(context,
       {
         content: `⚠️ **${context.user?.username || context.author?.username}**, something went wrong while selling the car!`
       });
+
+    return;
   }
 }
 

@@ -8,7 +8,7 @@ import {
   client
 } from "../../../bot.js";
 import {
-  updateNetWorth
+  calculateNetWorth
 } from '../../../utils/updateNetworth.js';
 
 import {
@@ -165,7 +165,7 @@ export async function profile(userId, context) {
     const user = await context.client.users.fetch(userId);
 
     const userData = await getUserData(userId);
-    userData.networth = updateNetWorth(userId);
+    userData.networth = calculateNetWorth(userData);
 
     let userBadges = await badges(userData);
 
