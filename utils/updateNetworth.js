@@ -32,7 +32,7 @@ export async function calculateNetWorth(userData) {
 
   // Calculate stock values.
   if (userData.stocks && typeof userData.stocks === "object") {
-    for (const stockName in userData.stocks.toJSON()) {
+    for (const stockName in userData.stocks) {
       if (stockName === "_id") continue;
       if (userData.stocks[stockName] && stockData[stockName] && stockData[stockName].currentPrice) {
         const numShares = userData.stocks[stockName].shares;
