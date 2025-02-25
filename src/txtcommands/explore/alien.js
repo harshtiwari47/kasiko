@@ -383,7 +383,7 @@ async function handleHarvest(ctx) {
     const baseEnergyGain = 5;
     const abilityResourceBonus = randomAbility.resourcesCollection || 0;
     const abilityEnergyBonus = randomAbility.energyCollection || 0;
-    const influenceBonus = alien.influence; // Influence adds directly to energy gain
+    const influenceBonus = Math.floor(Math.random() * alien.influence); // Influence adds directly to energy gain
 
     const resourceGain = baseResourceGain + abilityResourceBonus;
     const energyGain = baseEnergyGain + abilityEnergyBonus + influenceBonus;

@@ -162,6 +162,10 @@ const userSchema = new mongoose.Schema({
       type: [Object],
     default: []
     },
+    dailyWork: {
+      type: Array,
+    default: [null, 0]
+    },
     cookie: {
       type: Object
     },
@@ -204,6 +208,15 @@ const userSchema = new mongoose.Schema({
     seasonalPasses: {
       type: Array,
     default: []
+    },
+    orca: {
+      lastInteractDate: {
+        type: Date
+      },
+      dailyInteractions: {
+        type: Number,
+      default: 0
+      }
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

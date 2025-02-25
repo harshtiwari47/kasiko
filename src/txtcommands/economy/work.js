@@ -74,13 +74,33 @@ export async function work(id, channel, user) {
       return workMessage = ("Oops! Something went wrong while working 💼!");
     }
 
+    const today = new Date();
+    const todayString = today.toDateString();
+    
+    if (userData.dailyWork && userData?.dailyWork[0]) {
+      let todayEntry = new Date(userData.dailyWork[0]).toDateString() === todayString;
+      if (todayEntry) {
+        if (todayEntry && userData.dailyWork[1] && userData.dailyWork[1] >= 30) {
+          return workMessage = ("💼 Daily limit reached: You cannot do more than **30 work** actions in one day.");
+        } else {
+          userData.dailyWork[1] += 1;
+        }
+      } else {
+        userData.dailyWork = [today, 1];
+      }
+    } else {
+      // If dailyWork is not yet defined, initialize it with today's record.
+      userData.dailyWork = [today, 1];
+    }
+
     const earnedCash = Math.floor(Math.random() * 3000) + 500;
 
     userData.cash += earnedCash;
 
     try {
       await updateUser(id, {
-        cash: userData.cash
+        cash: userData.cash,
+        dailyWork: userData.dailyWork
       });
     } catch (updErr) {
       return workMessage = ("Oops! Something went wrong while working 💼!");

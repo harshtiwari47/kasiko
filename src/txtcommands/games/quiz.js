@@ -33,7 +33,7 @@ const activeGames = new Map();
 
 export default {
   name: "quiz",
-  description: "Jump into a fast-paced trivia game with diverse question types—Fastest Answer, Missing Word, Scrambled Word, and Emoji Riddles. Answer within 30 seconds, rack up points, and climb the leaderboard. Think fast and show off your smarts!",
+  description: "Jump into a fast-paced trivia game with diverse question types—Fastest Answer, Missing Word, Scrambled Word, and Emoji Riddles. Answer within 25 seconds, rack up points, and climb the leaderboard. Think fast and show off your smarts!",
   aliases: [],
   args: "[duration in minutes: 2, 3, 5, 10]",
   example: [
@@ -145,7 +145,7 @@ export default {
       .setTitle(`✮ 𝐐𝐮𝐢𝐳: ${quizType.name}`)
       .setDescription(`${questionData.question}${quizType.name === "Emoji Riddle" ? "\n-# **Hint:** " + questionData.hint: ""}`)
       .setFooter({
-        text: "ⓘ 𝘠𝘰𝘶 𝘢𝘭𝘭 𝘩𝘢𝘷𝘦 30 𝘴𝘦𝘤𝘰𝘯𝘥𝘴 𝘵𝘰 𝘢𝘯𝘴𝘸𝘦𝘳!"
+        text: "ⓘ 𝘠𝘰𝘶 𝘢𝘭𝘭 𝘩𝘢𝘷𝘦 25 𝘴𝘦𝘤𝘰𝘯𝘥𝘴 𝘵𝘰 𝘢𝘯𝘴𝘸𝘦𝘳!"
       })
       .setColor("Random");
 
@@ -156,12 +156,15 @@ export default {
       // Create a message collector for 30 seconds.
       const filter = m => !m.author.bot;
       const collector = channel.createMessageCollector({
-        filter, time: 30000
+        filter, time: 25000
       });
+      
+      const answeredUsers = new Set();
 
       // Wrap the collector in a Promise so we can await its end.
       await new Promise(resolve => {
         collector.on("collect", async m => {
+          if (answeredUsers.has(m.author.id)) return;
           // Compare answer (case-insensitive, trimmed)
           const userAnswer = m.content.trim().toLowerCase();
           const correctAnswer = questionData.answer.trim().toLowerCase();
@@ -169,6 +172,7 @@ export default {
             // Update score for the user.
             const currentScore = gameState.scores.get(m.author.id) || 0;
             gameState.scores.set(m.author.id, currentScore + 1);
+            answeredUsers.add(m.author.id);
 
             m.author.send(`${m.author} got it right! ദ്ദി \nYou correctly answered the quiz question.\n**Question:** ${questionData.question}\n-# (This message was sent in DMs to keep the results private.)`)
             .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));

@@ -124,7 +124,7 @@ async function prayToOrca(serverId, userId, username, guildName) {
 
     // Rewards
     const hunterReward = 50000;
-    const serverReward = 15000;
+    const serverReward = 20000;
     const otherReward = 5000;
 
     let message = '';
@@ -138,7 +138,7 @@ async function prayToOrca(serverId, userId, username, guildName) {
       // If same server
       if (orca.serverId === serverId) {
         userData.cash = (userData.cash || 0) + serverReward;
-        message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **15,500** cash (same server reward)!`;
+        message = `**${username}** prayed and received <:kasiko_coin:1300141236841086977> **20,000** cash (same server reward)!`;
       } else {
         // Different server
         userData.cash = (userData.cash || 0) + otherReward;
@@ -285,33 +285,57 @@ export async function execute(args, message) {
       const clickUserId = clickUser.id;
       const clickUsername = clickUser.username;
 
-      try {
-        if (interaction.customId === 'hunt_orca') {
-          // Attempt to find/spawn the orca
-          orca = await huntForOrca(serverId);
-          if (!orca) {
-            resultMessage = `**${clickUsername}** tried hunting... but **no Orca** appeared this time. (15% chance)`;
-          } else if (!orca.hunter) {
-            // Orca spawned, not claimed
-            resultMessage = `**${clickUsername}** found an Orca lurking! First person to **Claim** gets to discover it.`;
-          } else {
-            // orca is claimed
-            resultMessage = `**${clickUsername}** found an **already claimed** Orca (by ${orca.hunter}). Use **Pray** to get rewards!`;
-          }
-        } else if (interaction.customId === 'claim_orca') {
-          // If there's an orca and no discoverer, set the discoverer
-          const claimResult = await claimOrca(serverId, clickUserId, clickUsername, guildName);
-          resultMessage = claimResult.message;
-        } else if (interaction.customId === 'pray_orca') {
-          // If orca is discovered, we do the pray logic
-          const prayResult = await prayToOrca(serverId, clickUserId, clickUsername, guildName);
-          resultMessage = prayResult.message;
-        }
+      const userData = await getUserData(clickUserId);
 
-      } catch (err) {
-        console.error(err);
-        resultMessage = '❌ An error occurred. Please try again.';
+      const now = new Date();
+      const todayStr = now.toDateString();
+      if (!userData?.orca) userData.orca = {
+        dailyInteractions: 0,
+        lastInteractDate: now
+      };
+
+      if ((new Date(userData?.orca?.lastInteractDate).toDateString()) !== todayStr) {
+        userData.orca.dailyInteractions = 0;
+        userData.orca.lastInteractDate = todayStr;
       }
+
+      if (userData?.orca?.dailyInteractions >= 2) {
+        resultMessage = `⚠️ Wait! You've already prayed to the 🐋 Legendary Orca twice today! Come back tomorrow to seek its blessings again.`
+      } else {
+
+        try {
+          if (interaction.customId === 'hunt_orca') {
+            // Attempt to find/spawn the orca
+            orca = await huntForOrca(serverId);
+            if (!orca) {
+              resultMessage = `**${clickUsername}** tried hunting... but **no Orca** appeared this time. (15% chance)`;
+            } else if (!orca.hunter) {
+              // Orca spawned, not claimed
+              resultMessage = `**${clickUsername}** found an Orca lurking! First person to **Claim** gets to discover it.`;
+            } else {
+              // orca is claimed
+              resultMessage = `**${clickUsername}** found an **already claimed** Orca (by ${orca.hunter}). Use **Pray** to get rewards!`;
+            }
+          } else if (interaction.customId === 'claim_orca') {
+            // If there's an orca and no discoverer, set the discoverer
+            const claimResult = await claimOrca(serverId, clickUserId, clickUsername, guildName);
+            resultMessage = claimResult.message;
+          } else if (interaction.customId === 'pray_orca') {
+            // If orca is discovered, we do the pray logic
+            const prayResult = await prayToOrca(serverId, clickUserId, clickUsername, guildName);
+            resultMessage = prayResult.message;
+            userData.orca.dailyInteractions += 1;
+          }
+
+        } catch (err) {
+          console.error(err);
+          resultMessage = '❌ An error occurred. Please try again.';
+        }
+      }
+
+      await updateUser(clickUserId, {
+        orca: userData.orca
+      })
 
       // Now re-fetch the orca from DB (in case we changed it in the previous steps)
       orca = await Orca.findOne();
