@@ -123,7 +123,8 @@ export async function give(message, userId, amount, recipientId) {
 
           try {
             await updateUser(userId, {
-              cash: userData.cash
+              cash: userData.cash,
+              charity: userData.charity
             });
             await updateUser(recipientId, {
               cash: recipientData.cash
