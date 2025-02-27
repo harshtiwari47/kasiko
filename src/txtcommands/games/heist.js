@@ -45,15 +45,81 @@ function shuffleArray(array) {
 }
 
 /**
-* Starts a new round. In each round, the King (secret role) is prompted to appoint a Minister
-* (via !appoint) and then that appointed Minister must guess the Thief (via !guess).
+* Reassigns secret roles for all alive players except the King.
+* The new role pool is determined by the remaining number of players.
+*/
+async function reassignRoles(game, context) {
+  // Get alive participants (and identify the King)
+  const aliveParticipants = Array.from(game.participants.values()).filter(p => !p.eliminated);
+  const king = aliveParticipants.find(p => p.role === "King");
+  const nonKingPlayers = aliveParticipants.filter(p => p !== king);
+  let roles = [];
+  switch (nonKingPlayers.length) {
+    case 3:
+      roles = ["Minister",
+        "Thief",
+        "Protector"];
+      break;
+    case 4:
+      roles = ["Minister",
+        "Thief",
+        "Protector",
+        "Inspector"];
+      break;
+    case 5:
+      roles = ["Minister",
+        "Thief",
+        "Protector",
+        "Inspector",
+        "Double Agent"];
+      break;
+    case 6:
+      roles = ["Minister",
+        "Thief",
+        "Protector",
+        "Inspector",
+        "Double Agent",
+        "Rebel"];
+      break;
+    case 7:
+      roles = ["Minister",
+        "Thief",
+        "Protector",
+        "Inspector",
+        "Double Agent",
+        "Rebel",
+        "Spy"];
+      break;
+    default:
+      roles = ["Minister",
+        "Thief",
+        "Protector"];
+      break;
+  }
+  roles = shuffleArray(roles);
+  for (let i = 0; i < nonKingPlayers.length; i++) {
+    nonKingPlayers[i].role = roles[i];
+    try {
+      await nonKingPlayers[i].user.send(`Your new secret role in Kingdom Heist is: **${nonKingPlayers[i].role}**`);
+    } catch (err) {
+      console.error(`Could not DM ${nonKingPlayers[i].user.tag}.`);
+    }
+  }
+  await handleMessage(context, {
+    content: `Roles have been reassigned for the new round.`
+  });
+}
+
+/**
+* Starts a new round.
+* The King appoints a Minister; then (after a 2-minute delay) that Minister must guess the Thief.
+* If the Thief is caught, they are eliminated and roles are reassigned among the remaining players (except King).
+* If no valid appointment or guess is made within the time limit, the round is skipped.
+* After two consecutive skipped rounds, the game ends.
 */
 async function runRound(game, context) {
   // Get list of players still in the game.
-  const aliveParticipants = Array.from(game.participants.values()).filter(
-    (p) => !p.eliminated
-  );
-  // If only two players remain, move to the final round.
+  const aliveParticipants = Array.from(game.participants.values()).filter(p => !p.eliminated);
   if (aliveParticipants.length <= 2) {
     await finalRound(game, context);
     return;
@@ -63,21 +129,19 @@ async function runRound(game, context) {
     content: `**Round ${game.round}** – ${aliveParticipants.length} players remain.`
   });
 
-  // Find the King (if by chance he was eliminated, default to first alive player)
-  let king = aliveParticipants.find((p) => p.role === "King");
+  // Identify the King (if eliminated, default to the first alive player)
+  let king = aliveParticipants.find(p => p.role === "King");
   if (!king) king = aliveParticipants[0];
 
-  // Prompt the King to appoint a Minister for this round.
   await handleMessage(context, {
     content: `<@${king.user.id}>, as the King, please appoint a Minister for this round using \`!appoint @player\`.`
   });
 
-  // Wait for the King’s appointment command.
-  const appointFilter = (m) =>
-  m.author.id === king.user.id &&
-  m.content.startsWith("!appoint") &&
-  m.mentions.users.size > 0;
   try {
+    const appointFilter = (m) =>
+    m.author.id === king.user.id &&
+    m.content.startsWith("!appoint") &&
+    m.mentions.users.size > 0;
     const appointCollected = await context.channel.awaitMessages({
       filter: appointFilter,
       max: 1,
@@ -95,10 +159,14 @@ async function runRound(game, context) {
     }
     game.currentMinister = appointedParticipant;
     await handleMessage(context, {
-      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. Minister, please guess the Thief using \`!guess @player\`.`
+      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. Please wait for 2 minutes before guessing.`
+    });
+    // Wait 2 minutes before allowing the guess.
+    await new Promise(resolve => setTimeout(resolve, 120000));
+    await handleMessage(context, {
+      content: `<@${appointedParticipant.user.id}>, you may now guess the Thief using \`!guess @player\`.`
     });
 
-    // Wait for the Minister’s guess.
     const guessFilter = (m) =>
     m.author.id === appointedParticipant.user.id &&
     m.content.startsWith("!guess") &&
@@ -118,16 +186,19 @@ async function runRound(game, context) {
         content: `Invalid guess. This round is forfeited.`
       });
     } else {
-      // Process the guess
+      // A valid round was played, so reset skipped rounds.
+      game.skippedRounds = 0;
       if (guessedParticipant.role === "Thief") {
-        // Correct guess – award bonus and eliminate the Thief.
+        // Correct guess – award bonus, eliminate the Thief, and reassign roles.
         appointedParticipant.score += 5000;
         await handleMessage(context, {
           content: `Correct! <@${guessedUser.id}> was the Thief. <@${appointedParticipant.user.id}> earns 5,000 bonus points. The Thief is eliminated.`
         });
         guessedParticipant.eliminated = true;
+        // Reassign roles among the remaining players (except King)
+        await reassignRoles(game, context);
       } else {
-        // Incorrect guess – penalize Minister and reward the wrongly accused.
+        // Incorrect guess – penalize the Minister and reward the wrongly accused.
         appointedParticipant.score -= 1000;
         guessedParticipant.score += 5000;
         await handleMessage(context, {
@@ -136,26 +207,34 @@ async function runRound(game, context) {
       }
     }
   } catch (err) {
+    // Increment the skipped rounds counter.
+    game.skippedRounds = (game.skippedRounds || 0) + 1;
     await handleMessage(context, {
       content: `No valid appointment or guess was received in time. Skipping this round.`
     });
+    if (game.skippedRounds >= 2) {
+      await handleMessage(context, {
+        content: `Two rounds skipped consecutively. Ending game.`
+      });
+      await displayLeaderboard(game, context);
+      activeGames.delete(game.guildId);
+      return;
+    }
   }
   game.round++;
-  // Continue with the next round.
   runRound(game, context);
 }
 
 /**
 * Handles the final round when only two players remain.
+* (A similar 2-minute wait is imposed before the final guess.)
 */
 async function finalRound(game, context) {
   await handleMessage(context, {
     content: `Final Round! Only two players remain.`
   });
-  const aliveParticipants = Array.from(game.participants.values()).filter(
-    (p) => !p.eliminated
-  );
-  let king = aliveParticipants.find((p) => p.role === "King");
+  const aliveParticipants = Array.from(game.participants.values()).filter(p => !p.eliminated);
+  let king = aliveParticipants.find(p => p.role === "King");
   if (!king) king = aliveParticipants[0];
   await handleMessage(context, {
     content: `<@${king.user.id}>, as the King, please appoint the final Minister using \`!appoint @player\`.`
@@ -183,7 +262,11 @@ async function finalRound(game, context) {
     }
     game.currentMinister = appointedParticipant;
     await handleMessage(context, {
-      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. For the final guess, please use \`!guess @player\`.`
+      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. Please wait for 2 minutes before making your final guess.`
+    });
+    await new Promise(resolve => setTimeout(resolve, 120000));
+    await handleMessage(context, {
+      content: `<@${appointedParticipant.user.id}>, you may now make your final guess using \`!guess @player\`.`
     });
     const guessFilter = (m) =>
     m.author.id === appointedParticipant.user.id &&
@@ -223,7 +306,7 @@ async function finalRound(game, context) {
     });
   }
   // Game over: display the final leaderboard.
-  displayLeaderboard(game, context);
+  await displayLeaderboard(game, context);
   activeGames.delete(game.guildId);
 }
 
@@ -236,9 +319,7 @@ async function displayLeaderboard(game, context) {
   const sorted = allParticipants.sort((a, b) => b.score - a.score);
   let description = "";
   sorted.forEach((p, index) => {
-    description += `${index + 1}. ${p.user.tag} – ${p.score} points${
-    p.eliminated ? " (Eliminated)": ""
-    }\n`;
+    description += `${index + 1}. ${p.user.tag} – ${p.score} points${p.eliminated ? " (Eliminated)": ""}\n`;
   });
   const embed = new EmbedBuilder()
   .setTitle("Leaderboard")
@@ -263,6 +344,8 @@ async function startGame(game, context) {
   } catch (err) {
     console.error(err);
   }
+  // Initialize skipped rounds counter.
+  game.skippedRounds = 0;
   // Create an array of participant objects.
   const participantsArray = Array.from(game.participants.values());
   // Define the roles based on total players (4 core roles + optional roles).
@@ -299,16 +382,14 @@ async function startGame(game, context) {
         "Rebel"];
       break;
     case 8:
-      roles = [
-        "King",
+      roles = ["King",
         "Minister",
         "Thief",
         "Protector",
         "Inspector",
         "Double Agent",
         "Rebel",
-        "Spy"
-      ];
+        "Spy"];
       break;
     default:
       roles = ["King",
@@ -345,15 +426,41 @@ async function startGame(game, context) {
 */
 export default {
   name: "heist",
-  description:
-  "Join the Kingdom Heist game! Up to 8 players join via the PARTICIPATE button. When the starter (only one game per server) clicks START (minimum 4 players required), secret roles (King, Minister, Thief, Protector, and optional roles) are assigned. Then the King appoints a Minister each round via `!appoint @player` and that Minister must guess the Thief using `!guess @player`. Points are awarded/deducted accordingly. The game ends when only two players remain, and the final leaderboard is displayed.",
+  description: "Join Kingdom Heist! Up to 8 players join via PARTICIPATE. The starter clicks START (min. 4 players) to assign roles. The King appoints a Minister (!appoint @player), who guesses the Thief (!guess @player). The game ends when two remain. Use heist cancel or heist help for details.",
   aliases: [],
   args: "",
-  example: ["heist"],
+  example: ["heist",
+    "heist cancel"],
   emoji: "👑",
   category: "🎲 Games",
   cooldown: 10000,
   execute: async (args, message) => {
+    args.shift();
+
+    if (args[0] && args[0].toLowerCase() === "help") {
+      const embedHelp = new EmbedBuilder()
+      .setDescription("Join the Kingdom Heist game! Up to 8 players join via the PARTICIPATE button. When the starter (only one game per server) clicks START (minimum 4 players required), secret roles (King, Minister, Thief, Protector, and optional roles) are assigned. Then the King appoints a Minister each round via `!appoint @player` and that Minister must guess the Thief using `!guess @player`. Points are awarded/deducted accordingly. The game ends when only two players remain, and the final leaderboard is displayed. Use `heist cancel` to cancel an active game.")
+
+      return handleMessage(message, {
+        embeds: [embedHelp]
+      });
+    }
+    
+    // Check for a cancel command.
+    if (args[0] && args[0].toLowerCase() === "cancel") {
+      const game = activeGames.get(message.guild.id);
+      if (!game) {
+        return handleMessage(message, {
+          content: "No active game to cancel."
+        });
+      }
+      await displayLeaderboard(game, message);
+      activeGames.delete(message.guild.id);
+      return handleMessage(message, {
+        content: "Game canceled."
+      });
+    }
+
     // Check if a game is already running in this server.
     if (activeGames.has(message.guild.id)) {
       return handleMessage(message, {
@@ -424,11 +531,13 @@ export default {
         // Add the user if not already joined.
         if (game.participants.has(i.user.id)) {
           await i.reply({
-            content: "You have already joined the game.", ephemeral: true
+            content: "You have already joined the game.",
+            ephemeral: true
           });
         } else if (game.participants.size >= 8) {
           await i.reply({
-            content: "Game is full (max 8 players).", ephemeral: true
+            content: "Game is full (max 8 players).",
+            ephemeral: true
           });
         } else {
           game.participants.set(i.user.id, {
@@ -453,13 +562,15 @@ export default {
         // Only the game starter can start the game.
         if (i.user.id !== game.starter.id) {
           await i.reply({
-            content: "Only the game starter can start the game.", ephemeral: true
+            content: "Only the game starter can start the game.",
+            ephemeral: true
           });
           return;
         }
         if (game.participants.size < 4) {
           await i.reply({
-            content: "At least 4 players are required to start the game.", ephemeral: true
+            content: "At least 4 players are required to start the game.",
+            ephemeral: true
           });
           return;
         }
@@ -477,7 +588,7 @@ export default {
               await handleMessage(message, {
                 content: "Game canceled due to insufficient players."
               });
-              activeGames.delete(game.guildId);
+              activeGames.delete(game.guild.id);
             }
           }
         } catch (e) {}
