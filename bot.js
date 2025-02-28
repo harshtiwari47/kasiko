@@ -1,3 +1,4 @@
+import './anticrash.js';
 import {
   Client,
   GatewayIntentBits,

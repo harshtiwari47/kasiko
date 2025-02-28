@@ -63,8 +63,8 @@ export async function workCompanyCommand(message, args) {
       });
     }
 
-    // Boost stock price by 1-3%.
-    const boostPercentage = Math.random() * 0.02 + 0.01;
+    // Boost stock price by 0.5-1%.
+    const boostPercentage = Math.random() * 0.005 + 0.005;
     company.currentPrice = parseFloat((company.currentPrice * (1 + boostPercentage)).toFixed(2));
 
     // Update price history.
@@ -87,7 +87,7 @@ export async function workCompanyCommand(message, args) {
     .addFields({
       name: "🎉 New Stock Price", value: "<:kasiko_coin:1300141236841086977> " + company.currentPrice.toString(), inline: false
     })
-    .setColor("#2ecc71")
+    .setColor("#cc782e")
     .setTimestamp();
 
     return handleMessage(message, {

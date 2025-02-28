@@ -118,9 +118,24 @@ async function reassignRoles(game, context) {
 * After two consecutive skipped rounds, the game ends.
 */
 async function runRound(game, context) {
+  // Check if game was cancelled
+  if (game.cancelled) return;
+
   // Get list of players still in the game.
   const aliveParticipants = Array.from(game.participants.values()).filter(p => !p.eliminated);
-  if (aliveParticipants.length <= 2) {
+
+  // Ensure there is at least one alive Thief
+  if (!aliveParticipants.some(p => p.role === "Thief" && !p.eliminated)) {
+    await handleMessage(context, {
+      content: "No alive Thief remains. Ending game."
+    });
+    await displayLeaderboard(game, context);
+    activeGames.delete(game.guildId);
+    return;
+  }
+
+  // End game if only three players remain (triggering final round)
+  if (aliveParticipants.length <= 3) {
     await finalRound(game, context);
     return;
   }
@@ -150,6 +165,13 @@ async function runRound(game, context) {
     });
     const appointMsg = appointCollected.first();
     const appointedUser = appointMsg.mentions.users.first();
+    // Prevent King from appointing himself
+    if (appointedUser.id === king.user.id) {
+      await handleMessage(context, {
+        content: `King cannot appoint himself. Please appoint a valid player.`
+      });
+      return runRound(game, context);
+    }
     const appointedParticipant = game.participants.get(appointedUser.id);
     if (!appointedParticipant || appointedParticipant.eliminated) {
       await handleMessage(context, {
@@ -179,31 +201,49 @@ async function runRound(game, context) {
     });
     const guessMsg = guessCollected.first();
     const guessedUser = guessMsg.mentions.users.first();
-    const guessedParticipant = game.participants.get(guessedUser.id);
 
-    if (!guessedParticipant || guessedParticipant.eliminated) {
+    // Prevent the Minister from guessing himself
+    if (guessedUser.id === appointedParticipant.user.id) {
       await handleMessage(context, {
-        content: `Invalid guess. This round is forfeited.`
+        content: `Invalid guess: you cannot guess yourself. This round is forfeited.`
       });
     } else {
-      // A valid round was played, so reset skipped rounds.
-      game.skippedRounds = 0;
-      if (guessedParticipant.role === "Thief") {
-        // Correct guess – award bonus, eliminate the Thief, and reassign roles.
-        appointedParticipant.score += 5000;
+      const guessedParticipant = game.participants.get(guessedUser.id);
+
+      if (!guessedParticipant || guessedParticipant.eliminated) {
         await handleMessage(context, {
-          content: `Correct! <@${guessedUser.id}> was the Thief. <@${appointedParticipant.user.id}> earns 5,000 bonus points. The Thief is eliminated.`
+          content: `Invalid guess. This round is forfeited.`
         });
-        guessedParticipant.eliminated = true;
-        // Reassign roles among the remaining players (except King)
-        await reassignRoles(game, context);
       } else {
-        // Incorrect guess – penalize the Minister and reward the wrongly accused.
-        appointedParticipant.score -= 1000;
-        guessedParticipant.score += 5000;
-        await handleMessage(context, {
-          content: `Incorrect! <@${guessedUser.id}> is not the Thief. They gain 5,000 points, and <@${appointedParticipant.user.id}> loses 1,000 points.`
-        });
+        // A valid round was played, so reset skipped rounds.
+        game.skippedRounds = 0;
+        if (guessedParticipant.role === "Thief") {
+          // Correct guess – award bonus, eliminate the Thief, and reassign roles.
+          appointedParticipant.score += 5000;
+          await handleMessage(context, {
+            content: `Correct! <@${guessedUser.id}> was the Thief. <@${appointedParticipant.user.id}> earns 5,000 bonus points. The Thief is eliminated.`
+          });
+          guessedParticipant.eliminated = true;
+          // Reassign roles among the remaining players (except King)
+          await reassignRoles(game, context);
+          // After reassigning, ensure there's still an alive Thief.
+          const updatedAlive = Array.from(game.participants.values()).filter(p => !p.eliminated);
+          if (!updatedAlive.some(p => p.role === "Thief" && !p.eliminated)) {
+            await handleMessage(context, {
+              content: "No alive Thief remains after role reassignment. Ending game."
+            });
+            await displayLeaderboard(game, context);
+            activeGames.delete(game.guildId);
+            return;
+          }
+        } else {
+          // Incorrect guess – penalize the Minister and reward the wrongly accused.
+          appointedParticipant.score -= 1000;
+          guessedParticipant.score += 5000;
+          await handleMessage(context, {
+            content: `Incorrect! <@${guessedUser.id}> is not the Thief. They gain 5,000 points, and <@${appointedParticipant.user.id}> loses 1,000 points.`
+          });
+        }
       }
     }
   } catch (err) {
@@ -222,18 +262,34 @@ async function runRound(game, context) {
     }
   }
   game.round++;
-  runRound(game, context);
+  // Only continue if the game hasn't been cancelled.
+  if (!game.cancelled) {
+    runRound(game, context);
+  }
 }
 
 /**
-* Handles the final round when only two players remain.
+* Handles the final round when only three players remain.
 * (A similar 2-minute wait is imposed before the final guess.)
 */
 async function finalRound(game, context) {
+  if (game.cancelled) return;
+
   await handleMessage(context, {
-    content: `Final Round! Only two players remain.`
+    content: `Final Round! Only three players remain.`
   });
   const aliveParticipants = Array.from(game.participants.values()).filter(p => !p.eliminated);
+
+  // Ensure there is at least one alive Thief in the final round.
+  if (!aliveParticipants.some(p => p.role === "Thief" && !p.eliminated)) {
+    await handleMessage(context, {
+      content: "No alive Thief remains. Ending game."
+    });
+    await displayLeaderboard(game, context);
+    activeGames.delete(game.guildId);
+    return;
+  }
+
   let king = aliveParticipants.find(p => p.role === "King");
   if (!king) king = aliveParticipants[0];
   await handleMessage(context, {
@@ -253,6 +309,13 @@ async function finalRound(game, context) {
     });
     const appointMsg = appointCollected.first();
     const appointedUser = appointMsg.mentions.users.first();
+    // Prevent King from appointing himself.
+    if (appointedUser.id === king.user.id) {
+      await handleMessage(context, {
+        content: `King cannot appoint himself. Please appoint a valid player.`
+      });
+      return finalRound(game, context);
+    }
     const appointedParticipant = game.participants.get(appointedUser.id);
     if (!appointedParticipant || appointedParticipant.eliminated) {
       await handleMessage(context, {
@@ -280,24 +343,31 @@ async function finalRound(game, context) {
     });
     const guessMsg = guessCollected.first();
     const guessedUser = guessMsg.mentions.users.first();
-    const guessedParticipant = game.participants.get(guessedUser.id);
 
-    if (!guessedParticipant || guessedParticipant.eliminated) {
+    // Prevent the Minister from guessing himself.
+    if (guessedUser.id === appointedParticipant.user.id) {
       await handleMessage(context, {
-        content: `Invalid guess.`
+        content: `Invalid guess: you cannot guess yourself.`
       });
     } else {
-      if (guessedParticipant.role === "Thief") {
-        appointedParticipant.score += 5000;
+      const guessedParticipant = game.participants.get(guessedUser.id);
+      if (!guessedParticipant || guessedParticipant.eliminated) {
         await handleMessage(context, {
-          content: `Final guess correct! <@${guessedUser.id}> was the Thief. <@${appointedParticipant.user.id}> earns 5,000 bonus points.`
+          content: `Invalid guess.`
         });
       } else {
-        appointedParticipant.score -= 1000;
-        guessedParticipant.score += 5000;
-        await handleMessage(context, {
-          content: `Final guess incorrect! <@${guessedUser.id}> is not the Thief. They gain 5,000 points and <@${appointedParticipant.user.id}> loses 1,000 points.`
-        });
+        if (guessedParticipant.role === "Thief") {
+          appointedParticipant.score += 5000;
+          await handleMessage(context, {
+            content: `Final guess correct! <@${guessedUser.id}> was the Thief. <@${appointedParticipant.user.id}> earns 5,000 bonus points.`
+          });
+        } else {
+          appointedParticipant.score -= 1000;
+          guessedParticipant.score += 5000;
+          await handleMessage(context, {
+            content: `Final guess incorrect! <@${guessedUser.id}> is not the Thief. They gain 5,000 points and <@${appointedParticipant.user.id}> loses 1,000 points.`
+          });
+        }
       }
     }
   } catch (err) {
@@ -426,7 +496,7 @@ async function startGame(game, context) {
 */
 export default {
   name: "heist",
-  description: "Join Kingdom Heist! Up to 8 players join via PARTICIPATE. The starter clicks START (min. 4 players) to assign roles. The King appoints a Minister (!appoint @player), who guesses the Thief (!guess @player). The game ends when two remain. Use heist cancel or heist help for details.",
+  description: "Join Kingdom Heist! Up to 8 players join via PARTICIPATE. The starter clicks START (min. 4 players) to assign roles. The King appoints a Minister (!appoint @player), who guesses the Thief (!guess @player). The game ends when three players remain. Use heist cancel or heist help for details.",
   aliases: [],
   args: "",
   example: ["heist",
@@ -439,13 +509,13 @@ export default {
 
     if (args[0] && args[0].toLowerCase() === "help") {
       const embedHelp = new EmbedBuilder()
-      .setDescription("Join the Kingdom Heist game! Up to 8 players join via the PARTICIPATE button. When the starter (only one game per server) clicks START (minimum 4 players required), secret roles (King, Minister, Thief, Protector, and optional roles) are assigned. Then the King appoints a Minister each round via `!appoint @player` and that Minister must guess the Thief using `!guess @player`. Points are awarded/deducted accordingly. The game ends when only two players remain, and the final leaderboard is displayed. Use `heist cancel` to cancel an active game.")
+      .setDescription("Join the Kingdom Heist game! Up to 8 players join via the PARTICIPATE button. When the starter (only one game per server) clicks START (minimum 4 players required), secret roles (King, Minister, Thief, Protector, and optional roles) are assigned. Then the King appoints a Minister each round via `!appoint @player` and that Minister must guess the Thief using `!guess @player`. Points are awarded/deducted accordingly. The game ends when only three players remain, and the final leaderboard is displayed. Use `heist cancel` to cancel an active game.");
 
       return handleMessage(message, {
         embeds: [embedHelp]
       });
     }
-    
+
     // Check for a cancel command.
     if (args[0] && args[0].toLowerCase() === "cancel") {
       const game = activeGames.get(message.guild.id);
@@ -454,6 +524,7 @@ export default {
           content: "No active game to cancel."
         });
       }
+      game.cancelled = true;
       await displayLeaderboard(game, message);
       activeGames.delete(message.guild.id);
       return handleMessage(message, {
@@ -477,7 +548,8 @@ export default {
       // key: userId, value: { user, role, score, eliminated }
       joinMessage: null,
       currentMinister: null,
-      round: 1
+      round: 1,
+      cancelled: false
     };
 
     // Add the game starter as the first participant.
@@ -491,9 +563,7 @@ export default {
     // Build the initial embed with a short story.
     const embed = new EmbedBuilder()
     .setTitle("Kingdom Heist")
-    .setDescription(
-      "A daring robbery has struck the Kingdom! Brave souls are called to join the quest to catch the elusive Thief. Click **PARTICIPATE** to join the game. (Minimum 4 players required; game will cancel after 10 minutes if not met.)"
-    )
+    .setDescription("A daring robbery has struck the Kingdom! Brave souls are called to join the quest to catch the elusive Thief. Click **PARTICIPATE** to join the game. (Minimum 4 players required; game will cancel after 10 minutes if not met.)")
     .setColor(0x00ae86)
     .setFooter({
       text: `Players joined: ${game.participants.size}`
@@ -512,43 +582,34 @@ export default {
 
     // Send the join message.
     const joinMsg = await handleMessage(message, {
-      embeds: [embed],
-      components: [row]
+      embeds: [embed], components: [row]
     });
     game.joinMessage = joinMsg;
     activeGames.set(message.guild.id, game);
 
     // Create a component collector for the join message.
-    const filter = (i) =>
-    i.customId === "participate" || i.customId === "start_game";
+    const filter = (i) => i.customId === "participate" || i.customId === "start_game";
     const collector = joinMsg.createMessageComponentCollector({
-      filter,
-      time: 600000 // 10 minutes
-    });
+      filter, time: 600000
+    }); // 10 minutes
 
     collector.on("collect", async (i) => {
       if (i.customId === "participate") {
         // Add the user if not already joined.
         if (game.participants.has(i.user.id)) {
           await i.reply({
-            content: "You have already joined the game.",
-            ephemeral: true
+            content: "You have already joined the game.", ephemeral: true
           });
         } else if (game.participants.size >= 8) {
           await i.reply({
-            content: "Game is full (max 8 players).",
-            ephemeral: true
+            content: "Game is full (max 8 players).", ephemeral: true
           });
         } else {
           game.participants.set(i.user.id, {
-            user: i.user,
-            role: null,
-            score: 0,
-            eliminated: false
+            user: i.user, role: null, score: 0, eliminated: false
           });
           await i.reply({
-            content: `You have joined the game! (${game.participants.size}/8)`,
-            ephemeral: true
+            content: `You have joined the game! (${game.participants.size}/8)`, ephemeral: true
           });
           // Update the join embed footer.
           const updatedEmbed = EmbedBuilder.from(embed).setFooter({
@@ -562,15 +623,13 @@ export default {
         // Only the game starter can start the game.
         if (i.user.id !== game.starter.id) {
           await i.reply({
-            content: "Only the game starter can start the game.",
-            ephemeral: true
+            content: "Only the game starter can start the game.", ephemeral: true
           });
           return;
         }
         if (game.participants.size < 4) {
           await i.reply({
-            content: "At least 4 players are required to start the game.",
-            ephemeral: true
+            content: "At least 4 players are required to start the game.", ephemeral: true
           });
           return;
         }
@@ -588,7 +647,7 @@ export default {
               await handleMessage(message, {
                 content: "Game canceled due to insufficient players."
               });
-              activeGames.delete(game.guild.id);
+              activeGames.delete(message.guild.id);
             }
           }
         } catch (e) {}

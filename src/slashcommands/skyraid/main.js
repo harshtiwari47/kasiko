@@ -61,7 +61,7 @@ export default {
     .setName('server')
     .setDescription('View the overall Skyraid battle statistics for this guild.')
   )
-  .addSubcommand(subcommand =>
+  /*.addSubcommand(subcommand =>
     subcommand
     .setName('leaderboard')
     .setDescription('View the top players based on selected criteria.')
@@ -78,7 +78,7 @@ export default {
         },
       )
     )
-  )
+  )*/
   .addSubcommand(subcommand =>
     subcommand
     .setName('setrole')
