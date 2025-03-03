@@ -254,8 +254,7 @@ export default {
   aliases: ["bj"],
   emoji: "🃏",
   cooldown: 10000,
-  execute: async (args,
-    message) => {
+  execute: async (args, message) => {
     try {
       args.shift();
 
@@ -266,8 +265,12 @@ export default {
 
       if (args[0] !== "all") {
         amount = parseInt(args[0] ? args[0]: amount);
+        if (isNaN(amount)) {
+          return message.channel.send("Please provide a valid number.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
         if (amount > 300000 || amount < 1) {
-          return message.channel.send(`ⓘ The range for participating in the blackjack is <:kasiko_coin:1300141236841086977> 1 to <:kasiko_coin:1300141236841086977> 300,000.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`ⓘ The range for participating in the blackjack is <:kasiko_coin:1300141236841086977> 1 to <:kasiko_coin:1300141236841086977> 300,000.`)
+          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       } else {
         amount = "all";

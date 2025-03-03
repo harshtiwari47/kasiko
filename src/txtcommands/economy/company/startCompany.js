@@ -14,36 +14,34 @@ import {
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
   if (isInteraction) {
-    // If not already deferred, defer it.
     if (!context.deferred) {
       await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
     return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    // For normal text-based usage
     return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
 export async function startCompanyCommand(message, args) {
   try {
-    const userId = message.author.id;
+    const userId = message.user ? message.user.id: message.author.id;
+    const username = message.user ? message.user.username: message.author.username;
+
     const companyName = args[1];
-    const username = message.author.username;
 
     if (!companyName) {
       return handleMessage(message, {
-        content: `ⓘ **${username}**, please provide a company name.\n**Usage:** \`company start <companyName>\`\n**Tip**: Use a simple name without spaces for better searchability.`
+        content: `ⓘ **${username}**, please provide a company name.\n**Usage:** \`company start <companyName>\`\n**Tip:** Use a simple name without spaces for better searchability.`
       });
     }
-
     if (companyName.length > 30) {
       return handleMessage(message, {
-        content: `ⓘ **${username}**, the company name should not exceed 30 characters. Please provide a shorter name with no space.`
+        content: `ⓘ **${username}**, the company name should not exceed 30 characters. Please provide a shorter name with no spaces.`
       });
     }
 
-    // Check if user already has a company
+    // Check if the user already has a registered company.
     const existingCompany = await Company.findOne({
       owner: userId
     });
@@ -60,26 +58,25 @@ export async function startCompanyCommand(message, args) {
         content: "User data not found."
       });
     }
-
-    // Requirements: net worth must be >1M and cash at least 3M for the registration fee.
-    if (userData.networth < 1000000) {
+    // Requirements: net worth must be >10M and cash at least 300K for the registration fee.
+    if (userData.networth < 10000000) {
       return handleMessage(message, {
-        content: `ⓘ **${username}**, you need a net worth of at least <:kasiko_coin:1300141236841086977> **1M** to start a company.`
+        content: `ⓘ **${username}**, you need a net worth of at least <:kasiko_coin:1300141236841086977> **10M** to start a company.`
       });
     }
-    if (userData.cash < 300000) {
+    if (userData.cash < 3000000) {
       return handleMessage(message, {
         content: `ⓘ **${username}**, you need at least <:kasiko_coin:1300141236841086977> **3M** cash to pay the registration fee.`
       });
     }
 
-    // Deduct registration fee of 3M cash.
-    userData.cash -= 300000;
+    // Deduct the registration fee.
+    userData.cash -= 3000000;
     await updateUser(userId, {
       cash: userData.cash
     });
 
-    // Define 15 sectors with at least 4 taglines each.
+    // Define sectors and taglines.
     const sectors = {
       "Technology": [
         "Innovating for a digital future.",
@@ -193,7 +190,6 @@ export async function startCompanyCommand(message, args) {
       components: [row]
     });
 
-    // Create a collector to handle the menu selection.
     const filter = i => i.customId === 'selectSector' && i.user.id === userId;
     const collector = menuMessage.createMessageComponentCollector({
       filter,
@@ -204,31 +200,29 @@ export async function startCompanyCommand(message, args) {
 
     collector.on('collect', async (interaction) => {
       try {
-        // Defer the update to acknowledge the interaction.
         await interaction.deferUpdate();
         const selectedSector = interaction.values[0];
-        // Randomly pick one tagline from the selected sector.
+        // Randomly choose one tagline for the selected sector.
         const taglines = sectors[selectedSector];
-        const description = taglines[Math.floor(Math.random() * taglines.length)];
+        const tagline = taglines[Math.floor(Math.random() * taglines.length)];
 
         // Generate randomized starting stats.
-        const initialPrice = Math.floor(Math.random() * 100) + 50; // between 50 and 150
-        const marketCap = initialPrice * (Math.floor(Math.random() * 1000) + 1000);
-        const volatility = Math.floor(Math.random() * 5) + 1; // 1 to 5
-        const PEratio = parseFloat((Math.random() * 20 + 10).toFixed(1)); // between 10 and 30
-        const dividendYield = (Math.random() * 3).toFixed(1) + '%';
+        const initialPrice = Math.floor(Math.random() * 100) + 50; // Price between 50 and 150.
+        const marketCap = initialPrice * (Math.floor(Math.random() * 1000) + 1000); // Random cap.
+        const volatility = Math.floor(Math.random() * 5) + 1; // 1 to 5.
+        const PEratio = parseFloat((Math.random() * 20 + 10).toFixed(1)); // between 10 and 30.
+        const dividendYield = parseFloat((Math.random() * 3).toFixed(1)); // as a number (0 to 3).
         const protection = 100;
-
         // Initialize last10Prices with the initial price.
         const last10Prices = Array(10).fill(initialPrice);
 
-        // Create the new company.
+        // Create the new company using the updated model.
         const newCompany = new Company( {
           owner: userId,
           name: companyName.toUpperCase(),
           sector: selectedSector,
-          description,
-          CEO: username,
+          description: tagline,
+          ceo: username,
           marketCap,
           currentPrice: initialPrice,
           last10Prices,
@@ -236,27 +230,45 @@ export async function startCompanyCommand(message, args) {
           minPrice: Math.min(...last10Prices),
           trend: 'stable',
           volatility,
-          PEratio,
+          peRatio: PEratio,
           dividendYield,
           protection,
+          // New fields for equity simulation:
+          totalSharesOutstanding: 1000, // Starting with 1,000 shares.
+          authorizedShares: 10000, // Maximum allowed shares.
+          shareholders: [{
+            userId,
+            shares: 1000,
+            role: 'founder',
+            lastInvestedAt: new Date(),
+            cost: 1000 * initialPrice
+          }],
+          fundingRounds: [],
+          priceHistory: [{
+            price: initialPrice,
+            date: Date.now()
+          }],
+          isPublic: false,
+          ipoDate: null
         });
 
         await newCompany.save();
 
-        // Remove the select menu by editing the original message.
+        // Remove the select menu.
         await menuMessage.edit({
           content: '🍾 Sector selected. Processing registration...',
           components: []
         });
 
         const embed = new EmbedBuilder()
-        .setDescription(`## 🏢 Company Registered!\n\n**${username}**, your company **${companyName}** has been successfully registered in the **${selectedSector}** sector.`)
+        .setDescription(`## 🏢 Company Registered!\n\n**${username}**, your company **${companyName.toUpperCase()}** has been successfully registered in the **${selectedSector}** sector.`)
         .setColor("#bde2cd")
-        .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/bosschair.jpg`);
+        .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/bosschair.jpg`)
+        .setTimestamp();
 
         const embed2 = new EmbedBuilder()
         .setDescription(
-          `➤ **Registration Cost**: <:kasiko_coin:1300141236841086977> 3M cash\n` +
+          `➤ **Registration Fee**: <:kasiko_coin:1300141236841086977> 300K cash\n` +
           `➤ **Initial Stock Price**: <:kasiko_coin:1300141236841086977> ${initialPrice}\n` +
           `➤ **CEO**: ${username}`
         )
@@ -288,14 +300,9 @@ export async function startCompanyCommand(message, args) {
   } catch (error) {
     console.error("Error in startCompanyCommand:",
       error);
-    try {
-      return handleMessage(message,
-        {
-          content: `⚠ An error occurred while registering your company.\n**Error**: ${error.message}`
-        });
-    } catch (err) {
-      console.error("Error sending error message:",
-        err);
-    }
+    return handleMessage(message,
+      {
+        content: `⚠ An error occurred while registering your company.\n**Error**: ${error.message}`
+      });
   }
 }

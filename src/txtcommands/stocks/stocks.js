@@ -10,15 +10,15 @@ import {
 } from './canvas.js';
 
 import {
-  buyStock
+  buySharesCommand
 } from './req/buy.js';
 
 import {
-  portfolio
+  portfolioCommand
 } from './req/portfolio.js';
 
 import {
-  sellStock
+  sellSharesCommand
 } from './req/sell.js';
 
 import {
@@ -38,7 +38,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  AttachmentBuilder
+  AttachmentBuilder,
+  ComponentType
 } from 'discord.js';
 
 import dotenv from 'dotenv';
@@ -46,9 +47,9 @@ dotenv.config();
 
 const APPTOKEN = process.env.APP_ID;
 
-const stockData = readStockData();
+import Company from '../../../models/Company.js';
 
-export function createStockEmbed(name, stock) {
+export function createStockEmbed(name, stock, ownerView = false) {
   let embedColor;
   switch (stock.trend.toLowerCase()) {
     case 'up':
@@ -72,7 +73,7 @@ export function createStockEmbed(name, stock) {
       name: "General Overview",
       value: `**Description**: ${stock.description}\n` +
       `**Sector**: ${stock.sector}\n` +
-      `**CEO**: ${stock.CEO}`,
+      `**CEO**: ${stock.CEO || stock.ceo}`,
       inline: false
   },
   {
@@ -94,7 +95,7 @@ const financialDetailsEmbed = new EmbedBuilder()
 .addFields(
   {
     name: "Financial Details",
-    value: `**P/E Ratio**: ${stock.PEratio}\n` +
+    value: `**P/E Ratio**: ${stock.PEratio ? stock.PEratio : stock.peRatio}\n` +
     `**Dividend Yield**: ${stock.dividendYield}\n` +
     `**Market Cap**: <:kasiko_coin:1300141236841086977> ${stock.marketCap}`,
     inline: false
@@ -107,6 +108,30 @@ const financialDetailsEmbed = new EmbedBuilder()
   }
 );
 
+// Extra Embed: Owner View Internal Details (using description)
+if (ownerView) {
+  const shareholdersCount = stock.shareholders ? stock.shareholders.length : 0;
+  
+  const ownerDetails = `**Authorized Shares:** ${stock.authorizedShares}\n` +
+  `**Total Shares Outstanding:** ${stock.totalSharesOutstanding}\n` +
+  `**Share Holders:** ${shareholdersCount}\n` +
+  `**Protection:** ${stock.protection}\n` +
+  `**Work Count:** ${stock.workCount}\n` +
+  `**Last Work At:** ${stock.lastWorkAt ? new Date(stock.lastWorkAt).toLocaleString(): "N/A"}\n` +
+  `**Last Salary Withdrawal:** ${stock.lastSalaryWithdrawal ? new Date(stock.lastSalaryWithdrawal).toLocaleString(): "N/A"}\n` +
+  `**IPO Date:** ${stock.ipoDate ? new Date(stock.ipoDate).toLocaleString(): "N/A"}\n` +
+  `**Funding Rounds:** ${stock.fundingRounds ? stock.fundingRounds.length: 0}`;
+
+  const ownerViewEmbed = new EmbedBuilder()
+  .setTitle("Owner View")
+  .setColor(embedColor)
+  .setDescription(ownerDetails);
+
+  return [generalInfoEmbed,
+    financialDetailsEmbed,
+    ownerViewEmbed];
+}
+
 return [generalInfoEmbed,
   financialDetailsEmbed];
 }
@@ -116,387 +141,375 @@ function capitalizeFirstLetter(string) {
 return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+/**
+ * sendPaginatedCompanies:
+ * This command queries all companies from the database and displays them in a paginated embed.
+ * The user (assumed to be the one who invoked the command) can navigate through the list using buttons.
+ *
+ * Usage: Simply invoke the command (e.g., "company list") and it will display a paginated list.
+ */
 export async function sendPaginatedStocks(context) {
-try {
-const stockDataArray = Object.values(stockData);
-const user = context.user || context.author; // Handles both Interaction and Message
-if (!user) return; // Handle the case where neither user nor author exists
+  try {
+    // Query companies from the database, sorted by name.
+    const companies = await Company.find({ isPublic: true }).sort({ name: 1 });
+    const user = context.user || context.author;
+    if (!user) return;
+    if (!companies || companies.length === 0) {
+      return context.channel.send("⚠️ No companies found.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
 
-let currentIndex = 0;
-const stockEmbed = createStockEmbed(Object.keys(stockData)[currentIndex], stockDataArray[currentIndex]);
+    let currentIndex = 0;
+    // Create the initial embed.
+    const initialEmbed = createStockEmbed(companies[currentIndex].name, companies[currentIndex]);
 
-// Buttons for navigation
-const buttons = new ActionRowBuilder().addComponents(
-new ButtonBuilder().setCustomId("previousStock").setLabel("⟨ PREVIOUS").setStyle(ButtonStyle.Primary).setDisabled(true),
-new ButtonBuilder().setCustomId("nextStock").setLabel("NEXT ⟩").setStyle(ButtonStyle.Primary),
-new ButtonBuilder().setCustomId("stock_buy").setLabel("🛍️ BUY").setStyle(ButtonStyle.Danger),
-new ButtonBuilder().setCustomId("stock_graph").setLabel("📈 GRAPH").setStyle(ButtonStyle.Secondary),
-new ButtonBuilder().setCustomId("info").setLabel("❔").setStyle(ButtonStyle.Secondary)
-);
+    // Create navigation buttons.
+    const buttons = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("previousCompany")
+        .setLabel("⟨ PREVIOUS")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId("nextCompany")
+        .setLabel("NEXT ⟩")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(companies.length <= 1),
+      new ButtonBuilder()
+         .setCustomId("stock_buy")
+         .setLabel("🛍️ BUY")
+         .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+         .setCustomId("stock_graph")
+         .setLabel("📈 GRAPH")
+         .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId("info")
+        .setLabel("❔")
+        .setStyle(ButtonStyle.Secondary)
+    );
 
-// Send initial message
-const message = await context.channel.send({
-embeds: stockEmbed,
-components: [buttons],
-fetchReply: true,
-});
+    // Send the initial message.
+    const message = await context.channel.send({
+      embeds: initialEmbed,
+      components: [buttons],
+      fetchReply: true
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
-const collector = message.createMessageComponentCollector({
-time: 6 * 60 * 1000, // 6 minutes
-});
+    // Create a collector for button interactions.
+    const collector = message.createMessageComponentCollector({
+      filter: i => i.user.id === user.id,
+      componentType: ComponentType.Button,
+      time: 6 * 60 * 1000 // 6 minutes
+    });
 
+    collector.on("collect", async (interaction) => {
+      // Ensure only the command invoker can interact.
+      if (interaction.user.id !== user.id) {
+        return interaction.reply({
+          content: "You can't interact with these buttons.",
+          ephemeral: true
+        });
+      }
 
-collector.on("collect", async (buttonInteraction) => {
-if (buttonInteraction.user.id !== user.id) {
-return buttonInteraction.reply({
-content: "You can't interact with this button.",
-ephemeral: true,
-});
+      try {
+        if (interaction.customId === "stock_buy") {
+          return await handleBuyRequest(interaction.user.id, interaction.user.username, companies[currentIndex].name, interaction);
+        }
+
+        if (interaction.customId === "stock_graph") {
+          await interaction.deferReply();
+          let response = await stockPrice(companies[currentIndex].name, interaction);
+          return await interaction.editReply(response);
+        }
+        // Handle the info button separately.
+        if (interaction.customId === "info") {
+          const infoEmbed = new EmbedBuilder()
+            .setColor("#2ecc71")
+            .setTitle("🏢 Company Listing Guide")
+            .setDescription(
+              "Use the **NEXT** and **PREVIOUS** buttons to navigate through the companies.\n" +
+              "Each company shows its sector, CEO, current stock price, market cap, total shares, and status (private/public).\n" +
+              "Additional actions (such as funding or trading) can be added as extra buttons if needed."
+            )
+            .setFooter({ text: "Company Listing Info" })
+            .setTimestamp();
+          await interaction.deferReply();
+          return await interaction.editReply({ embeds: [infoEmbed] });
+        }
+
+        // Defer update to avoid timeout.
+        await interaction.deferUpdate();
+
+        // Update currentIndex based on button pressed.
+        if (interaction.customId === "nextCompany") {
+          currentIndex++;
+        } else if (interaction.customId === "previousCompany") {
+          currentIndex--;
+        }
+
+        // Update button disabled states.
+        buttons.components[0].setDisabled(currentIndex === 0);
+        buttons.components[1].setDisabled(currentIndex === companies.length - 1);
+
+        // Create new embed for current company.
+        const newEmbed = createStockEmbed(companies[currentIndex].name, companies[currentIndex]);
+        await interaction.editReply({ embeds: newEmbed, components: [buttons] });
+      } catch (err) {
+        console.error("Error updating interaction:", err);
+        return interaction.reply({
+          content: "An error occurred while updating. Please try again.",
+          ephemeral: true
+        });
+      }
+    });
+
+    collector.on("end", async () => {
+      // Disable all buttons when the collector ends.
+      buttons.components.forEach(button => button.setDisabled(true));
+      try {
+        await message.edit({ components: [buttons] });
+      } catch (err) {
+        console.error("Error disabling buttons on collector end:", err);
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    return context.channel.send("⚠️ Something went wrong while viewing companies!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  }
 }
 
-try {
-if (buttonInteraction.customId === "stock_buy") {
-return await handleBuyRequest(buttonInteraction.user.id, buttonInteraction.user.username, Object.keys(stockData)[currentIndex], buttonInteraction);
+export async function updateStockPrices() {
+  try {
+    const companies = await Company.find({});
+    for (const company of companies) {
+      // Calculate a random percentage change between -5% and +5%.
+      const changePercent = Math.random() * 10 - 5; // Range: -5 to +5%
+      let newPrice = company.currentPrice * (1 + changePercent / 100);
+      // Ensure newPrice is at least 0.1 and round to one decimal place.
+      newPrice = Math.max(newPrice, 0.1);
+      newPrice = Math.round(newPrice * 10) / 10;
+      
+      company.currentPrice = newPrice;
+      
+      // Update last10Prices: add the new price and remove the oldest if there are more than 10 entries.
+      company.last10Prices.push(newPrice);
+      if (company.last10Prices.length > 10) {
+        company.last10Prices.shift();
+      }
+      
+      // Recalculate maxPrice and minPrice from the last10Prices array.
+      company.maxPrice = Math.max(...company.last10Prices);
+      company.minPrice = Math.min(...company.last10Prices);
+      
+      // Update marketCap as currentPrice * totalSharesOutstanding.
+      company.marketCap = parseFloat((company.currentPrice * company.totalSharesOutstanding).toFixed(2));
+      let trendInfo = 'stable';
+      
+      // Update trend based on the last three prices.
+      if (company.last10Prices.length >= 3) {
+        const len = company.last10Prices.length;
+        const [p1, p2, p3] = company.last10Prices.slice(len - 3);
+        if (p3 > p2 && p2 > p1) {
+          company.trend = 'up';
+          trendInfo = 'up';
+        } else if (p3 < p2 && p2 < p1) {
+          company.trend = 'down';
+          trendInfo = 'down';
+        } else {
+          company.trend = 'stable';
+          trendInfo = 'stable';
+        }
+      } else {
+        company.trend = 'stable';
+      }
+      
+      // Save the updated company data.
+      await company.save();
+
+      buildNews(company.name, trendInfo, company.toObject());
+    }
+  } catch (err) {
+    console.error("Error updating stock prices:", err);
+  }
 }
 
-if (buttonInteraction.customId === "stock_graph") {
-await buttonInteraction.deferReply();
-let response = await stockPrice(Object.keys(stockData)[currentIndex], buttonInteraction);
-return await buttonInteraction.editReply(response);
-}
-
-if (buttonInteraction.customId === "info") {
-const stockGuideEmbed = new EmbedBuilder()
-.setColor('#2ecc71') // Green color
-.setTitle('📈 Stock Commands Guide')
-.setDescription('Explore and manage stocks easily using these commands.')
-.addFields(
-{
-name: 'Aliases', value: '`stocks`, `s`, `portfolio or pf`', inline: true
-},
-{
-name: 'Arguments', value: '`<command>`: Action (e.g., `price`, `buy`, `sell`)\n`[parameters]`: Additional info (e.g., stock symbol, amount)', inline: true
-},
-{
-name: 'Examples', value: `
-- \`stock\`: View all available stocks
-- \`stock price <symbol>\`: View stock price (alias: \`p\`)
-- \`stock buy <symbol> <amount>\`: Buy a stock (alias: \`b\`)
-- \`stock sell <symbol> <amount>\`: Sell a stock (alias: \`s\`)
-- \`stock portfolio @user\`: View portfolios (alias: \`pf\`)
-- \`stock news\`: Stock news
-- \`stock boughtprice <symbol>\`: View bought price (alias: \`bp\`)
-`
-}
-)
-.setFooter({
-text: 'Replace <symbol> and <amount> as needed!'
-});
-await buttonInteraction.deferReply();
-return await buttonInteraction.editReply( {
-embeds: [stockGuideEmbed]
-});
-}
-
-await buttonInteraction.deferUpdate(); // Prevent timeout
-if (buttonInteraction.customId === "nextStock") currentIndex++;
-else if (buttonInteraction.customId === "previousStock") currentIndex--;
-
-// Update embed and button states
-const newStockEmbed = createStockEmbed(
-Object.keys(stockData)[currentIndex],
-stockDataArray[currentIndex]
-);
-buttons.components[0].setDisabled(currentIndex === 0);
-buttons.components[1].setDisabled(currentIndex === stockDataArray.length - 1);
-
-return await buttonInteraction.editReply({
-embeds: newStockEmbed,
-components: [buttons],
-});
-} catch (err) {
-console.error("Error updating interaction:", err);
-return buttonInteraction.reply({
-content: "An error occurred while updating. Please try again.",
-ephemeral: true,
-});
-}
-});
-
-collector.on("end",
-async () => {
-buttons.components.forEach((button) => button.setDisabled(true));
-try {
-return await message.edit({
-components: [buttons],
-});
-} catch (err) {
-console.error("Error disabling buttons on collector end:", err);
-}
-});
-
-} catch (err) {
-console.error(err);
-return context.channel.send("⚠️ Something went wrong while viewing stock!");
-}
-}
-
-function updateStockPrices() {
-for (const stock in stockData) {
-const changePercent = (Math.random() * 10 - 5) * stockData[stock].volatility; // +/- 5% * volatility change
-let newPrice = Math.max(stockData[stock].maxmin[1], stockData[stock].currentPrice * (1 + changePercent / 100));
-
-if (newPrice > stockData[stock].maxmin[0]) newPrice = stockData[stock].maxmin[0];
-
-newPrice = parseFloat(newPrice.toFixed(2));
-stockData[stock].currentPrice = newPrice;
-stockData[stock].last10Prices.push(newPrice);
-
-if (stockData[stock].last10Prices.length > 10) {
-stockData[stock].last10Prices.shift(); // Remove the oldest price
-}
-
-// Calculate trend based on the last 3 prices in last10Prices
-const prices = stockData[stock].last10Prices;
-if (prices.length >= 3) {
-const [p1,
-p2,
-p3] = prices.slice(-3); // Get the last 3 prices
-
-if (p3 > p2 && p2 > p1) {
-stockData[stock].trend = "up";
-} else if (p3 < p2 && p2 < p1) {
-stockData[stock].trend = "down";
-} else {
-stockData[stock].trend = "stable";
-}
-} else {
-stockData[stock].trend = "stable"; // Default to stable if not enough data
-}
-
-if (Math.random() * 100 < 50) {
-let stockTrend = stockData[stock].trend;
-if (stockTrend === "stable") stockTrend = "";
-buildNews(stock, stockTrend, stockData[stock]);
-}
-}
-
-writeStockData(stockData);
-}
 
 export async function sendNewspaper(message) {
-let newspaperJSON = currentNewspaper();
-let newspaper = `## 📊 NEWSPAPER 🗞️\n⊹\n`;
+  // Ensure currentNewspaper() is defined and returns an array of objects with "headline" and "description" properties
+  let newspaperJSON = currentNewspaper();
+  let newspaper = `## 📊 NEWSPAPER 🗞️\n⊹\n`;
 
-newspaperJSON.forEach((news, i) => {
-newspaper += `📰 **${i+1}. ** **${news.headline}**\n${news.description}\n\n`
-});
+  newspaperJSON.forEach((news, i) => {
+    newspaper += `📰 **${i + 1}.** **${news.headline}**\n${news.description}\n\n`;
+  });
 
-const newsEmbed = new EmbedBuilder()
-.setDescription(newspaper)
-.setColor("#e0e6ed");
+  const newsEmbed = new EmbedBuilder()
+    .setDescription(newspaper)
+    .setColor("#e0e6ed");
 
-return message.channel.send({
-embeds: [newsEmbed]
-})
+  return await message.channel.send({
+    embeds: [newsEmbed]
+  }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 }
 
-// Update stock prices every server start
-updateStockPrices();
-// Update stock prices every hour (600000 ms)
-setInterval(updateStockPrices, 600000);
+// Update stock prices on server start
+await updateStockPrices();
 
-export async function stockPrice(stockName, message) {
-try {
-// Check if the stock exists
-if (stockData[stockName]) {
-const stock = stockData[stockName];
+// Update stock prices every hour (3600000 ms)
+setInterval(async () => await updateStockPrices(), 3600000);
 
-// Generate the stock chart
-const chartBuffer = await generateStockChart(stock);
+export async function stockPrice(companyName, message) {
+  try {
+    // Convert the provided company name to uppercase (assuming company names are stored in uppercase)
+    const name = companyName.toUpperCase();
+    // Find the company in the database.
+    const company = await Company.findOne({ name });
+    if (!company) {
+      return {
+        content: "⚠️ Company not found."
+      };
+    }
 
-// Create the image attachment
-const attachment = new AttachmentBuilder(chartBuffer, {
-name: 'stock-chart.png'
-});
+    // Generate a stock chart for the company (this function should accept a company document)
+    const chartBuffer = await generateStockChart(company);
 
-// Create the embed
-const embed = new EmbedBuilder()
-.setTitle(`📊 Stock Price: ${stockName}`)
-.setDescription(`**${stockName}** is currently priced at <:kasiko_coin:1300141236841086977> **${stock.currentPrice.toLocaleString()}** 𝑪𝒂𝒔𝒉.`)
-.setImage('attachment://stock-chart.png')
-.setColor('#007bff')
-.setFooter({
-text: 'Stock data provided by Kasiko Stocks'
-});
+    // Create the image attachment
+    const attachment = new AttachmentBuilder(chartBuffer, { name: 'company-chart.png' });
 
-// Send the embed with the attachment
-return {
-embeds: [embed],
-files: [attachment]
-};
-} else {
-return {
-content: "⚠️ Stock not found."
-};
-}
-} catch (error) {
-console.error(error);
-return {
-content: "⚠️ Something went wrong while checking stock's price."
-};
-}
-}
+    // Create the embed with company price information.
+    const embed = new EmbedBuilder()
+      .setTitle(`📊 Stock Price: ${company.name}`)
+      .setDescription(`**${company.name}** is currently priced at <:kasiko_coin:1300141236841086977> **${company.currentPrice.toLocaleString()}** Cash.`)
+      .setImage('attachment://company-chart.png')
+      .setColor('#007bff')
+      .setFooter({ text: 'Company data provided by Kasiko Stocks' })
+      .setTimestamp();
 
-export async function boughtPrice(message, stockName) {
-const userData = await getUserData(message.author.id);
-
-if (!(userData && userData.stocks && userData.stocks[stockName] && userData.stocks[stockName].shares > 0)) {
-return message.channel.send(`📊⚠️ **${message.author.username}**, you don't own any stocks of **${stockName}**!`)
-}
-
-const stockPrice = stockData[stockName].currentPrice;
-
-const embed = new EmbedBuilder()
-.setColor('#f5bbaf')
-.setDescription(`
-📊 **${message.author.username}**, you have bought **${userData.stocks[stockName].shares}** of **${stockName}** for price <:kasiko_coin:1300141236841086977> **${userData.stocks[stockName].cost.toFixed(0).toLocaleString()}**.\nCurrent Value: <:kasiko_coin:1300141236841086977> **${(Number(stockPrice) * Number(userData.stocks[stockName].shares)).toFixed(1).toLocaleString()}**.
-`);
-
-return message.channel.send({
-embeds: [embed]
-});
+    return {
+      embeds: [embed],
+      files: [attachment]
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      content: "⚠️ Something went wrong while checking the company's stock price."
+    };
+  }
 }
 
 export default {
-name: "stock",
-description: "View and manage stocks in the stock market.",
-aliases: ["stocks",
-"s",
-"portfolio",
-"pf"],
-args: "<command> [parameters]",
-example: [
-"stock",
-// View all available stocks
-"stock price <symbol>",
-// View the price of a specific stock
-"stock buy <symbol> <amount>",
-// Buy a specific stock
-"stock sell <symbol> <amount>",
-// Sell a specific stock
-"stock portfolio @user",
-"portfolio",
-"pf @user",
-// View a user's portfolio or your own
-"stock news/newspaper",
-// stocks news,
-"stock bp <symbol>",
-"stock boughtprice <symbol>"
-],
-related: ["stocks",
-"portfolio",
-"buy",
-"sell"],
-emoji: "📈",
-cooldown: 10000,
-// Cooldown of 10 seconds
-category: "🏦 Economy",
+  name: "stock",
+  description: "View and manage stocks in the stock market.",
+  aliases: ["stocks", "s", "portfolio", "pf"],
+  args: "<command> [parameters]",
+  example: [
+    // View all available stocks
+    "stock",
+    // View the price of a specific stock
+    "stock price <symbol>",
+    // Buy a specific stock
+    "stock buy <symbol> <amount>",
+    // Sell a specific stock
+    "stock sell <symbol> <amount>",
+    // View a user's portfolio or your own
+    "portfolio",
+    // Stock news
+    "stock news/newspaper",
+  ],
+  related: ["stocks", "portfolio", "buy", "sell"],
+  emoji: "📈",
+  cooldown: 10000, // Cooldown of 10 seconds
+  category: "🏦 Economy",
 
-execute: async (args, message) => {
-try {
-const command = args[1] ? args[1].toLowerCase(): null;
+  execute: async (args, message) => {
+    try {
+      const mainArg = args[0] ? args[0].toLowerCase() : null;
+      const command = args[1] ? args[1].toLowerCase() : null;
 
-if (args[0] === "portfolio" || args[0] === "pf") {
-if (args[1] && Helper.isUserMention(args[1], message)) {
-return portfolio(Helper.extractUserId(args[1]), message.channel, message.author.id); // View mentioned user's portfolio
-}
-return portfolio(message.author.id, message.channel, message.author.id); // View the user's own Portfolio
-}
+      // Direct portfolio command if invoked with "portfolio" or "pf"
+      if (mainArg === "portfolio" || mainArg === "pf") {
+        return portfolioCommand(message);
+      }
 
-if (!command) return sendPaginatedStocks(message); // Show all available Stocks
-switch (command) {
-case "news":
-case "newspaper":
-return sendNewspaper(message);
+      // If no specific command is provided, display all stocks
+      if (!command) {
+        return sendPaginatedStocks(message);
+      }
 
-case "price":
-case "p":
-if (args[2]) {
-let response = await stockPrice(args[2].toUpperCase(), message); // Show stock price for the given symbol
-return await message.channel.send(response);
-}
-return message.channel.send("⚠️ Please specify a stock symbol to check the price.");
+      switch (command) {
+        case "news":
+        case "newspaper":
+          return sendNewspaper(message);
 
-case "boughtprice":
-case "bp":
+        case "price":
+        case "p": {
+          if (!args[2]) {
+            return message.channel.send(
+              "⚠️ Please specify a stock symbol to check the price."
+            ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
+          const symbol = args[2].toUpperCase();
+          const response = await stockPrice(symbol, message);
+          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
 
-if (args[2]) {
-if (!stockData[args[2].toUpperCase()]) {
-return message.channel.send("⚠️ Stock not found.");
-}
+        case "buy":
+        case "b": {
+          if (!args[2] || !Helper.isNumber(args[3])) {
+            return message.channel.send(
+              "⚠️ Please specify a valid stock symbol and amount to buy. Example: `stock buy <symbol> <amount>`"
+            ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
+          const symbol = args[2].toUpperCase();
+          const amount = args[3];
+          return buySharesCommand(
+            message,
+            [null, symbol,
+            amount]
+          );
+        }
 
-return boughtPrice(message, args[2].toUpperCase());
-}
+        case "sell":
+        case "s": {
+          if (!args[2] || !Helper.isNumber(args[3])) {
+            return message.channel.send(
+              "⚠️ Please specify a valid stock symbol and amount to sell. Example: `stock sell <symbol> <amount>`"
+            ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
+          const symbol = args[2].toUpperCase();
+          const amount = args[3];
+          return sellSharesCommand(
+            message,
+            [null, symbol,
+            amount]
+          );
+        }
 
-return message.channel.send("⚠️ Please specify a stock symbol to check it's bought price.");
+        case "portfolio":
+        case "pf":
+          return portfolioCommand(message);
 
-case "buy":
-case "b":
-if (args[2] && Helper.isNumber(args[3])) {
-return buyStock(message.author.id, message.author.username, args[2].toUpperCase(), args[3], message.channel); // Buy a stock
-}
-return message.channel.send("⚠️ Please specify a valid stock symbol and amount to buy. Example: `stock buy <symbol> <amount>`");
+        case "all":
+        case "view":
+          return sendPaginatedStocks(message);
 
-case "sell":
-case "s":
-if (args[2] && Helper.isNumber(args[3])) {
-return sellStock(message.author.id, message.author.username, args[2].toUpperCase(), args[3], message.channel); // Sell a stock
-}
-return message.channel.send("⚠️ Please specify a valid stock symbol and amount to sell. Example: `stock sell <symbol> <amount>`");
-
-case "portfolio":
-case "pf":
-if (args[2] && Helper.isUserMention(args[2], message)) {
-return portfolio(Helper.extractUserId(args[2]), message.channel, message.author.id); // View mentioned user's portfolio
-}
-return portfolio(message.author.id, message.channel, message.author.id); // View the user's own portfolio
-
-case "all":
-case "view":
-return sendPaginatedStocks(message); // Show all available stocks
-
-default:
-const embed = new EmbedBuilder()
-.setColor(0xFF0000) // Hex color as a number
-.setTitle('❗ Stocks Command')
-.addFields(
-{
-name: '`stock all`', value: 'View all available stocks', inline: true
-},
-{
-name: '`stock price <symbol>`', value: 'Check the price of a stock', inline: true
-},
-{
-name: '`stock buy <symbol> <amount>`', value: 'Buy a stock', inline: true
-},
-{
-name: '`stock sell <symbol> <amount>`', value: 'Sell a stock', inline: true
-},
-{
-name: '`stock news`', value: 'Get the latest stock news', inline: true
-},
-{
-name: '`stock portfolio`', value: 'View your stock portfolio', inline: true
-}
-)
-
-return message.channel.send({
-embeds: [embed]
-});
-}
-} catch (e) {
-console.log(e);
-}
-}
+        default: {
+          const embed = new EmbedBuilder()
+            .setColor(0xff0000)
+            .setTitle("❗ Stocks Command")
+            .addFields(
+              { name: "`stock all`", value: "View all available stocks", inline: true },
+              { name: "`stock price <symbol>`", value: "Check the price of a stock", inline: true },
+              { name: "`stock buy <symbol> <amount>`", value: "Buy a stock", inline: true },
+              { name: "`stock sell <symbol> <amount>`", value: "Sell a stock", inline: true },
+              { name: "`stock news`", value: "Get the latest stock news", inline: true },
+              { name: "`stock portfolio`", value: "View your stock portfolio", inline: true }
+            );
+          return message.channel.send({ embeds: [embed] }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  },
 };

@@ -12,7 +12,7 @@ import {
 } from 'discord.js';
 
 import {
-  buyStock
+  buySharesCommand
 } from './buy.js';
 
 import {
@@ -23,9 +23,9 @@ async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
   if (isInteraction) {
     if (!context.deferred) await context.deferReply();
-    return await context.editReply(data);
+    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.send(data);
+    return context.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -36,10 +36,10 @@ async function handleNumberInput(interaction, stockName) {
   if (isNaN(parsedNumber) || parsedNumber < 1 || parsedNumber > 100) {
     await interaction.reply({
       content: 'Invalid input! Please enter a number between 1 and 100.', ephemeral: true
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
     await interaction.deferReply();
-    return await buyStock(interaction.user.id, interaction.user.username, stockName, parsedNumber, interaction);
+    return await buySharesCommand(interaction.user.id, interaction.user.username, stockName, parsedNumber, interaction);
   }
 }
 

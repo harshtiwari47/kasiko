@@ -1,6 +1,10 @@
 import Company from '../../../../models/Company.js';
-import { createStockEmbed } from '../../stocks/stocks.js';
-import { EmbedBuilder } from 'discord.js';
+import {
+  createStockEmbed
+} from '../../stocks/stocks.js';
+import {
+  EmbedBuilder
+} from 'discord.js';
 
 // Universal function for sending responses
 async function handleMessage(context, data) {
@@ -19,20 +23,24 @@ async function handleMessage(context, data) {
 
 export async function companyProfileCommand(message, args) {
   try {
-    const userId = message.author.id;
-    const username = message.author.username;
-    
+    const userId = message.user ? message.user.id: message.author.id;
+    const username = message.user ? message.user.username: message.author.username;
+
     // Find the user's company.
-    const company = await Company.findOne({ owner: userId });
+    const company = await Company.findOne({
+      owner: userId
+    });
     if (!company) {
       return handleMessage(message, {
         content: `ⓘ **${username}**, you do not have a registered company. Use \`!company start\` to create one.`
       });
     }
-    
+
     // Create and send the stock embed for the company.
-    const embed = createStockEmbed(company.name, company.toJSON());
-    return handleMessage(message, { embeds: embed });
+    const embed = createStockEmbed(company.name, company.toJSON(), true);
+    return handleMessage(message, {
+      embeds: embed
+    });
   } catch (error) {
     console.error("Error in companyProfileCommand:", error);
     try {

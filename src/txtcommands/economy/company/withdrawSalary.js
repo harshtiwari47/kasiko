@@ -7,70 +7,80 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
-export async function withdrawSalaryCommand(message, args) {
-  try {
-    const userId = message.author.id;
-    const username = message.author.username;
+async function handleMessage(context, data) {
+  const isInteraction = !!context.isCommand;
+  if (isInteraction) {
+    if (!context.deferred) await context.deferReply();
+    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  } else {
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  }
+}
 
-    // Find the user's company.
+export async function salaryCommand(message, args) {
+  try {
+    const userId = message.user ? message.user.id: message.author.id;
+    const username = message.user ? message.user.username: message.author.username;
+
+    // Retrieve the company associated with this user (the owner)
     const company = await Company.findOne({
       owner: userId
     });
     if (!company) {
       return handleMessage(message, {
-        content: `ⓘ **${username}**, you don't have a registered company. Use \`!company start\` to create one.`
+        content: `ⓘ **${username}**, you do not have a registered company. Please use the \`company start\` command to create one.`
       });
     }
 
+    // Set a cooldown for the salary command: 3 days (259200000 milliseconds)
+    const COOLDOWN = 259200000;
     const now = new Date();
-    const sevenDays = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
-    // Check if 7 days have passed since the last withdrawal.
-    if (company.lastSalaryWithdrawal && (now - new Date(company.lastSalaryWithdrawal)) < sevenDays) {
-      const remaining = sevenDays - (now - new Date(company.lastSalaryWithdrawal));
-      const days = Math.floor(remaining / (24 * 60 * 60 * 1000));
-      const hours = Math.floor((remaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    if (company.lastSalaryWithdrawal && (now - company.lastSalaryWithdrawal < COOLDOWN)) {
+      const remainingMs = COOLDOWN - (now - company.lastSalaryWithdrawal);
+      const remainingDays = Math.floor(remainingMs / (24 * 60 * 60 * 1000));
+      const remainingHours = Math.ceil((remainingMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
       return handleMessage(message, {
-        content: `ⓘ **${username}**, you can withdraw your salary in ${days} days and ${hours} hours.`
+        content: `ⓘ **${username}**, you have already withdrawn your salary recently. Please wait ${remainingDays} day(s) and ${remainingHours} hour(s) before withdrawing your salary again.`
       });
     }
 
-    // Calculate salary (0.1% of marketCap with a minimum of 50,000).
-    const baseSalary = company.marketCap * 0.1;
-    const salary = Math.max(baseSalary, 50000);
+    // Calculate salary reward: a base salary plus a bonus based on the company's current price and a small random component.
+    const baseSalary = 50000;
+    const bonus = Math.floor(company.currentPrice * 100);
+    const salaryReward = baseSalary + bonus + Math.floor(Math.random() * 50); // Random addition up to 50
 
-    // Update the withdrawal time.
-    company.lastSalaryWithdrawal = now;
-    await company.save();
-
-    // Credit salary to the user.
+    // Retrieve and update the user's cash balance
     const userData = await getUserData(userId);
     if (!userData) {
       return handleMessage(message, {
         content: `ⓘ **${username}**, user data not found.`
       });
     }
-    userData.cash += salary;
-    userData.networth += salary;
-    await updateUser(userId, userData);
+
+    userData.cash += salaryReward;
+    await updateUser(userId, {
+      cash: userData.cash
+    });
+
+    // Update the company's lastSalaryWithdrawal timestamp
+    company.lastSalaryWithdrawal = now;
+    await company.save();
 
     const embed = new EmbedBuilder()
-    .setTitle("💸 𝙎𝙖𝙡𝙖𝙧𝙮 𝙒𝙞𝙩𝙝𝙙𝙧𝙖𝙬𝙣")
-    .setDescription(`**${username}**, you have withdrawn your salary of <:kasiko_coin:1300141236841086977> **${salary.toFixed(2)}** cash from your company **${company.name}**.`)
-    .setColor("#2ecc71")
+    .setTitle("💼 SALARY WITHDRAWAL")
+    .setDescription(`💸 **${username}**, you have withdrawn your salary from **${company.name}** and received <:kasiko_coin:1300141236841086977> ${salaryReward}.`)
+    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/bosschair.jpg`)
+    .setColor("#60faa4")
     .setTimestamp();
 
     return handleMessage(message, {
       embeds: [embed]
     });
+
   } catch (error) {
-    console.error("Error in withdrawSalaryCommand:", error);
-    try {
-      return handleMessage(message, {
-        content: `⚠ **${message.author.username}**, an error occurred while processing your salary withdrawal.\n**Error**: ${error.message}`
-      });
-    } catch (err) {
-      console.error("Error sending error message:", err);
-    }
+    console.error("Error in salaryCommand:", error);
+    return handleMessage(message, {
+      content: `⚠ An error occurred while processing your salary withdrawal.\n**Error**: ${error.message}`
+    });
   }
 }

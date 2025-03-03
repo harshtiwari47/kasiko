@@ -75,7 +75,7 @@ client.on('messageCreate', async (message) => {
     let prefix = "kas";
 
     //return if author is bot
-    if (message.author.bot) return;
+    if (message.author.bot || message.system || message.webhookId) return;
 
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 

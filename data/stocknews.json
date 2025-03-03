@@ -5,14 +5,14 @@
   "date": ""
 },
   {
-    "headline": "Volatile Week for __companyName__ as Price Swings Between __maxmin[0]__ and __maxmin[1]__",
-    "description": "__companyName__ saw notable volatility, fluctuating between __maxmin[0]__ and __maxmin[1]__ this week. The current price of __currentPrice__ reflects broader market uncertainties.",
+    "headline": "Volatile Week for __companyName__ as Price Swings Between __maxPrice__ and __minPrice__",
+    "description": "__companyName__ saw notable volatility, fluctuating between __maxPrice__ and __minPrice__ this week. The current price of __currentPrice__ reflects broader market uncertainties.",
     "stat": "",
     "date": ""
   },
   {
     "headline": "__companyName__ Experiences Decline Amid Sector-Wide Challenges",
-    "description": "Shares of __companyName__ fell to __currentPrice__, with recent lows approaching __maxmin[1]__. As volatility in __sector__ rises, the company faces increased scrutiny.",
+    "description": "Shares of __companyName__ fell to __currentPrice__, with recent lows approaching __minPrice__. As volatility in __sector__ rises, the company faces increased scrutiny.",
     "stat": "down",
     "date": ""
   },
@@ -42,7 +42,7 @@
   },
   {
     "headline": "Uncertain Market Trends Affect __companyName__ Stock Performance",
-    "description": "Fluctuating market trends have led to a decline in __companyName__’s stock, which now trades at __currentPrice__ after previously reaching a high of __maxmin[0]__.",
+    "description": "Fluctuating market trends have led to a decline in __companyName__’s stock, which now trades at __currentPrice__ after previously reaching a high of __maxPrice__.",
     "stat": "down",
     "date": ""
   },
@@ -108,7 +108,7 @@
   },
   {
     "headline": "Downturn in __sector__ Sector Hits __companyName__ Hard",
-    "description": "As the __sector__ sector experiences a downturn, __companyName__'s stock has fallen, trading now at __currentPrice__ from highs of __maxmin[0]__.",
+    "description": "As the __sector__ sector experiences a downturn, __companyName__'s stock has fallen, trading now at __currentPrice__ from highs of __maxPrice__.",
     "stat": "down",
     "date": ""
   },
@@ -209,8 +209,8 @@
     "date": ""
   },
   {
-    "headline": "__companyName__’s Stock Hits All-Time High at __maxmin[0]__",
-    "description": "__companyName__ has reached an all-time high of __maxmin[0]__, driven by strong demand and performance in the __sector__ sector.",
+    "headline": "__companyName__’s Stock Hits All-Time High at __maxPrice__",
+    "description": "__companyName__ has reached an all-time high of __maxPrice__, driven by strong demand and performance in the __sector__ sector.",
     "stat": "up",
     "date": ""
   },

@@ -21,10 +21,8 @@ export default {
     ),
 
   async autocomplete(interaction) {
-    console.log("Autocomplete triggered!"); // Debugging check
 
     const focusedValue = interaction.options.getFocused();
-    console.log("Focused value:", focusedValue);
 
     try {
       // Fetch all available guide filenames (command names)

@@ -64,7 +64,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
           await channel.send(`🎉 **${opponent.username}** has joined the race, betting on **${opponentBetOn}**! 🏇 Let the race begin!`);
 
           // Start the race
-          await startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild);
+          await startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild, id);
           return;
         } catch (error) {
           if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
