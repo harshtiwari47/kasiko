@@ -51,6 +51,8 @@ export async function portfolioCommand(context) {
   try {
     const userId = context.user ? context.user.id: context.author.id;
     const username = context.user ? context.user.username: context.author.username;
+    const cacheKey = `totalStockPrice:${userId}`;
+
 
     // Query companies where the user is a shareholder
     const companies = await Company.find({
