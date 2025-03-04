@@ -19,6 +19,8 @@ import {
   sellSharesCommand
 } from './sell.js';
 
+import redisClient from '../../../../redis.js';
+
 // Helper function to handle messages for interactions vs. plain messages
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
@@ -137,6 +139,12 @@ export async function portfolioCommand(context) {
       const row = new ActionRowBuilder().addComponents(selectMenu);
       components.push(row);
     }
+
+    await redisClient.set(cacheKey,
+      (totalPortfolioValue.toString() || 0),
+      {
+        EX: 300
+      });
 
     const replyData = {
       embeds: [embed1,

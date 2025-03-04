@@ -18,7 +18,7 @@ export default {
 
     try {
 
-      if (message.author.id !== "1223321207743582211") return message.channel.send(`☕ Ooops, you are not allowed to perform this command!`)
+      if (message.author.id !== "1223321207743582211" || message.author.id !== "1318158188822138972") return message.channel.send(`☕ Ooops, you are not allowed to perform this command!`)
 
       const memoryUsage = process.memoryUsage();
       const totalMemory = os.totalmem();

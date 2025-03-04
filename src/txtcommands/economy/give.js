@@ -59,6 +59,28 @@ export async function give(message, userId, amount, recipientId) {
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
+    // Get today's date as a string key (e.g., "2025-03-04")
+    const todayKey = new Date().toISOString().split('T')[0];
+
+    // Retrieve the current amount received today; default to 0 if not set
+    let todayReceived = recipientData.dailyAmountReceived.get(todayKey) || 0;
+
+    // Calculate the daily limit: recipientData.level * 100000 capped at 6,000,000
+    const maxDailyLimit = recipientData.level * 100000;
+    const dailyLimit = Math.min(maxDailyLimit, 6000000);
+
+    let remainingLimit = dailyLimit - todayReceived;
+
+    if (Number(amount) > remainingLimit) {
+      return message.channel.send(
+        `⚠ **<@${recipientId}>** has already received **${todayReceived.toLocaleString()}** today.\n` +
+        `The daily limit is **${dailyLimit.toLocaleString()}**.\n` +
+        `ッ They can receive up to **${remainingLimit.toLocaleString()}** more today.\n\n` +
+        `✘ You are trying to send **${Number(amount).toLocaleString()}**, which exceeds the limit!\n` +
+        `ⓘ  Try sending **${remainingLimit.toLocaleString()}** or less.`
+      );
+    }
+
     const embed = await sendConfirmation(message, userId, amount, recipientId);
 
     if (!embed) return;
@@ -121,13 +143,16 @@ export async function give(message, userId, amount, recipientId) {
           userData.charity += Number(amount);
           recipientData.cash += Number(amount);
 
+          recipientData.dailyAmountReceived.set(todayKey, todayReceived + Number(amount));
+
           try {
             await updateUser(userId, {
               cash: userData.cash,
               charity: userData.charity
             });
             await updateUser(recipientId, {
-              cash: recipientData.cash
+              cash: recipientData.cash,
+              dailyAmountReceived: recipientData.dailyAmountReceived
             });
           } catch (upErr) {
             await interaction.editReply({

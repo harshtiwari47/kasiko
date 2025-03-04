@@ -25,30 +25,35 @@ const shareholderSchema = new mongoose.Schema({
   },
   lastInvestedAt: {
     type: Date
-  }
-}, {
-  _id: false
-});
+  },
+  cost: {
+    type: Number,
+    default: 0,
+      min: 0
+    }
+  }, {
+    _id: false
+  });
 
-// Schema for recording a funding round (primary market funding)
-const fundingRoundSchema = new mongoose.Schema({
-  round: {
-    type: String,
-    enum: ['seed', 'seriesA', 'seriesB', 'IPO', 'directFunding', 'other', 'buy', 'sell'],
-    required: true
-  },
-  amount: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  sharesIssued: {
-    type: Number,
-    required: true,
-    min: 0
-  },
-  date: {
-    type: Date,
+  // Schema for recording a funding round (primary market funding)
+  const fundingRoundSchema = new mongoose.Schema({
+    round: {
+      type: String,
+      enum: ['seed', 'seriesA', 'seriesB', 'IPO', 'directFunding', 'other', 'buy', 'sell'],
+      required: true
+    },
+    amount: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    sharesIssued: {
+      type: Number,
+      required: true,
+      min: 0
+    },
+    date: {
+      type: Date,
     default: Date.now
     },
     cost: {

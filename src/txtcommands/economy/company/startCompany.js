@@ -235,7 +235,7 @@ export async function startCompanyCommand(message, args) {
           protection,
           // New fields for equity simulation:
           totalSharesOutstanding: 1000, // Starting with 1,000 shares.
-          authorizedShares: 10000, // Maximum allowed shares.
+          authorizedShares: 500000, // Maximum allowed shares.
           shareholders: [{
             userId,
             shares: 1000,

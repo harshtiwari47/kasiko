@@ -5,9 +5,53 @@ import {
   readShopData
 } from '../database.js';
 
+import Company from "../models/Company.js";
+  
 import {
   getOrCreateShopDoc
 } from "../src/txtcommands/shop/shopDocHelper.js"
+
+import redisClient from '../redis.js';
+
+async function getTotalCurrentStockPrice(userId) {
+  const cacheKey = `totalStockPrice:${userId}`;
+
+  try {
+    const cachedValue = await redisClient.get(cacheKey);
+    if (cachedValue) {
+      return parseFloat(cachedValue); // Return cached value if it exists
+    }
+
+    const companies = await Company.find({
+      "shareholders.userId": userId
+    });
+
+    let totalStockPrice = 0;
+
+    companies.forEach(company => {
+      const shareholder = company.shareholders.find(s => s.userId === userId);
+      if (!shareholder) return;
+
+      const sharesOwned = shareholder.shares;
+      const currentValue = sharesOwned * company.currentPrice; // Calculate value
+
+      totalStockPrice += currentValue;
+    });
+
+    // Store the result in Redis for 5 minutes (300 seconds)
+    await redisClient.set(cacheKey,
+      totalStockPrice.toString(),
+      {
+        EX: 300
+      });
+
+    return totalStockPrice;
+  } catch (error) {
+    console.error("Error fetching total stock price:",
+      error);
+    throw new Error("Failed to fetch stock price");
+  }
+}
 
 export async function calculateNetWorth(userData) {
 
@@ -30,17 +74,11 @@ export async function calculateNetWorth(userData) {
     totalNetWorth += userData.bankAccount.deposit || 0;
   }
 
-  // Calculate stock values.
-  /* if (userData.stocks && typeof userData.stocks === "object") {
-    for (const stockName in userData.stocks) {
-      if (stockName === "_id") continue;
-      if (userData.stocks[stockName] && stockData[stockName] && stockData[stockName].currentPrice) {
-        const numShares = userData.stocks[stockName].shares;
-        const stockPrice = stockData[stockName].currentPrice;
-        totalNetWorth += numShares * stockPrice;
-      }
-    }
-  } */
+  try {
+    totalNetWorth += await getTotalCurrentStockPrice(userData.id) || 0;
+  } catch (eRROR) {
+    console.error(eRROR.message, "userId ", userData.id);
+  }
 
   // Calculate car values.
   if (userData.cars && typeof userData.cars === "object") {

@@ -49,6 +49,11 @@ const userSchema = new mongoose.Schema({
       min: 0,
       set: (value) => (value < 0 ? 0: value)
     },
+    dailyAmountReceived: {
+      type: Map,
+      of: Number,
+    default: {}
+    },
     trust: {
       type: Number,
       required: true,
@@ -171,7 +176,13 @@ const userSchema = new mongoose.Schema({
     default: () => ({}), // Ensure default sub-document creation
     },
     heaven: {
-      type: [String, Number, Number], // heaven id, attempts, success (0/1)
+      type: [{
+        type: String
+      }, {
+        type: Number
+      }, {
+        type: Number
+      }], // heaven id, attempts, success (0/1)
     default: [null, null, 0]
     },
     orca: {
@@ -183,6 +194,13 @@ const userSchema = new mongoose.Schema({
         dailyPrayed: {
           type: [Date, Number],
         default: [null, 0]
+        },
+        lastInteractDate: {
+          type: Date
+        },
+        dailyInteractions: {
+          type: Number,
+        default: 0
         }
       }
     },
@@ -205,15 +223,6 @@ const userSchema = new mongoose.Schema({
     seasonalPasses: {
       type: Array,
     default: []
-    },
-    orca: {
-      lastInteractDate: {
-        type: Date
-      },
-      dailyInteractions: {
-        type: Number,
-      default: 0
-      }
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

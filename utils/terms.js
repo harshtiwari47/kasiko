@@ -106,17 +106,11 @@ export const termsAndcondition = async (message) => {
           const updatedButton = ButtonBuilder.from(button).setDisabled(true);
           const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
 
-          if (!sentMessage || !sentMessage?.edit) return;
-
-          if (!sentMessage || !sentMessage.editable) return;
-
           await sentMessage.edit({
             components: [updatedRow]
           });
           return;
-        } catch (e) {
-          console.error(e);
-        }
+        } catch (e) {}
       });
 
   } catch (error) {

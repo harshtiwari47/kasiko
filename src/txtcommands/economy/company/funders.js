@@ -1,5 +1,8 @@
 import Company from '../../../../models/Company.js';
 import {
+  client
+} from '../../../../bot.js';
+import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -30,7 +33,7 @@ export async function viewFundersCommand(message, args) {
     }
 
     // Filter the shareholders to only include those with role 'funder'
-    const funders = company.shareholders.filter(sh => sh.role === 'funder');
+    const funders = company.shareholders.filter(sh => sh.role === 'investor');
     if (funders.length === 0) {
       return message.channel.send(`ⓘ **${username}**, no funders found for your company.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
@@ -41,16 +44,20 @@ export async function viewFundersCommand(message, args) {
     const totalPages = Math.ceil(funders.length / itemsPerPage);
 
     // Function to build an embed for a given page.
-    const generateEmbed = (page) => {
+    const generateEmbed = async (page) => {
       const startIndex = page * itemsPerPage;
       const currentFunders = funders.slice(startIndex, startIndex + itemsPerPage);
       let description = `**Funders for ${company.name}:**\nPage ${page + 1} of ${totalPages}\n\n`;
 
-      currentFunders.forEach((funder, index) => {
-        // Format the lastInvestedAt date if available.
-        const dateStr = funder.lastInvestedAt ? new Date(funder.lastInvestedAt).toLocaleString(): 'N/A';
-        description += `**${startIndex + index + 1}.** <@${funder.userId}> – Shares: \`${funder.shares}\` – Last Invested: \`${dateStr}\`\n`;
-      });
+      for (let [index, funder] of currentFunders.entries()) {
+        try {
+          const userDetails = await client.users.fetch(funder.userId || funder.id);
+          const dateStr = funder.lastInvestedAt ? new Date(funder.lastInvestedAt).toLocaleString(): 'N/A';
+          description += `**${startIndex + index + 1}.** **${userDetails.username}** – Shares: \`${funder.shares}\` – Last Invested: \`${dateStr}\`\n`;
+        } catch (error) {
+          console.error(`Error fetching details for funder ${funder.id}:`, error);
+        }
+      }
 
       const embed = new EmbedBuilder()
       .setTitle(`💰 Funders for ${company.name}`)
@@ -80,7 +87,7 @@ export async function viewFundersCommand(message, args) {
 
     // Send the initial embed with buttons.
     const fundersMessage = await message.channel.send({
-      embeds: [generateEmbed(currentPage)],
+      embeds: [await generateEmbed(currentPage)],
       components: [row]
     });
 
@@ -108,7 +115,7 @@ export async function viewFundersCommand(message, args) {
       row.components[1].setDisabled(currentPage >= totalPages - 1);
 
       // Update the embed.
-      const newEmbed = generateEmbed(currentPage);
+      const newEmbed = await generateEmbed(currentPage);
       await interaction.update({
         embeds: [newEmbed], components: [row]
       });
@@ -118,17 +125,19 @@ export async function viewFundersCommand(message, args) {
       async () => {
         row.components.forEach(button => button.setDisabled(true));
         try {
-          await fundersMessage.edit({
-            components: [row]
-          });
-        } catch (err) {
-          console.error("Error disabling buttons on collector end:", err);
-        }
+          
+           await fundersMessage.edit({
+              components: [row]
+            });
+
+        } catch (err) {}
       });
 
   } catch (error) {
     console.error("Error in viewFundersCommand:",
       error);
-    return message.channel.send(`⚠️ An error occurred while retrieving funders: ${error.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send(`⚠️ An error occurred while retrieving funders: ${error.message}`).catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
   }
 }
