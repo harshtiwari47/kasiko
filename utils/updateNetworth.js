@@ -31,7 +31,7 @@ export async function calculateNetWorth(userData) {
   }
 
   // Calculate stock values.
-  if (userData.stocks && typeof userData.stocks === "object") {
+  /* if (userData.stocks && typeof userData.stocks === "object") {
     for (const stockName in userData.stocks) {
       if (stockName === "_id") continue;
       if (userData.stocks[stockName] && stockData[stockName] && stockData[stockName].currentPrice) {
@@ -40,7 +40,7 @@ export async function calculateNetWorth(userData) {
         totalNetWorth += numShares * stockPrice;
       }
     }
-  }
+  } */
 
   // Calculate car values.
   if (userData.cars && typeof userData.cars === "object") {

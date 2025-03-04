@@ -108,6 +108,8 @@ export const termsAndcondition = async (message) => {
 
           if (!sentMessage || !sentMessage?.edit) return;
 
+          if (!sentMessage || !sentMessage.editable) return;
+
           await sentMessage.edit({
             components: [updatedRow]
           });

@@ -151,9 +151,6 @@ const userSchema = new mongoose.Schema({
       min: 1,
       set: (value) => (value < 1 ? 1: value)
     },
-    stocks: {
-      type: Stock
-    },
     cars: {
       type: [Object],
     default: []

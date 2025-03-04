@@ -39,7 +39,7 @@ async function handleNumberInput(interaction, stockName) {
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
     await interaction.deferReply();
-    return await buySharesCommand(interaction.user.id, interaction.user.username, stockName, parsedNumber, interaction);
+    return await buySharesCommand(interaction, [null, stockName, parsedNumber]);
   }
 }
 
