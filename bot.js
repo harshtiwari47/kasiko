@@ -83,15 +83,14 @@ client.on('messageCreate', async (message) => {
     * custom feature for server
     */
     // Check if the message comes from the specified server.
-    if (message.guild && message.guild.id === "530977124195237918" || message.guild.id === "1306509956253487154") {
+    if (message.guild && (message.guild.id === "530977124195237918" || message.guild.id === "1306509956253487154" || message.guild.id === "1300075317448278060")) {
       const regex = /https?:\/\/(?:www\.)?instagram\.com\/reel\/([A-Za-z0-9_-]+)(?:\/\S*)?/;
       const match = message.content.match(regex);
-
       if (match) {
         const reelId = match[1];
-        const ddInstagramLink = `https://www.ddinstagram.com/reel/${reelId}/`;
+        const ddInstagramLink = `https://www.instagramez.com/reel/${reelId}/`;
         // Send the ddinstagram link as a response.
-        return message.channel.send(ddInstagramLink).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return await message.channel.send(ddInstagramLink).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
 
