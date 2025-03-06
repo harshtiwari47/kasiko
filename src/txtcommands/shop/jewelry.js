@@ -29,9 +29,9 @@ export async function handleMessage(context, data) {
     if (!context.deferred) {
       await context.deferReply();
     }
-    return context.editReply(data);
+    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.channel.send(data);
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 

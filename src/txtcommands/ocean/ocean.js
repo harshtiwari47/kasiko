@@ -22,10 +22,6 @@ import {
 } from 'discord.js';
 
 import {
-  incrementTaskExp
-} from '../explore/pass.js';
-
-import {
   Ship
 } from '../pirates/shipsHandler.js';
 
@@ -256,9 +252,6 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         .setColor('#58dbf7')
         .setThumbnail(`https://cdn.discordapp.com/emojis/${fish.emoji}.png`);
       }
-
-      // Increment the "catch" task exp
-      await incrementTaskExp(message.author.id, "catch", message);
 
       // 5) Check for extra reward
       const rewardEmbed = await checkExtraReward(message.author.id, message);

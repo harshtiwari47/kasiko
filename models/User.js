@@ -213,7 +213,7 @@ const userSchema = new mongoose.Schema({
     default: {
         month: -1, // number 0-11
         year: -1, // number
-        type: null // premium/basic
+        type: null // basic/premium/ultra
       }
     },
     color: {

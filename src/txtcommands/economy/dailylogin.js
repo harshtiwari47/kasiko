@@ -3,6 +3,8 @@ import {
   updateUser
 } from '../../../database.js';
 
+import { checkPassValidity } from "../explore/pass.js";
+
 import UserPet from "../../../models/Pet.js";
 
 export async function dailylogin(message) {
@@ -41,11 +43,12 @@ export async function dailylogin(message) {
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
 
-      if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
-        let additionalReward = 0.25 * rewardAmount;
-        rewardAmount += additionalReward;
-      } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
-        let additionalReward = 0.20 * rewardAmount;
+      const passInfo = await checkPassValidity(message.author.id);
+
+      let additionalReward;
+      if (passInfo.isValid) {
+        additionalReward = 0.15 * rewardAmount;
+        if (passInfo.passType === "titan") additionalReward = 0.10 * rewardAmount;
         rewardAmount += additionalReward;
       }
 
@@ -76,7 +79,7 @@ export async function dailylogin(message) {
       }
 
       return message.channel.send(
-        `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount}** Cash & 🍖 **2** pet food.\n` +
+        `🎁 **Daily reward claimed!**\n**${message.author.username}** received <:kasiko_coin:1300141236841086977> **${rewardAmount}** Cash${passInfo.isValid ? " (+ <:kasiko_coin:1300141236841086977>**" + additionalReward + "**)": ""} & 🍖 **2** pet food.\n` +
         `🔥 Streak ~ **${userData.rewardStreak}** day(s).\n` +
         `⏱️ Next reward can be claimed tomorrow.`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));

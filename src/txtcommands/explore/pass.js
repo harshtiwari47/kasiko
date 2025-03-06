@@ -1,980 +1,551 @@
-import RoyalPass from '../../../models/RoyalPass.js';
-import PassTasks from '../../../models/PassTasks.js';
-import redisClient from "../../../redis.js";
-import {
-  getUserData,
-  updateUser
-} from '../../../database.js';
-import Rewards from './pass/rewards.js';
-import {
-  Tasks,
-  TASKEXP
-} from './pass/tasks.js';
 import {
   EmbedBuilder,
   ButtonBuilder,
-  ActionRowBuilder
+  ActionRowBuilder,
+  ButtonStyle,
+  ComponentType
 } from 'discord.js';
+import Pass from '../../../models/Pass.js';
+import PromoCode from '../../../models/Promo.js';
 import winston from 'winston';
-
-import IceCreamShop from "../../../models/IceCream.js";
 import UserPet from "../../../models/Pet.js";
-import {
-  Ship
-} from '../pirates/shipsHandler.js';
 
-
+// Configure logger
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.printf(({
       timestamp, level, message
-    }) => {
-      return `${timestamp} [${level.toUpperCase()}]: ${message}`;
-    })
+    }) =>
+      `${timestamp} [${level.toUpperCase()}]: ${message}`
+    )
   ),
   transports: [new winston.transports.Console()],
 });
 
-// Constants
-const BASE_REQUIRED_XP_PER_LEVEL = Math.floor(TASKEXP / Object.keys(Rewards).length);
-const REDIS_EXPIRY = 300; // Cache for 5 minutes
-const FIRST_PASS_COST = 1000000;
-const PREMIUM_COST = 900000;
-
-// Batching Constants
-let BULK_UPDATE_THRESHOLD = 10; // Set to 10 for production
-
-const getUpdateKey = (userId) => `user:${userId}:updateQueue`;
-const getCountKey = (userId) => `user:${userId}:updateCount`;
-
-// Utility Functions
-async function getUserCash(userId) {
-  const userData = await getUserData(userId);
-  return userData.cash;
-}
-
-async function updateUserCash(userId, amount) {
-  const userData = await getUserData(userId);
-  userData.cash += amount;
-  await updateUser(userId, userData);
-}
-
-async function deductUserCash(userId, amount) {
-  const userData = await getUserData(userId);
-  userData.cash -= amount;
-  await updateUser(userId, userData);
-}
-
-async function initRoyalPass(userId, currentMonth) {
-  try {
-    const previousPass = await RoyalPass.findOne({
-      userId
-    }).lean();
-    const isFirstPass = !previousPass;
-
-    if (isFirstPass) {
-      const userData = await getUserData(userId);
-      let userCash = userData.cash;
-
-      if (userCash < FIRST_PASS_COST) {
-        throw new Error(`You need at least ${FIRST_PASS_COST} cash to activate your first Royal Pass.`);
-        return;
-      }
-
-      userData.cash -= FIRST_PASS_COST;
-      await updateUser(userId, userData);
-    }
-
-    const royalPass = new RoyalPass( {
-      userId,
-      level: 1,
-      progress: 0,
-      month: currentMonth,
-      rewardsClaimed: [],
-      isPremium: false
-    });
-    await royalPass.save();
-
-    const passTasks = new PassTasks( {
-      id: userId,
-      totalExp: 0,
-      tasks: Tasks
-    });
-    await passTasks.save();
-
-    await redisClient.set(`user:${userId}:royalpass`, JSON.stringify(royalPass), {
-      EX: REDIS_EXPIRY
-    });
-    await redisClient.set(`user:${userId}:passtask`, JSON.stringify(passTasks), {
-      EX: REDIS_EXPIRY
-    });
-
-    const currentYear = new Date().getFullYear();
-
-    const userData = await getUserData(userId);
-    userData.pass.type = "basic";
-    userData.pass.month = currentMonth;
-    userData.pass.year = currentYear;
-    userData.seasonalPasses.push("<:royalpass1224:1317027306253844520>");
-    if (userData.seasonalPasses.length > 5) {
-      userData.seasonalPasses.shift();
-    }
-    await updateUser(userId, userData);
-
-    return royalPass;
-  } catch (error) {
-    logger.error(`Error initializing Royal Pass for user ${userId}: ${error.message}`);
-    throw error;
-  }
-}
-
-async function getRoyalPass(userId) {
-  const currentMonth = new Date().getMonth();
-  const cacheKey = `user:${userId}:royalpass`;
-
-  try {
-    const cachedUserPass = await redisClient.get(cacheKey);
-    if (cachedUserPass) {
-      return JSON.parse(cachedUserPass);
-    }
-
-    let royalPass = await RoyalPass.findOne({
-      userId, month: currentMonth
-    }).lean();
-    if (!royalPass) return null;
-
-    await redisClient.set(cacheKey, JSON.stringify(royalPass), {
-      EX: REDIS_EXPIRY
-    });
-    return royalPass;
-  } catch (error) {
-    logger.error(`Error retrieving Royal Pass for user ${userId}: ${error.message}`);
-    return null;
-  }
-}
-
-export async function getUserPassTask(userId) {
-  const cacheKey = `user:${userId}:passtask`;
-
-  try {
-    const cachedUserTask = await redisClient.get(cacheKey);
-    if (cachedUserTask) {
-      return JSON.parse(cachedUserTask);
-    }
-
-    const task = await PassTasks.findOne({
-      id: userId
-    }).lean();
-    if (!task) return null;
-
-    await redisClient.set(cacheKey, JSON.stringify(task), {
-      EX: REDIS_EXPIRY
-    });
-    return task;
-  } catch (error) {
-    logger.error(`Error retrieving Pass Tasks for user ${userId}: ${error.message}`);
-    return null;
-  }
-}
-
-export async function incrementTaskExp(userId, taskName, message) {
-  const startTime = Date.now();
-  try {
-
-    const userTask = await getUserPassTask(userId);
-    if (!userTask || !userTask.tasks[taskName] || userTask.tasks[taskName].completed) {
-      return;
-    }
-
-    const task = userTask.tasks[taskName];
-    const currentExp = task.exp;
-    const required = task.required;
-
-    // Determine if task completes with this increment
-    let isCompleted = false;
-    if (currentExp + 1 >= required && !task.completed) {
-      isCompleted = true;
-    }
-
-    // Prepare Redis update operations
-    const redisOps = [
-      redisClient.hIncrBy(getUpdateKey(userId), `tasks.${taskName}.exp`, 1),
-      redisClient.hIncrBy(getUpdateKey(userId), 'totalExp', 1)
-    ];
-
-    if (isCompleted) {
-      redisOps.push(redisClient.hSet(getUpdateKey(userId), `tasks.${taskName}.completed`, 'true'));
-    }
-
-    // Execute Redis operations in parallel
-    await Promise.all(redisOps);
-
-    // Increment the update count
-    const updateCount = await redisClient.incr(getCountKey(userId));
-
-    // If threshold is reached, flush updates
-    if (updateCount >= BULK_UPDATE_THRESHOLD) {
-      await flushPendingUpdatesForUser(userId, message);
-    }
-
-    const endTime = Date.now();
-  } catch (error) {
-    logger.error(`[${new Date().toISOString()}] Error in incrementTaskExp for user ${userId}: ${error.message}`);
-  }
-}
-
-// Flush updates for a single user (used when threshold is reached)
-async function flushPendingUpdatesForUser(userId, message) {
-  const startTime = Date.now();
-  try {
-    await redisClient.set(getCountKey(userId), 0);
-
-    // Fetch pending updates
-    const pendingUpdates = await redisClient.hGetAll(getUpdateKey(userId));
-
-    if (Object.keys(pendingUpdates).length === 0) {
-      return;
-    }
-
-    // Clear the Redis hash
-    await redisClient.del(getUpdateKey(userId));
-
-    // Prepare MongoDB update
-    const incFields = {};
-    const setFields = {};
-
-    for (const [field, value] of Object.entries(pendingUpdates)) {
-      if (field.endsWith('.completed')) {
-        setFields[field] = true;
-      } else {
-        const increment = parseInt(value, 10);
-        incFields[field] = (incFields[field] || 0) + increment;
-      }
-    }
-
-    const mongoUpdate = {};
-    if (Object.keys(incFields).length > 0) mongoUpdate.$inc = incFields;
-    if (Object.keys(setFields).length > 0) mongoUpdate.$set = setFields;
-
-    // Update PassTasks in MongoDB
-    const updatedUserTask = await PassTasks.findOneAndUpdate(
-      {
-        id: userId
-      },
-      mongoUpdate,
-      {
-        new: true, lean: true
-      }
-    );
-
-    if (!updatedUserTask) {
-      return;
-    }
-
-    // Update Redis cache
-    await redisClient.set(`user:${userId}:passtask`, JSON.stringify(updatedUserTask), {
-      EX: REDIS_EXPIRY
-    });
-
-    // Calculate new level and progress
-    const totalExp = updatedUserTask.totalExp || 0;
-    const newLevel = Math.floor(totalExp / BASE_REQUIRED_XP_PER_LEVEL);
-    const progress = totalExp % BASE_REQUIRED_XP_PER_LEVEL;
-
-    // Fetch RoyalPass
-    const royalPass = await RoyalPass.findOne({
-      userId, month: new Date().getMonth()
-    });
-
-    if (royalPass) {
-      const previousLevel = royalPass.level;
-      let levelUp = false;
-
-      if (newLevel > previousLevel) {
-        royalPass.level = newLevel;
-        royalPass.progress = progress;
-        levelUp = true;
-      } else {
-        royalPass.progress = progress;
-      }
-
-      await royalPass.save();
-      await redisClient.set(`user:${userId}:royalpass`, JSON.stringify(royalPass), {
-        EX: REDIS_EXPIRY
+/**
+* Global helper to send messages that works for both interactions and messages.
+* @param {Object} context - The message or interaction context.
+* @param {Object} data - Data to be sent.
+*/
+async function handleMessage(context, data) {
+  const isInteraction = !!context.isCommand;
+  if (isInteraction) {
+    // If not already deferred, defer it.
+    if (!context.deferred) {
+      await context.deferReply().catch(err => {
+        if (![50001, 50013, 10008].includes(err.code)) console.error(err);
       });
-
-      if (levelUp && message && message.channel) {
-        const reward = Object.entries(Rewards)
-        .find(([lvl, rw]) => parseInt(lvl) === newLevel && (!rw.isPremium || (rw.isPremium && royalPass.isPremium)));
-
-        const rewardDisplay = reward
-        ? `${reward[1].type === 'cash' ? `${reward[1].amount} Cash`: reward[1].type + " (" + reward[1].amount + ")"}`: 'No new reward';
-
-        const embed = new EmbedBuilder()
-        .setTitle('✯ Pass Level Up!')
-        .setDescription(`**<@${userId}>** has reached level ${newLevel} in **Royal Pass**!`)
-        .addFields({
-          name: 'New Reward', value: rewardDisplay
-        })
-        .setColor('#00FF00')
-        .setTimestamp();
-
-        return message.channel.send({
-          embeds: [embed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
     }
-
-    const endTime = Date.now();
-    console.log(`[${new Date().toISOString()}] flushPendingUpdatesForUser completed for user: ${userId} in ${endTime - startTime} ms`);
-  } catch (error) {
-    logger.error(`[${new Date().toISOString()}] Error bulk updating user tasks for user ${userId}: ${error.message}`);
+    return context.editReply(data).catch(err => {
+      if (![50001, 50013, 10008].includes(err.code)) console.error(err);
+    });
+  } else {
+    return context.channel.send(data).catch(err => {
+      if (![50001, 50013, 10008].includes(err.code)) console.error(err);
+    });
   }
 }
 
-// Function to send task list as an embed with pagination
-async function sendTaskListEmbed(author, message) {
+const PassEmojis = {
+  titan: "<:titan:1346760526201491456>",
+  pheonix: "<:phoenix:1346761616812937217>",
+  etheral: "<:ethereal:1346762698800627806>",
+  celestia: "<:celestia:1346763143912886312>"
+};
+
+// Utility: generate a unique promo code string
+function generateUniqueCode(length = 16) {
+  let code = '';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$&-+~';
+  for (let i = 0; i < length; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+function generatePassDetailsMessage (username, result) {
+  const buttonRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+    .setLabel('❔ FEATURES')
+    .setStyle(ButtonStyle.Link)
+    .setURL('https://discord.gg/DVFwCqUZnc')
+  );
+
+  return {
+    content: `# ✦ 🜲 **Hail, ${username}! Your Pass is Active!** <:emoji_35:1332676884093337603>.𖥔 ݁ ˖\n\n` +
+    `## ╰—➤ ${PassEmojis[result.passType]} **${result.passType}**\n\n` +
+    `- **⌛ Expiry Date:** *${result.expiryDate}*  \n` +
+    `- **❤️ Eternal Gratitude:** *You are truly appreciated!*\n` +
+    `⊹ ࣪ ﹏𓊝﹏𓂁﹏⊹ ࣪ ˖`,
+    components: [buttonRow]
+  }
+}
+
+/**
+* Check if a user has an active pass for the current month.
+* @param {string} userId - The user's ID.
+*/
+export async function checkPassValidity(userId) {
+  try {
+    const now = new Date();
+    // Find a pass that has not expired (expiryDate is in the future)
+    const userPass = await Pass.findOne({
+      userId,
+      expiryDate: {
+        $gt: now
+      }
+    });
+    if (userPass) {
+      // Format expiry date as "day month year" (e.g., "15 August 2025")
+      const options = {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      };
+      const formattedExpiryDate = new Date(userPass.expiryDate).toLocaleDateString('en-US', options);
+      return {
+        isValid: true,
+        passType: userPass.plan,
+        expiryDate: formattedExpiryDate,
+        emoji: PassEmojis[userPass.plan]
+      };
+    }
+    return {
+      isValid: false,
+      passType: null,
+      expiryDate: null,
+      emoji: null
+    };
+  } catch (error) {
+    logger.error(`Error in checkPassValidity: ${error.message}`);
+    return {
+      isValid: false,
+      passType: null,
+      expiryDate: null,
+      emoji: null
+    };
+  }
+}
+
+async function claimPet(userId) {
+  try {
+    let userPetData = await UserPet.findOne({
+      id: userId
+    });
+
+    // If the user doesn't have a record, create a new one.
+    if (!userPetData) {
+      userPetData = new UserPet( {
+        id: userId,
+        pets: []
+      });
+    }
+
+    // Check if the pet is already claimed
+    const petExists = userPetData.pets.some(pet => pet.petId === "dog1");
+    if (petExists) {
+      return `**<@${userId}>**, you have already claimed this pet.`;
+    }
+
+    // Add the new pet to the user's pet data.
+    userPetData.pets.push({
+      name: "bob",
+      type: "dog",
+      level: 1,
+      feed: 0,
+      lastFeed: null,
+      lastWalkTime: null,
+      lastPatTime: null,
+      lastExercise: null,
+      petId: "dog1",
+      exp: 201
+    });
+
+    await userPetData.save();
+    return `**<@${userId}>**, successfully claimed pet!`;
+  } catch (e) {
+    return "An error occurred while claiming the pet.";
+  }
+}
+
+// Sample benefits data for each plan
+const benefitsData = [{
+  plan: 'titan',
+  title: 'Titan Benefits',
+  description: "- Earn an extra 10% on daily rewards\n" +
+  "- Receive a Titan profile color and badge\n" +
+  "- Enjoy an extra 16% on your aquarium collection\n" +
+  "- Exchange coal at a rate of 400 per unit\n" +
+  "- Obtain 15 hunting bullets daily"
+},
+  {
+    plan: 'pheonix',
+    title: 'Pheonix Benefits',
+    description: "- Earn an extra 15% on daily rewards\n" +
+    "- Receive a 10% discount on bank interest\n" +
+    "- Earn an extra 25% on daily ice rewards\n" +
+    "- Receive an exclusive Phoenix profile color and badge\n" +
+    "- Enjoy an extra 26% on your aquarium collection\n" +
+    "- Obtain 20 hunting bullets\n" +
+    "- Exchange coal at a rate of 450 per unit\n" +
+    "- Hold stocks in up to 8 companies"
+  },
+  {
+    plan: 'etheral',
+    title: 'Ethereal Benefits',
+    description: "- All Phoenix benefits\n" +
+    "- Receive a 20% discount on bank interest\n" +
+    "- Obtain an exclusive Ethereal badge and profile color\n" +
+    "- Work up to 50 times per day\n" +
+    "- Access exclusive cars and houses\n" +
+    "- New exclusive animals available for hunting: Panda, Kangaroo, Bear\n" +
+    "- High security: Increases the chance of failed robbery attempts on you to 50%\n" +
+    "- Own an exclusive dog pet (Use: `pass pet`)"
+  },
+  {
+    plan: 'celestia',
+    title: 'Celestia Benefits',
+    description: "- All Ethereal benefits\n" +
+    "- Receive an exclusive Celestia profile color and badge\n" +
+    "- Can request a custom profile color\n" +
+    "- Receive a custom pet\n" +
+    "- Exclusive animals available for hunting: T-Rex, Saber-Tooth, Dragon, Unicorn\n" +
+    "- Showcase a private jet\n" +
+    "- Can request a custom description for your own company\n" +
+    "- Can request some special commands"
+  }];
+
+/**
+* Display paginated benefits.
+* Each embed now includes the username of the requester.
+*/
+async function showBenefits(context) {
   let currentPage = 0;
-  const tasksPerPage = 1;
+  const totalPages = benefitsData.length;
+  const username = context.author ? context.author.username: context.user.username;
+
+  function generateEmbed(page) {
+    const benefit = benefitsData[page];
+    return new EmbedBuilder()
+    .setTitle(benefit.title)
+    .setDescription(benefit.description)
+    .setFooter({
+      text: `User: ${username} | Plan: ${benefit.plan.toUpperCase()} | Page ${page + 1} of ${totalPages}`
+    });
+  }
+
+  const buttons = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+    .setCustomId('prev_benefit')
+    .setLabel('Previous')
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(true),
+    new ButtonBuilder()
+    .setCustomId('next_benefit')
+    .setLabel('Next')
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(totalPages <= 1)
+  );
+
+  const replyMsg = await handleMessage(context,
+    {
+      embeds: [generateEmbed(currentPage)],
+      components: [buttons]
+    });
+
+  const collector = replyMsg.createMessageComponentCollector({
+    componentType: ComponentType.Button,
+    time: 60000
+  });
+
+  collector.on('collect',
+    async (interaction) => {
+      if ((interaction.user.id !== (context.author ? context.author.id: context.user.id))) {
+        return interaction.reply({
+          content: `Sorry ${interaction.user.username}, this is not your session.`, ephemeral: true
+        });
+      }
+      if (interaction.customId === 'next_benefit') {
+        currentPage = Math.min(currentPage + 1, totalPages - 1);
+      } else if (interaction.customId === 'prev_benefit') {
+        currentPage = Math.max(currentPage - 1, 0);
+      }
+      buttons.components[0].setDisabled(currentPage === 0);
+      buttons.components[1].setDisabled(currentPage === totalPages - 1);
+      await interaction.update({
+        embeds: [generateEmbed(currentPage)],
+        components: [buttons]
+      });
+    });
+}
+
+/**
+* Main command handler function.
+* Uses handleMessage to reply so that both slash commands and regular messages are supported.
+*/
+export async function execute(args,
+  message,
+  client) {
+  const context = message;
+  const username = context.author ? context.author.username: context.user.username;
+  // For simplicity, we hardcode the owner ID here (replace with your own or use a config variable)
+  const ownerId = '1318158188822138972';
+  const subCommand = args[1]?.toLowerCase();
 
   try {
-    const userTask = await getUserPassTask(author.id);
-    if (!userTask) {
-      return message.reply('No tasks found for you.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    // Get pending updates
-    const pendingUpdates = await redisClient.hGetAll(getUpdateKey(author.id));
-
-    const Task = userTask.tasks;
-    const taskKeys = Object.keys(Task);
-    const totalPages = Math.ceil(taskKeys.length / tasksPerPage);
-
-    // Apply pending updates to tasks
-    for (const [field, value] of Object.entries(pendingUpdates)) {
-      if (field.startsWith('tasks.')) {
-        const [_,
-          taskName,
-          prop] = field.split('.');
-        if (Task[taskName]) {
-          if (prop === 'exp') {
-            Task[taskName].exp += parseInt(value, 10);
-          }
-          if (prop === 'completed') {
-            Task[taskName].completed = value === 'true';
-          }
-        }
-      } else if (field === 'totalExp') {
-        // You can handle totalExp if needed
-      }
-    }
-
-    const taskButtons = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-      .setCustomId('previous')
-      .setLabel('Previous')
-      .setStyle('Secondary')
-      .setDisabled(currentPage === 0),
-      new ButtonBuilder()
-      .setCustomId('next')
-      .setLabel('Next')
-      .setStyle('Secondary')
-      .setDisabled(currentPage >= totalPages - 1)
-    );
-
-    const sendTaskDetails = (page) => {
-      const taskKey = taskKeys[page];
-      const task = Task[taskKey];
-
-      return new EmbedBuilder()
-      .setColor('#e2947d')
-      .setTitle(`Task: ${task.name}`)
-      .setDescription(task.description)
-      .addFields(
-        {
-          name: 'Required Actions', value: task.required.toString(), inline: true
-        },
-        {
-          name: 'Reward', value: `${task.reward} EXP`, inline: true
-        },
-        {
-          name: 'Experience Points', value: `${task.exp} completed`, inline: true
-        },
-        {
-          name: 'Rarity', value: task.rarity.charAt(0).toUpperCase() + task.rarity.slice(1), inline: true
-        },
-      )
-      .setFooter({
-        text: `${author.username}`, iconURL: author.avatarURL()
-      })
-      .setTimestamp();
-    };
-
-    const initialEmbed = sendTaskDetails(currentPage);
-    const msg = await message.reply({
-      embeds: [initialEmbed], components: [taskButtons]
-    });
-
-    const filter = (interaction) => interaction.isButton() && interaction.user.id === message.author.id;
-    const collector = msg.createMessageComponentCollector({
-      filter, time: 180000
-    });
-
-    collector.on('collect', async (interaction) => {
-      try {
-        if (interaction.customId === 'next' && currentPage < totalPages - 1) {
-          currentPage++;
-        } else if (interaction.customId === 'previous' && currentPage > 0) {
-          currentPage--;
-        }
-
-        taskButtons.components[0].setDisabled(currentPage === 0);
-        taskButtons.components[1].setDisabled(currentPage >= totalPages - 1);
-
-        await interaction.update({
-          embeds: [sendTaskDetails(currentPage)],
-          components: [taskButtons],
-        });
-      } catch (err) {}
-    });
-
-    collector.on('end',
-      () => {
-        taskButtons.components.forEach((button) => button.setDisabled(true));
-        if (msg) {
-          msg.edit({
-            components: [taskButtons]
+    switch (subCommand) {
+      case 'activate': {
+        // Only the owner can activate a pass manually.
+        const requesterId = context.author ? context.author.id: context.user.id;
+        if (requesterId !== ownerId) {
+          return await handleMessage(context, {
+            content: `${username}, you are not authorized to activate passes.`
           });
         }
-      });
-  } catch (error) {
-    logger.error(`[${new Date().toISOString()}] Error in sendTaskListEmbed for user ${author.id}: ${error.message}`);
-    return message.reply('❌ An error occurred while showing the tasks list.').catch(err => ![50001,
-      50013,
-      10008].includes(err.code) && console.error(err));
-  }
-}
-
-// Function to display the Royal Pass status
-async function showRoyalPass(userId, username, channel, author) {
-  try {
-    const royalPass = await getRoyalPass(userId);
-    if (!royalPass) {
-      return channel.send(`**${username}**, no **Royal Pass** found. You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    // Get pending updates
-    const pendingUpdates = await redisClient.hGetAll(getUpdateKey(userId));
-
-    // Apply pending updates to royalPass data
-    let totalExp = royalPass.level * BASE_REQUIRED_XP_PER_LEVEL + royalPass.progress;
-    let level = royalPass.level;
-    let progress = royalPass.progress;
-
-    for (const [field, value] of Object.entries(pendingUpdates)) {
-      if (field === 'totalExp') {
-        totalExp += parseInt(value, 10);
-      }
-    }
-
-    const newLevel = Math.floor(totalExp / BASE_REQUIRED_XP_PER_LEVEL);
-    progress = totalExp % BASE_REQUIRED_XP_PER_LEVEL;
-
-    const levelUp = newLevel > royalPass.level;
-
-    const claimedRewards = royalPass.rewardsClaimed.length
-    ? royalPass.rewardsClaimed.map(r => `- **${r.emoji + ` ${r.amount} ` + (r.name || "")}**`).join('\n'): 'None yet. Complete tasks to earn rewards!';
-
-    const upcomingRewards = Object.entries(Rewards)
-    .filter(([lvl, reward]) => {
-      const levelNum = parseInt(lvl);
-      return (!(royalPass.rewardsClaimed.some(r => r.id === reward.id)) || levelNum > newLevel) && (!royalPass?.rewardsClaimed.some(r => r.id === reward.id));
-    })
-    .map(([level, reward]) => `- **Level ${level}**: ${reward.isPremium ? "<:royalpass_premium:1316397608603881543>": ""} ${reward.emoji} ${reward.type === 'cash' ? `${reward.amount} Cash`: reward.name + " (" + reward.amount + ")"}`)
-    .join('\n') || 'No more rewards for this month!';
-
-    const avatarUrl = author.displayAvatarURL({
-      dynamic: true, size: 1024
-    });
-
-    const overviewEmbed = new EmbedBuilder()
-    .setColor(royalPass.isPremium ? '#6989ff': '#FFD700')
-    .setDescription(`## ${username}'s Royal Pass ${royalPass.isPremium ? '💠': '🎖'}`)
-    .setAuthor({
-      name: username, iconURL: avatarUrl
-    })
-    .setThumbnail(royalPass.isPremium
-      ? "https://harshtiwari47.github.io/kasiko-public/images/royalpass_premium.png": "https://harshtiwari47.github.io/kasiko-public/images/royalpass_gold.png"
-    )
-    .addFields(
-      {
-        name: 'Current Level', value: `**${newLevel}**`, inline: true
-      },
-      {
-        name: 'Progress', value: `**${progress}/${BASE_REQUIRED_XP_PER_LEVEL} XP**`, inline: false
-      },
-      {
-        name: 'Premium Status', value: royalPass.isPremium ? '✅ Premium': '❌ Not Premium', inline: false
-      }
-    )
-
-    const rewardsEmbed = new EmbedBuilder()
-    .setColor(royalPass.isPremium ? '#98c7d2': '#acd583')
-    .setTitle('🎁 Rewards')
-    .addFields(
-      {
-        name: 'Claimed Rewards', value: claimedRewards
-      },
-      {
-        name: 'Upcoming Rewards', value: upcomingRewards
-      }
-    )
-    .setFooter({
-      text: `Keep progressing to unlock more rewards! | Use \`kas pass claim <level>\` to claim ☄️`
-    })
-
-    // If level up due to pending updates, notify the user
-    if (levelUp && message && message.channel) {
-      const reward = Object.entries(Rewards)
-      .find(([lvl, rw]) => parseInt(lvl) === newLevel && (!rw.isPremium || (rw.isPremium && royalPass.isPremium)));
-
-      const rewardDisplay = reward
-      ? `${reward[1].type === 'cash' ? `${reward[1].amount} Cash`: reward[1].name}`: 'No new reward';
-
-      const embed = new EmbedBuilder()
-      .setTitle('✯ Pass Level Up!')
-      .setDescription(`**<@${userId}>** has reached level ${newLevel} in **Royal Pass**!`)
-      .addFields({
-        name: 'New Reward', value: rewardDisplay
-      })
-      .setColor('#00FF00')
-      .setTimestamp();
-
-      return message.channel.send({
-        embeds: [embed]
-      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    return channel.send({
-      embeds: [overviewEmbed, rewardsEmbed]
-    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } catch (error) {
-    logger.error(`[${new Date().toISOString()}] Error in showRoyalPass for user ${userId}: ${error.message}`);
-    return channel.send(`❌ An error occurred while retrieving your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
-
-// Function to claim a reward
-async function claimReward(userId, level, message) {
-  try {
-    const royalPass = await getRoyalPass(userId);
-    if (!royalPass) {
-      return message.reply('⚠️ No Royal Pass found. Activate one using `pass activate`.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    const reward = Rewards[level];
-    if (!reward) {
-      return message.reply('⚠️ Invalid reward level.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    if (reward.isPremium && !royalPass.isPremium) {
-      return message.reply('⚠️ This reward is exclusive to Premium Royal Pass holders.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    if (level > royalPass.level) {
-      return message.reply('⚠️ Your Royal Pass level is too low to claim this reward.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    const alreadyClaimed = royalPass.rewardsClaimed.find(r =>
-      (r.id && r.id === reward.id));
-
-    if (alreadyClaimed) {
-      return message.reply('⚠️ You have already claimed this reward.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    // cash
-    if (reward.type === 'cash') {
-      await updateUserCash(userId, reward.amount);
-    }
-
-    // creamcash
-    if (reward.type === 'creamcash') {
-      const playerShop = await IceCreamShop.findOne({
-        userId
-      });
-
-      if (!playerShop) {
-        return message.reply("❌ Shop name not found! Please create your ice cream shop first. For guidance, use `icecream|ice help`! 🍧").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      playerShop.money += reward.amount;
-
-      await playerShop.save();
-    }
-
-    // pet
-    if (reward.type === 'pet') {
-      let userPetData = await UserPet.findOne({
-        id: userId
-      });
-
-      if (!userPetData) {
-        userPetData = await new UserPet( {
-          id: userId,
-        })
-      }
-
-      if (userPetData.pets.some(pet => pet.petId === reward.details[0].petId)) {
-        return message.reply(`⚠️ You are already own this adorable pet!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      userPetData.pets.push(reward.details[0]);
-
-      await userPetData.save();
-    }
-
-    // petfood
-    if (reward.type === 'petfood') {
-      let userPetData = await UserPet.findOne({
-        id: userId
-      });
-
-      if (!userPetData) {
-        userPetData = await new UserPet( {
-          id: userId,
-        })
-      }
-
-      userPetData.food += parseInt(reward.amount);
-
-      await userPetData.save();
-    }
-
-    // ship
-    if (reward.type === 'ship') {
-      let userShips = await Ship.getUserShipsData(userId);
-      if (userShips.ships && userShips.ships.some(shipDetails => shipDetails.id && shipDetails.id === reward.details[0].id)) {
-        return message.reply("⚠️ You already own this ship, Captain!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-      userShips.ships.push(reward.details[0]);
-      await Ship.modifyUserShips(userId, userShips);
-    }
-
-    // car
-    if (reward.type === 'car') {
-      const userData = await getUserData(userId);
-      if (!userData.cars.some(car => car.id === reward.details[0].id)) {
-        reward.details[0].purchasedDate = new Date().toISOString(),
-        userData.cars.push(reward.details[0]);
-      } else {
-        userData.cars = userData.cars.map(car => {
-          if (car.id === reward.details[0].id) {
-            car.items += 1;
-          }
-          return car;
-        });
-      }
-
-      await updateUser(userId,
-        userData);
-    }
-
-    // structure
-    if (reward.type === 'structure') {
-      const userData = await getUserData(userId);
-      if (!userData.structures.some(structure => structure.id === reward.details[0].id)) {
-        reward.details[0].purchasedDate = new Date().toISOString(),
-        userData.structures.push(reward.details[0]);
-      } else {
-        userData.structures = userData.structures.map(structure => {
-          if (structure.id === reward.details[0].id) {
-            structure.items += 1;
-          }
-          return structure;
-        });
-      }
-
-      await updateUser(userId,
-        userData);
-    }
-
-    royalPass.rewardsClaimed.push(reward);
-    await RoyalPass.findOneAndUpdate(
-      {
-        userId,
-        month: new Date().getMonth()
-      },
-      {
-        rewardsClaimed: royalPass.rewardsClaimed
-      },
-      {
-        new: true
-      }
-    );
-
-    await redisClient.set(`user:${userId}:royalpass`,
-      JSON.stringify(royalPass),
-      {
-        EX: REDIS_EXPIRY
-      });
-
-    return message.reply(`✅ You have successfully claimed the reward: **${reward.emoji} ${reward.amount} ${(reward.name || "")}**.`).catch(err => ![50001,
-      50013,
-      10008].includes(err.code) && console.error(err));
-
-  } catch (error) {
-    logger.error(`[${new Date().toISOString()}] Error in claimReward for user ${userId}: ${error.message}`);
-    return message.reply(`❌ An error occurred while claiming your reward.`).catch(err => ![50001,
-      50013,
-      10008].includes(err.code) && console.error(err));
-  }
-}
-
-// Main execute function
-export async function execute(args, message, client) {
-  const {
-    channel,
-    author
-  } = message;
-  const userId = author.id;
-  const username = author.username;
-
-  if (args[1] === 'progress') {
-    return channel.send(`This action is handled by incrementTaskExp in the code.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else if (args[1] === 'status') {
-    try {
-      await showRoyalPass(userId, username, channel, author);
-    } catch (error) {
-      logger.error(`[${new Date().toISOString()}] Error showing Royal Pass for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while retrieving your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } else if (args[1] === 'task') {
-    try {
-      await sendTaskListEmbed(author, message);
-    } catch (error) {
-      logger.error(`[${new Date().toISOString()}] Error sending task list for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while showing the tasks list.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } else if (args[1] === 'activate') {
-    try {
-      return channel.send(`❌  This month's pass is not available`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-
-      const userCash = await getUserCash(userId);
-      if (userCash < FIRST_PASS_COST) {
-        return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash to activate your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      const currentMonth = new Date().getMonth();
-
-      const royalPass = await initRoyalPass(userId, currentMonth);
-
-      if (royalPass instanceof Error) {
-        return channel.send(`❌ **${username}**, you have insufficient cash to purchase your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      const embed = new EmbedBuilder()
-      .setDescription(`
-        **🎉 Congratulations!** Your <:royalpass1224:1317027306253844520> **Royal Pass** has been successfully activated. We have graciously charged you <:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash for this privilege.\n-# Enjoy your enhanced experience!
-        `);
-
-      return message.reply({
-        embeds: [embed]
-      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } catch (error) {
-      logger.error(`[${new Date().toISOString()}] Error activating Royal Pass for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while activating your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } else if (args[1] === 'premium') {
-    try {
-      const userCash = await getUserCash(userId);
-      if (userCash < PREMIUM_COST) {
-        return channel.send(`You need at least <:kasiko_coin:1300141236841086977> ${PREMIUM_COST.toLocaleString()} cash to upgrade to a Premium Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      const royalPass = await RoyalPass.findOne({
-        userId, month: new Date().getMonth()
-      }).lean();
-      if (!royalPass) {
-        return channel.send(`You need to activate your Royal Pass first using \`pass activate\`.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      if (royalPass.isPremium) {
-        return channel.send(`You already have a Premium Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      await deductUserCash(userId, PREMIUM_COST);
-      const updatedRoyalPass = await RoyalPass.findOneAndUpdate(
-        {
-          userId, month: new Date().getMonth()
-        },
-        {
-          isPremium: true
-        },
-        {
-          new: true
+        // Usage: pass activate @user <plan>
+        const targetUser = context.mentions?.users?.first() || (context.options && context.options.target);
+        const plan = args[2]?.toLowerCase();
+        if (!targetUser || !['titan', 'pheonix', 'etheral', 'celestia'].includes(plan)) {
+          return await handleMessage(context, {
+            content: `${username}, Usage: \`pass activate @user <plan>\` (plans: titan, pheonix, etheral, celestia)`
+          });
         }
-      );
+        const now = new Date();
+        const expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-      const userData = await getUserData(userId);
-
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-
-      userData.pass.type = "premium";
-      userData.pass.month = currentMonth;
-      userData.pass.year = currentYear;
-      await updateUser(userId, userData);
-
-      await redisClient.set(`user:${userId}:royalpass`, JSON.stringify(updatedRoyalPass), {
-        EX: REDIS_EXPIRY
-      });
-      return channel.send(`✅ Your Royal Pass has been upgraded to Premium! Enjoy your exclusive rewards.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } catch (error) {
-      logger.error(`[${new Date().toISOString()}] Error upgrading to Premium Royal Pass for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while upgrading your Royal Pass.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } else if (args[1] === 'special') {
-
-    const shipData = {
-      type: "ship",
-      name: "Drago",
-      amount: 1,
-      details: [{
-        level: 1,
-        id: "ship8",
-        name: "Drago",
-        durability: 400,
-        dmg: 115,
-        health: 520,
-      }],
-      emoji: "<:ship8:1316615694996996096>"
-    };
-
-    const shipEmbed = new EmbedBuilder()
-    .setColor("#9cb5e9")
-    .setDescription(`# ${shipData.emoji} ${shipData.name}\nA mighty ship with impressive durability and capabilities.`)
-    .addFields(
-      {
-        name: '🛠️ Type', value: shipData.type.charAt(0).toUpperCase() + shipData.type.slice(1), inline: true
-      },
-      {
-        name: '🔢 Quantity', value: `${shipData.amount}`, inline: true
-      },
-      {
-        name: '⚙️ Level', value: `${shipData.details[0].level}`, inline: true
-      },
-      {
-        name: '🛡️ Durability', value: `${shipData.details[0].durability}`, inline: true
-      },
-      {
-        name: '🗡️ Damage', value: `${shipData.details[0].dmg}`, inline: true
-      },
-      {
-        name: '❤️ Health', value: `${shipData.details[0].health}`, inline: true
+        try {
+          // Atomically update (or insert) a pass only if the existing one is expired or does not exist.
+          await Pass.updateOne(
+            {
+              userId: targetUser.id,
+              // Only match if the current pass is expired or missing
+              $or: [{
+                expiryDate: {
+                  $lte: now
+                }
+              },
+                {
+                  expiryDate: {
+                    $exists: false
+                  }
+                }]
+            },
+            {
+              $set: {
+                plan,
+                activeDate: now,
+                expiryDate,
+                premium: plan !== 'titan'
+              }
+            },
+            {
+              upsert: true
+            }
+          );
+          return await handleMessage(context, {
+            content: `${username}, Activated **${plan}** pass for **${targetUser.tag}**. Your pass will expire on ${expiryDate.toLocaleDateString()}.`
+          });
+        } catch (error) {
+          // If an error is thrown (for example, due to a unique constraint) then an active pass already exists.
+          return await handleMessage(context, {
+            content: `${username}, ${targetUser.tag} already has an active pass.`
+          });
+        }
       }
-    )
-    .setFooter({
-      text: 'Navigate the seas with confidence aboard Drago!'
+
+      case 'redeem': {
+          // Usage: pass redeem <code>
+          const code = args[2];
+          if (!code) {
+            return await handleMessage(context, {
+              content: `${username}, please provide a promo code to redeem. Usage: \`pass redeem <code>\``
+            });
+          }
+          const promo = await PromoCode.findOne({
+            code
+          });
+          if (!promo) {
+            return await handleMessage(context, {
+              content: `${username}, Invalid promo code.`
+            });
+          }
+          if (promo.user) {
+            return await handleMessage(context, {
+              content: `${username}, This promo code has already been redeemed.`
+            });
+          }
+          const now = new Date();
+          const expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+          const userId = context.author ? context.author.id: context.user.id;
+
+          try {
+            await Pass.updateOne(
+              {
+                userId,
+                $or: [{
+                  expiryDate: {
+                    $lte: now
+                  }
+                },
+                  {
+                    expiryDate: {
+                      $exists: false
+                    }
+                  }]
+              },
+              {
+                $set: {
+                  plan: promo.plan,
+                  activeDate: now,
+                  expiryDate,
+                  premium: promo.plan !== 'titan'
+                }
+              },
+              {
+                upsert: true
+              }
+            );
+            promo.user = userId; // Mark the promo as redeemed.
+            await promo.save();
+            return await handleMessage(context, {
+              content: `<:emoji_35:1332676884093337603> **${username}**, thank you for redeeming your promo code!\n### Your ${PassEmojis[promo.plan]} **${promo.plan}** pass is now active until **${expiryDate.toLocaleDateString()}**! 🎊\n💫 Enjoy your journey!`
+            });
+          } catch (error) {
+            return await handleMessage(context, {
+              content: `${username}, you already have an active pass.`
+            });
+          }
+        }
+
+      case 'createpromo': {
+          // Owner-only command to generate a promo code.
+          const requesterId = context.author ? context.author.id: context.user.id;
+          if (requesterId !== ownerId) {
+            return await handleMessage(context, {
+              content: `${username}, you are not authorized to create promo codes.`
+            });
+          }
+          const plan = args[2]?.toLowerCase();
+          if (!['titan', 'pheonix', 'etheral', 'celestia'].includes(plan)) {
+            return await handleMessage(context, {
+              content: `${username}, Invalid plan. Valid plans: titan, pheonix, etheral, celestia.`
+            });
+          }
+          const code = generateUniqueCode();
+          const newPromo = new PromoCode( {
+            code, plan
+          });
+          await newPromo.save();
+          return await handleMessage(context, {
+            content: `**${username}**, Promo code for ${PassEmojis[plan]} **${plan}** pass created: **${code}**`
+          });
+        }
+      case 'benefits': {
+          // Show paginated list of premium benefits.
+          return showBenefits(context);
+        }
+      case 'check': {
+          // Check and show current pass validity for the user.
+          const userId = context.author ? context.author.id: context.user.id;
+          const result = await checkPassValidity(userId);
+          if (result.isValid) {
+
+            return await handleMessage(context, generatePassDetailsMessage(username, result));
+          } else {
+            return await handleMessage(context, {
+              content: `**${username}**, you do not have an active pass.`
+            });
+          }
+        }
+      case 'pet': {
+          const userId = context.author ? context.author.id: context.user.id;
+          const result = await checkPassValidity(userId);
+          if (result.isValid && (result.passType === "etheral" || result.passType === "celestia")) {
+            let message = await claimPet(userId);
+            return await handleMessage(context, {
+              content: message
+            });
+          } else {
+            return await handleMessage(context, {
+              content: `**${username}**, you do not have an active pass, or your pass must be either an Ethereal or Celestia pass.`
+            });
+          }
+        }
+      default: {
+          // Help embed with premium commands and a working "Check Subscription" button.
+          const blastEmoji = '🗯️';
+          const commandsEmbed = new EmbedBuilder()
+          .setTitle("💫 𝗣𝗿𝗲𝗺𝗶𝘂𝗺 𝗣𝗮𝘀𝘀 𝗖𝗼𝗺𝗺𝗮𝗻𝗱𝘀")
+          .setDescription(
+            `**★ Unlock Your Experience ★**\n\n` +
+            `${blastEmoji} **pass redeem <code>**\n` +
+            `${blastEmoji} **pass benefits**\n` +
+            `${blastEmoji} **pass check**`
+          )
+          .setThumbnail('https://example.com/commands-thumbnail.png');
+          const plansEmbed = new EmbedBuilder()
+          .setTitle("𝙀𝙡𝙞𝙩𝙚 𝙋𝙧𝗲𝗺𝗶𝘂𝗺 𝙋𝗹𝗮𝗻𝘀 ✧")
+          .setDescription(
+            `**Our Exclusive Plans:**\n` +
+            `## ${PassEmojis.titan} **Titan**\n` +
+            `## ${PassEmojis.pheonix} **Pheonix**\n` +
+            `## ${PassEmojis.etheral} **Etheral**\n` +
+            `## ${PassEmojis.celestia} **Celestia**`
+          )
+          .setColor('#c8e2e9')
+          .setThumbnail('https://example.com/plans-thumbnail.png');
+          // Action row with buttons – note the "Check Subscription" button now has a customId that we listen for.
+          const buttonRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+            .setCustomId('checkSubscription')
+            .setLabel('🔎 Check Subscription')
+            .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+            .setLabel('🛍️ Buy')
+            .setStyle(ButtonStyle.Link)
+            .setURL('https://discord.gg/DVFwCqUZnc')
+          );
+          const replyMsg = await handleMessage(context, {
+            embeds: [commandsEmbed, plansEmbed], components: [buttonRow]
+          });
+          // Create a collector for the "Check Subscription" button.
+          const collector = replyMsg.createMessageComponentCollector({
+            componentType: ComponentType.Button, time: 60000
+          });
+
+          collector.on('collect', async (interaction) => {
+            if (interaction.customId === 'checkSubscription') {
+              const userId = interaction.user.id;
+              const result = await checkPassValidity(userId);
+              if (result.isValid) {
+                await interaction.reply(generatePassDetailsMessage(username, result));
+              } else {
+                await interaction.reply({
+                  content: `${interaction.user.username}, you do not have an active pass for this month.`, ephemeral: true
+                });
+              }
+            }
+          });
+          break;
+        }
+    }
+  } catch (error) {
+    logger.error(`Error in pass command: ${error.message}`);
+    return await handleMessage(context,
+      {
+        content: `${username}, an error occurred while processing the pass command.`
     });
-
-    return message.channel.send({
-      embeds: [shipEmbed]
-    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-
-  } else if (args[1] === 'exclusive') {
-    const premiumEmbed = new EmbedBuilder()
-    .setColor("#6989ff")
-    .setTitle('💠 Premium Pass Benefits')
-    .setDescription('-# Unlock exclusive perks and rewards with our premium membership!')
-    .addFields(
-      {
-        name: '🏦 Bank Perk', value: '20% discount on bank transactions', inline: true
-      },
-      {
-        name: '🎁 Daily Rewards', value: '25% extra daily rewards', inline: true
-      },
-      {
-        name: '🐟 Aquarium Collection', value: '10% extra collection bonus', inline: true
-      },
-      {
-        name: '💰 Creamcash', value: '25% extra on daily Creamcash rewards', inline: true
-      },
-      {
-        name: '🎨 Special Perk', value: 'Exclusive profile color', inline: true
-      },
-      {
-        name: '🏅 Premium Badge', value: 'Show off your exclusive **Premis** badge', inline: true
-      }
-    )
-
-    // Basics Embed
-    const basicsEmbed = new EmbedBuilder()
-    .setColor("#FFD700")
-    .setTitle('✨ Basics Pass Benefits')
-    .setDescription('-# Enjoy enhanced rewards and a royal badge with our basics membership!')
-    .addFields(
-      {
-        name: '🎁 Daily Rewards', value: '20% extra daily rewards', inline: true
-      },
-      {
-        name: '🐟 Aquarium Collection', value: '5% extra collection bonus', inline: true
-      },
-      {
-        name: '🏅 Royal Badge', value: 'Show off your **Royal** badge', inline: true
-      }
-    )
-
-    // Send embeds
-    return message.channel.send({
-      embeds: [premiumEmbed, basicsEmbed]
-    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-
-  } else if (args[1] === 'claim') {
-    const level = args[2];
-    if (!level) {
-      return channel.send('Please specify the level of the reward you want to claim. Usage: `pass claim <level>`').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    try {
-      await claimReward(userId, level, message);
-    } catch (error) {
-      logger.error(`[${new Date().toISOString()}] Error claiming reward for user ${userId}: ${error.message}`);
-      return channel.send(`❌ An error occurred while claiming your reward.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } else {
-    const firstEmbed = new EmbedBuilder()
-    .setDescription('### Royal Pass 🎖\n```Season 1```\n-# Feel Different')
-    .setThumbnail('https://harshtiwari47.github.io/kasiko-public/images/royalpass_gold.png')
-    .setColor('#FFD700')
-
-    const secondEmbed = new EmbedBuilder()
-    .setDescription(
-      `-# \`Use the following commands:\`\n` +
-      `- **\`pass status\`**: View your Royal Pass status.\n` +
-      `- **\`pass task\`**: See your tasks.\n` +
-      `- **\`pass activate\`**: Activate your Royal Pass (<:kasiko_coin:1300141236841086977> ${FIRST_PASS_COST.toLocaleString()} cash).\n` +
-      `- **\`pass premium\`**: Upgrade to Premium Pass (<:kasiko_coin:1300141236841086977> ${PREMIUM_COST.toLocaleString()} cash).\n` +
-      `- **\`pass claim <level>\`**: Claim a reward.\n` +
-      `- **\`pass exclusive\`**: Access exclusive pass-only perks.\n` +
-      `- **\`pass special\`**: Special **Premium Reward**.`
-    )
-    .setColor('#FFD700')
-    .setImage("https://harshtiwari47.github.io/kasiko-public/images/kas_royalpass_s1.jpg")
-
-    return channel.send({
-      embeds: [firstEmbed, secondEmbed]
-    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
+}
 }
 
 export default {
-  name: 'pass',
-  description: 'Monthly Royal Pass system',
-  aliases: ['royalpass'],
-  args: '<progress|status|task|activate|premium|claim>',
-  emoji: "⭐",
-  cooldown: 5000,
-  category: '🍬 Explore',
-  execute,
+name: 'pass',
+description: 'New Pass Handling System (activate, redeem, createpromo, rewards, benefits, check)',
+aliases: ['royalpass', 'pass'],
+args: '<redeem|rewards|benefits|check>',
+cooldown: 10000,
+category: 'Pass',
+execute,
 };

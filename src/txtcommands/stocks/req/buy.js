@@ -7,6 +7,10 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
+import {
+  checkPassValidity
+} from "../../explore/pass.js";
+
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
   if (isInteraction) {
@@ -62,6 +66,14 @@ export async function buySharesCommand(message, args) {
         content: `ⓘ **${username}**, you cannot buy shares in your own company.`
       });
     }
+    
+    const passInfo = await checkPassValidity(userId);
+    let additionalReward = 0;
+    if (passInfo.isValid) {
+      if (passInfo.passType === "ethereal" || passInfo.passType === "celestia") {
+        additionalReward = 2;
+      }
+    }
 
     // Check if user is buying a new unique company stock.
     // If the user isn't already a shareholder in this company, ensure they don't own shares in 7 companies already.
@@ -70,9 +82,12 @@ export async function buySharesCommand(message, args) {
       const userCompaniesCount = await Company.countDocuments({
         'shareholders.userId': userId
       });
-      if (userCompaniesCount >= 7) {
+      
+      const stockCompanyLimit = 6 + additionalReward;
+      
+      if (userCompaniesCount >= stockCompanyLimit) {
         return handleMessage(message, {
-          content: `ⓘ **${username}**, you cannot own more than 7 unique company stocks.`
+          content: `ⓘ **${username}**, you cannot own more than ${stockCompanyLimit} unique company stocks.\nPass members can buy stocks from up to 8 companies!`
         });
       }
     }

@@ -13,10 +13,6 @@ import {
 } from '../../../database.js';
 
 import {
-  incrementTaskExp
-} from './pass.js';
-
-import {
   makeIceCream
 } from './ic/make.js';
 import {
@@ -29,6 +25,10 @@ import {
 import {
   iceLeaderboard
 } from './ic/leaderboard.js';
+
+import {
+  checkPassValidity
+} from "../explore/pass.js";
 
 const flavors = [{
   level: 1,
@@ -493,12 +493,14 @@ export default {
 
           let reward = 100;
 
-          const currentMonth = new Date().getMonth();
-          const currentYear = new Date().getFullYear();
+          const passInfo = await checkPassValidity(message.author.id);
+          let additionalReward;
+          if (passInfo.isValid) {
+            if (passInfo.passType !== "titan") {
+              additionalReward = 25;
 
-          if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
-            let additionalReward = Math.floor(0.25 * reward);
-            reward += additionalReward;
+              reward += additionalReward;
+            }
           }
 
           playerShop.dailyBonusClaimed = true;
@@ -514,7 +516,7 @@ export default {
           .setDescription(`**${message.author.username}** received today's reward, including +1 reputation points!\nYou can claim 20 loyalty points, plus 20 for every 150 reputation!`)
           .addFields(
             {
-              name: "<:creamcash:1309495440030302282> cash", value: `+${reward} cash`
+              name: "<:creamcash:1309495440030302282> cash", value: `+${reward} ${passInfo.isValid && passInfo.passType !== "titan" ? "(**+25** bonus) " : ""}cash`
             },
             {
               name: "✪⁠ Loyalty Points", value: `+${loyaltyPointsGained} Points`

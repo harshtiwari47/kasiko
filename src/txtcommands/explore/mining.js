@@ -19,6 +19,10 @@ import {
   Helper
 } from '../../../helper.js';
 
+import {
+  checkPassValidity
+} from "./pass.js";
+
 const COAL_EMOJI = '<:coal:1312372037058170950>';
 const COAL_VALUE = 300; // 1 coal = 100 cash
 
@@ -144,7 +148,16 @@ async function exchangeCoal(userId, context, username) {
     }
 
     const coalExchanged = userMining.collected;
-    const cashEarned = coalExchanged * COAL_VALUE;
+    let cashEarned = coalExchanged * COAL_VALUE;
+
+    const passInfo = await checkPassValidity(userId);
+
+    let additionalReward;
+    if (passInfo.isValid) {
+      additionalReward = 150 * coalExchanged;
+      if (passInfo.passType === "titan") additionalReward = 100 * coalExchanged;
+      cashEarned += additionalReward;
+    }
 
     userData.cash += cashEarned;
     // Update UserData and reset collected coal
@@ -154,7 +167,7 @@ async function exchangeCoal(userId, context, username) {
     await userMining.save();
 
     return {
-      content: `**${username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()} cash**.`,
+      content: `**${username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()} ${passInfo.isValid ? `(**+${additionalReward}** bonus) `: ""}cash**.`,
       collected: true
     };
   } catch (e) {

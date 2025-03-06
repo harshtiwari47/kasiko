@@ -10,10 +10,6 @@ import {
   Helper
 } from '../../../helper.js';
 
-import {
-  incrementTaskExp
-} from './pass.js';
-
 // Function to get pet image based on type and level
 function getPetImage(petType, petLevel) {
 
@@ -180,7 +176,7 @@ export default {
           pet.lastFeed = Date.now();
 
           await userPetData.save();
-          const petImageUrls = getPetImage(pet.type, pet.level);
+          const petImageUrls = getPetImage(pet.petId, pet.level);
 
           const embed = new EmbedBuilder()
           .setColor('#ff69b4') // A cute pink color
@@ -219,7 +215,7 @@ export default {
 
         if (pet.type === "cat") {
           let talk = catTalks[Math.floor(Math.random() * catTalks.length)];
-          const petImageUrls = getPetImage(pet.type, pet.level);
+          const petImageUrls = getPetImage(pet.petId, pet.level);
 
           const embed = new EmbedBuilder()
           .setColor('#f5b7c1') // A cute pink color
@@ -264,7 +260,7 @@ export default {
         pet.lastExercise = Date.now();
         pet.exp += 10; // Adding experience points after exercise
         await userPetData.save();
-        const petImageUrls = getPetImage(pet.type, pet.level);
+        const petImageUrls = getPetImage(pet.petId, pet.level);
 
         const embed = new EmbedBuilder()
         .setColor('#00BFFF') // A refreshing blue color
@@ -290,7 +286,7 @@ export default {
         pet.lastPatTime = Date.now();
         pet.exp += 10; // Adding experience points after pat
         await userPetData.save();
-        const petImageUrls = getPetImage(pet.type, pet.level);
+        const petImageUrls = getPetImage(pet.petId, pet.level);
 
         const embed = new EmbedBuilder()
         .setColor('#e22651')
@@ -316,7 +312,7 @@ export default {
         pet.lastWalkTime = Date.now();
         pet.exp += 10; // Adding experience points after waking
         await userPetData.save();
-        const petImageUrls = getPetImage(pet.type, pet.level);
+        const petImageUrls = getPetImage(pet.petId, pet.level);
 
         const embed = new EmbedBuilder()
         .setColor('#26e275')
@@ -349,7 +345,7 @@ export default {
       // View command
       if (args.length === 1 || args[1] === "view") {
         const pet = userPetData.pets[petId];
-        const petImageUrls = getPetImage(pet.type, pet.level);
+        const petImageUrls = getPetImage(pet.petId, pet.level);
 
         let currentLevel = Math.floor(Math.sqrt(pet.exp / threshold)) || 0;
         let nextLevel = currentLevel + 1;

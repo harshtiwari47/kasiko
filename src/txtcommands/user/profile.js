@@ -15,6 +15,10 @@ import {
   Helper
 } from '../../../helper.js';
 
+import {
+  checkPassValidity
+} from "../explore/pass.js";
+
 export async function badges(userData) {
   let badges = "";
 
@@ -33,16 +37,17 @@ export async function badges(userData) {
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-  if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
-    badges += `<:premis:1316681065439559680> `
-  } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
-    badges += `<:royal:1316681043301892168> `
+  if (userData.passActive) {
+    badges += `<:special_badge:1322047435111137361> `
   }
 
-
-  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 30)) badges += `<:paramount_cultist:1328222702040907836> `
-  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 15)) badges += `<:supreme_cultist:1328222685112569856> `
-  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 5)) badges += `<:novice_cultist:1328222665235894282> `
+  if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 30)) {
+    badges += `<:paramount_cultist:1328222702040907836> `
+  } else if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 15)) {
+    badges += `<:supreme_cultist:1328222685112569856> `
+  } else if (userData.orca && !Array.isArray(userData.orca) && (userData.orca["count"] > 5)) {
+    badges += `<:novice_cultist:1328222665235894282> `
+  }
 
   if (userData.badges && userData.badges.length > 0) {
     userData.badges.forEach(badge => {
@@ -66,7 +71,7 @@ function getChildEmoji(gender, customEmojis = {}) {
 }
 
 // create an embed card based on user data
-async function createUserEmbed(userId, username, userData, avatar, badges) {
+async function createUserEmbed(userId, username, userData, avatar, badges, passInfo) {
   try {
     const joinDate = new Date(userData.joined);
     const isToday = joinDate.toDateString() === new Date().toDateString();
@@ -106,15 +111,18 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
     const currentYear = new Date().getFullYear();
     let EmbedColor = "#f6e59a";
 
-    if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
-      EmbedColor = `#85acfa`;
+    if (passInfo.isValid) {
+      if (passInfo.passType === "titan") EmbedColor = "#328e66";
+      if (passInfo.passType === "pheonix") EmbedColor = "#af3d35";
+      if (passInfo.passType === "ethereal") EmbedColor = "#6c35b8";
+      if (passInfo.passType === "celestia") EmbedColor = "#090a0d";
+      if (passInfo.passType === "celestia" && userData.color !== "#f6e59a") EmbedColor = userData.color;
     }
 
     // Embed 1: Personal Info & Wealth Stats
     const embed1 = new EmbedBuilder()
     .setColor(EmbedColor || "#f6e59a")
-    .setTitle(`⌞ ⌝  <@${userId.toString()}>'𝙨 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✨`)
-    .setDescription(`${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
+    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝"} <@${userId.toString()}>'𝙨 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦\n${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
     .addFields(
       // Financial Information
       {
@@ -122,37 +130,43 @@ async function createUserEmbed(userId, username, userData, avatar, badges) {
         value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData.cash.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}\n**Charity:** <:kasiko_coin:1300141236841086977> ${userData.charity.toLocaleString()}`,
         inline: true
       },
-
-      // Rewards and Status
-      {
-        name: '🎉 𝘙𝘦𝘸𝘢𝘳𝘥𝘴 & 𝘚𝘵𝘢𝘵𝘶𝘴',
-        value: `**Daily Rewards:** ${dailyRewardsDetail}\n**Friendly:** ${userData.friendly}`,
-        inline: true
-      },
-
       // Personal Information
       {
         name: '👪 𝘍𝘢𝘮𝘪𝘭𝘺 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
-        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**`,
+        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n**Friendly:** ${userData.friendly}`,
         inline: true
       }
     );
 
     // Embed 2: Property & Achievements
     const embed2 = new EmbedBuilder()
-    .setTitle(`⌞ ⌝ Assets ✨`)
+    .setTitle(`⌞ ⌝ Assets ✦`)
     .setThumbnail(avatar)
     .setDescription(
       `**⤿🚘 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
       `**⤿🏡 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
-      `**⤿⭐ 𝖯𝖺𝗌𝗌𝖾𝗌**: ${userData.seasonalPasses.length ? userData.seasonalPasses.join(" "): "0"}\n`
+      `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: ${passInfo.isValid && passInfo.passType === "celestia" ? `1`: "0"}\n`
     )
     .setFooter({
       text: `ɪɴᴠᴇꜱᴛɪɴɢ & ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ. 💰`
     })
 
-    return [embed1,
-      embed2];
+    const embed3 = new EmbedBuilder()
+    .setDescription(`**🜲 𝗣𝗔𝗦𝗦**: ${passInfo.isValid ? `${passInfo.emoji} **${passInfo.passType.toUpperCase()}**`: "404"}\n`)
+    .setColor(EmbedColor || "#f6e59a")
+
+    let embedList;
+
+    if (passInfo.isValid) {
+      embedList = [embed1,
+        embed3,
+        embed2]
+    } else {
+      embedList = [embed1,
+        embed2]
+    }
+
+    return embedList;
   } catch (error) {
     return [];
     console.error('Error creating user embeds:', error);
@@ -165,7 +179,11 @@ export async function profile(userId, context) {
     const user = await context.client.users.fetch(userId);
 
     const userData = await getUserData(userId);
+    if (!userData) return;
     userData.networth = calculateNetWorth(userData);
+
+    const passInfo = await checkPassValidity(userId);
+    userData.passActive = passInfo.isValid;
 
     let userBadges = await badges(userData);
 
@@ -175,7 +193,7 @@ export async function profile(userId, context) {
       userData,
       user.displayAvatarURL({
         dynamic: true, size: 256
-      }), userBadges
+      }), userBadges, passInfo
     );
 
     if (isInteraction) {

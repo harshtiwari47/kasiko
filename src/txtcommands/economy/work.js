@@ -8,6 +8,10 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
+import {
+  checkPassValidity
+} from "../explore/pass.js";
+
 const careers = {
   CEO: {
     messages: [
@@ -76,21 +80,33 @@ export async function work(id, channel, user) {
 
     const today = new Date();
     const todayString = today.toDateString();
-    
+
+    const passInfo = await checkPassValidity(id);
+    let additionalReward = 0;
+    if (passInfo.isValid) {
+      if (passInfo.passType === "ethereal" || passInfo.passType === "celestia") {
+        additionalReward = 20;
+      }
+    }
+
     if (userData.dailyWork && userData?.dailyWork[0]) {
       let todayEntry = new Date(userData.dailyWork[0]).toDateString() === todayString;
       if (todayEntry) {
-        if (todayEntry && userData.dailyWork[1] && userData.dailyWork[1] >= 30) {
-          return workMessage = ("💼 Daily limit reached: You cannot do more than **30 work** actions in one day.");
+        const workLimit = 30 + additionalReward;
+
+        if (todayEntry && userData.dailyWork[1] && userData.dailyWork[1] >= workLimit) {
+          return workMessage = (`💼 Daily limit reached: You cannot do more than **${workLimit} work** actions in one day.`);
         } else {
           userData.dailyWork[1] += 1;
         }
       } else {
-        userData.dailyWork = [today, 1];
+        userData.dailyWork = [today,
+          1];
       }
     } else {
       // If dailyWork is not yet defined, initialize it with today's record.
-      userData.dailyWork = [today, 1];
+      userData.dailyWork = [today,
+        1];
     }
 
     const earnedCash = Math.floor(Math.random() * 3000) + 500;

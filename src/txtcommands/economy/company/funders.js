@@ -33,7 +33,7 @@ export async function viewFundersCommand(message, args) {
     }
 
     // Filter the shareholders to only include those with role 'funder'
-    const funders = company.shareholders.filter(sh => sh.role === 'investor');
+    const funders = company.shareholders.filter(sh => sh.role === 'funder');
     if (funders.length === 0) {
       return message.channel.send(`ⓘ **${username}**, no funders found for your company.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }

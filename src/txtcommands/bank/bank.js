@@ -13,6 +13,10 @@ import {
   updateUser
 } from '../../../database.js';
 
+import {
+  checkPassValidity
+} from "../explore/pass.js";
+
 const BankInfo = {
   security: 1,
   charge: 1.5,
@@ -88,17 +92,16 @@ export const Bank = {
       }
 
       let Interest = Math.min((BankInfo.charge || 0) * account.level * 0.5, 30);
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
 
-      if (
-        userData.pass &&
-        userData.pass.year === currentYear &&
-        userData.pass.month === currentMonth &&
-        userData.pass.type === "premium"
-      ) {
-        let additionalReward = 0.20 * Interest;
-        Interest -= additionalReward;
+      const passInfo = await checkPassValidity(userId);
+
+      if (passInfo.isValid) {
+        if (passInfo.passType !== "titan") {
+          let additionalReward = 0.10 * Interest;
+
+          if (passInfo.passType !== "pheonix") additionalReward = 0.20 * Interest;
+          Interest -= additionalReward;
+        }
       }
 
       if (amount === "all") {
@@ -178,12 +181,17 @@ export const Bank = {
       let Interest = Math.min(BankInfo.charge * account.level * 0.5, 30);
       let specialInterest = 0;
 
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
 
-      if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
-        let additionalReward = 0.20 * Interest;
-        specialInterest -= additionalReward;
+      const passInfo = await checkPassValidity(userId);
+      let additionalReward;
+      if (passInfo.isValid) {
+        if (passInfo.passType !== "titan") {
+          additionalReward = 0.10 * Interest;
+
+          if (passInfo.passType !== "pheonix") additionalReward = 0.20 * Interest;
+          specialInterest -= Number(additionalReward.toFixed(1));
+          Interest += specialInterest;
+        }
       }
 
       const emebedHeader = new EmbedBuilder()

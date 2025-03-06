@@ -13,6 +13,10 @@ import {
   checkTimeGap
 } from '../../../helper.js';
 
+import {
+  checkPassValidity
+} from "../explore/pass.js";
+
 export async function attemptRobbery(userId, targetUserId, message) {
   try {
     // Get user data (cash) and target data
@@ -108,7 +112,15 @@ export async function attemptRobbery(userId, targetUserId, message) {
           if (!robberyMessage || !robberyMessage?.edit) return;
           await robberyMessage.edit(`**${message.author.username}** is _putting money_ in their bag... 💵`);
 
-          if (caughtChance < 0.3) {
+          const passInfo = await checkPassValidity(targetUserId);
+          let additionalReward = 0;
+          if (passInfo.isValid) {
+            if (passInfo.passType === "ethereal" || passInfo.passType === "celestia") {
+              additionalReward = 0.2;
+            }
+          }
+
+          if (caughtChance < (0.3 + additionalReward)) {
             // 30% chance of getting caught
             const penalty = Math.floor(userCash * 0.1);
             userData.cash = Math.max(0, userCash - penalty);

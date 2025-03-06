@@ -17,6 +17,10 @@ import {
 } from './data.js';
 
 import {
+  checkPassValidity
+} from "../explore/pass.js";
+
+import {
   Helper
 } from '../../../helper.js';
 
@@ -247,14 +251,12 @@ export async function viewAquarium(userId,
       totalReward += (userfishDetails.level * 10 * rarityAmount);
     });
 
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
+    const passInfo = await checkPassValidity(userId);
 
-    if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
-      let additionalReward = 0.10 * totalReward;
-      totalReward += additionalReward;
-    } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
-      let additionalReward = 0.05 * totalReward;
+    let additionalReward;
+    if (passInfo.isValid) {
+      additionalReward = 0.26 * totalReward;
+      if (passInfo.passType === "titan") additionalReward = 0.16 * totalReward;
       totalReward += additionalReward;
     }
 
@@ -277,7 +279,7 @@ export async function viewAquarium(userId,
     .setColor("#0a4c63")
 
     const aquariumEmbed = new EmbedBuilder()
-    .setDescription(`${aquariumDisplay}\n Minimum Collection: <:kasiko_coin:1300141236841086977> ${totalReward}`)
+    .setDescription(`${aquariumDisplay}\n Minimum Collection: <:kasiko_coin:1300141236841086977> **${totalReward}**  ${passInfo.isValid ? "(**+" + additionalReward + "** bonus)": ""}`)
     .setColor('#00BFFF'); // Choose a color for the embed
 
     let canCollect = true;
@@ -630,15 +632,12 @@ export async function collectAquariumReward(context, author) {
       totalReward += (userfishDetails.level * 10 * rarityAmount) + (numVisitors * 10);
     });
 
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
+    const passInfo = await checkPassValidity(author.id);
 
-
-    if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth && userData.pass.type === "premium") {
-      let additionalReward = 0.10 * totalReward;
-      totalReward += additionalReward;
-    } else if (userData.pass && userData.pass.year === currentYear && userData.pass.month === currentMonth) {
-      let additionalReward = 0.05 * totalReward;
+    let additionalReward;
+    if (passInfo.isValid) {
+      additionalReward = 0.26 * totalReward;
+      if (passInfo.passType === "titan") additionalReward = 0.16 * totalReward;
       totalReward += additionalReward;
     }
 

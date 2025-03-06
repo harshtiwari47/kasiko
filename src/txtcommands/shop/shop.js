@@ -40,13 +40,13 @@ export async function buyRoses(amount, message) {
       userData.roses += amount;
 
       await updateUser(message.author.id, userData);
-      return message.channel.send(`**${message.author.username}** bought **${amount}** <:rose:1343097565738172488> for <:kasiko_coin:1300141236841086977>**${rosesAmount}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`);
+      return message.channel.send(`**${message.author.username}** bought **${amount}** <:rose:1343097565738172488> for <:kasiko_coin:1300141236841086977>**${rosesAmount}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to purchase a <:rose:1343097565738172488>. You need <:kasiko_coin:1300141236841086977> ${rosesAmount} 𝑪𝒂𝒔𝒉`);
+      return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to purchase a <:rose:1343097565738172488>. You need <:kasiko_coin:1300141236841086977> ${rosesAmount} 𝑪𝒂𝒔𝒉`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch(e) {
     console.error(e);
-    message.channel.send("⚠️ Something went wrong while buying rose(s).");
+    message.channel.send("⚠️ Something went wrong while buying rose(s).").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -128,17 +128,17 @@ export default {
               if (amount > 0) {
                 return buyRoses(amount, message);
               } else {
-                return message.channel.send("⚠️ Please specify a valid number of roses to buy.");
+                return message.channel.send("⚠️ Please specify a valid number of roses to buy.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
               }
             } else {
-              return message.channel.send("⚠️ Please specify a valid amount of roses to buy.\nExample: `buy roses <amount>`");
+              return message.channel.send("⚠️ Please specify a valid amount of roses to buy.\nExample: `buy roses <amount>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
             }
 
           default:
-            return message.channel.send("## ⚠️ Invalid category.\nPlease specify one of:\n`car`, `structure`, `jewelry`, or `roses`.\n**Example:** `buy car <id>`");
+            return message.channel.send("## ⚠️ Invalid category.\nPlease specify one of:\n`car`, `structure`, `jewelry`, or `roses`.\n**Example:** `buy car <id>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else {
-          return message.channel.send("⚠️ Invalid purchase request.\nExample: `buy car <id>` or `buy roses <amount>`");
+          return message.channel.send("## ⚠ Invalid Purchase Request!\nExample: `buy car <id>` or `buy roses <amount>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -165,15 +165,21 @@ export default {
             return JEWELRY.sellJewelryItem(message, itemId);
 
           default:
-            return message.channel.send("## ⚠️ Invalid category.\nPlease specify one of:\n`car`, `structure`, or `jewelry`.\n**Example:** `sell car <id>`");
+            return message.channel.send("## ⚠ 𝙄𝙣𝙫𝙖𝙡𝙞𝙙 𝘾𝙖𝙩𝙚𝙜𝙤𝙧𝙮!\nPlease specify one of:\n`car`, `structure`, or `jewelry`.\n**Example:** `sell car <id>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else {
-          return message.channel.send("⚠️ Invalid sell request.\nExample: `sell car <id>` or `sell jewelry <id>`");
+          return message.channel.send({
+            content: "## ⚠ **Invalid Sell Request!**\n\n" +
+            "**Example Usage:**\n" +
+            "- `sell car <id>`\n" +
+            "- `sell jewelry <id>`\n\n" +
+            "-# ⓘ  Use `shop` for more details."
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
       // If command not recognized
-      return message.channel.send("⚠️ Please use a valid command!\n`kas buy/sell <category> <itemId/amount>`");
+      return message.channel.send("⚠️ Please use a valid command!\n`kas buy/sell <category> <itemId/amount>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Handle "shop" categories (viewing items)
@@ -233,7 +239,7 @@ export default {
 
         return message.channel.send({
           embeds: [embed]
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
   }

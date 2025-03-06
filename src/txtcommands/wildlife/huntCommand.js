@@ -6,6 +6,10 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
+import {
+  checkPassValidity
+} from "../explore/pass.js";
+
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const BoosterDatabasePath = path.join(__dirname, './boosters.json');
 const AnimalsDatabasePath = path.join(__dirname, './animals.json');
@@ -61,10 +65,19 @@ export async function huntCommand(context, {
       // Reset daily hunts if it's a new day
       user.hunt.huntsToday = 0;
     }
-    const dailyHuntLimit = 10;
+
+    const passInfo = await checkPassValidity(userId);
+
+    let extraBullet = 0;
+    if (passInfo.isValid) {
+      extraBullet = 10;
+      if (passInfo.passType === "titan") extraBullet = 5;
+    }
+
+    const dailyHuntLimit = 10 + extraBullet;
     if (user.hunt.huntsToday >= dailyHuntLimit) {
       return handleMessage(context, {
-        content: `**${username}, you've used all ${rubBulletEmoji} 10 of your ammo! It's getting dark, and the wilds are growing dangerous.** Rest up and return tomorrow to continue the hunt.`,
+        content: `**${username}, you've used all ${rubBulletEmoji} ${dailyHuntLimit} of your ammo! It's getting dark, and the wilds are growing dangerous.** Rest up and return tomorrow to continue the hunt.`,
       });
     }
 
@@ -249,7 +262,8 @@ export default {
   aliases: ['h',
     'animalhunt'],
   args: '[location]',
-  example: ['hunt', 'h'],
+  example: ['hunt',
+    'h'],
   related: ['cage',
     'sellanimal'],
   emoji: "🎯",

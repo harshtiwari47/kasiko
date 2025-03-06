@@ -45,7 +45,7 @@ export async function workCommand(message, args) {
     // Calculate the work reward.
     const baseReward = 50;
     const volatilityFactor = company.volatility / 10; // Adjustable factor
-    const reward = Math.floor(baseReward + company.currentPrice * 0.05 + Math.random() * 50 * volatilityFactor);
+    const reward = Math.floor((company.currentPrice * 0.0005) + baseReward + company.currentPrice * 0.05 + Math.random() * 50 * volatilityFactor);
 
     // Retrieve and update the user's cash balance
     const userData = await getUserData(userId);

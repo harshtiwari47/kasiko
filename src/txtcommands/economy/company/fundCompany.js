@@ -105,7 +105,7 @@ export async function fundCompanyCommand(message, args) {
       company.shareholders.push({
         userId,
         shares: sharesToIssue,
-        role: 'investor',
+        role: 'funder',
         lastInvestedAt: new Date(),
         cost: investmentAmount
       });

@@ -13,6 +13,11 @@ import express from 'express';
 import {
   updateExpPoints
 } from './utils/experience.js';
+
+import {
+  OwnerCommands
+} from './src/owner/main.js';
+
 import redisClient from './redis.js';
 import {
   termsAndcondition
@@ -27,9 +32,6 @@ import UserGuild from './models/UserGuild.js';
 
 import txtcommands from './src/textCommandHandler.js';
 
-import {
-  incrementTaskExp
-} from './src/txtcommands/explore/pass.js';
 import {
   loadSlashCommands,
   handleSlashCommand
@@ -77,6 +79,22 @@ client.on('messageCreate', async (message) => {
     //return if author is bot
     if (message.author.bot || message.system || message.webhookId) return;
 
+    /*
+    * custom feature for server
+    */
+    // Check if the message comes from the specified server.
+    if (message.guild && message.guild.id === "530977124195237918" || message.guild.id === "1306509956253487154") {
+      const regex = /https?:\/\/(?:www\.)?instagram\.com\/reel\/([A-Za-z0-9_-]+)(?:\/\S*)?/;
+      const match = message.content.match(regex);
+
+      if (match) {
+        const reelId = match[1];
+        const ddInstagramLink = `https://www.ddinstagram.com/reel/${reelId}/`;
+        // Send the ddinstagram link as a response.
+        return message.channel.send(ddInstagramLink).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+    }
+
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 
     try {
@@ -94,6 +112,8 @@ client.on('messageCreate', async (message) => {
 
     if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
+    if (message.content.toLowerCase().startsWith("kasow")) return OwnerCommands(message.content.slice("kasow".toLowerCase().length).trim().split(/ +/), message);
+
     if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
 
     // Check if user is command-banned
@@ -245,8 +265,6 @@ client.on('messageCreate', async (message) => {
 
       // Reset violation counter on successful command
       await redisClient.del(`violations:${userId}`);
-
-      // await incrementTaskExp(message.author.id, "command", message);
 
       command.execute(args, message);
     } catch (error) {

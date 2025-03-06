@@ -246,7 +246,7 @@ export async function usercars(context, targetUserId) {
         const carDetails = carItems.find(item => item.id === car.id);
         const embed = new EmbedBuilder()
         .setColor('#6835fe')
-        .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${carDetails.emoji}.png`);
+        .setThumbnail(carDetails.image && carDetails.image.startsWith(`https`) ? carDetails.image: `https://cdn.discordapp.com/app-assets/${APPTOKEN}/${carDetails.image}.png`) // Use image
 
         let description = '';
         description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n`;
