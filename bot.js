@@ -90,7 +90,8 @@ client.on('messageCreate', async (message) => {
         const reelId = match[1];
         const ddInstagramLink = `https://www.instagramez.com/reel/${reelId}/`;
         // Send the ddinstagram link as a response.
-        return await message.channel.send(ddInstagramLink).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        await message.channel.send(ddInstagramLink).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        await message.delete().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     }
 

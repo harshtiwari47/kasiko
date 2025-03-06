@@ -194,10 +194,10 @@ const benefitsData = [{
   },
   {
     plan: 'etheral',
-    title: 'Ethereal Benefits',
+    title: 'Etheral Benefits',
     description: "- All Phoenix benefits\n" +
     "- Receive a 20% discount on bank interest\n" +
-    "- Obtain an exclusive Ethereal badge and profile color\n" +
+    "- Obtain an exclusive Etheral badge and profile color\n" +
     "- Work up to 50 times per day\n" +
     "- Access exclusive cars and houses\n" +
     "- New exclusive animals available for hunting: Panda, Kangaroo, Bear\n" +
@@ -207,7 +207,7 @@ const benefitsData = [{
   {
     plan: 'celestia',
     title: 'Celestia Benefits',
-    description: "- All Ethereal benefits\n" +
+    description: "- All Etheral benefits\n" +
     "- Receive an exclusive Celestia profile color and badge\n" +
     "- Can request a custom profile color\n" +
     "- Receive a custom pet\n" +
@@ -469,7 +469,7 @@ export async function execute(args,
             });
           } else {
             return await handleMessage(context, {
-              content: `**${username}**, you do not have an active pass, or your pass must be either an Ethereal or Celestia pass.`
+              content: `**${username}**, you do not have an active pass, or your pass must be etheral an etheral or Celestia pass.`
             });
           }
         }

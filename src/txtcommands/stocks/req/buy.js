@@ -70,7 +70,7 @@ export async function buySharesCommand(message, args) {
     const passInfo = await checkPassValidity(userId);
     let additionalReward = 0;
     if (passInfo.isValid) {
-      if (passInfo.passType === "ethereal" || passInfo.passType === "celestia") {
+      if (passInfo.passType === "etheral" || passInfo.passType === "celestia") {
         additionalReward = 2;
       }
     }
