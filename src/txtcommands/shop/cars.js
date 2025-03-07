@@ -154,16 +154,18 @@ export async function sendPaginatedCars(context) {
         const currentCar = carItems[currentIndex];
         return buycar(context, currentCar.id);
       }
-
-      if (Pass.isValid && (Pass.passType === "etheral" || Pass.passType === "celestia") && currentCar.exclusive) {
-        buttons.components[2].setDisabled(false);
-      } else if (currentCar.exclusive) {
-        buttons.components[2].setDisabled(true); // buy
-      }
-
+      
+      const currentCar = carItems[currentIndex];
+        
       const newCarEmbed = createCarEmbed(carItems[currentIndex]);
       buttons.components[0].setDisabled(currentIndex === 0); // Previous
       buttons.components[1].setDisabled(currentIndex === carItems.length - 1); // Next
+
+      if (Pass.isValid && (Pass.passType === "etheral" || Pass.passType === "celestia") && currentCar?.exclusive) {
+        buttons.components[2]?.setDisabled(false);
+      } else if (currentCar?.exclusive) {
+        buttons.components[2]?.setDisabled(true); // buy
+      }
 
       // Re-render the embed with updated pagination
       await messageSent.edit({
