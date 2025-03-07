@@ -19,6 +19,10 @@ import {
 import dotenv from 'dotenv';
 dotenv.config();
 
+import {
+  checkPassValidity
+} from "../explore/pass.js";
+
 const APPTOKEN = process.env.APP_ID;
 
 // A universal function for sending responses both to text commands and slash commands.
@@ -50,6 +54,7 @@ function createCarEmbed(car) {
   if (car.rarity.substring(0, 1).toUpperCase() === "C") iconRarity = `<:common:1323917805191434240>`
   if (car.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
   if (car.rarity.substring(0, 1).toUpperCase() === "E") iconRarity = `<:epic:1324666103028387851>`
+  if (car.rarity.substring(0, 2).toUpperCase() === "EX") iconRarity = `<:exclusive:1347533975840882708>`
 
   const mainEmbed = new EmbedBuilder()
   .setTitle(car.name)
@@ -96,6 +101,8 @@ export async function sendPaginatedCars(context) {
         content: "No cars are available to view!"
       });
     }
+
+    const Pass = await checkPassValidity(userId);
 
     let currentIndex = 0;
     const carEmbed = createCarEmbed(carItems[currentIndex]);
@@ -146,6 +153,12 @@ export async function sendPaginatedCars(context) {
         // Attempt to buy the current car
         const currentCar = carItems[currentIndex];
         return buycar(context, currentCar.id);
+      }
+
+      if (Pass.isValid && (Pass.passType === "etheral" || Pass.passType === "celestia") && currentCar.exclusive) {
+        buttons.components[2].setDisabled(false);
+      } else if (currentCar.exclusive) {
+        buttons.components[2].setDisabled(true); // buy
       }
 
       const newCarEmbed = createCarEmbed(carItems[currentIndex]);
@@ -250,10 +263,10 @@ export async function usercars(context, targetUserId) {
 
         let description = '';
         description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n`;
-        description += `↪ **𝑶𝒘𝒏𝒔**: ${car.items}\n`;
-        description += `↪ **𝑪𝒂𝒓**: <:${car.id}_car:${carDetails.emoji}> \n`;
-        description += `↪ **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
-        description += `↪ **𝑰𝑫**: ${carDetails.id}\n`;
+        description += ` **𝑶𝒘𝒏𝒔**: ${car.items}\n`;
+        description += ` **𝑪𝒂𝒓**: <:${car.id}_car:${carDetails.emoji}> \n`;
+        description += ` **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
+        description += ` **𝑰𝑫**: ${carDetails.id}\n`;
 
         embed.setDescription(description.trim());
 

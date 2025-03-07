@@ -20,7 +20,7 @@ export default {
       let userExistence = await userExists(interaction.user.id);
       if (!userExistence) {
         await interaction.editReply({
-          content: `You haven't accepted our terms and conditions! Type \`kas terms\` in a server where the bot is available to create an account.`,
+          content: `You haven't accepted our terms and conditions! Type \`kas help\` in a server where the bot is available to create an account.`,
           ephemeral: true, // Only visible to the user
         });
         return;

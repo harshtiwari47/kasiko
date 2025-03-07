@@ -113,7 +113,7 @@ async function showUserShips(userId, message) {
 
       return message.channel.send({
         embeds: [embed]
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Split ships into chunks of 3
@@ -171,7 +171,7 @@ async function showUserShips(userId, message) {
     const sentMessage = await message.channel.send({
       embeds: [embedImage, embeds[currentPage]],
       components: [row]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     const collector = sentMessage.createMessageComponentCollector({
       filter: interaction => interaction.user.id === message.author.id,
@@ -228,7 +228,7 @@ async function showUserShips(userId, message) {
     console.error(e);
     message.channel.send({
       content: "⚠️ Something went wrong while fetching user's ships."
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -241,7 +241,7 @@ async function activeShip(userId, message) {
     if (!activeShip) {
       return message.channel.send({
         content: `⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\``,
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     let shipDetails = shipsData.find(ship => ship.id === activeShip.id);
@@ -276,12 +276,12 @@ async function activeShip(userId, message) {
 
     return message.channel.send({
       embeds: [embed]
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } catch (e) {
     console.error(e);
     return message.channel.send({
       content: "⚠️ Something went wrong while fetching user's active ship.",
-    });
+    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
