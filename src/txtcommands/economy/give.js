@@ -71,7 +71,7 @@ export async function give(message, userId, amount, recipientId) {
 
     let remainingLimit = dailyLimit;
 
-    if (Number((todayReceived || 0) + amount) > remainingLimit) {
+    if ((todayReceived + amount) > remainingLimit) {
       return message.channel.send(
         `⚠ **<@${recipientId}>** has already received **${todayReceived.toLocaleString()}** today.\n` +
         `The daily limit is **${dailyLimit.toLocaleString()}**.\n` +
