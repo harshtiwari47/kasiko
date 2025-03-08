@@ -100,9 +100,9 @@ export async function blackjack(id, amount, channel) {
     // Create embed for the game state
     const embed = new EmbedBuilder()
     .setDescription(`> ***\`${guild.user.username}, you are playing Blackjack!\`***\n\n` +
-      `**𝒀𝑶𝑼𝑹 𝑪𝑨𝑹𝑫𝑺** :\n` +
+      `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎** :\n` +
       `## ${playerHand.join(" ")} (**${playerHandValue}**)\n` +
-      `**𝑫𝑬𝑨𝑳𝑬𝑹'𝑺 𝑪𝑨𝑹𝑫𝑺** :\n` +
+      `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎** :\n` +
       `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
       `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
@@ -146,9 +146,9 @@ export async function blackjack(id, amount, channel) {
             const bustEmbed = new EmbedBuilder(embed)
             .setColor("#ed8484")
             .setDescription(`> 🚫 ***\`${guild.user.username}, you busted! Your hand value is over 21.\`***\n\n` +
-              `**𝒀𝑶𝑼𝑹 𝑪𝑨𝑹𝑫𝑺:**\n` +
+              `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎:**\n` +
               `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-              `**𝑫𝑬𝑨𝑳𝑬𝑹'𝑺 𝑪𝑨𝑹𝑫𝑺 :**\n` +
+              `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
               `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
               `### 𝘽𝙀𝙏: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
@@ -161,9 +161,9 @@ export async function blackjack(id, amount, channel) {
             // Update the embed with new player hand
             const newEmbed = new EmbedBuilder(embed)
             .setDescription(`> ***\`${guild.user.username}, you hit!\`***\n\n` +
-              `**𝒀𝑶𝑼𝑹 𝑪𝑨𝑹𝑫𝑺 :**\n` +
+              `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
               `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-              `**𝑫𝑬𝑨𝑳𝑬𝑹'𝑺 𝑪𝑨𝑹𝑫𝑺 :**\n` +
+              `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
               `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
               `### 𝘽𝙀𝙏: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
@@ -209,9 +209,9 @@ export async function blackjack(id, amount, channel) {
           const finalEmbed = new EmbedBuilder(embed)
           .setColor(color)
           .setDescription(`> ${resultMessage}\n\n` +
-            `**𝒀𝑶𝑼𝑹 𝑪𝑨𝑹𝑫𝑺 :**\n` +
+            `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
             `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
-            `**𝑫𝑬𝑨𝑳𝑬𝑹'𝑺 𝑪𝑨𝑹𝑫𝑺 :**\n` +
+            `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
             `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
             `### 𝘽𝙀𝙏: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
