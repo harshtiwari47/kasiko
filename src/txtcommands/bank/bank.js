@@ -19,9 +19,9 @@ import {
 
 const BankInfo = {
   security: 1,
-  charge: 1.5,
-  levelUpCost: 1000,
-  storage: 300000
+  charge: 0,
+  levelUpCost: 200000,
+  storage: 500000
 }
 
 export const Bank = {
@@ -91,37 +91,20 @@ export const Bank = {
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      let Interest = Math.min((BankInfo.charge || 0) * account.level * 0.5, 30);
-
-      const passInfo = await checkPassValidity(userId);
-
-      if (passInfo.isValid) {
-        if (passInfo.passType !== "titan") {
-          let additionalReward = 0.10 * Interest;
-
-          if (passInfo.passType !== "pheonix") additionalReward = 0.20 * Interest;
-          Interest -= additionalReward;
-        }
-      }
-
       if (amount === "all") {
-        amount = Math.max(
-          0,
-          account.deposit - Math.ceil((account.deposit * Interest) / 100)
-        );
+        amount = Math.max(0, account.deposit);
       }
 
-      const charge = Math.ceil((amount * Interest) / 100);
-      const totalWithdrawal = amount + charge;
+      const totalWithdrawal = amount;
 
       if (totalWithdrawal > account.deposit) {
         return message.channel.send(
-          `ⓘ **${message.author.username}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit - charge).toLocaleString()}**`
+          `ⓘ **${message.author.username}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit).toLocaleString()}**`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Calculate the new bank deposit and update the user's cash balance.
-      const newDeposit = account.deposit - totalWithdrawal;
+      const newDeposit = Math.max(0, account.deposit - totalWithdrawal);
       const originalCash = userData.cash; // Save original cash for potential rollback.
       userData.cash = userData.cash + amount;
 
@@ -132,7 +115,7 @@ export const Bank = {
         });
 
         return message.channel.send(
-          `🏦 **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n⚠ **Charge**: <:kasiko_coin:1300141236841086977> ${charge.toLocaleString()}\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}\n⤿ **Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+          `🏦 **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}\n⤿ **Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       } catch (err) {
         console.error(
@@ -178,25 +161,21 @@ export const Bank = {
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      let Interest = Math.min(BankInfo.charge * account.level * 0.5, 30);
-      let specialInterest = 0;
-
-
       const passInfo = await checkPassValidity(userId);
-      let additionalReward;
+      let additionalReward = 0;
       if (passInfo.isValid) {
         if (passInfo.passType !== "titan") {
-          additionalReward = 0.10 * Interest;
+          additionalReward = 50000;
 
-          if (passInfo.passType !== "pheonix") additionalReward = 0.20 * Interest;
-          specialInterest -= Number(additionalReward.toFixed(1));
-          Interest += specialInterest;
+          if (passInfo.passType !== "pheonix") {
+            additionalReward = 100000;
+          }
         }
       }
 
       const emebedHeader = new EmbedBuilder()
       .setColor("#a4bef2")
-      .setDescription("## 🏦 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** **${account.level}** **𝑺𝒉𝒊𝒆𝒍𝒅**: **${account.shield}** **𝑰𝒏𝒕𝒆𝒓𝒆𝒔𝒕**: **${Interest} ${specialInterest ? "(" + specialInterest.toFixed(1) + ")": ''}**`)
+      .setDescription("## 🏦 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** **${account.level}** **𝑺𝒉𝒊𝒆𝒍𝒅**: **${account.shield}** **𝑼𝑷𝑮𝑹𝑨𝑫𝑬**: ** <:kasiko_coin:1300141236841086977> ${300000 - additionalReward}**`)
 
       const embed = new EmbedBuilder()
       .setColor('#dfe9fd') // Choose a color for the embed
@@ -227,7 +206,7 @@ export const Bank = {
     }
   },
 
-  async upgrade(userId, message) {
+  async upgrade(userId, message, times = 1) {
     try {
       const account = await getUserBankDetails(userId);
       if (!account) {
@@ -236,8 +215,23 @@ export const Bank = {
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
+      if (!times || times < 0 || !Number.isInteger(Number(times))) times = 1;
+
+      const passInfo = await checkPassValidity(userId);
+
+      let additionalReward = 0;
+      if (passInfo.isValid) {
+        if (passInfo.passType !== "titan") {
+          additionalReward = 50000;
+
+          if (passInfo.passType !== "pheonix") {
+            additionalReward = 100000
+          }
+        }
+      }
+
       const currentLevel = account.level;
-      const upgradeCost = BankInfo.levelUpCost * currentLevel;
+      const upgradeCost = (BankInfo.levelUpCost - additionalReward) * times;
 
       if (account.deposit < upgradeCost) {
         return message.channel.send(
@@ -245,7 +239,7 @@ export const Bank = {
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      const newLevel = currentLevel + 1;
+      const newLevel = currentLevel + times;
       const newDeposit = account.deposit - upgradeCost;
 
       await updateBankDetails(userId, {
@@ -253,7 +247,7 @@ export const Bank = {
       });
 
       return message.channel.send(
-        `🏦 **${message.author.username}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
+        `🏦 **${message.author.username}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n**COST**: <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()}\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (err) {
       return message.channel.send(`Error upgrading bank: ${err.message}`).catch(console.error);
@@ -386,7 +380,8 @@ export default {
           return Bank.openAccount(userId, message);
 
         case "upgrade":
-          return Bank.upgrade(userId, message);
+          const times = args[2] ? Number(args[2]): 1;
+          return Bank.upgrade(userId, message, times);
 
         default:
           const bankEmbed = new EmbedBuilder()
@@ -398,7 +393,7 @@ export default {
             '`deposit <amount>`\n- Deposit funds into your bank.\n' +
             '`withdraw <amount>`\n- Withdraw funds from your bank.\n' +
             '`bank status`\n- Check your bank status (you can use \`bs\` or \`ba\`).\n' +
-            '`bank upgrade`\n- Upgrade your bank level.'
+            '`bank upgrade <times (default 1)>`- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 200k per level).'
           )
           .setFooter({
             text: 'Use your bank wisely!'

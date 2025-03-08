@@ -20,7 +20,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
     let teammateData = teammateId ? await getUserData(teammateId): null;
 
     if (amount === "all") amount = userData.cash;
-    if (amount === "all" && amount > 5000000) amount = 5000000;
+    if (amount > 5000000) amount = 5000000;
     // Check if the user and teammate have enough cash
     if (userData.cash < amount || (teammateData && teammateData.cash < amount)) {
       return channel.send(`ⓘ  **${guild.user.username}**, you or your teammate doesn't have enough cash for a bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -270,8 +270,8 @@ export default {
       } else {
         amount = parseInt(args[1]);
 
-        if (isNaN(amount) || amount < 1000 || amount > 300000) {
-          return message.channel.send("⚠ Invalid amount! The betting range is between <:kasiko_coin:1300141236841086977> 1,000 and <:kasiko_coin:1300141236841086977> 300,000.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        if (isNaN(amount) || amount < 1000 || amount > 1000000) {
+          return message.channel.send("⚠ Invalid amount! The betting range is between <:kasiko_coin:1300141236841086977> 1,000 and <:kasiko_coin:1300141236841086977> 10,00,000.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
