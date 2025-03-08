@@ -89,7 +89,7 @@ client.on('messageCreate', async (message) => {
       if (match) {
         const reelId = match[1];
         const ddInstagramLink = `<@${message.author.id}>\nhttps://www.instagramez.com/reel/${reelId}/`;
-        // Send the ddinstagram link as a response.
+        // Send the instagramez link as a response.
         await message.channel.send(ddInstagramLink).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         await message.delete().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }

@@ -99,7 +99,7 @@ export async function blackjack(id, amount, channel) {
 
     // Create embed for the game state
     const embed = new EmbedBuilder()
-    .setDescription(`> **${guild.user.username}**, you are playing Blackjack!\n\n` +
+    .setDescription(`> ***\`${guild.user.username}, you are playing Blackjack!\`***\n\n` +
       `**Your cards** :\n` +
       `## ${playerHand.join(" ")} (**${playerHandValue}**)\n` +
       `**Bot's cards**:\n` +
@@ -136,27 +136,34 @@ export async function blackjack(id, amount, channel) {
           const newPlayerValue = calculateHandValue(playerHand);
 
           if (newPlayerValue > 21) {
+            // Simulate dealer's turn even if player busts
+            let botHandFinalValue = calculateHandValue(botHand);
+            while (botHandFinalValue < 17) {
+              botHand.push(deck.pop());
+              botHandFinalValue = calculateHandValue(botHand);
+            }
+
             const bustEmbed = new EmbedBuilder(embed)
-            .setColor("#f43d3d")
-            .setDescription(`> 🚨 **${guild.user.username}**, you busted! Your hand value is over 21.\n\n` +
+            .setColor("#ed8484")
+            .setDescription(`> 🚫 ***\`${guild.user.username}, you busted! Your hand value is over 21.\`***\n\n` +
               `**Your cards :**\n` +
               `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-              `**Bot's cards:**\n` +
-              `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
+              `**Dealer cards:**\n` +
+              `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
               `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
             await interaction.update({
               embeds: [embedTitle, bustEmbed], components: []
             });
-            collector.stop("busted")
+            collector.stop("busted");
             return;
           } else {
             // Update the embed with new player hand
             const newEmbed = new EmbedBuilder(embed)
-            .setDescription(`> **${guild.user.username}**, you hit!\n\n` +
+            .setDescription(`> ***\`${guild.user.username}, you hit!\`***\n\n` +
               `**Your cards :**\n` +
               `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-              `**Bot's cards:**\n` +
+              `**Dealer cards:**\n` +
               `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
               `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
 
@@ -176,20 +183,20 @@ export async function blackjack(id, amount, channel) {
 
           // Determine winner
           let resultMessage = '';
-          let color = "#f01d1d";
+          let color = "#ed8484";
           if (botHandFinalValue > 21) {
-            resultMessage = `🎉 **${guild.user.username}**, the bot busted! You win!`;
-            color = "#1df08b";
+            resultMessage = `💸 ***\`${guild.user.username}, the bot busted! You win!\`***`;
+            color = "#94edc2";
             userData.cash += amount * 2; // Player wins double the bet
           } else if (finalPlayerHandValue > botHandFinalValue) {
-            resultMessage = `🎉 **${guild.user.username}**, you win!`;
+            resultMessage = `💸 ***\`${guild.user.username}, you win!\`***`;
             userData.cash += amount * 2; // Player wins double the bet
-            color = "#1df08b";
+            color = "#94edc2";
           } else if (finalPlayerHandValue < botHandFinalValue) {
-            resultMessage = `🚨 **${guild.user.username}**, you lost. Bot wins.`;
+            resultMessage = `🚫 ***\`${guild.user.username}, you lost. Bot wins.\`***`;
           } else {
             color = "#a0adb7";
-            resultMessage = `🤝 **${guild.user.username}**, it's a tie!`;
+            resultMessage = `🤝 ***\`${guild.user.username}, it's a tie!\`***`;
             userData.cash += amount; // Refund bet in case of tie
           }
 

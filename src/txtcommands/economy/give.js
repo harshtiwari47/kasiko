@@ -69,12 +69,12 @@ export async function give(message, userId, amount, recipientId) {
     const maxDailyLimit = recipientData.level * 100000;
     const dailyLimit = Math.min(maxDailyLimit, 6000000);
 
-    let remainingLimit = dailyLimit;
+    let remainingLimit = dailyLimit - Number(todayReceived);
 
-    if ((todayReceived + amount) > remainingLimit) {
+    if (Number(amount) > remainingLimit) {
       return message.channel.send(
-        `⚠ **<@${recipientId}>** has already received **${todayReceived.toLocaleString()}** today.\n` +
-        `The daily limit is **${dailyLimit.toLocaleString()}**.\n` +
+        `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
+        `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
         `ッ They can receive up to <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** more today.\n\n` +
         `ⓘ  Try sending <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** or less.`
       );
