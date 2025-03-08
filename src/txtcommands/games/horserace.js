@@ -20,6 +20,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
     let teammateData = teammateId ? await getUserData(teammateId): null;
 
     if (amount === "all") amount = userData.cash;
+    if (amount === "all" && amount > 5000000) amount = 5000000;
     // Check if the user and teammate have enough cash
     if (userData.cash < amount || (teammateData && teammateData.cash < amount)) {
       return channel.send(`ⓘ  **${guild.user.username}**, you or your teammate doesn't have enough cash for a bet <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -96,7 +97,7 @@ export async function horseRace(id, amount, channel, betOn = "horse1", opponentB
 // Function to start the race logic
 async function startRace(amount, betOn, opponentBetOn, teammateId, userData, teammateData, channel, guild, userId) {
   try {
-    amount = parseInt(amount)
+    amount = parseInt(amount);
     const suspenseMessage = await channel.send(
       `🏁 The race is about to begin!\n`
     );
@@ -179,7 +180,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
           const teammateSplit = teammateId ? Math.floor(winAmount / 2): winAmount;
 
           if (winner === betOn) {
-            userData.cash += amount + winAmount;
+            userData.cash += winAmount + (!teammateData ? amount: 0);
             await updateUser(userData.id, userData);
 
             const embed = new EmbedBuilder()
@@ -199,7 +200,7 @@ async function startRace(amount, betOn, opponentBetOn, teammateId, userData, tea
             });
           } else {
             if (teammateData && winner === opponentBetOn) {
-              teammateData.cash += amount + winAmount;
+              teammateData.cash += winAmount;
               await updateUser(teammateId, teammateData);
             }
 
