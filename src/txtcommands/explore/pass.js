@@ -184,7 +184,7 @@ const benefitsData = [{
     plan: 'pheonix',
     title: 'Pheonix Benefits',
     description: "- Earn an extra 15% on daily rewards\n" +
-    "- Receive a 10% discount on bank interest\n" +
+    "- Receive a 16% discount on bank upgrade\n" +
     "- Earn an extra 25% on daily ice rewards\n" +
     "- Receive an exclusive Phoenix profile color and badge\n" +
     "- Enjoy an extra 26% on your aquarium collection\n" +
@@ -196,7 +196,7 @@ const benefitsData = [{
     plan: 'etheral',
     title: 'Etheral Benefits',
     description: "- All Phoenix benefits\n" +
-    "- Receive a 20% discount on bank interest\n" +
+    "- Receive a 33% discount on bank upgrade\n" +
     "- Obtain an exclusive Etheral badge and profile color\n" +
     "- Work up to 50 times per day\n" +
     "- Access exclusive cars and houses\n" +
