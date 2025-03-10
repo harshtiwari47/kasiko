@@ -33,7 +33,7 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
   let flavorDetails;
 
   if (playerShop.money < 10) {
-    await handleMessage(content, {
+    await handleMessage(context, {
       content: `You don't have sufficient money (<:creamcash:1309495440030302282> 10) to make an ice cream! 🥺`
     })
     return;

@@ -141,7 +141,7 @@ export default {
       const petId = parseInt(userPetData.active || 0); // Pet index (ID) based on arguments
 
 
-      let threshold = 200;
+      let threshold = 150;
       let lvlUpReward = 10; // foods
       let lvl = Math.floor(Math.sqrt(userPetData.pets[petId].exp / threshold)) || 0;
       let lvlUp = false;
@@ -182,8 +182,6 @@ export default {
           .setColor('#ff69b4') // A cute pink color
           .setDescription(`**Yummy, yay!** 😻🎉\n**${interaction.author.username}**, **${pet.name}** has been fed and is purring with joy! 🐾💖\n\nYou can feed ${pet.name} again after 3 hour! 🍽️`)
           .setThumbnail(petImageUrls ? petImageUrls[0]: null);
-
-          await incrementTaskExp(interaction.author.id, "feed", interaction);
 
           return interaction.channel.send({
             embeds: [embed]
