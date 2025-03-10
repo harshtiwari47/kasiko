@@ -4,7 +4,8 @@ import {
   GatewayIntentBits,
   InteractionType,
   PermissionsBitField,
-  ActivityType
+  ActivityType,
+  ChannelType
 } from 'discord.js';
 import dotenv from 'dotenv';
 
@@ -351,13 +352,50 @@ client.on('interactionCreate', async (interaction) => {
 });
 
 client.on('guildCreate', async (guild) => {
-  console.log(`New guild ${guild.name}`)
+  console.log(`New guild: ${guild.name}`);
+
   try {
+    // Fetch the channel by ID
+    const channel = guild.channels.cache.get('1345371434897244255');
+
+    if (!channel || channel.type !== ChannelType.GuildText) {
+      console.error(`Channel with ID 1345371434897244255 not found or is not a text channel in ${guild.name}`);
+    }
+
+    // Fetch the owner details
+    const owner = await guild.fetchOwner();
+
+    // Create an embed message
+    const embed = new EmbedBuilder()
+    .setTitle('New Server Joined!')
+    .setColor(0x00ff00)
+    .addFields(
+      {
+        name: 'Server Name', value: guild.name, inline: true
+      },
+      {
+        name: 'Total Members', value: guild.memberCount.toString(), inline: true
+      },
+      {
+        name: 'Owner', value: owner.user.tag, inline: true
+      }
+    )
+    .setTimestamp();
+
+    // Send the embed message
+    await channel.send({
+      embeds: [embed]
+    });
+
+    // Execute the WelcomeMsg function
     await WelcomeMsg.execute(guild);
-  } catch (e) {
-    console.error(e);
+
+  } catch (error) {
+    console.error(`Error handling new guild ${guild.name}:`, error);
   }
 });
+
+
 
 client.on('error', (error) => {
   console.error('Discord.js Error:', error);
