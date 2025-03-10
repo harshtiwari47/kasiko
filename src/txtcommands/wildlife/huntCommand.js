@@ -37,8 +37,9 @@ export async function huntCommand(context, {
 }) {
   try {
     const {
-      animalsList
+      animals: animalsList
     } = JSON.parse(animalsData);
+
     const {
       globalBoosters
     } = JSON.parse(boostersData);
@@ -66,7 +67,7 @@ export async function huntCommand(context, {
       user.hunt.huntsToday = 0;
     }
 
-    let animals = animalsList;
+    let animals = [...animalsList];
 
     const passInfo = await checkPassValidity(userId);
 
