@@ -37,7 +37,7 @@ export async function huntCommand(context, {
 }) {
   try {
     const {
-      animals
+      animalsList
     } = JSON.parse(animalsData);
     const {
       globalBoosters
@@ -66,12 +66,22 @@ export async function huntCommand(context, {
       user.hunt.huntsToday = 0;
     }
 
+    let animals = animalsList;
+
     const passInfo = await checkPassValidity(userId);
 
     let extraBullet = 0;
     if (passInfo.isValid) {
       extraBullet = 10;
       if (passInfo.passType === "titan") extraBullet = 5;
+
+      if (passInfo.passType === "etheral") {
+        animals = animals.filter(a => !(a.name === "Rex" || a.name === "Dragon" || a.name === "Unicorn" || a.name === "Rex"));
+      }
+    }
+
+    if (!passInfo.isValid || !(passInfo.passType === "etheral" || passInfo.passType === "celestia")) {
+      animals = animals.filter(a => a.type !== "exclusive");
     }
 
     const dailyHuntLimit = 10 + extraBullet;
@@ -235,7 +245,7 @@ export async function huntCommand(context, {
       );
     }
     lines.push(
-      `You successfully caught:\n# **${chosenAnimalData.emoji} ${chosenAnimalData.name}**\n`
+      `You successfully caught:\n# **${chosenAnimalData.emoji} ${chosenAnimalData.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**\n`
     );
     lines.push(`𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`);
     if (newlyAcquiredBooster) {

@@ -69,7 +69,8 @@ export async function sellCommand(context, {
     // Calculate the price based on rarity and level
     const rarityMultiplier = (globalDef?.rarity || 1) * 1500;
     const levelBonus = (animalToSell.level || 1) * 250;
-    const totalPrice = rarityMultiplier + levelBonus;
+    const exclusiveAnimalsRewards = (globalDef?.rarity || 1) * 2000;
+    const totalPrice = rarityMultiplier + levelBonus + (globalDef.type === "exclusive" ? exclusiveAnimalsRewards: 0);
 
     // Remove the animal from the user's collection
     if (animalToSell.totalAnimals > 1) {

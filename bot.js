@@ -121,8 +121,7 @@ client.on('messageCreate', async (message) => {
     const banKey = `user_ban:${userId}`;
     const isBanned = await redisClient.get(banKey).catch(() => null);
     if (isBanned) {
-      const ttl = await redisClient.ttl(banKey);
-      return message.channel.send(`⛔ You're command-banned for ${Math.ceil(ttl/60)} minutes`).catch(() => {});
+      return;
     }
 
     let args;

@@ -36,7 +36,7 @@ async function handleMessage(context, data) {
     return context.editReply(data);
   } else {
     // For normal text-based usage
-    return context.channel.send(data);
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -75,7 +75,7 @@ export const sendConfirmation = async (title, description, color, message, id) =
   const replyMessage = await message.channel.send({
     embeds: [embed],
     components: [row]
-  });
+  })
 
   return replyMessage; // Return the message
 };
@@ -122,7 +122,7 @@ export async function setMarriageRing(message, ringId) {
       if (!owned) {
         return message.channel.send({
           content: `⚠️ ***${message.author.username}***, you don't own any **${item.name}**!`
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       owned.amount -= 1;
@@ -144,15 +144,14 @@ export async function setMarriageRing(message, ringId) {
 
       return message.channel.send({
         content: `💍✨ ***${message.author.username}***, you and your beloved have exchanged vows with a beautiful new wedding ring! <:${item.id}:${item.emoji}> *${item.name}* is now a symbol of your love. 💖\nYour love bond XP has grown by **${item.price / 100}**! <:rose:1343097565738172488>\nCherish this moment, and remember—your wedding profile has been updated, but the previous ring won’t return to your jewelry collection. 💞`
-      });
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     } else {
-      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose 💐 to someone!");
+      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose 💐 to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
-    await message.channel.send(`⚠️ ***${message.author.username}***, something went wrong while setting your wedding ring!`);
-    return;
+    return message.channel.send(`⚠️ ***${message.author.username}***, something went wrong while setting your wedding ring!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -210,13 +209,13 @@ export async function marriage(message) {
 
       return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
         `🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
-        `💍 **Ring:** ${ring}`);
+        `💍 **Ring:** ${ring}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!");
+      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while performing `marriage` command.")
+    return message.channel.send("⚠️ Something went wrong while performing `marriage` command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -227,15 +226,15 @@ export async function marry(user, message) {
     const guild = await message.channel.guild.members.fetch(user);
 
     if (message.author.id === user) {
-      return message.channel.send(`⚠️ You can not propose yourself!`);
+      return message.channel.send(`⚠️ You can not propose yourself!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (userData.family.spouse && userData.family.spouse !== user) {
-      return message.channel.send(`⚠️ You are already married! 🔫`);
+      return message.channel.send(`⚠️ You are already married! 🔫`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (userData.family.spouse && userData.family.spouse === user) {
-      return message.channel.send(`⚠️ You are __already married__ to each other.`);
+      return message.channel.send(`⚠️ You are __already married__ to each other.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (invitedUserData.family.spouse) {
-      return message.channel.send(`⚠️ The user is __already married__.`);
+      return message.channel.send(`⚠️ The user is __already married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
       const description = `<@${message.author.id}> has proposed 💐 to you! Do you accept **<@${guild.user.id}>**?`;
@@ -289,30 +288,34 @@ export async function marry(user, message) {
       });
       collector.on('end',
         async (collected, reason) => {
-          if (reason === 'time') {
-            const rowDisabled = new ActionRowBuilder()
-            .addComponents(
-              new ButtonBuilder()
-              .setCustomId('confirmmarry')
-              .setLabel('Yes')
-              .setStyle(ButtonStyle.Success)
-              .setDisabled(true),
-              new ButtonBuilder()
-              .setCustomId('cancelmarry')
-              .setLabel('No')
-              .setStyle(ButtonStyle.Danger)
-              .setDisabled(true)
-            );
+          try {
+            if (reason === 'time') {
+              const rowDisabled = new ActionRowBuilder()
+              .addComponents(
+                new ButtonBuilder()
+                .setCustomId('confirmmarry')
+                .setLabel('Yes')
+                .setStyle(ButtonStyle.Success)
+                .setDisabled(true),
+                new ButtonBuilder()
+                .setCustomId('cancelmarry')
+                .setLabel('No')
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(true)
+              );
 
-            return await replyMessage.edit({
-              components: [rowDisabled]
-            });
-          }
+              return await replyMessage.edit({
+                components: [rowDisabled]
+              });
+            }
+          } catch (e) {}
         });
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while sending proposal.")
+    return message.channel.send("⚠️ Something went wrong while sending proposal.").catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -323,9 +326,9 @@ export async function divorce(user, message) {
     const guild = await message.channel.guild.members.fetch(user);
 
     if (userData.family.spouse && userData.family.spouse !== user) {
-      message.channel.send(`⚠️ You are not married to **${guild.user.username}**.`);
+      message.channel.send(`⚠️ You are not married to **${guild.user.username}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (!userData.family.spouse) {
-      message.channel.send(`⚠️ Find your partner first! 😸. You are __not married__.`);
+      message.channel.send(`⚠️ Find your partner first! 😸. You are __not married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (userData.family.spouse && userData.family.spouse === user) {
 
       const title = "💔🥀 𝑫𝒊𝒗𝒐𝒓𝒄𝒆 𝑪𝒐𝒏𝒇𝒊𝒓𝒎𝒂𝒕𝒊𝒐𝒏 ";
@@ -384,16 +387,134 @@ export async function divorce(user, message) {
       });
       collector.on('end',
         async (collected, reason) => {
+          try {
+            if (reason === 'time') {
+              const rowDisabled = new ActionRowBuilder()
+              .addComponents(
+                new ButtonBuilder()
+                .setCustomId('confirmdivorce')
+                .setLabel('Yes')
+                .setStyle(ButtonStyle.Success)
+                .setDisabled(true),
+                new ButtonBuilder()
+                .setCustomId('canceldivorce')
+                .setLabel('No')
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(true)
+              );
+
+              return await replyMessage.edit({
+                components: [rowDisabled]
+              });
+            }
+          } catch (e) {}
+        });
+    }
+  } catch (e) {
+    console.error(e);
+    return message.channel.send("⚠️ Something went wrong while sending proposal.").catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
+  }
+}
+
+export async function forceDivorce(message) {
+  try {
+    let userData = await getUserData(message.author.id);
+
+    // Check if the user is married.
+    if (!userData.family.spouse) {
+      return message.channel.send(`⚠️ You are not married!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    const spouseId = userData.family.spouse;
+    let spouseData = await getUserData(spouseId);
+
+    if (!spouseData) {
+      return message.channel.send(`⚠ Spouse data is not found!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    // Check if the divorcing user has enough funds.
+    if (userData.cash < 2000000) {
+      return message.channel.send(`⚠️ You do not have enough funds to force divorce. You need **2,000,000**.`)
+      .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    // Send confirmation prompt to the divorcing user.
+    const title = "💔 Force Divorce Confirmation";
+    const description = `By forcing a divorce, **2,000,000** will be deducted from your account and **1,500,000** will be credited to your spouse. Do you wish to proceed?`;
+    const replyMessage = await sendConfirmation(title, description, "#ff0000", message, "forceDivorce");
+
+    // Set up a collector that listens for a response from the divorcing user.
+    const filter = (i) => i.user.id === message.author.id &&
+    (i.customId === 'confirmForceDivorce' || i.customId === 'cancelForceDivorce');
+
+    const collector = replyMessage.createMessageComponentCollector({
+      filter,
+      time: 45000
+    });
+
+    collector.on('collect', async (i) => {
+      // Disable the buttons once an option is selected.
+      const rowDisabled = new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+        .setCustomId('confirmForceDivorce')
+        .setLabel('Yes')
+        .setStyle(ButtonStyle.Success)
+        .setDisabled(true),
+        new ButtonBuilder()
+        .setCustomId('cancelForceDivorce')
+        .setLabel('No')
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(true)
+      );
+
+      if (i.customId === 'confirmForceDivorce') {
+        // Process the monetary transaction.
+        userData.cash -= 2000000;
+        spouseData.cash = (spouseData.balance || 0) + 1500000;
+
+        // Clear marriage-related fields for both users.
+        userData.family.spouse = null;
+        userData.family.bondXP = 0;
+        userData.family.children = [];
+        userData.family.ring = null;
+
+        spouseData.family.spouse = null;
+        spouseData.family.bondXP = 0;
+        spouseData.family.children = [];
+        spouseData.family.ring = null;
+
+        // Update the user records.
+        await updateUser(message.author.id, userData);
+        await updateUser(spouseId, spouseData);
+
+        return await i.update({
+          content: `💔 **Force divorce executed.** You have forced a divorce from <@${spouseId}>.\n**2,000,000** has been deducted from your account and **1,500,000** credited to your ex-spouse.`,
+          components: [rowDisabled]
+        });
+      } else if (i.customId === 'cancelForceDivorce') {
+        return await i.update({
+          content: `🚫 Force divorce cancelled.`,
+          components: [rowDisabled]
+        });
+      }
+    });
+
+    collector.on('end',
+      async (collected, reason) => {
+        try {
           if (reason === 'time') {
             const rowDisabled = new ActionRowBuilder()
             .addComponents(
               new ButtonBuilder()
-              .setCustomId('confirmdivorce')
+              .setCustomId('confirmForceDivorce')
               .setLabel('Yes')
               .setStyle(ButtonStyle.Success)
               .setDisabled(true),
               new ButtonBuilder()
-              .setCustomId('canceldivorce')
+              .setCustomId('cancelForceDivorce')
               .setLabel('No')
               .setStyle(ButtonStyle.Danger)
               .setDisabled(true)
@@ -403,11 +524,16 @@ export async function divorce(user, message) {
               components: [rowDisabled]
             });
           }
-        });
-    }
+        } catch (e) {
+          console.error(e);
+        }
+      });
+
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while sending proposal.")
+    return message.channel.send("⚠️ Something went wrong while processing force divorce.").catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -417,18 +543,23 @@ export async function roses(message) {
 
     // Check if roses data exists
     if (userData && typeof userData.roses === 'number') {
-      return message.channel.send(`# ✦ **${message.author.username}**, you have **${userData.roses}** roses! <:rose:1343097565738172488>\n➺ Share roses: \`roses <amount> <@user>\``);
+      return message.channel.send(`# ✦ **${message.author.username}**, you have **${userData.roses}** roses! <:rose:1343097565738172488>\n➺ Share roses: \`roses <amount> <@user>\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` <:rose:1343097565738172488>`);
+      return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` <:rose:1343097565738172488>`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ An error occurred while retrieving your roses. Please try again later.");
+    return message.channel.send("⚠️ An error occurred while retrieving your roses. Please try again later.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
 export async function sendRoses(toUser, amount, message) {
   try {
+
+    if (message.author.id === toUser) {
+      return message.channel.send(`**${message.author.username}**, you can't send roses to yourself! 🙍🏻 <:rose:1343097565738172488>`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
     let senderData = await getUserData(message.author.id);
 
     let recipientData = await getUserData(toUser);
@@ -451,16 +582,16 @@ export async function sendRoses(toUser, amount, message) {
         await updateUser(toUser, recipientData);
         await updateUser(message.author.id, senderData);
 
-        return message.channel.send(`<:rose:1343097565738172488> | **${message.author.username}** has sent **${amount}** roses to <@${toUser}>! <:rose:1343097565738172488>`);
+        return message.channel.send(`<:rose:1343097565738172488> | **${message.author.username}** has sent **${amount}** roses to <@${toUser}>! <:rose:1343097565738172488>`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
     } else {
       // Notify the sender they don't have enough roses
-      return message.channel.send(`🚫 | **${message.author.username}**, you don’t have enough roses to send.`);
+      return message.channel.send(`🚫 | **${message.author.username}**, you don’t have enough roses to send.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ An error occurred while sending roses. Please try again later.");
+    return message.channel.send("⚠️ An error occurred while sending roses. Please try again later.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -543,7 +674,8 @@ export const Marriage = {
   marry,
   divorce,
   roses,
-  sendRoses
+  sendRoses,
+  forceDivorce
 }
 
 export default {
@@ -562,6 +694,7 @@ export default {
     // Divorce a user
     "marriage",
     "marriage daily",
+    "marriage forcedivorce",
     "marriage ring <ringId>",
     // View marriage status
     "roses <amount> <@user>",
@@ -582,15 +715,20 @@ export default {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.marry(Helper.extractUserId(args[1]), message); // Marry a user
         }
-        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`");
+        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (args[0] === "divorce") {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.divorce(Helper.extractUserId(args[1]), message); // Divorce a user
         }
-        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`");
+        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
+
+      if (args[0] === "forcedivorce") {
+        return Marriage.forceDivorce(message); // Divorce a user
+      }
+
       if (args[0] === "roses") {
         if (args[1] && Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.sendRoses(Helper.extractUserId(args[2]), parseInt(args[1]), message); // Send roses to a user
@@ -607,13 +745,16 @@ export default {
         if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.marry(Helper.extractUserId(args[2]), message); // Marry a user
         }
-        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`");
+        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       case "divorce":
         if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.divorce(Helper.extractUserId(args[2]), message); // Divorce a user
         }
-        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`");
+        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
+      case "forcedivorce":
+        return Marriage.forceDivorce(message); // Divorce a user
 
       case "roses":
         if (args[2] && Helper.isNumber(args[2]) && Helper.isUserMention(args[3], message)) {
@@ -627,7 +768,7 @@ export default {
         const ringId = args[2];
 
         if (!ringId) {
-          return await message.channel.send(`⚠️ Please mention the 💍 ring ID you want to set on your marriage profile!`);
+          return await message.channel.send(`⚠️ Please mention the 💍 ring ID you want to set on your marriage profile!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         return setMarriageRing(message, ringId);
@@ -639,10 +780,13 @@ export default {
         .setDescription('Here’s how to use the marriage commands effectively:')
         .addFields(
           {
-            name: '💍 Marry', value: 'marry <@username>'
+            name: '💞 Marry', value: 'marry <@username>'
           },
           {
             name: '💔 Divorce', value: 'divorce <@username>'
+          },
+          {
+            name: '💍 Ring', value: 'marriage ring <ringId>'
           },
           {
             name: '💒 Marriage Info', value: 'marriage or m'
@@ -654,7 +798,7 @@ export default {
 
         return await message.channel.send({
           embeds: [embed]
-        })
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (e) {
       console.error(e);
