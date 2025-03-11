@@ -220,7 +220,7 @@ async function startRace(amount, participants, channel) {
             .setColor(0xFFD700)
             .setTitle(`🏇🏻 ${winners.length === 1 ? "𝙒𝙞𝙣𝙣𝙚𝙧:": "𝙒𝙞𝙣𝙣𝙚𝙧𝙨:"} ${winnersString}`)
             .setDescription(
-              `## ***The winning horse is \`${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}\` ${horsesEmoji[winningHorse]}!*** 💸\n` +
+              `## 💸 ***The winning horse is \`${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}\`! ${horsesEmoji[winningHorse]}***\n` +
               `${participants.length === 1 ? `🥂 𝘊𝘰𝘯𝘨𝘳𝘢𝘵𝘶𝘭𝘢𝘵𝘪𝘰𝘯𝘴! 𝘠𝘰𝘶'𝘷𝘦 𝘫𝘶𝘴𝘵 𝘸𝘰𝘯 𝘢𝘯 𝘦𝘹𝘵𝘳𝘢 <:kasiko_coin:1300141236841086977> **${amount * 2}**!`: `𝘌𝘢𝘤𝘩 𝘸𝘪𝘯𝘯𝘦𝘳 𝘳𝘦𝘤𝘦𝘪𝘷𝘦𝘴 𝘵𝘩𝘦𝘪𝘳 𝘣𝘦𝘵 𝘣𝘢𝘤𝘬 𝘱𝘭𝘶𝘴 𝘢𝘯 𝘦𝘹𝘵𝘳𝘢 <:kasiko_coin:1300141236841086977> **${share.toLocaleString()}** 𝘤𝘢𝘴𝘩 𝘧𝘳𝘰𝘮 𝘵𝘩𝘦 𝘭𝘰𝘴𝘪𝘯𝘨 𝘱𝘰𝘵.`}`
             )
             .setFooter({
@@ -231,7 +231,7 @@ async function startRace(amount, participants, channel) {
             resultEmbed = new EmbedBuilder()
             .setColor(0xFF0000)
             .setTitle(`🏇🏻 𝙉𝙤 𝙬𝙞𝙣𝙣𝙚𝙧𝙨 𝙩𝙝𝙞𝙨 𝙩𝙞𝙢𝙚!`)
-            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}** ${horsesEmoji[winningHorse]}. Better luck next time!`);
+            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}**! ${horsesEmoji[winningHorse]}\nBetter luck next time!`);
           }
           await suspenseMessage.edit({
             content: "",

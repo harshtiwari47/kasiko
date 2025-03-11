@@ -278,58 +278,73 @@ client.on('messageCreate', async (message) => {
 });
 
 client.on('interactionCreate', async (interaction) => {
+  // Permission Checks (if in a guild)
   try {
     if (interaction.guild) {
       const channel = interaction.channel;
       const botPermissions = channel.permissionsFor(client.user);
 
       if (!botPermissions.has(PermissionsBitField.Flags.SendMessages)) {
-        return interaction.reply({
+        await interaction.reply({
           content: 'I do not have permission to send messages in this channel.',
           ephemeral: true,
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }).catch(err => {
+          if (![50001, 50013, 10008].includes(err.code)) console.error(err);
+        });
+        return;
       }
 
       if (!botPermissions.has(PermissionsBitField.Flags.UseApplicationCommands)) {
-        return interaction.reply({
+        await interaction.reply({
           content: 'I do not have permission to use Slash commands in this channel.',
           ephemeral: true,
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }).catch(err => {
+          if (![50001, 50013, 10008].includes(err.code)) console.error(err);
+        });
+        return;
       }
-    }
-  } catch(e) {
-    console.error(e);
-  }
-  try {
-    if (interaction.isCommand()) {
-      await handleSlashCommand(interaction); // Handle slash command interactions
     }
   } catch (e) {
     console.error(e);
-
-    if (interaction.replied || interaction.deferred) {
-      return; // Do nothing if already responded
-    }
-
-    try {
-      await interaction.reply({
-        content: 'An error occurred while processing your command.', ephemeral: true
-      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } catch (replyError) {
-      console.error('Failed to send error reply:', replyError);
-    }
   }
-});
 
-client.on('interactionCreate', async (interaction) => {
+  // Slash Command Handling
+  if (interaction.isCommand()) {
+    try {
+      await handleSlashCommand(interaction);
+    } catch (e) {
+      console.error(e);
+
+      if (interaction.replied || interaction.deferred) {
+        return;
+      }
+
+      try {
+        await interaction.reply({
+          content: 'An error occurred while processing your command.',
+          ephemeral: true,
+        }).catch(err => {
+          if (![50001, 50013, 10008].includes(err.code)) console.error(err);
+        });
+      } catch (replyError) {
+        console.error('Failed to send error reply:',
+          replyError);
+      }
+    }
+    return; // Exit after handling command interactions
+  }
+
+  // Button Interaction Handling
   if (interaction.isButton()) {
     try {
       await handleButtonInteraction(interaction, client);
     } catch (error) {
       console.error(error);
     }
+    return; // Exit after handling button interactions
   }
 
+  // Autocomplete Interaction Handling
   if (interaction.isAutocomplete()) {
     if (!client?.commands) {
       console.error("⚠️ client.commands is not initialized!");
@@ -348,7 +363,6 @@ client.on('interactionCreate', async (interaction) => {
       console.error("Error handling autocomplete:", error);
     }
   }
-
 });
 
 client.on('guildCreate', async (guild) => {
@@ -356,7 +370,7 @@ client.on('guildCreate', async (guild) => {
 
   try {
     // Fetch the channel by ID
-    const channel = guild.channels.cache.get('1345371434897244255');
+    const channel = client.channels.fetch('1345371434897244255');
 
     if (!channel || channel.type !== ChannelType.GuildText) {
       console.error(`Channel with ID 1345371434897244255 not found or is not a text channel in ${guild.name}`);
