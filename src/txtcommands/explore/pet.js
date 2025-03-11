@@ -231,16 +231,23 @@ export default {
       // Switch command
       if (args[1] === "switch") {
         if (args[2]) {
-          let index = userPetData.pets.indexOf(pets => pets.name && pets.name.toLowerCase() === args[2].toLowerCase());
-          if (index) {
-            userPetData.active = index;
-            const pet = userPetData.pets[userPetData.active];
-            return interaction.channel.send(`✅ **${interaction.author.username}**, **${pet.name}** is now your active pet!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          const pet = userPetData.pets.find(p =>
+            p.name && p.name.trim().toLowerCase().normalize("NFKC") === args[2].toLowerCase().normalize("NFKC")
+          );
+
+          if (pet) {
+            userPetData.active = userPetData.pets.indexOf(pet);
+            await userPetData.save();
+
+            return interaction.channel.send(`✅ **${interaction.author.username}**, **${pet.name}** is now your active pet!`)
+            .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           } else {
-            return interaction.channel.send(`⚠️ Please provide the correct pet name!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return interaction.channel.send(`⚠️ Please provide the correct pet name!`)
+            .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else {
-          return interaction.channel.send(`⚠️ Please provide the pet name!\n\`kas pet active <name>\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return interaction.channel.send(`⚠️ Please provide the pet name!\n\`kas pet active <name>\``)
+          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 

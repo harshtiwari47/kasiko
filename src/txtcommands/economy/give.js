@@ -71,7 +71,7 @@ export async function give(message, userId, amount, recipientId) {
 
     let remainingLimit = dailyLimit - Number(todayReceived);
 
-    if (Number(amount) > remainingLimit) {
+    if ((Number(amount) > remainingLimit) || todayReceived >= dailyLimit) {
       return message.channel.send(
         `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
         `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
@@ -251,9 +251,10 @@ export default {
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
-    if (!args[1] || !Helper.isNumber(args[1])) {
+    const amount = parseInt(args[1], 10);
+    if (!amount || !Helper.isNumber(amount) || amount <= 0) {
       return message.channel.send(
-        `ⓘ **${message.author.username}**, the cash amount is invalid! It must be a whole number.\n**Usage:** \`give <amount> @user\``
+        `ⓘ **${message.author.username}**, the cash amount is invalid! It must be a positive whole number greater than zero.\n**Usage:** \`give <amount> @user\``
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 

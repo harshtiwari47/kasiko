@@ -38,6 +38,10 @@ export async function attemptRobbery(userId, targetUserId, message) {
       return message.channel.send(`ⓘ **${username}**, you need at least <:kasiko_coin:1300141236841086977> **5000** cash to attempt a robbery!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
+    if (targetCash < 1000) {
+      return message.channel.send(`ⓘ **${username}**, the mentioned player needs at least <:kasiko_coin:1300141236841086977> **1000** cash to attempt a robbery!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
     if (userData.lastRobbery && checkTimeGap(userData.lastRobbery, Date.now()) < 12) {
       const remainingTime = 12 - checkTimeGap(userData.lastRobbery, Date.now(), {
         format: 'hours'

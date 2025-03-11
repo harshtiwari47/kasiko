@@ -302,7 +302,11 @@ async function handleEnergyExchange(ctx, argsOrAmount) {
         energyAmount = parseInt(arg, 10);
       }
     } else {
-      energyAmount = Number(argsOrAmount) || 1; // Default to 1 if not provided
+      if (argsOrAmount?.toLowerCase() === "all") {
+        energyAmount = alien.energy || 1;
+      } else {
+        energyAmount = Number(argsOrAmount) || 1; // Default to 1 if not provided
+      }
     }
 
     // Validate energy amount
@@ -330,7 +334,7 @@ async function handleEnergyExchange(ctx, argsOrAmount) {
     await updateUser(userId, userData);
 
     return replyOrSend(ctx, {
-      content: `🛸 **${userData.name || 'Alien'}**, your advanced <:aliens_tech:1335983442956914790> technology has _successfully_ transmuted
+      content: `🛸 **${userData.name || 'Alien'}**, your advanced ${alienTechEmo} technology has _successfully_ transmuted
       ${alienEnEmo} **\`${energyAmount} energy\`** → **<:kasiko_coin:1300141236841086977> \`${cashGained} cash\`**!
       ˗ˏˋ ★ ˎˊ˗ ᴛʜᴇ ᴄᴏꜱᴍɪᴄ ᴇᴄᴏɴᴏᴍʏ ᴘʀᴏꜱᴘᴇʀꜱ ᴜɴᴅᴇʀ ʏᴏᴜʀ ᴇxᴛʀᴀᴛᴇʀʀᴇꜱᴛʀɪᴀʟ ᴡɪꜱᴅᴏᴍ! 🚀`
     });

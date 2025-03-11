@@ -647,7 +647,7 @@ export default {
               await handleMessage(message, {
                 content: "Game canceled due to insufficient players."
               });
-              activeGames.delete(message.guild.id);
+              activeGames.delete(game.guildId);
             }
           }
         } catch (e) {}
