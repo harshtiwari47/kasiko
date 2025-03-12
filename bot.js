@@ -84,7 +84,7 @@ client.on('messageCreate', async (message) => {
     * custom feature for server
     */
     // Check if the message comes from the specified server.
-    if (message.guild && (message.guild.id === "530977124195237918" || message.guild.id === "1306509956253487154" || message.guild.id === "1300075317448278060")) {
+    if (message.guild && (message.guild.id === "530977124195237918" || message.guild.id === "1306509956253487154" || message.guild.id === "1300075317448278060" || message.guild.id === "1337401490054316053")) {
       const regex = /https?:\/\/(?:www\.)?instagram\.com\/reel\/([A-Za-z0-9_-]+)(?:\/\S*)?/;
       const match = message.content.match(regex);
       if (match) {
