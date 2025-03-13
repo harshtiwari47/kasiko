@@ -21,40 +21,29 @@ export default {
       const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((uptime % (1000 * 60)) / 1000);
 
-      const embed = new EmbedBuilder()
-      .setTitle("Bot Information")
+      const botInfoEmbed1 = new EmbedBuilder()
+      .setTitle("🤖 Bot Information")
       .setColor(0x00aaff)
       .setThumbnail(client.user.displayAvatarURL())
-      .addFields(
-        {
-          name: "Bot Name", value: client.user.username, inline: true
-        },
-        {
-          name: "Bot ID", value: client.user.id, inline: true
-        },
-        {
-          name: "Bot Tag", value: `#${client.user.discriminator}`, inline: true
-        },
-        {
-          name: "Bot Version", value: "1.1.0", inline: true
-        },
-        {
-          name: "Uptime", value: `${hours} hours, ${minutes} minutes, ${seconds} seconds`, inline: true
-        },
-        {
-          name: "Guild Count", value: `${client.guilds.cache.size} servers`, inline: true
-        },
-        {
-          name: "Live Users", value: `${client.users.cache.size} users`, inline: true
-        },
-        {
-          name: "Ping", value: `${client.ws.ping}ms`, inline: true
-        }
+      .setDescription(
+        `**Bot Name:** ${client.user.username}\n` +
+        `**Bot ID:** ${client.user.id}\n` +
+        `**Bot Tag:** #${client.user.discriminator}\n` +
+        `**Version:** 1.1.0`
       )
-      .setTimestamp();
+
+      const botInfoEmbed2 = new EmbedBuilder()
+      .setColor(0x00aaff)
+      .setDescription(
+        `**Uptime:** ${hours}h ${minutes}m ${seconds}s\n` +
+        `**Guilds:** ${client.guilds.cache.size} servers\n` +
+        `**Live Users:** ${client.users.cache.size} users\n` +
+        `**Ping:** ${client.ws.ping}ms\n` +
+        `**[Support Server](https://discord.gg/DVFwCqUZnc)**`
+      );
 
       await message.reply({
-        embeds: [embed]
+        embeds: [botInfoEmbed1, botInfoEmbed2]
       });
     } catch (e) {
       if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {

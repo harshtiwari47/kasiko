@@ -137,7 +137,7 @@ client.on('messageCreate', async (message) => {
     const command = txtcommands.get(commandName);
     if (!command) return;
 
-    if (command.category !== "🧩 Fun") {
+    if (command.category !== "🧩 Fun" && command.category !== "🔧 Utility") {
       if (mentionedBots.size > 0) return;
     }
 
