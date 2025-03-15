@@ -154,7 +154,7 @@ export async function give(message, userId, amount, recipientId) {
 
           recipientData.amountReceivedDaily = {
             date: todayKey,
-            amount: (recipientData.amountReceivedDaily?.amount || 0) + amount
+            amount: Number((recipientData.amountReceivedDaily?.amount || 0)) + Number(amount)
           };
 
           try {
