@@ -70,6 +70,7 @@ export async function give(message, userId, amount, recipientId) {
     const dailyLimit = Math.min(maxDailyLimit, 6000000);
 
     let remainingLimit = dailyLimit - Number(todayReceived);
+    console.log(`${todayReceived} ${remainingLimit} ${dailyLimit}`)
 
     if ((Number(amount) > remainingLimit) || todayReceived >= dailyLimit) {
       return message.channel.send(

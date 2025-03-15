@@ -2,44 +2,64 @@ import {
   EmbedBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ActionRowBuilder
+  ActionRowBuilder,
 } from "discord.js";
 
+/**
+ * Ping command that calculates and displays the bot's latency.
+ */
 export default {
   name: "ping",
-  description: "Checks the bot's latency and responds with the ping.",
-  aliases: ["latency",
-    "pong"],
+  description: "Checks the bot's latency and responds with detailed ping information.",
+  aliases: ["latency", "pong"],
   cooldown: 10000,
   category: "🔧 Utility",
 
+  /**
+   * Executes the ping command.
+   * @param {Array} args - The command arguments.
+   * @param {Message} message - The Discord message object.
+   */
   execute: async (args, message) => {
     try {
-      const start = Date.now();
+      // Capture the current timestamp to measure round-trip latency
+      const startTime = Date.now();
+
+      // Send an initial reply indicating that the ping is in progress
       const pingMessage = await message.reply("🏓 Pinging...");
 
-      const latency = Date.now() - start;
-      const apiPing = message.client.ws.ping;
+      // Calculate the latency between sending and editing the message
+      const roundTripLatency = Date.now() - startTime;
 
+      // Get the WebSocket (API) latency from the Discord client
+      const apiLatency = message.client.ws.ping;
+
+      // Create an embed with enhanced design and detailed descriptions
       const embed = new EmbedBuilder()
-      .setTitle("🏓 Pong!")
-      .setColor(0x00ff00)
-      .addFields(
-        {
-          name: "Latency", value: `**${latency}ms**`, inline: true
-        },
-        {
-          name: "API Latency", value: `**${apiPing}ms**`, inline: true
-        }
-      )
-      .setTimestamp();
+        .setTitle("🏓 Pong!")
+        .setDescription("Below are the current latency metrics:")
+        .addFields(
+          {
+            name: "Round-Trip Latency",
+            value: `**${roundTripLatency}ms**`,
+            inline: true,
+          },
+          {
+            name: "WebSocket (API) Latency",
+            value: `**${apiLatency}ms**`,
+            inline: true,
+          }
+        )
 
+      // Edit the original ping message to include the embed with latency details
       await pingMessage.edit({
-        embeds: [embed]
+        content: null, // Clear the initial text message
+        embeds: [embed],
       });
-    } catch (e) {
-      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-        console.error(e);
+    } catch (error) {
+      // Log errors unless they are common, non-critical issues
+      if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
+        console.error("An error occurred in the ping command:", error);
       }
     }
   },

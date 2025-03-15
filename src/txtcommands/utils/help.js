@@ -292,7 +292,7 @@ export default {
       const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
       const embed = new EmbedBuilder()
-      .setTitle("Help Menu")
+      .setTitle("<:help:1350379705689440358> Help Menu")
       .setDescription(
         `Select a category from the drop‐down below to view its commands.\n` +
         `╰➤ Use **\`help <command>\`** for quick help on a command.\n` +

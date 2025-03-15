@@ -529,7 +529,7 @@ export default {
           }
           const index = Number(args[1]);
           if (isNaN(index)) {
-            return message.channel.send("Please provide a valid child index.");
+            return message.channel.send("Please provide a valid child index.\n**Example:** `child rename 1 Sam`");
           }
           const newName = args.slice(2).join(" ");
           return renameChild(message, index, newName);
