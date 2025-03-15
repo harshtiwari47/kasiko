@@ -49,10 +49,15 @@ const userSchema = new mongoose.Schema({
       min: 0,
       set: (value) => (value < 0 ? 0: value)
     },
-    dailyAmountReceived: {
-      type: Map,
-      of: Number,
-    default: {}
+    amountReceivedDaily: {
+      date: {
+        type: String,
+        default: null
+      },
+      amount: {
+        type: Number,
+        default: 0
+      }
     },
     trust: {
       type: Number,

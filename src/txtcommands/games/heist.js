@@ -112,7 +112,7 @@ async function reassignRoles(game, context) {
 
 /**
 * Starts a new round.
-* The King appoints a Minister; then (after a 2-minute delay) that Minister must guess the Thief.
+* The King appoints a Minister; then (after a 30 seconds delay) that Minister must guess the Thief.
 * If the Thief is caught, they are eliminated and roles are reassigned among the remaining players (except King).
 * If no valid appointment or guess is made within the time limit, the round is skipped.
 * After two consecutive skipped rounds, the game ends.
@@ -181,10 +181,10 @@ async function runRound(game, context) {
     }
     game.currentMinister = appointedParticipant;
     await handleMessage(context, {
-      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. Please wait for 2 minutes before guessing.`
+      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. Please wait for 30 seconds before guessing.`
     });
-    // Wait 2 minutes before allowing the guess.
-    await new Promise(resolve => setTimeout(resolve, 120000));
+    // Wait 30 seconds before allowing the guess.
+    await new Promise(resolve => setTimeout(resolve, 30000));
     await handleMessage(context, {
       content: `<@${appointedParticipant.user.id}>, you may now guess the Thief using \`!guess @player\`.`
     });
@@ -196,7 +196,7 @@ async function runRound(game, context) {
     const guessCollected = await context.channel.awaitMessages({
       filter: guessFilter,
       max: 1,
-      time: 120000,
+      time: 30000,
       errors: ["time"]
     });
     const guessMsg = guessCollected.first();
@@ -270,7 +270,7 @@ async function runRound(game, context) {
 
 /**
 * Handles the final round when only three players remain.
-* (A similar 2-minute wait is imposed before the final guess.)
+* (A similar 30 seconds wait is imposed before the final guess.)
 */
 async function finalRound(game, context) {
   if (game.cancelled) return;
@@ -325,9 +325,9 @@ async function finalRound(game, context) {
     }
     game.currentMinister = appointedParticipant;
     await handleMessage(context, {
-      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. Please wait for 2 minutes before making your final guess.`
+      content: `<@${appointedParticipant.user.id}> has been appointed as Minister. Please wait for 30 seconds before making your final guess.`
     });
-    await new Promise(resolve => setTimeout(resolve, 120000));
+    await new Promise(resolve => setTimeout(resolve, 30000));
     await handleMessage(context, {
       content: `<@${appointedParticipant.user.id}>, you may now make your final guess using \`!guess @player\`.`
     });
@@ -338,7 +338,7 @@ async function finalRound(game, context) {
     const guessCollected = await context.channel.awaitMessages({
       filter: guessFilter,
       max: 1,
-      time: 120000,
+      time: 30000,
       errors: ["time"]
     });
     const guessMsg = guessCollected.first();

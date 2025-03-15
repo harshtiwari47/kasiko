@@ -37,7 +37,6 @@ export default {
       // Create an embed with enhanced design and detailed descriptions
       const embed = new EmbedBuilder()
         .setTitle("🏓 Pong!")
-        .setDescription("Below are the current latency metrics:")
         .addFields(
           {
             name: "Round-Trip Latency",

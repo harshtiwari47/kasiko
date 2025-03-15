@@ -63,22 +63,31 @@ export async function give(message, userId, amount, recipientId) {
     const todayKey = new Date().toISOString().split('T')[0];
 
     // Retrieve the current amount received today; default to 0 if not set
-    let todayReceived = recipientData.dailyAmountReceived.get(todayKey) || 0;
+    let todayReceived = (recipientData.amountReceivedDaily?.amount || 0);
 
     // Calculate the daily limit: recipientData.level * 100000 capped at 6,000,000
     const maxDailyLimit = recipientData.level * 100000;
     const dailyLimit = Math.min(maxDailyLimit, 6000000);
 
     let remainingLimit = dailyLimit - Number(todayReceived);
-    console.log(`${todayReceived} ${remainingLimit} ${dailyLimit}`)
 
-    if ((Number(amount) > remainingLimit) || todayReceived >= dailyLimit) {
-      return message.channel.send(
-        `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
-        `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
-        `ッ They can receive up to <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** more today.\n\n` +
-        `ⓘ  Try sending <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** or less.`
-      );
+    if (recipientData.amountReceivedDaily?.date === todayKey) {
+      if (remainingLimit <= 0 || todayReceived >= dailyLimit) {
+        return message.channel.send(
+          `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
+          `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
+          `◎ They can't receive any more today. Try again tomorrow.`
+        );
+      }
+
+      if (Number(amount) > remainingLimit) {
+        return message.channel.send(
+          `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
+          `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
+          `ッ They can receive up to <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** more today.\n\n` +
+          `ⓘ Try sending <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** or less.`
+        );
+      }
     }
 
     const embed = await sendConfirmation(message, userId, amount, recipientId);
@@ -143,7 +152,10 @@ export async function give(message, userId, amount, recipientId) {
           userData.charity += Number(amount);
           recipientData.cash += Number(amount);
 
-          recipientData.dailyAmountReceived.set(todayKey, todayReceived + Number(amount));
+          recipientData.amountReceivedDaily = {
+            date: todayKey,
+            amount: (recipientData.amountReceivedDaily?.amount || 0) + amount
+          };
 
           try {
             await updateUser(userId, {
@@ -152,7 +164,7 @@ export async function give(message, userId, amount, recipientId) {
             });
             await updateUser(recipientId, {
               cash: recipientData.cash,
-              dailyAmountReceived: recipientData.dailyAmountReceived
+              amountReceivedDaily: recipientData.amountReceivedDaily
             });
           } catch (upErr) {
             await interaction.editReply({

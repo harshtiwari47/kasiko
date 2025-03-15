@@ -160,7 +160,7 @@ export default {
         dynamic: true
       })
     })
-    .setColor("#f8c6c6")
+    .setColor('Random')
 
     if (finalEmbed) {
       await message.channel.send({
@@ -188,7 +188,7 @@ export default {
           dynamic: true
         })
       })
-      .setColor("#f8c6c6")
+      .setColor('Random')
 
       // Respond to the slash command interaction
       await interaction.editReply({
