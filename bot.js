@@ -57,7 +57,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('Discord bot is running!'));
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-// port bind ends
 
 export const client = new Client( {
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
@@ -370,7 +369,7 @@ client.on('guildCreate', async (guild) => {
 
   try {
     // Fetch the channel by ID
-    const channel = client.channels.fetch('1345371434897244255');
+    const channel = client.channels?.cache?.get('1345371434897244255');
 
     if (!channel || channel.type !== ChannelType.GuildText) {
       console.error(`Channel with ID 1345371434897244255 not found or is not a text channel in ${guild.name}`);

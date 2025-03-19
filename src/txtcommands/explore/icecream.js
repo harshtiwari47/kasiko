@@ -116,7 +116,6 @@ export default {
   description: "A fun ice cream shop game where you can create, serve, share ice creams, and upgrade your shop!",
   aliases: ["icecream",
     "ic",
-    "is",
     "ishop",
     "cream",
     "ice"],

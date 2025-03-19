@@ -549,6 +549,9 @@ export default {
       .setDescription('Explore the vast ocean with these commands:')
       .addFields(
         {
+          name: '`catch` or `ocean catch`', value: 'Start fishing 🎣 and catch random items!', inline: false
+        },
+        {
           name: '`ocean zone`', value: 'View available ocean zones.', inline: false
         },
         {
@@ -558,10 +561,7 @@ export default {
           name: '`ocean fish <zone|general>`', value: 'Fish in a specific zone or general.', inline: false
         },
         {
-          name: '`ocean collection <@username (optional)>`', value: 'View your or someone else\'s ocean collection.', inline: false
-        },
-        {
-          name: '`catch` or `ocean catch`', value: 'Start fishing 🎣 and catch random items!', inline: false
+          name: '`fishes <@username (optional)>`', value: 'View your or someone else\'s ocean collection.', inline: false
         }
       )
       .setFooter({
