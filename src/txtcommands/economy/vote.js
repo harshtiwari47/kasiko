@@ -5,7 +5,8 @@ import {
 import {
   ButtonBuilder,
   ActionRowBuilder,
-  EmbedBuilder
+  EmbedBuilder,
+  ButtonStyle
 } from 'discord.js';
 import {
   Api
@@ -20,21 +21,16 @@ const BOT_ID = "1300081477358452756"; // bot ID
 
 /**
 * Checks the user's vote and either rewards them or sends a vote prompt.
+* Now includes a check on the exact time the user last claimed a vote reward.
 * @param {string} userId Discord user ID.
 * @param {object} user Discord user object.
 * @returns {object} An object with a message string and optionally components (buttons).
 */
 export async function voteReward(userId, user) {
   try {
-    // Check if the user has voted on Top.gg
     const voted = await dbl.hasVoted(userId);
 
     if (voted) {
-      // Determine reward: 50k on weekends, otherwise 30k.
-      const today = new Date();
-      const day = today.getDay(); // 0 = Sunday, 6 = Saturday
-      const reward = (day === 0 || day === 6) ? 50000: 30000;
-
       // Get user data from your database
       let userData = await getUserData(userId);
       if (!userData) {
@@ -43,21 +39,42 @@ export async function voteReward(userId, user) {
         };
       }
 
-      // Add reward to user's cash
+      // Check if the user has claimed a vote reward before
+      const now = new Date();
+      if (userData.lastVoteTime) {
+        const lastVoteTime = new Date(userData.lastVoteTime);
+        const diffMs = now - lastVoteTime;
+        const diffHours = diffMs / (1000 * 60 * 60);
+        if (diffHours < 12) {
+          const hoursRemaining = (12 - diffHours).toFixed(1);
+          return {
+            message: `🗳️ **${user.username}**, you have already claimed your vote reward! Please wait **${hoursRemaining} more hour(s)** before claiming again.`
+          };
+        }
+      }
+
+      // Determine reward: 50k on weekends (Saturday: 6, Sunday: 0), otherwise 30k.
+      const today = now;
+      const day = today.getDay(); // 0 = Sunday, 6 = Saturday
+      const reward = (day === 0 || day === 6) ? 50000: 30000;
+
       userData.cash += reward;
+      userData.lastVoteTime = now.toISOString();
+
       await updateUser(userId, {
-        cash: userData.cash
+        cash: userData.cash,
+        lastVoteTime: userData.lastVoteTime
       });
 
-      // Return a success message
       return {
         message: `🗳️ Thanks for voting, **${user.username}**! You've received <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}** cash.\n-# Your support helps us grow`
       };
     } else {
       // If the user hasn't voted, create a vote button
+
       const voteButton = new ButtonBuilder()
       .setLabel("Vote for Bot")
-      .setStyle(5) // Style 5 is the link button style
+      .setStyle(ButtonStyle.Link)
       .setURL(`https://top.gg/bot/${BOT_ID}/vote`);
 
       const row = new ActionRowBuilder().addComponents(voteButton);

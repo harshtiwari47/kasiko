@@ -380,8 +380,8 @@ client.on('guildCreate', async (guild) => {
 
     // Create an embed message
     const embed = new EmbedBuilder()
-    .setTitle('New Server Joined!')
-    .setColor(0x00ff00)
+    .setTitle('𝙉𝙚𝙬 𝙎𝙚𝙧𝙫𝙚𝙧 𝙅𝙤𝙞𝙣𝙚𝙙')
+    .setColor("Random")
     .addFields(
       {
         name: 'Server Name', value: guild.name, inline: true

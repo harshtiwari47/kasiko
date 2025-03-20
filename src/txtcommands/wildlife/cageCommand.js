@@ -36,13 +36,28 @@ async function showCageOverview(context, user) {
   }
 
   // Just display the emojis of each animal
+  const subscriptNumbers = {
+    '0': '₀',
+    '1': '₁',
+    '2': '₂',
+    '3': '₃',
+    '4': '₄',
+    '5': '₅',
+    '6': '₆',
+    '7': '₇',
+    '8': '₈',
+    '9': '₉'
+  };
+
+  const toSubscript = (num) => num.toString().split('').map(digit => subscriptNumbers[digit] || digit).join('');
+
   const animalEmojis = user.hunt.animals
-  .map((animal) => animal.emoji + ` (${animal.totalAnimals})`)
+  .map((animal) => `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
   .join(' ');
 
   const embed = new EmbedBuilder()
   .setTitle(`${username}'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 🕷️`)
-  .setDescription(`✴️ 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp}\n## ${animalEmojis}`)
+  .setDescription(`✴️ 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799>\n## ${animalEmojis}`)
   .setFooter({
     text: `Tip: use "cage <animalName>" to see more details about a specific animal.`
   });

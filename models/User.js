@@ -52,11 +52,11 @@ const userSchema = new mongoose.Schema({
     amountReceivedDaily: {
       date: {
         type: String,
-        default: null
+      default: null
       },
       amount: {
         type: Number,
-        default: 0
+      default: 0
       }
     },
     trust: {
@@ -108,6 +108,10 @@ const userSchema = new mongoose.Schema({
     },
     lastRobbery: {
       type: Number
+    },
+    lastVoteTime: {
+      type: Date,
+    default: null
     },
     family: {
       children: {

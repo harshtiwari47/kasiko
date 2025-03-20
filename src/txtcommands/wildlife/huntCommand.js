@@ -88,7 +88,7 @@ export async function huntCommand(context, {
     const dailyHuntLimit = 10 + extraBullet;
     if (user.hunt.huntsToday >= dailyHuntLimit) {
       return handleMessage(context, {
-        content: `**${username}, you've used all ${rubBulletEmoji} ${dailyHuntLimit} of your ammo! It's getting dark, and the wilds are growing dangerous.** Rest up and return tomorrow to continue the hunt.`,
+        content: `<:left:1350355384111468576> **${username}, you've used all ${rubBulletEmoji} ${dailyHuntLimit} of your ammo! It's getting dark, and the wilds are growing dangerous.**\n-# Rest up and return tomorrow to continue the hunt! <:rifle1:1352119137421234187><:rifle2:1352119217687625799>`,
       });
     }
 
@@ -239,7 +239,7 @@ export async function huntCommand(context, {
 
     // Construct the success embed
     const lines = [];
-    lines.push(`## 🅷🆄🅽🆃 💥\n**${username}** went hunting in **${location}**... 🌳`);
+    lines.push(`## 🅷🆄🅽🆃 💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>\n**${username}** went hunting in **${location}**... 🌳`);
     if (usedBoosters.length > 0) {
       lines.push(
         `> *Used Boosters:* \`${usedBoosters.join(', ')}\``
