@@ -62,8 +62,12 @@ export const Bank = {
         });
 
         return message.channel.send(
-          `🏦 **${message.author.username}** deposited <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> **${newDeposit.toLocaleString()}**\n⤿ **Remaining Cash**: <:kasiko_coin:1300141236841086977> **${Math.abs(userData.cash).toLocaleString()}**`
+          `## <:bank:1352897312606785576> **${message.author.username}** __deposited__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
+          `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
+          `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
+          `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${Math.abs(userData.cash).toLocaleString()}**`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
       } catch (err) {
         console.error(`❌ Error updating bank details for ${message.author.username}:`, err);
 
@@ -115,8 +119,12 @@ export const Bank = {
         });
 
         return message.channel.send(
-          `🏦 **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n𖢻 **New bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}\n⤿ **Total cash**: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+          `## <:bank:1352897312606785576> **${message.author.username}** __withdrew__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
+          `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
+          `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
+          `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}**`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
       } catch (err) {
         console.error(
           `❌ Error updating bank details for ${message.author.username}:`,
@@ -175,7 +183,7 @@ export const Bank = {
 
       const emebedHeader = new EmbedBuilder()
       .setColor("#a4bef2")
-      .setDescription("## 🏦 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** **${account.level}** **𝑺𝒉𝒊𝒆𝒍𝒅**: **${account.shield}** **𝑼𝑷𝑮𝑹𝑨𝑫𝑬**: ** <:kasiko_coin:1300141236841086977> ${300000 - additionalReward}**`)
+      .setDescription("## <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** **${account.level}** **𝑺𝒉𝒊𝒆𝒍𝒅**: **${account.shield}** **𝑼𝑷𝑮𝑹𝑨𝑫𝑬**: ** <:kasiko_coin:1300141236841086977> ${300000 - additionalReward}**`)
 
       const embed = new EmbedBuilder()
       .setColor('#dfe9fd') // Choose a color for the embed
@@ -247,7 +255,7 @@ export const Bank = {
       });
 
       return message.channel.send(
-        `🏦 **${message.author.username}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n**COST**: <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()}\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
+        `<:bank:1352897312606785576> **${message.author.username}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n**COST**: <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()}\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (err) {
       return message.channel.send(`Error upgrading bank: ${err.message}`).catch(console.error);
@@ -291,7 +299,7 @@ export const Bank = {
 
       if (isOpened) {
         return message.channel.send(
-          `🏦 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+          `<:bank:1352897312606785576> 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (err) {
@@ -323,9 +331,9 @@ export default {
     "withdraw",
     "rob",
     "deposit"],
-  emoji: "🏦",
+  emoji: "<:bank:1352897312606785576>",
   cooldown: 10000,
-  category: "🏦 Economy",
+  category: "<:bank:1352897312606785576> Economy",
 
   // Execute function based on the command alias
   execute: async (args, message) => {
@@ -383,17 +391,17 @@ export default {
           const times = args[2] ? Number(args[2]): 1;
           return Bank.upgrade(userId, message, times);
 
-        default:
+        case "help":
           const bankEmbed = new EmbedBuilder()
           .setColor('#d4e6f6')
-          .setTitle('🏦 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝑩𝒂𝒏𝒌')
+          .setTitle('<:bank:1352897312606785576> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝑩𝒂𝒏𝒌')
           .setDescription(
             `Hello **${username}**, manage your bank using the following commands:\n\n` +
             '`bank open`\n- Open a bank account.\n' +
             '`deposit <amount>`\n- Deposit funds into your bank.\n' +
             '`withdraw <amount>`\n- Withdraw funds from your bank.\n' +
             '`bank status`\n- Check your bank status (you can use \`bs\` or \`ba\`).\n' +
-            '`bank upgrade <times (default 1)>`- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
+            '`bank upgrade <times (default 1)>`\n- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
           )
           .setFooter({
             text: 'Use your bank wisely!'
@@ -402,6 +410,9 @@ export default {
           return message.channel.send({
             embeds: [bankEmbed]
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
+        default:
+          return Bank.showStatus(userId, message);
         }
 
       default:

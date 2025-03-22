@@ -147,7 +147,7 @@ export async function setMarriageRing(message, ringId) {
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     } else {
-      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose 💐 to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -207,11 +207,11 @@ export async function marriage(message) {
         return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
       })
 
-      return message.channel.send(`♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
+      return message.channel.send(`<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
         `🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
         `💍 **Ring:** ${ring}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send("♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -237,7 +237,7 @@ export async function marry(user, message) {
       return message.channel.send(`⚠️ The user is __already married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
-      const description = `<@${message.author.id}> has proposed 💐 to you! Do you accept **<@${guild.user.id}>**?`;
+      const description = `<@${message.author.id}> has proposed <:Bouquet:1352897342176624750> to you! Do you accept **<@${guild.user.id}>**?`;
       const replyMessage = await sendConfirmation(title, description, "#ee87ca", message, "marry");
 
       const filter = (i) => i.user.id === user &&
@@ -604,7 +604,7 @@ export async function dailyRewards(userId, username, context) {
 
     if (!userData?.family?.spouse) {
       return await handleMessage(context, {
-        content: "♥️ 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose 💐 to someone!"
+        content: "<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!"
       });
     }
 

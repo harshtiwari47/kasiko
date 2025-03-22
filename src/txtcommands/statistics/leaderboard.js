@@ -162,7 +162,7 @@ async function createLeaderboardEmbed( {
       return {
         embed: new EmbedBuilder()
         .setColor("#ed971e")
-        .setTitle(`🏆 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗 ✧`)
+        .setTitle(`<:trophy:1352897371595477084> 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗 ✧`)
         .setDescription("No users found!")
         .setFooter({
           text: `Your position is: Not ranked`,
@@ -210,7 +210,7 @@ async function createLeaderboardEmbed( {
 
     // Create the embed
     const embed = new EmbedBuilder()
-    .setTitle(`🏆 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗 ✧`)
+    .setTitle(`<:trophy:1352897371595477084> 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗 ✧`)
     .setDescription(` ִֶָ𓂃 ࣪˖ ִֶָ\n${leaderboard}`)
     .setFooter({
       text: `𝘗𝘢𝘨𝘦 ${page}/${totalPages} | 𝘠𝘰𝘶𝘳 𝘱𝘰𝘴𝘪𝘵𝘪𝘰𝘯: ${userPosition > 0 ? userPosition: "Not ranked"}`,
