@@ -397,11 +397,11 @@ export default {
           .setTitle('<:bank:1352897312606785576> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝑩𝒂𝒏𝒌')
           .setDescription(
             `Hello **${username}**, manage your bank using the following commands:\n\n` +
-            '`bank open`\n- Open a bank account.\n' +
-            '`deposit <amount>`\n- Deposit funds into your bank.\n' +
-            '`withdraw <amount>`\n- Withdraw funds from your bank.\n' +
-            '`bank status`\n- Check your bank status (you can use \`bs\` or \`ba\`).\n' +
-            '`bank upgrade <times (default 1)>`\n- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
+            '**`bank open`**\n- Open a bank account.\n' +
+            '**`deposit <amount>`**\n- Deposit funds into your bank.\n' +
+            '**`withdraw <amount>`**\n- Withdraw funds from your bank.\n' +
+            '**`bank status`**\n- Check your bank status (you can use **bs** or **ba**).\n' +
+            '**`bank upgrade <times (default 1)>**`\n- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
           )
           .setFooter({
             text: 'Use your bank wisely!'

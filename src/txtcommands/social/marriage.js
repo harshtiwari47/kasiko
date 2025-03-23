@@ -147,7 +147,7 @@ export async function setMarriageRing(message, ringId) {
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     } else {
-      return message.channel.send("<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -174,7 +174,9 @@ export async function marriage(message) {
         "<:lovebird2:1327927083330175010>",
         "<:lovebird3:1327927957154697236>",
         "<:lovebird4:1327928023902720030>",
-        "<:lovebird5:1327928684518309898>"
+        "<:lovebird5:1327928684518309898>",
+        "<:lovebird6:1353203227117617273>",
+        "<:lovebird7:1353203462678249513>"
       ]
 
       const thresholds = [0,
@@ -182,7 +184,7 @@ export async function marriage(message) {
         2500,
         5000,
         7500,
-        12500];
+        12500, 25000, 50000];
 
       const allJewelryItems = getAllJewelry();
       let item;
@@ -207,11 +209,11 @@ export async function marriage(message) {
         return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
       })
 
-      return message.channel.send(`<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
+      return message.channel.send(`<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
         `🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
         `💍 **Ring:** ${ring}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send("<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -604,7 +606,7 @@ export async function dailyRewards(userId, username, context) {
 
     if (!userData?.family?.spouse) {
       return await handleMessage(context, {
-        content: "<:heart:1352897486645362739> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!"
+        content: "<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!"
       });
     }
 
