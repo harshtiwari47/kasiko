@@ -20,9 +20,11 @@ export async function OwnerCommands(args, message) {
     case "badge":
     case "emoji":
       await Badge.execute(args, message);
+      return;
     case "shipcustom":
     case "ship":
       await Ship.execute(args, message);
+      return;
     default:
       return;
   }

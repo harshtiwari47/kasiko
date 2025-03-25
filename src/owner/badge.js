@@ -1,12 +1,18 @@
-import { getUserData, updateUser } from "../../database.js";
-import { EmbedBuilder } from "discord.js";
+import {
+  getUserData,
+  updateUser
+} from "../../database.js";
+import {
+  EmbedBuilder
+} from "discord.js";
 
 export default {
   name: "badge",
   description: "Add or remove a badge from a user's profile.",
   aliases: [],
   args: "<add|remove> [@user] <badgeID>",
-  example: ["badge add @user 123", "badge remove 123"],
+  example: ["badge add @user 123",
+    "badge remove 123"],
   emoji: "🏷️",
   cooldown: 10000,
   category: "🧑🏻‍💻 Owner",
@@ -16,33 +22,33 @@ export default {
     if (!operation || !["add", "remove"].includes(operation.toLowerCase())) {
       return message.channel.send("❌ Please specify a valid operation: `add` or `remove`.");
     }
-    
+
     // Determine if a user is mentioned.
     // If a valid user is mentioned, use that user's ID and shift the badgeID index.
     let targetUser = message.mentions.users.first();
     let badgeId;
     if (targetUser) {
-      badgeId = args[3];
+      badgeId = "<" + args[3] + ">";
     } else {
       targetUser = message.author;
-      badgeId = args[2];
+      badgeId = "<" + args[2] + ">";
     }
-    
+
     if (!badgeId) {
       return message.channel.send("❌ Please provide a badge ID.");
     }
-    
+
     // Retrieve the target user's data.
     let userData = await getUserData(targetUser.id);
     if (!userData) {
       return message.channel.send("❌ Failed to retrieve the target user's account data.");
     }
-    
+
     // Ensure the badges property is an array.
     if (!Array.isArray(userData.badges)) {
       userData.badges = [];
     }
-    
+
     // Process the operation.
     if (operation.toLowerCase() === "add") {
       // Check if the user already has the badge.
@@ -57,19 +63,22 @@ export default {
       }
       userData.badges = userData.badges.filter(badge => badge !== badgeId);
     }
-    
+
     // Update the user data.
     try {
-      await updateUser(targetUser.id, { badges: userData.badges });
+      await updateUser(targetUser.id, {
+        badges: userData.badges
+      });
       const embed = new EmbedBuilder()
-        .setColor("#ffcc00")
-        .setDescription(
-          operation.toLowerCase() === "add"
-            ? `🏷️ **${message.author.username}** added badge **${badgeId}** to <@${targetUser.id}>!`
-            : `🏷️ **${message.author.username}** removed badge **${badgeId}** from <@${targetUser.id}>!`
-        );
-      
-      return message.channel.send({ embeds: [embed] });
+      .setColor("#ffcc00")
+      .setDescription(
+        operation.toLowerCase() === "add"
+        ? `🏷️ **${message.author.username}** added badge **${badgeId}** to <@${targetUser.id}>!`: `🏷️ **${message.author.username}** removed badge **${badgeId}** from <@${targetUser.id}>!`
+      );
+
+      return message.channel.send({
+        embeds: [embed]
+      });
     } catch (err) {
       console.error(err);
       return message.channel.send("❌ Something went wrong while updating the badge information.");
