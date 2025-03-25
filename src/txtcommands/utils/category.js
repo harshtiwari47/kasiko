@@ -191,7 +191,7 @@ export default {
 
       // Finally, let the user know the update was successful
       return message.channel.send(
-        `✅ The bot is now **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in the \`${categoryName}\` category for this channel.`
+        `✅ The bot is now **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in the \`${categoryName}\` category for this channel.\n-# Changes may take up to 5 mins.`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (e) {
       if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {

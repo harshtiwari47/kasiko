@@ -449,7 +449,7 @@ export async function forceDivorce(message) {
 
     // Set up a collector that listens for a response from the divorcing user.
     const filter = (i) => i.user.id === message.author.id &&
-    (i.customId === 'confirmForceDivorce' || i.customId === 'cancelForceDivorce');
+    (i.customId === 'confirmforceDivorce' || i.customId === 'cancelforceDivorce');
 
     const collector = replyMessage.createMessageComponentCollector({
       filter,
@@ -461,18 +461,18 @@ export async function forceDivorce(message) {
       const rowDisabled = new ActionRowBuilder()
       .addComponents(
         new ButtonBuilder()
-        .setCustomId('confirmForceDivorce')
+        .setCustomId('confirmforceDivorce')
         .setLabel('Yes')
         .setStyle(ButtonStyle.Success)
         .setDisabled(true),
         new ButtonBuilder()
-        .setCustomId('cancelForceDivorce')
+        .setCustomId('cancelforceDivorce')
         .setLabel('No')
         .setStyle(ButtonStyle.Danger)
         .setDisabled(true)
       );
 
-      if (i.customId === 'confirmForceDivorce') {
+      if (i.customId === 'confirmforceDivorce') {
         // Process the monetary transaction.
         userData.cash -= 2000000;
         spouseData.cash = (spouseData.balance || 0) + 1500000;
@@ -496,7 +496,7 @@ export async function forceDivorce(message) {
           content: `💔 **Force divorce executed.** You have forced a divorce from <@${spouseId}>.\n**2,000,000** has been deducted from your account and **1,500,000** credited to your ex-spouse.`,
           components: [rowDisabled]
         });
-      } else if (i.customId === 'cancelForceDivorce') {
+      } else if (i.customId === 'cancelforceDivorce') {
         return await i.update({
           content: `🚫 Force divorce cancelled.`,
           components: [rowDisabled]
@@ -511,12 +511,12 @@ export async function forceDivorce(message) {
             const rowDisabled = new ActionRowBuilder()
             .addComponents(
               new ButtonBuilder()
-              .setCustomId('confirmForceDivorce')
+              .setCustomId('confirmforceDivorce')
               .setLabel('Yes')
               .setStyle(ButtonStyle.Success)
               .setDisabled(true),
               new ButtonBuilder()
-              .setCustomId('cancelForceDivorce')
+              .setCustomId('cancelforceDivorce')
               .setLabel('No')
               .setStyle(ButtonStyle.Danger)
               .setDisabled(true)

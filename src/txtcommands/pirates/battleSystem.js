@@ -213,12 +213,12 @@ export async function battle(interaction, player1, player2, friendly = false) {
       userShips.ships[currentShipIndex].durability -= 25;
 
       if (!userData2.shipBattle.battleLog) userData2.shipBattle.battleLog = [];
-      userData2.shipBattle.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
+      userData2.shipBattle.battleLog.push(`**${player2.name}**, you have lost the defense against **${player1.name}** and lost <:kasiko_coin:1300141236841086977> 1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
       if (userData2.shipBattle.battleLog.length > 1) {
         userData2.shipBattle.battleLog.shift(); // Remove the oldest log
       }
 
-      otherMessage = `**${player1.name}**, you have won <:kasiko_coin:1300141236841086977>${reward} 𝒄𝒂𝒔𝒉, and your **durability** has **decreased by 25**. Also, **${player2.name}** has lost <:kasiko_coin:1300141236841086977>1000 of their 𝒄𝒂𝒔𝒉.`;
+      otherMessage = `**${player1.name}**, you have won <:kasiko_coin:1300141236841086977>${reward} 𝒄𝒂𝒔𝒉, and your **durability** has **decreased by 25**. Also, **${player2.name}** has lost <:kasiko_coin:1300141236841086977> 1000 of their 𝒄𝒂𝒔𝒉.`;
 
     } else if (userData2 && player2.user !== "bot" && winner.id !== player1.id) {
       userShips.ships[currentShipIndex].durability -= userShips.ships[currentShipIndex].durability > 100 ? 100: userShips.ships[currentShipIndex].durability;
@@ -227,12 +227,12 @@ export async function battle(interaction, player1, player2, friendly = false) {
       userData1.shipBattle.lost += 1;
 
       if (!userData2.shipBattle.battleLog) userData2.shipBattle.battleLog = [];
-      userData2.shipBattle.battleLog.push(`**${player2.name}**, congratulations! You have successfully defended in battle against **${player1.name}** and won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
+      userData2.shipBattle.battleLog.push(`**${player2.name}**, congratulations! You have successfully defended in battle against **${player1.name}** and won <:kasiko_coin:1300141236841086977> 1000 𝒄𝒂𝒔𝒉 on ${new Date().toLocaleDateString()}.`);
       if (userData2.shipBattle.battleLog.length > 1) {
         userData2.shipBattle.battleLog.shift(); // Remove the oldest log
       }
 
-      otherMessage = `**${player1.name}**, you have lost your **100 durability**, and **${player2.name}** has won <:kasiko_coin:1300141236841086977>1000 𝒄𝒂𝒔𝒉.`;
+      otherMessage = `**${player1.name}**, you have lost your **100 durability**, and **${player2.name}** has won <:kasiko_coin:1300141236841086977> 1000 𝒄𝒂𝒔𝒉.`;
 
     } else if (winner.id !== player1.id) {
       userData1.shipBattle.lost += 1;
@@ -469,7 +469,7 @@ async function gatherDetails(username, userId, isPlayer, interaction) {
     if (isPlayer && userData.cash < 1000) {
       return {
         error: true,
-        message: "⚠️ You don't have sufficient cash to start a battle (min: 1000)."
+        message: "⚠️ You don't have sufficient cash to start a battle (min: <:kasiko_coin:1300141236841086977> **1000**)."
       };
     }
 

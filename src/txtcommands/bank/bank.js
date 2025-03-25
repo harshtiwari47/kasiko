@@ -401,7 +401,7 @@ export default {
             '**`deposit <amount>`**\n- Deposit funds into your bank.\n' +
             '**`withdraw <amount>`**\n- Withdraw funds from your bank.\n' +
             '**`bank status`**\n- Check your bank status (you can use **bs** or **ba**).\n' +
-            '**`bank upgrade <times (default 1)>**`\n- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
+            '**`bank upgrade <times (default 1)>`**\n- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
           )
           .setFooter({
             text: 'Use your bank wisely!'
