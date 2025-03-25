@@ -133,13 +133,11 @@ export async function pizzaToss(id, channel, user) {
 
     // Construct a markdown UI message.
     const finalMessage = `
-    # 🍕 **Pizza Toss Challenge!**
-    **${user.username}**, here are your results:
+    ## 🍕 **Pizza Toss Challenge!**\n`+
+    `### **${user.username}**, here are your results:\n` +
 
-    > **Outcome:** ${resultMessage}
-
-    ---
-    **Current Balance:** <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}
+    `> **Outcome:** ${resultMessage}\n` +
+    `**Current Balance:** <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}
     `;
 
     return finalMessage;
@@ -160,7 +158,7 @@ export default {
   emoji: "🍕",
   // 20 seconds cooldown
   cooldown: 10000,
-  category: "🏦 Economy",
+  category: "🎲 Games",
   execute: async (args, message) => {
     let reply = await pizzaToss(message.author.id, message.channel, message.author);
 

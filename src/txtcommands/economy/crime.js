@@ -15,7 +15,7 @@ export async function crime(id, channel, user) {
     
     // Big Success outcomes (Cases 1-4): 20-30% chance total
     if (outcome >= 1 && outcome <= 4) {
-      earnedCash = Math.floor(Math.random() * 1000) + 2000; // 2000 to 3000 cash
+      earnedCash = Math.floor(Math.random() * 5000) + 5000; // 5000 to 10000 cash
       userData.cash += earnedCash;
       await updateUser(id, { cash: userData.cash });
       switch (outcome) {
@@ -35,7 +35,7 @@ export async function crime(id, channel, user) {
     }
     // Moderate Success outcomes (Cases 5-12): 40% chance total
     else if (outcome >= 5 && outcome <= 12) {
-      earnedCash = Math.floor(Math.random() * 800) + 800; // 800 to 1600 cash
+      earnedCash = Math.floor(Math.random() * 2500) + 2500; // 2500 to 5000 cash
       userData.cash += earnedCash;
       await updateUser(id, { cash: userData.cash });
       switch (outcome) {
@@ -67,7 +67,7 @@ export async function crime(id, channel, user) {
     }
     // Failure outcomes (Cases 13-20): 40% chance total
     else if (outcome >= 13 && outcome <= 20) {
-      penalty = Math.floor(Math.random() * 200) + 100; // 100 to 300 cash fine
+      penalty = Math.floor(Math.random() * 2500) + 2500; // 2500 to 5000 cash fine
       if (userData.cash >= penalty) {
         userData.cash -= penalty;
       } else {
@@ -115,7 +115,7 @@ export async function crime(id, channel, user) {
 export default {
   name: "crime",
   description: "Attempt a daring crime with 20 possible outcomes—will you score big or get caught?",
-  aliases: ["steal", "heist", "rob"],
+  aliases: ["cr"],
   args: "",
   example: ["cr"],
   emoji: "🚨",
@@ -130,6 +130,8 @@ export default {
         name: message.author.username,
         iconURL: message.author.displayAvatarURL({ dynamic: true })
       })
+      .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/eyes.png`);
+              
 
     await message.channel.send({ embeds: [finalEmbed] })
       .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -151,6 +153,7 @@ export default {
           name: interaction.user.username,
           iconURL: interaction.user.displayAvatarURL({ dynamic: true })
         })
+        .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/eyes.png`);
 
       await interaction.editReply({ embeds: [finalEmbed] });
       return;

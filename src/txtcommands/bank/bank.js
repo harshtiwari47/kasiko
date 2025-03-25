@@ -331,9 +331,9 @@ export default {
     "withdraw",
     "rob",
     "deposit"],
-  emoji: "<:bank:1352897312606785576>",
+  emoji: "🏦",
   cooldown: 10000,
-  category: "<:bank:1352897312606785576> Economy",
+  category: "🏦 Economy",
 
   // Execute function based on the command alias
   execute: async (args, message) => {

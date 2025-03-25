@@ -7,6 +7,9 @@ import {
   loadImage
 } from "@napi-rs/canvas";
 import fs from "fs";
+import path from 'path';
+
+const shipDatabasePath = path.join(process.cwd(), 'database', 'customScores.json');
 
 export default {
   name: "ship",
@@ -64,7 +67,7 @@ export default {
       try {
         // The JSON file should be in the same folder and have a structure like:
         // { "userID1-userID2": 85, "userID3-userID4": 42 }
-        const data = fs.readFileSync('../../../database/customScores.json', 'utf8');
+        const data = fs.readFileSync(shipDatabasePath, 'utf8');
         const customScores = JSON.parse(data);
         // Create a sorted key (e.g. "123456789-987654321") so the order doesn't matter.
         const key = [user1.id,

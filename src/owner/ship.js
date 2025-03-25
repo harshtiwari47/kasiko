@@ -1,7 +1,11 @@
-import fs from "fs";
+import fs from 'fs';
+import path from 'path';
+
 import {
   EmbedBuilder
 } from "discord.js";
+
+const shipDatabasePath = path.join(process.cwd(), 'database', 'customScores.json');
 
 export default {
   name: "shipcustom",
@@ -45,7 +49,7 @@ export default {
     // Load the current custom scores from customScores.json (or initialize an empty object)
     let customScores = {};
     try {
-      const data = fs.readFileSync("../../database/customScores.json", "utf8");
+      const data = fs.readFileSync(shipDatabasePath, "utf8");
       customScores = JSON.parse(data);
     } catch (error) {
       customScores = {};
@@ -64,9 +68,9 @@ export default {
       if (isNaN(score) || score < 0 || score > 100) {
         return message.channel.send("❌ Please provide a valid score between 0 and 100.");
       }
-
+      
       customScores[key] = score;
-      fs.writeFileSync("../../database/customScores.json", JSON.stringify(customScores, null, 2));
+      fs.writeFileSync(shipDatabasePath, JSON.stringify(customScores, null, 2));
       const embed = new EmbedBuilder()
       .setColor("#ffcc00")
       .setDescription(
@@ -80,7 +84,7 @@ export default {
         return message.channel.send("❌ No custom ship score found for these users.");
       }
       delete customScores[key];
-      fs.writeFileSync("../../database/customScores.json", JSON.stringify(customScores, null, 2));
+      fs.writeFileSync(shipDatabasePath, JSON.stringify(customScores, null, 2));
       const embed = new EmbedBuilder()
       .setColor("#ffcc00")
       .setDescription(
