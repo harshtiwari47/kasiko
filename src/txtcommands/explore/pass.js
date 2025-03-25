@@ -546,6 +546,7 @@ description: 'New Pass Handling System (activate, redeem, createpromo, rewards, 
 aliases: ['royalpass', 'pass'],
 args: '<redeem|rewards|benefits|check>',
 cooldown: 10000,
+emoji: "⭐",
 category: 'Pass',
 execute,
 };
