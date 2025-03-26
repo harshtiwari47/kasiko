@@ -34,7 +34,7 @@ async function handleMessage(context, data) {
 
 export async function huntCommand(context, {
   location = 'Forest'
-}) {
+}, profile = null) {
   try {
     const {
       animals: animalsList
@@ -94,9 +94,7 @@ export async function huntCommand(context, {
 
     // 2) Check if user has location unlocked
     if (!user.hunt.unlockedLocations.includes(location)) {
-      return handleMessage(context, {
-        content: `**${username}**, you haven't unlocked **${location}** yet!`,
-      });
+      return;
     }
 
     // 3) Check for "avoidDeath" booster
@@ -123,8 +121,12 @@ export async function huntCommand(context, {
       failMessages[Math.floor(Math.random() * failMessages.length)];
 
       const embed = new EmbedBuilder().setDescription(
-        `🌳 ${chosenFailMessage}\n*(No animals caught, ammo used ${rubBulletEmoji} 𝟏, 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)})*`
-      );
+        `<:forest_tree:1354366758596776070> ${chosenFailMessage}\n-# *(No animals caught, ammo used ${rubBulletEmoji} 𝟏, 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)})*`
+      )
+      .setAuthor({
+        name: `ᕼᑌᑎTIᑎG ᖴᗩIᒪEᗪ`, iconURL: profile
+      });
+
       return handleMessage(context, {
         embeds: [embed],
       });
@@ -239,25 +241,36 @@ export async function huntCommand(context, {
 
     // Construct the success embed
     const lines = [];
-    lines.push(`## 🅷🆄🅽🆃 💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>\n**${username}** went hunting in **${location}**... 🌳`);
+    const lines2 = [];
+    lines.push(`## 🅷🆄🅽🆃\n💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>\n**${username}** went hunting in **${location}**... <:forest_tree:1354366758596776070>`);
     if (usedBoosters.length > 0) {
       lines.push(
         `> *Used Boosters:* \`${usedBoosters.join(', ')}\``
       );
     }
-    lines.push(
-      `You successfully caught:\n# **${chosenAnimalData.emoji} ${chosenAnimalData.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**\n`
+    lines2.push(
+      `# **${chosenAnimalData.emoji} ${chosenAnimalData.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**\n`
     );
-    lines.push(`𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`);
+    lines2.push(`-# 𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 <:hunting_exp:1354384431091290162> **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`);
     if (newlyAcquiredBooster) {
       lines.push(
         `\n**Lucky find!** You also acquired a new booster: \`${newlyAcquiredBooster}\``
       );
     }
 
-    const embed = new EmbedBuilder().setDescription(lines.join('\n'));
+    const embed = new EmbedBuilder().setDescription(lines.join('\n'))
+    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/forest.jpg`)
+    .setFooter({
+      text: "Use 𝙘𝙖𝙜𝙚 for hunted animals"
+    })
+
+    const embed2 = new EmbedBuilder().setDescription(lines2.join('\n'))
+    .setAuthor({
+      name: `You successfully caught:`, iconURL: profile
+    });
+
     return handleMessage(context, {
-      embeds: [embed]
+      embeds: [embed, embed2]
     });
   } catch (error) {
     console.error(error);
@@ -285,8 +298,16 @@ export default {
   execute: async (args, context) => {
     args.shift();
     const location = args?.[0] || 'Forest'; // Default location if not provided
+
+    const avatarUrl = context.user
+    ? context.user.displayAvatarURL({
+      dynamic: true
+    }) : context.author.displayAvatarURL({
+      dynamic: true
+    });
+
     await huntCommand(context, {
       location
-    });
+    }, avatarUrl);
   },
 };

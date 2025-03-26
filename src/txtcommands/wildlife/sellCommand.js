@@ -26,17 +26,14 @@ async function handleMessage(context, data) {
   }
 }
 
-export async function sellCommand(context, {
-  animalName = ""
-}) {
+export async function sellCommand(context, { animalName = "", sellAll = false }) {
   try {
     const animals = JSON.parse(animalsData).animals; // Load global animals data
     const userId = context.user?.id || context.author?.id;
+    const username = context.user?.username || context.author?.username;
 
     // Find the user by their Discord ID
-    let user = await User.findOne({
-      discordId: userId
-    });
+    let user = await User.findOne({ discordId: userId });
     if (!user) {
       return handleMessage(context, {
         content: `No profile found. Go hunt first!`
@@ -44,12 +41,11 @@ export async function sellCommand(context, {
     }
 
     const userData = await getUserData(userId);
-
     if (!userData) return;
 
     if (!animalName || animalName === "") {
       return handleMessage(context, {
-        content: `ⓘ You need to specify an animal name to sell! 🐰\n\n**For viewing the animal list, use:** \`cage\`\n**Example for selling:** \`sellanimal monkey\``
+        content: `ⓘ ${username} need to specify an animal name to sell! 🐰\n\n**For viewing the animal list, use:** \`cage\`\n**Example for selling:** \`sellanimal monkey\``
       });
     }
 
@@ -57,33 +53,40 @@ export async function sellCommand(context, {
     const animalToSellIndex = user.hunt.animals.findIndex(a => a.name.toLowerCase() === animalName.toLowerCase());
     if (animalToSellIndex === -1) {
       return handleMessage(context, {
-        content: `ⓘ You don't have an animal named **${animalName}** to sell! 🐰\n\n**For viewing the animal list, use:** \`cage\`\n**Example for selling:** \`sellanimal monkey\``
+        content: `ⓘ | <:forest_tree:1354366758596776070> **${username}**, you don't have an animal named **${animalName}** to sell! 🐰\n**For viewing the animal list, use:** \`cage\`\n**Example for selling:** \`sellanimal monkey\``
       });
     }
 
     const animalToSell = user.hunt.animals[animalToSellIndex];
-
-    // Find the global definition of the animal
     const globalDef = animals.find(a => a.name.toLowerCase() === animalToSell.name.toLowerCase());
 
-    // Calculate the price based on rarity and level
+    // Calculate the price for one animal
     const rarityMultiplier = (globalDef?.rarity || 1) * 1500;
     const levelBonus = (animalToSell.level || 1) * 250;
     const exclusiveAnimalsRewards = (globalDef?.rarity || 1) * 2000;
-    const totalPrice = rarityMultiplier + levelBonus + (globalDef.type === "exclusive" ? exclusiveAnimalsRewards: 0);
+    const singlePrice = rarityMultiplier + levelBonus + (globalDef.type === "exclusive" ? exclusiveAnimalsRewards : 0);
 
-    // Remove the animal from the user's collection
-    if (animalToSell.totalAnimals > 1) {
-      animalToSell.totalAnimals -= 1;
-    } else {
+    let totalPrice;
+    if (sellAll) {
+      // Multiply by the total number of animals available
+      totalPrice = singlePrice * animalToSell.totalAnimals;
+      // Remove the animal completely from the user's collection
       user.hunt.animals.splice(animalToSellIndex, 1);
+    } else {
+      totalPrice = singlePrice;
+      // Decrease count or remove one instance
+      if (animalToSell.totalAnimals > 1) {
+        animalToSell.totalAnimals -= 1;
+      } else {
+        user.hunt.animals.splice(animalToSellIndex, 1);
+      }
     }
 
     // Add the earned currency to the user's balance
     userData.cash += totalPrice;
     try {
       await user.save();
-      await updateUser(userId, userData)
+      await updateUser(userId, userData);
     } catch (err) {
       return handleMessage(context, {
         content: `**Error**: ${err.message}`
@@ -91,12 +94,11 @@ export async function sellCommand(context, {
     }
 
     // Send a success message
-    return handleMessage(context, {
-      content: [
-        `You sold a **${animalToSell.emoji} ${animalToSell.name}** (Lvl.${animalToSell.level})`,
-        `and earned <:kasiko_coin:1300141236841086977> **${totalPrice}** cash!`
-      ].join('\n')
-    });
+    const messageContent = sellAll
+      ? `<:forest_tree:1354366758596776070> **${username.toUpperCase()}** sold **all ${animalToSell.name}** and earned <:kasiko_coin:1300141236841086977> **${totalPrice}** 𝒄𝒂𝒔𝒉! <a:pink_butterfly:1354375085917601862>`
+      : `<:forest_tree:1354366758596776070> **${username.toUpperCase()}** sold a **${animalToSell.emoji} ${animalToSell.name}** (1x) from their 𝙘𝙖𝙜𝙚 and earned <:kasiko_coin:1300141236841086977> **${totalPrice}** 𝒄𝒂𝒔𝒉! <a:pink_butterfly:1354375085917601862>`;
+
+    return handleMessage(context, { content: messageContent });
   } catch (error) {
     console.error(error);
     return handleMessage(context, {
@@ -113,7 +115,7 @@ export default {
   args: "[animalName]",
   example: [
     "sellanimal wolf",
-    "sa tiger"
+    "sa tiger all"
   ],
   emoji: "🦊",
   related: ["hunt",
@@ -123,10 +125,10 @@ export default {
 
   execute: async (args, context) => {
     try {
-      let animalName = args[1] ? args[1].toLowerCase(): null;
-      await sellCommand(context, {
-        animalName
-      });
+      let animalName = args[1] ? args[1].toLowerCase() : null;
+      // Check if a third argument "all" is present
+      let sellAll = args[2] && args[2].toLowerCase() === 'all';
+      await sellCommand(context, { animalName, sellAll });
     } catch (e) {
       console.error(e);
     }
