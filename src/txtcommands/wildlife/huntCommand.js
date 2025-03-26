@@ -242,7 +242,7 @@ export async function huntCommand(context, {
     // Construct the success embed
     const lines = [];
     const lines2 = [];
-    lines.push(`## 🅷🆄🅽🆃\n💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>\n**${username}** went hunting in **${location}**... <:forest_tree:1354366758596776070>`);
+    lines.push(`## 🅷🆄🅽🆃\n## 💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>\n**${username}** went hunting in **${location}**... <:forest_tree:1354366758596776070>`);
     if (usedBoosters.length > 0) {
       lines.push(
         `> *Used Boosters:* \`${usedBoosters.join(', ')}\``
@@ -251,7 +251,7 @@ export async function huntCommand(context, {
     lines2.push(
       `# **${chosenAnimalData.emoji} ${chosenAnimalData.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**\n`
     );
-    lines2.push(`-# 𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 <:hunting_exp:1354384431091290162> **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`);
+    lines2.push(`-# 𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`);
     if (newlyAcquiredBooster) {
       lines.push(
         `\n**Lucky find!** You also acquired a new booster: \`${newlyAcquiredBooster}\``

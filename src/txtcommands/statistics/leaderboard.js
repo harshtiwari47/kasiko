@@ -195,7 +195,7 @@ async function createLeaderboardEmbed( {
       }
 
       let userIndex = ((page - 1) * 10) + index + 1;
-      let posIcon = userIndex < 11 ? "⪩": "𖦹";
+      let posIcon = userIndex < 11 ? "<:lighting_icon_kasiko:1354393463931670568>": "<:lighting_icon_kasiko:1354393463931670568>";
 
       if (userIndex === 1) posIcon = "<:throne:1350387076834791486>";
       if (userIndex === 2) posIcon = "🥈";
