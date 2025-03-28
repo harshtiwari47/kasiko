@@ -43,6 +43,10 @@ const userSchema = new mongoose.Schema({
       type: Number,
     default: 0
     },
+    profileBio: {
+      type: String,
+    default: null
+    },
     charity: {
       type: Number,
       required: true,

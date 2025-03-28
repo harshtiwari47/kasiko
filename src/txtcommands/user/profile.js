@@ -148,7 +148,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
       `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: ${passInfo.isValid && passInfo.passType === "celestia" ? `1`: "0"}\n`
     )
     .setFooter({
-      text: `ɪɴᴠᴇꜱᴛɪɴɢ & ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ. 💰`
+      text: `${userData.profileBio ? userData.profileBio: "ɪɴᴠᴇꜱᴛɪɴɢ & ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ. 💰"}`
     })
 
     const embed3 = new EmbedBuilder()
