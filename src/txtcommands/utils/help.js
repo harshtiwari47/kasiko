@@ -294,10 +294,12 @@ export default {
       const embed = new EmbedBuilder()
       .setTitle("<:help:1350379705689440358> Help Menu")
       .setDescription(
-        `Select a category from the drop‐down below to view its commands.\n` +
-        `╰➤ Use **\`help <command>\`** for quick help on a command.\n` +
-        `╰➤ Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
-        `╰➤ All commands must be triggered with a prefix, e.g., **kas**.`
+        `<a:glowing_sat_outside_emoji:1355140019337170954>𝘚𝘦𝘭𝘦𝘤𝘵 𝘢 𝘤𝘢𝘵𝘦𝘨𝘰𝘳𝘺 𝘧𝘳𝘰𝘮 𝘵𝘩𝘦 𝘥𝘳𝘰𝘱‐𝘥𝘰𝘸𝘯 𝘣𝘦𝘭𝘰𝘸 𝘵𝘰 𝘷𝘪𝘦𝘸 𝘪𝘵𝘴 𝘤𝘰𝘮𝘮𝘢𝘯𝘥𝘴.\n` +
+        ` <:spark:1355139233559351326> Use **\`help <command>\`** for quick help on a command.\n` +
+        ` <:spark:1355139233559351326> Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
+        ` <:spark:1355139233559351326> All commands must be triggered with a prefix, e.g., **kas**.\n` +
+        `<:feather_outside_emoji:1355140550462017609> **[𝖲𝗎𝗉𝗉𝗈𝗋𝗍 𝖲𝖾𝗋𝗏𝖾𝗋](https://discord.gg/DVFwCqUZnc)**`
+        `<:emoji_35:1332676884093337603> **[𝖨𝗇𝗏𝗂𝗍𝖾 𝖬𝖾](https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=139586816064&integration_type=0&scope=bot)**`
       );
 
       // Send the help menu.
