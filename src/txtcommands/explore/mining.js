@@ -219,16 +219,38 @@ async function viewMiningStatus(userId, context, username) {
     const embed = new EmbedBuilder()
     .setColor(`#ab6c38`)
     .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/coal-mine.jpg`)
-    .setDescription(
-      `**<:pickaxe:1355034263141093540> 𝙇𝙚𝙫𝙚𝙡:** ${userMining.level}\n` +
-      `**<:coal_storage:1355034178470809661> 𝙎𝙩𝙤𝙧𝙖𝙜𝙚 𝘾𝙖𝙥𝙖𝙘𝙞𝙩𝙮:** ${10 + userMining.level * 5} ${COAL_EMOJI}\n` +
-      `**<:dump_truck:1355034404036018309> 𝘾𝙤𝙡𝙡𝙚𝙘𝙩𝙚𝙙:** ${userMining.collected} ${COAL_EMOJI}\n` +
-      `**<:excavator:1355034334033084577> 𝘼𝙫𝙖𝙞𝙡𝙖𝙗𝙡𝙚 𝙩𝙤 𝘾𝙤𝙡𝙡𝙚𝙘𝙩:** ${availableCoal} ${COAL_EMOJI}\n` +
-      `**<:aliens_hammer:1336344266242527294> 𝙐𝙥𝙜𝙧𝙖𝙙𝙚 𝘾𝙤𝙨𝙩:** ${userMining.level >= 10 ? "MAX": "<:kasiko_coin:1300141236841086977> " + (5000 * userMining.level).toLocaleString()}`
-    )
-    .setFooter({
-      text: "Happy Mining!"
-    });
+    .addFields(
+      {
+        name: "<:pickaxe:1355034263141093540> 𝙇𝙚𝙫𝙚𝙡", value: `${
+        userMining.level
+        }`, inline: true
+      },
+      {
+        name: "<:coal_storage:1355034178470809661> 𝙎𝙩𝙤𝙧𝙖𝙜𝙚 𝘾𝙖𝙥𝙖𝙘𝙞𝙩𝙮", value: `${
+        10 + userMining.level * 5
+        } ${
+        COAL_EMOJI
+        }`, inline: true
+      },
+      {
+        name: "<:dump_truck:1355034404036018309> 𝘾𝙤𝙡𝙡𝙚𝙘𝙩𝙚𝙙", value: `${
+        userMining.collected
+        } ${
+        COAL_EMOJI
+        }`, inline: true
+      },
+      {
+        name: "<:excavator:1355034334033084577> 𝘼𝙫𝙖𝙞𝙡𝙖𝙗𝙡𝙚 𝙩𝙤 𝘾𝙤𝙡𝙡𝙚𝙘𝙩", value: `${
+        availableCoal
+        } ${
+        COAL_EMOJI
+        }`, inline: true
+      },
+      {
+        name: "<:aliens_hammer:1336344266242527294> 𝙐𝙥𝙜𝙧𝙖𝙙𝙚 𝘾𝙤𝙨𝙩", value: `${
+        userMining.level >= 10 ? "MAX": "<:kasiko_coin:1300141236841086977> " + (5000 * userMining.level).toLocaleString()}`, inline: true
+      }
+    );
 
     let canCollect = true;
 
