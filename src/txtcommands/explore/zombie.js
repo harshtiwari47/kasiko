@@ -563,12 +563,15 @@ export async function zombieSurvival(id, playerInfo, channel) {
         .setDescription(`### ${statusTitle}\n-# <:lily:1318792945343791214> ${lilyHelp}`)
 
         // Update Game Status
+        const statusDesEmbed = new EmbedBuilder()
+        .setDescription(`${outcome}`);
+
         const statusEmbed = new EmbedBuilder()
-        .setDescription(`${outcome}\n\n` +
-          `❤️ **Health:** ${gameData.health}\n` +
+        .setDescription(
+          `❤️ **Health:** ${gameData.health} ` +
           `⚡ **Stamina:** ${gameData.stamina}\n` +
           `🛠️ **Weapon Durability:** ${gameData.weaponDurability}\n` +
-          `📦 **Supplies:** ${gameData.supplies}\n` +
+          `📦 **Supplies:** ${gameData.supplies} ` +
           `🧟 **Zombies Killed:** ${gameData.zombiesKilled}`)
         .setColor(embedColor);
         if (image) {
@@ -578,11 +581,11 @@ export async function zombieSurvival(id, playerInfo, channel) {
         }
 
         if (zombieThumb) {
-          statusEmbed.setThumbnail(zombieThumb)
+          statusDesEmbed.setThumbnail(zombieThumb)
         }
 
         await interaction.update({
-          embeds: [statusTitleEmbed, statusEmbed],
+          embeds: [statusTitleEmbed, statusDesEmbed, statusEmbed],
           components: [actionRow(disableOptions, playerInfo.activeWeapon)]
         });
       } catch (err) {}
@@ -620,7 +623,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             await updateUser(id, userData);
 
           } else if (reward > 0.75 && gameData.zombiesKilled > 4) {
-            let cash = 10000 + Math.floor(Math.random() * 8000);
+            let cash = 10000 + Math.floor(Math.random() * 10000);
             let wood = 20 + Math.floor(Math.random() * 25);
             let medkit = 1 + Math.floor(Math.random() * 1);
             let metal = 10 + Math.floor(Math.random() * 25);

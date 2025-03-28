@@ -103,17 +103,17 @@ async function handleProfile(ctx) {
     .setColor(0x2f3136)
     .addFields(
       {
-        name: "🗯️ 𝖦𝖤𝖭𝖤𝖱𝖠𝖫",
+        name: "🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇",
         value: `<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"}\n${alienCrownEmo} **Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}\n${alienEnEmo} **Energy:** ${alien.energy}\n${alienTechEmo} **Tech:** ${alien.tech}`,
         inline: false
       },
       {
-        name: "🗯️ 𝖢𝖮𝖬𝖡𝖠𝖳 𝖲𝖳𝖠𝖳𝖲",
-        value: `- **ꨄ︎ HP:** ${alien.battleStats.health}\n- **✸ ATK:** ${alien.battleStats.attack}\n- **⛨ DEF:** ${alien.battleStats.defense}\n- **𖥂 AGI:** ${alien.battleStats.agility}`,
+        name: "🗯️ 𝘾𝙊𝙈𝘽𝘼𝙏",
+        value: `- **ꨄ︎ HP:** ${alien.battleStats.health} **✸ ATK:** ${alien.battleStats.attack}\n- **⛨ DEF:** ${alien.battleStats.defense} **𖥂 AGI:** ${alien.battleStats.agility}`,
         inline: false
       },
       {
-        name: "🗯️ 𝖲𝖯𝖤𝖢𝖨𝖠𝖫",
+        name: "🗯️ 𝙎𝙋𝙀𝘾𝙄𝘼𝙇",
         value: `<:aliens_ability:1336346125791137855> **Abilities:** ${alien.abilities.length > 0 ? alien.abilities.map(a => a.name).join(", "): "None"}\n${alienManEmo} **Manipulations:** ${alien.manipulations}`,
         inline: false
       }
@@ -678,7 +678,7 @@ async function handleInventoryList(ctx) {
     }
 
     // Pagination settings: two items per page.
-    const itemsPerPage = 3;
+    const itemsPerPage = 4;
     let currentPage = 0;
     const totalPages = Math.ceil(combinedInventory.length / itemsPerPage);
 
@@ -697,7 +697,7 @@ async function handleInventoryList(ctx) {
       pageItems.forEach(item => {
         embed.addFields({
           name: `<:left:1350355384111468576> ${item.emoji} ${item.itemName}`,
-          value: `**Quantity:** ${item.quantity}\n-# **Description:** ${item.description}`,
+          value: `**Quantity:** ${item.quantity}`,
           inline: false,
         });
       });
