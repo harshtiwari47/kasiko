@@ -298,7 +298,7 @@ export default {
         ` <:spark:1355139233559351326> Use **\`help <command>\`** for quick help on a command.\n` +
         ` <:spark:1355139233559351326> Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
         ` <:spark:1355139233559351326> All commands must be triggered with a prefix, e.g., **kas**.\n` +
-        `<:feather_outside_emoji:1355140550462017609> **[𝖲𝗎𝗉𝗉𝗈𝗋𝗍 𝖲𝖾𝗋𝗏𝖾𝗋](https://discord.gg/DVFwCqUZnc)**`
+        `<:feather_outside_emoji:1355140550462017609> **[𝖲𝗎𝗉𝗉𝗈𝗋𝗍 𝖲𝖾𝗋𝗏𝖾𝗋](https://discord.gg/DVFwCqUZnc)**\n` +
         `<:emoji_35:1332676884093337603> **[𝖨𝗇𝗏𝗂𝗍𝖾 𝖬𝖾](https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=139586816064&integration_type=0&scope=bot)**`
       );
 
