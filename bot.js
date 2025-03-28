@@ -255,7 +255,7 @@ client.on('messageCreate', async (message) => {
         const ttl = await redisClient.ttl(cooldownKey);
         try {
           const warning = await message.channel.send(
-            `⏱️ **${message.author.username}**, you're on cooldown for this command! Wait **\`${ttl} sec\`**.`
+            `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for this command! ***Wait \` ${ttl} seconds \`***.`
           );
           setTimeout(() => warning.delete().catch(() => {}), 5000);
           return;

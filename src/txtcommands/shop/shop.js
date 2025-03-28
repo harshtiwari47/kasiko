@@ -207,8 +207,8 @@ export default {
       // Default: Send an embed with instructions
     default: {
         const embed = new EmbedBuilder()
-        .setTitle("🛒 SHOP COMMANDS")
-        .setDescription("Browse and trade various items. Use one of the categories below to view listings or see how to buy/sell items.")
+        .setTitle("<:cart:1355034533061460060> SHOP COMMANDS")
+        .setDescription("-# Browse and trade various items. Use one of the categories below to view listings or see how to buy/sell items.")
         .addFields(
           {
             name: "❔ View Items",
@@ -227,8 +227,8 @@ export default {
           },
           {
             name: "❔ How to Sell",
-            value: `**\`\`\`✧ sell car <car_id>` +
-            `✧ sell structure <structure_id>` +
+            value: `**\`\`\`✧ sell car <car_id>\n` +
+            `✧ sell structure <structure_id>\n` +
             `✧ sell jewelry <jewelry_id>\`\`\`**`,
             inline: false
           }

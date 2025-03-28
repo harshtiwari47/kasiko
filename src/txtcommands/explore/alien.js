@@ -688,16 +688,16 @@ async function handleInventoryList(ctx) {
       const pageItems = combinedInventory.slice(startIndex, startIndex + itemsPerPage);
 
       const embed = new EmbedBuilder()
-      .setTitle(`🪐 ${alien.name}'s 𝖢𝗈𝗌𝗆𝗂𝖼 𝖨𝗇𝗏𝖾𝗇𝗍𝗈𝗋𝗒`)
-      .setDescription("𝖢𝗁𝖾𝖼𝗄 𝗈𝗎𝗍 𝗍𝗁𝖾 𝗂𝗍𝖾𝗆𝗌 𝗂𝗇 𝗒𝗈𝗎𝗋 𝗌𝗍𝖺𝗌𝗁. 𝖴𝗌𝖾 𝗍𝗁𝖾𝗆 𝗐𝗂𝗌𝖾𝗅𝗒!")
+      .setTitle(`<a:saturn_outside_emoji:1355059017105276999> ${alien.name}'s 𝖢𝗈𝗌𝗆𝗂𝖼 𝖨𝗇𝗏𝖾𝗇𝗍𝗈𝗋𝗒`)
+      .setDescription("-# 𝖢𝗁𝖾𝖼𝗄 𝗈𝗎𝗍 𝗍𝗁𝖾 𝗂𝗍𝖾𝗆𝗌 𝗂𝗇 𝗒𝗈𝗎𝗋 𝗌𝗍𝖺𝗌𝗁. 𝖴𝗌𝖾 𝗍𝗁𝖾𝗆 𝗐𝗂𝗌𝖾𝗅𝗒!")
       .setFooter({
         text: `⤿ 𝘗𝘢𝘨𝘦 ${pageIndex + 1} 𝘖𝘧 ${totalPages}`
       });
 
       pageItems.forEach(item => {
         embed.addFields({
-          name: `╰➤  ${item.emoji} ${item.itemName}`,
-          value: `**Quantity:** ${item.quantity}\n**Description:** ${item.description}`,
+          name: `<:left:1350355384111468576> ${item.emoji} ${item.itemName}`,
+          value: `**Quantity:** ${item.quantity}\n-# **Description:** ${item.description}`,
           inline: false,
         });
       });

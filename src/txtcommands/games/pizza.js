@@ -133,11 +133,11 @@ export async function pizzaToss(id, channel, user) {
 
     // Construct a markdown UI message.
     const finalMessage = `
-    ## 🍕 **Pizza Toss Challenge!**\n`+
+    ## <:pizza:1355034476081713343> **𝙋𝙞𝙯𝙯𝙖 𝙏𝙤𝙨𝙨 𝘾𝙝𝙖𝙡𝙡𝙚𝙣𝙜𝙚!**\n`+
     `### **${user.username}**, here are your results:\n` +
 
-    `> **Outcome:** ${resultMessage}\n` +
-    `**Current Balance:** <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}
+    `> **𝑶𝒖𝒕𝒄𝒐𝒎𝒆:** ${resultMessage}\n` +
+    `**𝑪𝒖𝒓𝒓𝒆𝒏𝒕 𝑩𝒂𝒍𝒂𝒏𝒄𝒆:** <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}
     `;
 
     return finalMessage;

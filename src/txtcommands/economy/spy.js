@@ -126,6 +126,7 @@ export default {
         dynamic: true
       })
     })
+    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/spy.jpg`)
     .setColor('Random');
 
     await message.channel.send({
@@ -151,6 +152,7 @@ export default {
           dynamic: true
         })
       })
+      .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/spy.jpg`)
       .setColor('Random');
 
       await interaction.editReply({
