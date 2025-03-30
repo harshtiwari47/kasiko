@@ -16,6 +16,10 @@ import {
 } from '../../../helper.js';
 
 import {
+  getBotTeam
+} from '../../owner/main.js';
+
+import {
   checkPassValidity
 } from "../explore/pass.js";
 
@@ -137,6 +141,15 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
         inline: true
       }
     );
+
+    const ownersList = getBotTeam();
+    const ownerDetail = ownersList[userId];
+
+    if (ownerDetail) {
+      embed1.setFooter({
+        text: `${ownerDetail === 1 ? "ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘖𝘞𝘕𝘌𝘙" : "ꗃ ᴋᴀꜱɪᴋᴏ ᴍᴏᴅᴇʀᴀᴛᴏʀ"}`
+      })
+    }
 
     // Embed 2: Property & Achievements
     const embed2 = new EmbedBuilder()

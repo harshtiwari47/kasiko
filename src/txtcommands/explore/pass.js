@@ -309,7 +309,7 @@ export async function execute(args,
         const plan = args[2]?.toLowerCase();
         if (!targetUser || !['titan', 'pheonix', 'etheral', 'celestia'].includes(plan)) {
           return await handleMessage(context, {
-            content: `${username}, Usage: \`pass activate @user <plan>\` (plans: titan, pheonix, etheral, celestia)`
+            content: `${username}, Usage: \`pass activate <plan> @user\` (plans: titan, pheonix, etheral, celestia)`
           });
         }
         const now = new Date();

@@ -1,39 +1,34 @@
 import fs from "fs";
 import path from "path";
+import mongoose from "mongoose";
 import Cash from "./cash.js";
+import Reward from "./reward.js";
 import Badge from "./badge.js";
 import Ship from "./ship.js";
 import Bio from "./bio.js";
+import OwnerModel from "../../models/Owner.js";
 
-// hierarchy levels
 const ownerHierarchy = {
   superowner: 3,
   adminowner: 2,
   basicowner: 1,
 };
 
-// Default owners hard-coded in case the file doesn't exist yet
 const defaultOwners = {
   "1318158188822138972": ownerHierarchy.superowner,
 };
 
-// Path for the owners JSON file
-const ownersFilePath = path.join(process.cwd(), '/src/owner', 'owners.json');
+const ownersFilePath = path.join(process.cwd(), "/src/owner", "owners.json");
 
-// Read the owners file if it exists, otherwise return default owners.
-function getBotTeam() {
+export function getBotTeam() {
   if (fs.existsSync(ownersFilePath)) {
     try {
-      const data = fs.readFileSync(ownersFilePath, "utf8");
-      const fileOwners = JSON.parse(data);
-      // Merge defaults with file data (file data overrides defaults)
-      return {
+      const data = fs.readFileSync(ownersFilePath, "utf8"); const fileOwners = JSON.parse(data); return {
         ...defaultOwners,
         ...fileOwners
       };
     } catch (err) {
-      console.error("Error reading owners file:", err);
-      return {
+      console.error("Error reading owners file:", err); return {
         ...defaultOwners
       };
     }
@@ -44,7 +39,6 @@ function getBotTeam() {
   }
 }
 
-// Write the updated owners data to the file.
 function updateBotTeam(updatedOwners) {
   try {
     fs.writeFileSync(ownersFilePath, JSON.stringify(updatedOwners, null, 2));
@@ -54,21 +48,16 @@ function updateBotTeam(updatedOwners) {
 }
 
 export async function OwnerCommands(args, message) {
-  // Get the current bot team mapping from the file (or defaults)
   const botTeam = getBotTeam();
-  const ownerLevel = botTeam[message.author.id];
-  if (!ownerLevel) {
-    return;
-  }
+  const ownerLevel = botTeam[message.author.id]; if (!ownerLevel) return;
 
-  const command = args[0]?.toLowerCase();
+  const command = args[0]?.toLowerCase(); 
   if (!command) return;
 
   switch (command) {
     case "with":
     case "withdraw":
     case "w":
-
       if (ownerLevel === ownerHierarchy.superowner) {
         await Cash.execute(args, message);
       } else {
@@ -102,8 +91,16 @@ export async function OwnerCommands(args, message) {
       }
       return;
 
+    case "reward":
+
+      if (ownerLevel === ownerHierarchy.basicowner || ownerLevel === ownerHierarchy.adminowner) {
+        await Reward.execute(args, message);
+      } else {
+        message.reply("You don't have permission to take rewards.");
+      }
+      return;
+
     case "addowner":
-      // Only the special SuperOwner can add new owners
       if (message.author.id !== "1318158188822138972") {
         message.reply("You don't have permission to add new owners.");
         return;
@@ -112,22 +109,57 @@ export async function OwnerCommands(args, message) {
       const newOwnerId = args[1];
       const roleStr = args[2]?.toLowerCase();
       if (!newOwnerId || !roleStr) {
-        message.reply("Usage: addowner <ownerID> <role> (e.g., superowner, adminowner, basicowner)");
+        message.reply("Usage: addowner <ownerID> <role>");
         return;
       }
 
-      let newOwnerLevel;
-      if (roleStr in ownerHierarchy) {
-        newOwnerLevel = ownerHierarchy[roleStr];
-      } else {
-        message.reply("Invalid role specified. Use: superowner, adminowner, or basicowner.");
+      let newOwnerLevel = ownerHierarchy[roleStr];
+      if (!newOwnerLevel) {
+        message.reply("Invalid role specified.");
         return;
       }
 
       const currentTeam = getBotTeam();
       currentTeam[newOwnerId] = newOwnerLevel;
       updateBotTeam(currentTeam);
+      await OwnerModel.create({
+        ownerId: newOwnerId,
+        ownerType: roleStr,
+        dateJoined: new Date(),
+        lastRewardWithdraw: null,
+        totalCashWithdrawn: 0,
+        totalServersContributed: 0,
+        retired: false,
+      });
       message.reply(`Added new owner ${newOwnerId} with role ${roleStr}.`);
+      return;
+
+    case "removeowner":
+      if (message.author.id !== "1318158188822138972") {
+        message.reply("You don't have permission to remove owners.");
+        return;
+      }
+
+      const removeOwnerId = args[1];
+      if (!removeOwnerId) {
+        message.reply("Usage: removeowner <ownerID>");
+        return;
+      }
+
+      delete currentTeam[removeOwnerId];
+      updateBotTeam(currentTeam);
+      await OwnerModel.findOneAndUpdate(
+        {
+          ownerId: removeOwnerId
+        },
+        {
+          retired: true
+        },
+        {
+          new: true
+        }
+      );
+      message.reply(`Removed owner ${removeOwnerId}.`);
       return;
 
     default:

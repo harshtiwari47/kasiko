@@ -89,6 +89,15 @@ export default {
           }
         });
         await serverDoc.save();
+
+        try {
+          const serverKey = `server:${message.guild.id}`;
+          const cachedServer = await redisClient.get(serverKey);
+          if (cachedServer) {
+            await redisClient.del(serverKey);
+          }
+        } catch (e) {}
+
         return message.channel.send(
           `All text channels have been set to **${allowed ? "ALLOWED": "NOT ALLOWED"}** for the bot.`
         ).catch(err => ![50001,

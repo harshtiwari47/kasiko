@@ -151,6 +151,16 @@ export default {
 
         await serverDoc.save();
 
+        try {
+          const serverKey = `server:${message.guild.id}`;
+          const cachedServer = await redisClient.get(serverKey);
+          if (cachedServer) {
+            await redisClient.del(serverKey);
+          }
+        } catch (e) {
+          console.error("Failed to clear Redis cache:", e);
+        }
+
         return message.channel.send(
           `✅ The bot is now **${allowedFlag ? "ALLOWED": "NOT ALLOWED"}** in **all** categories for this channel.`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));

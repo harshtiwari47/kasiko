@@ -5,6 +5,8 @@ import {
 import {
   EmbedBuilder
 } from "discord.js";
+import OwnerModel from "../../models/Owner.js";
+
 
 export default {
   name: "withdraw",
@@ -22,6 +24,26 @@ export default {
       return message.channel.send("❌ Please enter a valid amount to withdraw.");
     }
 
+    let ownerDoc = await OwnerModel.findOne({
+      ownerId: message.author.id
+    });
+
+    if (!ownerDoc && message.author.id !== "1318158188822138972") {
+      return message.channel.send("❌ You are not an owner.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    const now = new Date().toISOString().split('T')[0];
+    const lastDate = ownerDoc?.dailyWithdrawn?.date;
+    let todayWithdrawn = (ownerDoc?.dailyWithdrawn?.amount || 0);
+
+
+    // If the reward has been claimed within the last 24 hours, calculate remaining time
+    if (lastDate === now && (todayWithdrawn + amount > 7500000)) {
+      return message.channel.send(`❌ You can only withdraw **${(7500000 - todayWithdrawn) || 0}** today! 🏄🏻`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    } else {
+      todayWithdrawn = 0;
+    }
+
     // If a userId is provided in args[2], transfer the amount to that account.
     if (args[2]) {
       const recipientId = args[2];
@@ -36,6 +58,17 @@ export default {
         await updateUser(recipientId, {
           cash: recipientData.cash
         });
+
+        await OwnerModel.findOneAndUpdate({
+          ownerId: message.author.id
+        }, {
+          "dailyWithdrawn.date": now,
+          "dailyWithdrawn.amount": todayWithdrawn + amount,
+          "dailyWithdrawn.totalCashWithdrawn": (ownerDoc?.totalCashWithdrawn || 0) + amount
+        }, {
+          new: true
+        });
+
         const embed = new EmbedBuilder()
         .setDescription(`🏦 **${message.author.username}** transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash to <@${recipientId}>!`)
         .setColor("#ffcc00");
@@ -59,6 +92,16 @@ export default {
       try {
         await updateUser(message.author.id, {
           cash: userData.cash
+        });
+
+        await OwnerModel.findOneAndUpdate({
+          ownerId: message.author.id
+        }, {
+          "dailyWithdrawn.date": now,
+          "dailyWithdrawn.amount": todayWithdrawn + amount,
+          "dailyWithdrawn.totalCashWithdrawn": (ownerDoc?.totalCashWithdrawn || 0) + amount
+        }, {
+          new: true
         });
 
         const embed = new EmbedBuilder()
