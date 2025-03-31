@@ -12,6 +12,7 @@ const ownerHierarchy = {
   superowner: 3,
   adminowner: 2,
   basicowner: 1,
+  shipowner: 0,
 };
 
 const defaultOwners = {
@@ -51,7 +52,7 @@ export async function OwnerCommands(args, message) {
   const botTeam = getBotTeam();
   const ownerLevel = botTeam[message.author.id]; if (!ownerLevel) return;
 
-  const command = args[0]?.toLowerCase(); 
+  const command = args[0]?.toLowerCase();
   if (!command) return;
 
   switch (command) {
@@ -76,7 +77,7 @@ export async function OwnerCommands(args, message) {
 
     case "shipcustom":
     case "ship":
-      if (ownerLevel >= ownerHierarchy.basicowner) {
+      if (ownerLevel >= ownerHierarchy.shipowner) {
         await Ship.execute(args, message);
       } else {
         message.reply("You don't have permission to customize the ship.");

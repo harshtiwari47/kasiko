@@ -92,15 +92,15 @@ process.on('uncaughtException', (error) => {
 
 // Catch unhandled promise rejections.
 process.on('unhandledRejection', (reason, promise) => {
-    const errorMessage = `Unhandled Rejection at: ${promise} Reason: ${reason && reason.stack ? reason.stack : reason}`;
-    logger.error(errorMessage);
-    storeErrorInMemory(errorMessage);
-    // Optionally, exit the process after logging if needed.
-});
+  const errorMessage = `Unhandled Rejection at: ${promise} Reason: ${reason && reason.stack ? reason.stack: reason}`;
+  logger.error(errorMessage);
+  storeErrorInMemory(errorMessage);
+  // Optionally, exit the process after logging if needed.
+})
 
 process.on('warning', (warning) => {
-    if (warning.code === 'DEP0160') return; // Ignore multipleResolves deprecation warning
-    console.warn(warning.name, warning.message);
+  if (warning.code === 'DEP0160') return; // Ignore multipleResolves deprecation warning
+  console.warn(warning.name, warning.message);
 });
 
 console.log("[AntiCrash] Advanced error handling initialized.");

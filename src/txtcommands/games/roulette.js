@@ -8,7 +8,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  EmbedBuilder
+  EmbedBuilder,
+  AttachmentBuilder
 } from 'discord.js';
 
 import {
@@ -307,19 +308,25 @@ async function startRoulette(
     const gunEmoji = "<:roulette_gun1:1325709544357101660>"
     const cylEmoji = "<:roulette_gc:1325709653421850624>"
     const rubBulletEmoji = "<:rubber_bullet:1325711925656686626>"
+    const imageUrl = 'https://harshtiwari47.github.io/kasiko-public/images/rr.jpg';
+    const attachment = new AttachmentBuilder(imageUrl);
 
     try {
       if (gameMsgInitial && gameMsgInitial.edit) {
         gameMsg = gameMsgInitial;
-        gameMsg = await gameMsgInitial.edit(
-          `## ${gunEmoji} **ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n\n` +
-          `${rubBulletEmoji} Bullets loaded: **${bulletCount}** / 6\nBet: <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
-        );
+        gameMsg = await gameMsgInitial.edit({
+          content: `**${gunEmoji} ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
+          `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}**`,
+          components: [],
+          files: [attachment]
+        });
       } else {
-        gameMsg = await channel.send(
-          `## ${gunEmoji} **ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
-          `${rubBulletEmoji} Bullets loaded: **${bulletCount}** / 6\nBet: <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
-        );
+        gameMsg = await channel.send({
+          content: `**${gunEmoji} ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
+          `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}**`,
+          components: [],
+          files: [attachment]
+        });
       }
     } catch (err) {
       if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
@@ -376,7 +383,7 @@ async function startRoulette(
       const hasBullet = chambers[currentIndex];
 
       // Send a short "firing" message
-      await roundMsg.edit(`${gunEmoji}💨 **${shooter.member.user.username}** fires...`);
+      await roundMsg.edit(`# ${gunEmoji}💨 **${shooter.member.user.username}** fires...`);
 
       await Helper.wait(3000);
 
@@ -390,7 +397,7 @@ async function startRoulette(
         break;
       } else {
         // Click! No bullet
-        await roundMsg.edit(`${cylEmoji} Click! No bullet ${rubBulletEmoji} in chamber ${currentIndex + 1}.`);
+        await roundMsg.edit(`## ${cylEmoji} Click! No bullet ${rubBulletEmoji} in chamber ${currentIndex + 1}.`);
       }
 
       // Move to next chamber
@@ -449,10 +456,14 @@ async function startRoulette(
     loserId === challengerMember.user.id
     ? challengerMember.user.username: opponentMember.user.username;
 
+    try {
+      roundMsg.delete();
+    } catch (err) {}
+
     return channel.send(
       `💥${gunEmoji} **BANG!** ${cylEmoji} Chamber **${shotChamber}** had a bullet! ${rubBulletEmoji}\n` +
-      `- 🪦 **${loserName}** got shot and \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**\n` +
-      `- 👑 **${winnerName}** _survives_ and \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 💸`
+      `- ⚰︎ **${loserName}** got shot & \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**\n` +
+      `- 🜲 **${winnerName}** _survives_ & \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 💸`
     ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } catch (errx) {
     if (errx.message !== "Unknown Message" && errx.message !== "Missing Permissions") {
