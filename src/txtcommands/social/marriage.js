@@ -51,12 +51,15 @@ export const sendConfirmation = async (title, description, color, message, id) =
   })
   .setTitle(title)
   .setDescription(description)
-  .addFields(
+  .setFooter(
     {
-      name: 'Warning', value: "This is just for fun in-game! No real-life commitments are involved.",
+      text: "ᴛʜɪꜱ ɪꜱ ᴊᴜꜱᴛ ꜰᴏʀ ꜰᴜɴ ɪɴ-ɢᴀᴍᴇ! ɴᴏ ʀᴇᴀʟ-ʟɪꜰᴇ ᴄᴏᴍᴍɪᴛᴍᴇɴᴛꜱ ᴀʀᴇ ɪɴᴠᴏʟᴠᴇᴅ.",
     }
   )
-  .setTimestamp();
+
+  if (id === "marry") {
+    embed.setImage(`https://harshtiwari47.github.io/kasiko-public/images/kasiko-wedding.jpg`)
+  }
 
   // Action row with buttons
   const row = new ActionRowBuilder()
@@ -64,9 +67,11 @@ export const sendConfirmation = async (title, description, color, message, id) =
     new ButtonBuilder()
     .setCustomId('confirm' + id)
     .setLabel('Yes')
+    .setEmoji(`1356865976737464441`)
     .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
     .setCustomId('cancel' + id)
+    .setEmoji(`1356880019825365052`)
     .setLabel('No')
     .setStyle(ButtonStyle.Danger)
   );
@@ -147,7 +152,7 @@ export async function setMarriageRing(message, ringId) {
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     } else {
-      return message.channel.send("<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose <:Bouquet:1356866221529628792> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -184,7 +189,9 @@ export async function marriage(message) {
         2500,
         5000,
         7500,
-        12500, 25000, 50000];
+        12500,
+        25000,
+        50000];
 
       const allJewelryItems = getAllJewelry();
       let item;
@@ -209,11 +216,11 @@ export async function marriage(message) {
         return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
       })
 
-      return message.channel.send(`<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
+      return message.channel.send(`<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
         `🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
         `💍 **Ring:** ${ring}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send("<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1356866221529628792> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -239,7 +246,7 @@ export async function marry(user, message) {
       return message.channel.send(`⚠️ The user is __already married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
-      const description = `<@${message.author.id}> has proposed <:Bouquet:1352897342176624750> to you! Do you accept **<@${guild.user.id}>**?`;
+      const description = `<a:lg_flower:1356865948501540914> <@${message.author.id}> has proposed <:Bouquet:1356866221529628792> to you! Do you accept **<@${guild.user.id}>**?`;
       const replyMessage = await sendConfirmation(title, description, "#ee87ca", message, "marry");
 
       const filter = (i) => i.user.id === user &&
@@ -606,7 +613,7 @@ export async function dailyRewards(userId, username, context) {
 
     if (!userData?.family?.spouse) {
       return await handleMessage(context, {
-        content: "<:heart:1353202705958568068> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1352897342176624750> to someone!"
+        content: "<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1356866221529628792> to someone!"
       });
     }
 

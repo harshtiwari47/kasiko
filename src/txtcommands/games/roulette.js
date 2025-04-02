@@ -463,7 +463,7 @@ async function startRoulette(
     return channel.send(
       `💥${gunEmoji} **BANG!** ${cylEmoji} Chamber **${shotChamber}** had a bullet! ${rubBulletEmoji}\n` +
       `- ⚰︎ **${loserName}** got shot & \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**\n` +
-      `- 🜲 **${winnerName}** _survives_ & \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 💸`
+      `- 🜲 **${winnerName}** _survives_ & \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
     ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } catch (errx) {
     if (errx.message !== "Unknown Message" && errx.message !== "Missing Permissions") {

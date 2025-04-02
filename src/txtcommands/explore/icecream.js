@@ -459,13 +459,13 @@ export default {
             return message.channel.send(`⚠️ **${message.author.username}**, your account doesn't exist in Kasiko.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
-          user.cash += amount * 50;
+          user.cash += amount * 750;
           playerShop.loyaltyPoints -= amount;
 
           await updateUser(userId, user);
           await playerShop.save();
 
-          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount * 50).toLocaleString()} cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount *750).toLocaleString()} cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
           return message.channel.send(`⚠️ **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }

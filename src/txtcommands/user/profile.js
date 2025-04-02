@@ -126,7 +126,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     // Embed 1: Personal Info & Wealth Stats
     const embed1 = new EmbedBuilder()
     .setColor(EmbedColor || "#f6e59a")
-    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝"} <@${userId.toString()}>'𝙨 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦\n${ badges ? badges: 'Building wealth, trust, and empires starts from zero! 💸'}`)
+    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝"} <@${userId.toString()}>'𝙎 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦\n-# ${ badges ? badges: 'Building wealth, trust, and empires starts from zero! <:spark:1355139233559351326>'}`)
     .addFields(
       // Financial Information
       {
@@ -161,7 +161,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
       `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: ${passInfo.isValid && passInfo.passType === "celestia" ? `1`: "0"}\n`
     )
     .setFooter({
-      text: `${userData.profileBio ? userData.profileBio: "ɪɴᴠᴇꜱᴛɪɴɢ & ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ. 💰"}`
+      text: `${userData.profileBio ? userData.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`
     })
 
     const embed3 = new EmbedBuilder()

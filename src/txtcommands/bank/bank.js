@@ -183,20 +183,20 @@ export const Bank = {
 
       const emebedHeader = new EmbedBuilder()
       .setColor("#a4bef2")
-      .setDescription("## <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `**Bank Status for ${message.author.username}:**\n` + `**𝑳𝒆𝒗𝒆𝒍:** **${account.level}** **𝑺𝒉𝒊𝒆𝒍𝒅**: **${account.shield}** **𝑼𝑷𝑮𝑹𝑨𝑫𝑬**: ** <:kasiko_coin:1300141236841086977> ${300000 - additionalReward}**`)
+      .setDescription("## <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `<:spark:1355139233559351326> **𝑳𝒆𝒗𝒆𝒍:** **${account.level}** <:spark:1355139233559351326> **𝑺𝒉𝒊𝒆𝒍𝒅**: **${account.shield}**\n<:spark:1355139233559351326> **𝑼𝒑𝒈𝒓𝒂𝒅𝒆**: ** <:kasiko_coin:1300141236841086977> ${300000 - additionalReward}**`)
 
       const embed = new EmbedBuilder()
       .setColor('#dfe9fd') // Choose a color for the embed
       .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/royal-bank.jpg`)
       .addFields(
         {
-          name: '𝑫𝒆𝒑𝒐𝒔𝒊𝒕 ', value: `<:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`, inline: true
+          name: '❍ 𝗗𝗜𝗣𝗢𝗦𝗜𝗧', value: `<:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`, inline: true
         },
         {
-          name: '𝑺𝒕𝒐𝒓𝒂𝒈𝒆 𝑪𝒂𝒑𝒂𝒄𝒊𝒕𝒚 ', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
+          name: '❍ 𝗖𝗔𝗣𝗔𝗖𝗜𝗧𝗬', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
         },
         {
-          name: '𝑪𝒂𝒔𝒉 𝒐𝒏 𝑯𝒂𝒏𝒅', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true
+          name: '❍ 𝗖𝗔𝗦𝗛 𝗜𝗡 𝗛𝗔𝗡𝗗', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true
         }
       )
       .setAuthor({

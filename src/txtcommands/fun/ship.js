@@ -135,9 +135,9 @@ export default {
       const attachment = new AttachmentBuilder(await canvas.encode("png"), {
         name: "ship.png"
       });
-      const msgDescription = `### 💘 **\`𝑾𝑰𝑵𝑫𝑺 𝑶𝑭 𝑨𝑭𝑭𝑬𝑪𝑻𝑰𝑶𝑵!\`**\n` +
-      `### **${user1.username}** ❤️ **${user2.username}**\n` +
-      `ᥫ᭡ ✧ ***_Score: ${score}%_***\n` +
+      const msgDescription = `### <a:red_heart:1356865968164569158>  *** 𝙒𝙄𝙉𝘿𝙎 𝙊𝙁 𝘼𝙁𝙁𝙀𝘾𝙏𝙄𝙊𝙉 ***\n` +
+      `### **${user1.username}** <:wine:1356880010866069562> **${user2.username}**\n` +
+      `ᥫ᭡ ﹒ ***_𝗦𝗰𝗼𝗿𝗲 ⪩ ${score}%_***\n` +
       `-# 💌 _${quote}_\n`;
 
       await message.channel.send({

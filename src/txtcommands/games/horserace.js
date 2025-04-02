@@ -227,12 +227,21 @@ async function startRace(amount, participants, channel) {
               text: '𝑪𝒐𝒏𝒈𝒓𝒂𝒕𝒖𝒍𝒂𝒕𝒊𝒐𝒏𝒔 𝒐𝒏 𝒚𝒐𝒖𝒓 𝒘𝒊𝒏!'
             });
           } else {
+
+            let participantsInfoNames = participants.map(p => {
+              return `**${p.username}**`;
+            }).join(" ");
+
+
             // (Edge case: Should not occur since at least one participant must have bet on the winning horse.)
             resultEmbed = new EmbedBuilder()
             .setColor(0xFF0000)
             .setTitle(`🏇🏻 𝙉𝙤 𝙬𝙞𝙣𝙣𝙚𝙧𝙨 𝙩𝙝𝙞𝙨 𝙩𝙞𝙢𝙚***!***`)
-            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}!**\n-# ⨳ Better luck next time!`)
-            .setImage(`https://harshtiwari47.github.io/kasiko-public/images/horserace.jpg`);
+            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}!**\n-# ⪩ BET: <:kasiko_coin:1300141236841086977> **${amount}**\n-# ⪩ PARTICIPANT(S): ${participantsInfoNames}`)
+            .setImage(`https://harshtiwari47.github.io/kasiko-public/images/horserace.jpg`)
+            .setFooter({
+              text: `⨳ Better luck next time!`
+            })
           }
           await suspenseMessage.edit({
             content: "",
