@@ -208,33 +208,33 @@ export default {
     default: {
         const embed = new EmbedBuilder()
         .setTitle("<:cart:1355034533061460060> SHOP COMMANDS")
-        .setDescription("-# Browse and trade various items. Use one of the categories below to view listings or see how to buy/sell items.")
+        .setDescription("-# Browse and trade various items.")
         .addFields(
           {
             name: "❔ View Items",
-            value: `**\`\`\`✧ shop car` +
-            `\n✧ shop structure` +
-            `\n✧ shop jewelry\`\`\`**`,
+            value: `**\`\`\`⪩ shop car` +
+            `\n⪩ shop structure` +
+            `\n⪩ shop jewelry\`\`\`**`,
             inline: false
           },
           {
             name: "❔ How to Buy",
-            value: `**\`\`\`✧ buy car <car_id>` +
-            `\n✧ buy structure <structure_id>` +
-            `\n✧ buy jewelry <jewelry_id>` +
-            `\n✧ buy roses <amount>\`\`\`**`,
+            value: `**\`\`\`⪩ buy car <car_id>` +
+            `\n⪩ buy structure <structure_id>` +
+            `\n⪩ buy jewelry <jewelry_id>` +
+            `\n⪩ buy roses <amount>\`\`\`**`,
             inline: false
           },
           {
             name: "❔ How to Sell",
-            value: `**\`\`\`✧ sell car <car_id>\n` +
-            `✧ sell structure <structure_id>\n` +
-            `✧ sell jewelry <jewelry_id>\`\`\`**`,
+            value: `**\`\`\`⪩ sell car <car_id>\n` +
+            `⪩ sell structure <structure_id>\n` +
+            `⪩ sell jewelry <jewelry_id>\`\`\`**`,
             inline: false
           }
         )
         .setFooter({
-          text: "Happy shopping! Use the commands above to get started."
+          text: "𝖧𝖺𝗉𝗉𝗒 𝗌𝗁𝗈𝗉𝗉𝗂𝗇𝗀! 𝖴𝗌𝖾 𝗍𝗁𝖾 𝖼𝗈𝗆𝗆𝖺𝗇𝖽𝗌 𝖺𝖻𝗈𝗏𝖾 𝗍𝗈 𝗀𝖾𝗍 𝗌𝗍𝖺𝗋𝗍𝖾𝖽."
         });
 
         return message.channel.send({

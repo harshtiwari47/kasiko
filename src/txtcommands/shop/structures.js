@@ -45,7 +45,7 @@ const structureItems = Object.values(items).filter(item => item.type === "struct
 /**
 * Creates an array of two Embeds (like a 2-page spread) for a single structure
 */
-function createStructureEmbed(structure) {
+function createStructureEmbed(structure, username = null) {
   let iconRarity = ``;
   if (structure.rarity.substring(0, 1).toUpperCase() === "L") iconRarity = `<:legendary:1323917783745953812>`
   if (structure.rarity.substring(0, 1).toUpperCase() === "U") iconRarity = `<:uncommon:1323917867644882985>`
@@ -55,8 +55,8 @@ function createStructureEmbed(structure) {
 
   return [
     new EmbedBuilder()
-    .setTitle(structure.name)
     .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure.image}.png`)
+    .setDescription(`## ${structure.name}`)
     .addFields(
       {
         name: `ᯓ★ Price`,
@@ -65,27 +65,15 @@ function createStructureEmbed(structure) {
           `**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${structure.maintenance.toLocaleString()}`
         ].join("\n"),
         inline: false
-      },
-      {
-        name: `ᯓ★ Details`,
-        value: [
-          `**ID:** ${structure.id}`,
-          `**Category:** ${structure.category}`,
-          `**Rarity:** ${iconRarity}`,
-          `**Floors:** ${structure.floors}`,
-          `**Color:** ${structure.color}`,
-          `**Location:** ${structure.location}`
-        ].join("\n"),
-        inline: false
       }
     )
     .setFooter({
-      text: `ID: ${structure.id} | \`kas structure ${structure.id}\``
+      text: `${username? "@" + username + " ◌ ": ""}structure ${structure.id}`
     })
     .setColor("#0b4ee2"),
 
     new EmbedBuilder()
-    .setDescription(structure.description)
+    .setDescription(`-# **ᯓ★ Details**\n**ID:** ${structure.id}\n**Category:** ${structure.category}\n**Rarity:** ${iconRarity} **Floors:** ${structure.floors}\n**Color:** ${structure.color}\n**Location:** ${structure.location}\n-# <:spark:1355139233559351326> *${structure.description}*`)
     .addFields({
       name: `ᯓ★ Amenities`,
       value: structure.amenities?.join(", ") || "None listed",
@@ -109,7 +97,7 @@ export async function sendPaginatedStructures(context) {
     }
 
     let currentIndex = 0;
-    const structureEmbed = createStructureEmbed(structureItems[currentIndex]);
+    const structureEmbed = createStructureEmbed(structureItems[currentIndex], username);
 
     // Buttons: Previous, Next, and Buy
     const buttons = new ActionRowBuilder().addComponents(
@@ -163,7 +151,7 @@ export async function sendPaginatedStructures(context) {
       }
 
       // Update the embed
-      const newStructureEmbed = createStructureEmbed(structureItems[currentIndex]);
+      const newStructureEmbed = createStructureEmbed(structureItems[currentIndex], username);
       // Update button states
       buttons.components[0].setDisabled(currentIndex === 0); // Previous
       buttons.components[1].setDisabled(currentIndex === structureItems.length - 1); // Next
@@ -210,7 +198,7 @@ export async function viewStructure(context, structureId) {
       });
     }
 
-    const structureEmbed = createStructureEmbed(structure[0]);
+    const structureEmbed = createStructureEmbed(structure[0], username);
     return handleMessage(context, {
       embeds: structureEmbed
     });
@@ -544,6 +532,7 @@ export const Structure = {
 */
 function handleStructureCommands(context, args) {
   const userId = context.user?.id || context.author?.id;
+  const username = context.user?.username || context.author?.username;
 
   // No second argument => view the command user's structures
   if (!args[1]) {
@@ -557,7 +546,7 @@ function handleStructureCommands(context, args) {
   }
 
   // Otherwise treat it as a structure ID => show that structure's details
-  return Structure.viewStructure(context, args[1]);
+  return Structure.viewStructure(context, args[1], username);
 }
 
 export default {

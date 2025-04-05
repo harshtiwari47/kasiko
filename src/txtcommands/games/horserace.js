@@ -237,7 +237,7 @@ async function startRace(amount, participants, channel) {
             resultEmbed = new EmbedBuilder()
             .setColor(0xFF0000)
             .setTitle(`🏇🏻 𝙉𝙤 𝙬𝙞𝙣𝙣𝙚𝙧𝙨 𝙩𝙝𝙞𝙨 𝙩𝙞𝙢𝙚***!***`)
-            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}!**\n-# ⪩ BET: <:kasiko_coin:1300141236841086977> **${amount}**\n-# ⪩ PARTICIPANT(S): ${participantsInfoNames}`)
+            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}!**\n-# ⪩ BET: <:kasiko_coin:1300141236841086977> **${amount}**\n-# ⪩ PARTICIPANT${participants.length > 0 ? "S":""}: ${participantsInfoNames}`)
             .setImage(`https://harshtiwari47.github.io/kasiko-public/images/horserace.jpg`)
             .setFooter({
               text: `⨳ Better luck next time!`

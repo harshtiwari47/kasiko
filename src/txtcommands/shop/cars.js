@@ -47,7 +47,7 @@ const carItems = Object.values(items).filter(item => item.type === "car");
 
 //  Creates an embed for a single car
 //
-function createCarEmbed(car) {
+function createCarEmbed(car, username = null) {
   let iconRarity = ``;
   if (car.rarity.substring(0, 1).toUpperCase() === "L") iconRarity = `<:legendary:1323917783745953812>`
   if (car.rarity.substring(0, 1).toUpperCase() === "U") iconRarity = `<:uncommon:1323917867644882985>`
@@ -57,33 +57,22 @@ function createCarEmbed(car) {
   if (car.rarity.substring(0, 2).toUpperCase() === "EX") iconRarity = `<:exclusive:1347533975840882708>`
 
   const mainEmbed = new EmbedBuilder()
-  .setTitle(car.name)
   .setThumbnail(car.image && car.image.startsWith(`https`) ? car.image: `https://cdn.discordapp.com/app-assets/${APPTOKEN}/${car.image}.png`) // Use image
-  .addFields(
-    {
-      name: `ᯓ★ Price`,
-      value: `**Price:** <:kasiko_coin:1300141236841086977>${car.price.toLocaleString()}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${car.maintenance.toLocaleString()}`,
-      inline: false
-    },
-    {
-      name: `ᯓ★ Car Details`,
-      value: `**ID:** ${car.id}\n**Category:** ${car.category}\n**Rarity:** ${iconRarity}\n**Color:** ${car.color}\n**Emoji:** <:${car.id}:${car.emoji}>`,
-      inline: false
-    }
-  )
-  .setFooter({
-    text: `ID: ${car.id} | \`kas car ${car.id}\``
-  })
+  .setDescription(`## ${car.name}\n-# ***ᯓ★ Price***\n**Price:** <:kasiko_coin:1300141236841086977>${car.price.toLocaleString()}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${car.maintenance.toLocaleString()}`)
   .setColor("#0b4ee2");
 
-  const bottomEmbed = new EmbedBuilder().setDescription(car.description);
+  const middleEmbed = new EmbedBuilder()
+  .setDescription(`-# ***ᯓ★ Car Details***\n**𝙄𝘿** ${car.id}\n**𝘾𝘼𝙏𝙀𝙂𝙊𝙍𝙔** ${car.category} **𝙏𝙔𝙋𝙀** ${iconRarity}\n**𝘾𝙊𝙇𝙊𝙍** ${car.color} **𝙀𝙈𝙊𝙅𝙄** <:${car.id}:${car.emoji}>\n-# <:spark:1355139233559351326> *${car.description}*`)
+  .setFooter({
+    text: `${username? "@" + username + " ◌ ": ""}car ${car.id}`
+  })
 
   if (car.banner) {
-    bottomEmbed.setImage(car.banner);
+    middleEmbed.setImage(car.banner);
   }
 
   return [mainEmbed,
-    bottomEmbed]
+    middleEmbed]
 }
 
 //
@@ -105,7 +94,7 @@ export async function sendPaginatedCars(context) {
     const Pass = await checkPassValidity(userId);
 
     let currentIndex = 0;
-    const carEmbed = createCarEmbed(carItems[currentIndex]);
+    const carEmbed = createCarEmbed(carItems[currentIndex], username);
 
     const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -154,10 +143,10 @@ export async function sendPaginatedCars(context) {
         const currentCar = carItems[currentIndex];
         return buycar(context, currentCar.id);
       }
-      
+
       const currentCar = carItems[currentIndex];
-        
-      const newCarEmbed = createCarEmbed(carItems[currentIndex]);
+
+      const newCarEmbed = createCarEmbed(carItems[currentIndex], username);
       buttons.components[0].setDisabled(currentIndex === 0); // Previous
       buttons.components[1].setDisabled(currentIndex === carItems.length - 1); // Next
 
@@ -203,6 +192,7 @@ export async function sendPaginatedCars(context) {
 export async function viewCar(context, carId) {
   try {
     const userId = context.user?.id || context.author?.id;
+    const username = context.user?.username || context.author?.username;
     const car = carItems.filter(item => item.id === carId.toLowerCase());
 
     if (car.length === 0) {
@@ -211,7 +201,7 @@ export async function viewCar(context, carId) {
       });
     }
 
-    const carEmbed = createCarEmbed(car[0]);
+    const carEmbed = createCarEmbed(car[0], username);
     return handleMessage(context, {
       embeds: carEmbed
     });
