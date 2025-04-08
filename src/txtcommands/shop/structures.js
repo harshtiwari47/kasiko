@@ -56,7 +56,7 @@ function createStructureEmbed(structure, username = null) {
   return [
     new EmbedBuilder()
     .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${structure.image}.png`)
-    .setDescription(`## ${structure.name}`)
+    .setDescription(`### ${structure.name}`)
     .addFields(
       {
         name: `ᯓ★ Price`,

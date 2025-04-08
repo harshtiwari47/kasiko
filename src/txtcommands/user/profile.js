@@ -147,7 +147,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
 
     if (ownerDetail) {
       embed1.setFooter({
-        text: `${ownerDetail === 1 ? "ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘖𝘞𝘕𝘌𝘙" : "ꗃ ᴋᴀꜱɪᴋᴏ ᴍᴏᴅᴇʀᴀᴛᴏʀ"}`
+        text: `${ownerDetail === 1 ? "ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘖𝘞𝘕𝘌𝘙": "ꗃ ᴋᴀꜱɪᴋᴏ ᴍᴏᴅᴇʀᴀᴛᴏʀ"}`
       })
     }
 

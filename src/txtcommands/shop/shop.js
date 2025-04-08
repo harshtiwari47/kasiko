@@ -212,14 +212,17 @@ export default {
         .addFields(
           {
             name: "❔ View Items",
-            value: `**\`\`\`⪩ shop car` +
+            value: `**\`\`\`xml` +
+            `\n<\n⪩ shop car` +
             `\n⪩ shop structure` +
-            `\n⪩ shop jewelry\`\`\`**`,
+            `\n⪩ shop jewelry` +
+            `\n>\`\`\`**`,
             inline: false
           },
           {
             name: "❔ How to Buy",
-            value: `**\`\`\`⪩ buy car <car_id>` +
+            value: `**\`\`\`xml` +
+            `\n⪩ buy car <car_id>` +
             `\n⪩ buy structure <structure_id>` +
             `\n⪩ buy jewelry <jewelry_id>` +
             `\n⪩ buy roses <amount>\`\`\`**`,
@@ -227,14 +230,15 @@ export default {
           },
           {
             name: "❔ How to Sell",
-            value: `**\`\`\`⪩ sell car <car_id>\n` +
+            value: `**\`\`\`xml` +
+            `\n⪩ sell car <car_id>\n` +
             `⪩ sell structure <structure_id>\n` +
             `⪩ sell jewelry <jewelry_id>\`\`\`**`,
             inline: false
           }
         )
         .setFooter({
-          text: "𝖧𝖺𝗉𝗉𝗒 𝗌𝗁𝗈𝗉𝗉𝗂𝗇𝗀! 𝖴𝗌𝖾 𝗍𝗁𝖾 𝖼𝗈𝗆𝗆𝖺𝗇𝖽𝗌 𝖺𝖻𝗈𝗏𝖾 𝗍𝗈 𝗀𝖾𝗍 𝗌𝗍𝖺𝗋𝗍𝖾𝖽."
+          text: "𝖧𝖺𝗉𝗉𝗒 𝗌𝗁𝗈𝗉𝗉𝗂𝗇𝗀!"
         });
 
         return message.channel.send({

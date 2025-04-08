@@ -346,7 +346,7 @@ async function addToCollection(userId, message, zone = null, forcedAnimal = null
 
       if (interaction.customId === 'ocean_collection') {
         await interaction.deferReply();
-        return await viewCollection(interaction.user.id, interaction);
+        return await viewCollection(interaction.user.id, interaction, interaction.user);
       }
 
       // Acknowledge
@@ -503,10 +503,12 @@ export default {
     }
 
     if (args[0] === "fishes" || args[0] === "fish") {
-      if (args[1] && Helper.isUserMention(args[1])) {
-        return viewCollection(Helper.extractUserId(args[1]), message.channel);
+      const mentionedUser = message.mentions.users.first();
+
+      if (mentionedUser) {
+        return viewCollection(message.author.id, message, mentionedUser);
       }
-      return viewCollection(message.author.id, message.channel);
+      return viewCollection(message.author.id, message, message.author);
     }
 
     const subcommand = args[1] ? args[1].toLowerCase(): null;
@@ -524,11 +526,12 @@ export default {
 
     case "cl":
     case "collection":
-      if (args[2] && Helper.isUserMention(args[2])) {
-        return viewCollection(Helper.extractUserId(args[2]), message.channel);
-      }
-      return viewCollection(message.author.id, message.channel);
+      const mentionedUser = message.mentions.users.first();
 
+      if (mentionedUser) {
+        return viewCollection(message.author.id, message, mentionedUser);
+      }
+      return viewCollection(message.author.id, message, message.author);
     case "fish":
       // "ocean fish <zone|general>"
       if (zone) {

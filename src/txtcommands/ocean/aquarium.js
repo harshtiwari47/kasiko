@@ -24,13 +24,23 @@ import {
   Helper
 } from '../../../helper.js';
 
+import {
+  createAquariumImage
+} from './aquariumImage.js';
+
 const aquaData = readAquaticData();
 
-export async function viewCollection(userId, context) {
+export async function viewCollection(interactionUserId, context, userDiscordData) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and message
+  const userId = userDiscordData?.id;
   try {
     let userFishData = await getUserFishData(userId);
     const userCollection = userFishData.fishes;
+    const avatarUrl = userDiscordData?.displayAvatarURL({
+      dynamic: true
+    });
+
+    if (!isInteraction && context.channel) context = context.channel;
 
     let collection = [];
 
@@ -89,17 +99,20 @@ export async function viewCollection(userId, context) {
         if (fish.rarity.substring(0, 1).toUpperCase() === "C") iconRarity = `<:common:1323917805191434240>`
         if (fish.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
 
-        description += `ᯓ★ **${fish.name}** <:${fish.name}_aqua:${fish.emoji}> **${fish.animals}** ${iconRarity}\n`;
-        description += `**Lvl**: ${fish.level} **Dmg**: ${fish.damage}\n**CPF**: ${fish.feedCost} **CPS**: ${fish.sellAmount}\n\n`;
+        description += `🎣 **${fish.name}** (**${fish.animals}**) \n`;
+        description += `**Lvl**: ${fish.level} ${iconRarity} <:${fish.name}_aqua:${fish.emoji}>\n**CPF** $${fish.feedCost} **CPS** $${fish.sellAmount}\n\n`;
         embed.setDescription(description.trim());
 
         if (fishIndex === 0) {
-          embed.setTitle(`**<@${userId}>**'s 𝐴𝑞𝑢𝑎𝑡𝑖𝑐 𝐶𝑜𝑙𝑙𝑒𝑐𝑡𝑖𝑜𝑛 🌊`)
+          embed.setAuthor({
+            name: `𝐴𝑞𝑢𝑎𝑡𝑖𝑐 𝐶𝑜𝑙𝑙𝑒𝑐𝑡𝑖𝑜𝑛`,
+            iconURL: avatarUrl
+          })
         }
         // Add the page number to the footer
         if (fishIndex === chunk.length - 1) {
           embed.setFooter({
-            text: `Page ${index + 1} of ${chunkedCollection.length}`
+            text: `${index + 1} / ${chunkedCollection.length} | ᴄᴘꜰ: ᴄᴏꜱᴛ ᴘᴇʀ ꜰᴇᴇᴅ | ᴄᴘꜱ: ᴄᴏꜱᴛ ᴘᴇʀ ꜱᴀʟᴇ`
           });
         }
 
@@ -144,11 +157,18 @@ export async function viewCollection(userId, context) {
     }
 
     const collector = sentMessage.createMessageComponentCollector({
-      filter: resp => resp.user.id === userId, // Only the author can interact
       time: 60000 // 1 minute timeout
     });
 
     collector.on('collect', async (response) => {
+
+      if (response.user.id !== interactionUserId) {
+        await response.reply({
+          content: `You are not allowed to perform someone else's command!`,
+          ephemeral: true
+        });
+      }
+
       if (response.customId === 'next') {
         if (!response.deferred) await response.deferUpdate();
         currentPage++;
@@ -260,10 +280,14 @@ export async function viewAquarium(userId,
       totalReward += additionalReward;
     }
 
-    const filledAquarium = aquarium.length
-    ? aquarium.map(fish => {
+    const aquFishUrls = [];
+    const filledAquarium = aquarium.length ?
+    aquarium.map(fish => {
       const fishDetails = aquaData.filter(
         fishCollection => fishCollection.name === fish);
+
+      aquFishUrls.push(`https://cdn.discordapp.com/emojis/${fishDetails[0].emoji}.png`);
+
       return fishDetails.length
       ? `**${fish}** <:${fish}_aqua:${fishDetails[0].emoji}>`: `**${fish}** (no emoji)`;
     }).join("°゜\n## │  "): "Nothing here yet 🐟";
@@ -275,11 +299,11 @@ export async function viewAquarium(userId,
     `└─────────────────────┘`;
 
     const aquariumEmbedTitle = new EmbedBuilder()
-    .setDescription(`## <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎`)
+    .setDescription(`### <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎\n-# Min. Collection: <:kasiko_coin:1300141236841086977> **${totalReward}**\n-# ${passInfo.isValid ? "◎ **+" + additionalReward.toFixed(1) + "** pass bonus": ""}`)
     .setColor("#0a4c63")
 
     const aquariumEmbed = new EmbedBuilder()
-    .setDescription(`${aquariumDisplay}\n Minimum Collection: <:kasiko_coin:1300141236841086977> **${totalReward}**  ${passInfo.isValid ? "(**+" + additionalReward + "** bonus)": ""}`)
+    .setDescription(`${aquariumDisplay}`)
     .setColor('#00BFFF'); // Choose a color for the embed
 
     let canCollect = true;
@@ -291,7 +315,7 @@ export async function viewAquarium(userId,
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
       canCollect = false;
-      aquariumEmbed.setFooter({
+      aquariumEmbedTitle.setFooter({
         text: `⏱️ Time Left: ${hours} hours and ${minutes} minutes`
       });
     }
@@ -314,18 +338,29 @@ export async function viewAquarium(userId,
       .setDisabled(false)
     );
 
+    if (aquFishUrls.length < 3) {
+      let aqLength = aquFishUrls.length;
+      for (let i = aqLength; i < 3; i++) {
+        aquFishUrls.push(`https://cdn.discordapp.com/emojis/1355139233559351326.png`);
+      }
+    }
+
+    const attachment = await createAquariumImage(aquFishUrls[0], aquFishUrls[1], aquFishUrls[2], "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiTc46GVbhuMrAXK2MUYpJbbUywHUwPfUtjI2j1miy1h1dBnhQNJBoEcoWB4DTWNgkQsej3PSq8JWin0wcD_oCivDzD38iFZTkWdNxR7QF-yQl60Yowsyd8UYBEbF6NJudEKYPJpAi3orFjg2xZgcxncb8_VmPDpJCrWTJDET4QzYNxSnLmPquWFzXvG4m-/s480-rw/20250408_160739.jpg");
+
     // Send the embed
     let responseMessage;
     if (isInteraction) {
       if (!context.deferred) await context.deferReply();
       responseMessage = await context.editReply({
-        embeds: [aquariumEmbedTitle, aquariumEmbed],
-        components: [rowComp]
+        embeds: [aquariumEmbedTitle],
+        components: [rowComp],
+        files: [attachment]
       });
     } else {
       responseMessage = await context.send({
-        embeds: [aquariumEmbedTitle, aquariumEmbed],
-        components: [rowComp]
+        embeds: [aquariumEmbedTitle],
+        components: [rowComp],
+        files: [attachment]
       });
     }
 
@@ -379,7 +414,7 @@ export async function viewAquarium(userId,
 
         if (interaction.customId === 'ocean_collection') {
           await interaction.deferReply();
-          await viewCollection(interaction.user.id, interaction);
+          await viewCollection(interaction.user.id, interaction, interaction.user);
         }
       } catch (e) {
         console.error(e);
@@ -651,25 +686,19 @@ export async function collectAquariumReward(context, author) {
 
     const embed = new EmbedBuilder()
     .setColor('#87dcee')
-    .setTitle('Aquarium Collection')
-    .setDescription(`You received <:kasiko_coin:1300141236841086977> ${totalReward} from your aquarium collection!`)
+    .setTitle('<:aquarium:1301825002013851668> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎 𝑪𝒐𝒍𝒍𝒆𝒄𝒕𝒊𝒐𝒏')
+    .setDescription(`**${author.username}**, you received <:kasiko_coin:1300141236841086977> ${totalReward} from your aquarium collection!`)
     .addFields(
       {
         name: 'Visitors',
-        value: `${numVisitors} virtual visitors today!`,
-        inline: true
-      },
-      {
-        name: 'Total Reward',
-        value: `<:kasiko_coin:1300141236841086977> ${totalReward}`,
+        value: `👥 **${numVisitors}** virtual visitors today!`,
         inline: true
       }
     )
+    .setImage(`https://harshtiwari47.github.io/kasiko-public/images/aq-visitors.jpg`)
     .setFooter({
       text: 'Keep collecting to earn more!'
     })
-    .setTimestamp();
-
 
     if (context.isCommand) {
       if (!context.deferred) await context.deferReply();

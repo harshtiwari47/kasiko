@@ -81,7 +81,7 @@ const logger = winston.createLogger({
 });
 
 // Global error handlers.
-
+/*
 // Catch synchronous errors that aren't caught elsewhere.
 process.on('uncaughtException', (error) => {
   const errorMessage = `Uncaught Exception: ${error.stack || error}`;
@@ -97,7 +97,7 @@ process.on('unhandledRejection', (reason, promise) => {
   storeErrorInMemory(errorMessage);
   // Optionally, exit the process after logging if needed.
 })
-
+*/
 process.on('warning', (warning) => {
   if (warning.code === 'DEP0160') return; // Ignore multipleResolves deprecation warning
   console.warn(warning.name, warning.message);
