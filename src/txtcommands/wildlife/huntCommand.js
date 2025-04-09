@@ -242,7 +242,7 @@ export async function huntCommand(context, {
     // Construct the success embed
     const lines = [];
     const lines2 = [];
-    lines.push(`## 🅷🆄🅽🆃\n## 💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>\n<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}**...`);
+    lines.push(`## 🅷🆄🅽🆃\n<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}**...\n## 💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>`);
     if (usedBoosters.length > 0) {
       lines.push(
         `> *Used Boosters:* \`${usedBoosters.join(', ')}\``

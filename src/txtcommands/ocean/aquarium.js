@@ -99,8 +99,8 @@ export async function viewCollection(interactionUserId, context, userDiscordData
         if (fish.rarity.substring(0, 1).toUpperCase() === "C") iconRarity = `<:common:1323917805191434240>`
         if (fish.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
 
-        description += `🎣 **${fish.name}** (**${fish.animals}**) \n`;
-        description += `**Lvl**: ${fish.level} ${iconRarity} <:${fish.name}_aqua:${fish.emoji}>\n**CPF** $${fish.feedCost} **CPS** $${fish.sellAmount}\n\n`;
+        description += `<:fishing_rod_virtual:1359384731329888368> **${fish.name}** (**${fish.animals}**) \n`;
+        description += `**Lvl**: ${fish.level} ${iconRarity} <:${fish.name}_aqua:${fish.emoji}>\n-# ◎ **CPF**: <:kasiko_coin:1300141236841086977>${fish.feedCost * fish.animals}\n-# ◎ **CPS** <:kasiko_coin:1300141236841086977>${fish.sellAmount * fish.level}\n\n`;
         embed.setDescription(description.trim());
 
         if (fishIndex === 0) {
@@ -299,7 +299,7 @@ export async function viewAquarium(userId,
     `└─────────────────────┘`;
 
     const aquariumEmbedTitle = new EmbedBuilder()
-    .setDescription(`### <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎\n-# Min. Collection: <:kasiko_coin:1300141236841086977> **${totalReward}**\n-# ${passInfo.isValid ? "◎ **+" + additionalReward.toFixed(1) + "** pass bonus": ""}`)
+    .setDescription(`### <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎\n-# Min. Collection: <:kasiko_coin:1300141236841086977> **${totalReward}**\n${passInfo.isValid ? "-# ◎ **+" + additionalReward.toFixed(1) + "** pass bonus": ""}\n${!aquarium.length ? `Add some fish 🦈 to start earning.\n❔ **USE**: \`help aquarium\``: ""}`)
     .setColor("#0a4c63")
 
     const aquariumEmbed = new EmbedBuilder()
@@ -325,7 +325,7 @@ export async function viewAquarium(userId,
       .setCustomId('collect_aquarium_reward')
       .setLabel('Collect 💰')
       .setStyle(ButtonStyle.Success)
-      .setDisabled(canCollect ? false: true),
+      .setDisabled(canCollect && aquarium.length ? false: true),
       new ButtonBuilder()
       .setCustomId('ocean_collection')
       .setLabel(`📒`)
@@ -687,7 +687,7 @@ export async function collectAquariumReward(context, author) {
     const embed = new EmbedBuilder()
     .setColor('#87dcee')
     .setTitle('<:aquarium:1301825002013851668> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎 𝑪𝒐𝒍𝒍𝒆𝒄𝒕𝒊𝒐𝒏')
-    .setDescription(`**${author.username}**, you received <:kasiko_coin:1300141236841086977> ${totalReward} from your aquarium collection!`)
+    .setDescription(`**${author.username}**, you received <:kasiko_coin:1300141236841086977> **${totalReward}** from your aquarium collection!`)
     .addFields(
       {
         name: 'Visitors',

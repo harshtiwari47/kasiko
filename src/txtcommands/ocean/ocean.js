@@ -74,13 +74,12 @@ async function checkExtraReward(userId, message) {
 
           // Return an embed about the stolen ship
           const shipEmbed = new EmbedBuilder()
-          .setTitle("🚢 A Piratical Plunder!")
+          .setTitle("🚢 𝗔 𝗣𝗶𝗿𝗮𝘁𝗶𝗰𝗮𝗹 𝗣𝗹𝘂𝗻𝗱𝗲𝗿!")
           .setDescription(
             `**${message.author.username}**, you’ve *stolen* a <:${ships[i].id}:${ships[i].emoji}> **${ships[i].name}** with no master!\nIt's ${
             ['a', 'e', 'i', 'o', 'u'].includes(ships[i].rarity[0].toLowerCase()) ? 'an': 'a'
             } **${ships[i].rarity}** ship! ⚓\n\nYou’re the captain now! 🏴‍☠️`
           )
-          .setColor("#FF8C00");
 
           return shipEmbed;
         }
@@ -104,9 +103,8 @@ async function checkExtraReward(userId, message) {
 
       // Return an embed about the pet food
       const foodEmbed = new EmbedBuilder()
-      .setTitle("🍖 Found Pet Food!")
+      .setTitle("🍖 𝗙𝗼𝘂𝗻𝗱 𝗣𝗲𝘁 𝗙𝗼𝗼𝗱!")
       .setDescription(`**${message.author.username}** found **2 sea food** for their pets in the ocean! 🐱`)
-      .setColor("#228B22");
 
       return foodEmbed;
     }
@@ -197,7 +195,7 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
     // 3) The initial embed: "suspense"
     const initialEmbed = new EmbedBuilder()
     .setTitle("🎣 𝑭𝒊𝒔𝒉𝒊𝒏𝒈 𝒊𝒏 𝑷𝒓𝒐𝒄𝒆𝒔𝒔!")
-    .setDescription(`**${message.author.username}** cast their line...\nThey're trying to catch a **${fish.rarity}** fish! ⏳`)
+    .setDescription(`-# 𓂁﹏𓊝 **${message.author.username}** 𝘤𝘢𝘴𝘵 𝘵𝘩𝘦𝘪𝘳 𝘭𝘪𝘯𝘦...\n𝘛𝘩𝘦𝘺'𝘳𝘦 𝘵𝘳𝘺𝘪𝘯𝘨 𝘵𝘰 𝘤𝘢𝘵𝘤𝘩 𝘢 **${fish.rarity}** fish! ⏳`)
     .setColor('#0e2c42')
     .setImage(`https://harshtiwari47.github.io/kasiko-public/images/fishing${1 + Math.floor(Math.random() * 4)}.jpg`)
     .setFooter({
@@ -219,9 +217,8 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         userData.cash -= cost;
         await updateUser(message.author.id, userData);
 
-        resultEmbed = new EmbedBuilder()
-        .setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
-        .setDescription(`**${message.author.username}** cast their line...\nbut all they hooked was a soggy boot — <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉 wasted.\nBetter luck next time! 🥾💦`)
+        initialEmbed.setTitle("🎣 𝐍𝐨 𝐋𝐮𝐜𝐤 𝐢𝐧 𝐓𝐡𝐞 𝐏𝐨𝐧𝐝")
+        initialEmbed.setDescription(`🌊 **${message.author.username}** cast their line...\nbut all they hooked was a soggy boot — <:kasiko_coin:1300141236841086977> **${cost}** 𝑪𝒂𝒔𝒉 wasted.\n-# *Better luck next time! 💦🥾*`)
       } else {
         // The fish is caught
         userData.cash -= cost;
@@ -241,7 +238,10 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
 
         await updateUser(message.author.id, userData);
         await updateFishUser(message.author.id, userFishData);
-
+        
+        initialEmbed.setTitle(`🎣 𝐘𝐨𝐮 𝐥𝐚𝐧𝐝𝐞𝐝 𝐚 𝐟𝐢𝐬𝐡**!**`)
+        initialEmbed.setDescription(`-# 𓊝 **${message.author.username}** 𝘫𝘶𝘴𝘵 𝘯𝘢𝘣𝘣𝘦𝘥 𝘢 **${fish.rarity}** fish! 𝘙𝘦𝘦𝘭 𝘭𝘶𝘤𝘬𝘺!`)
+        
         resultEmbed = new EmbedBuilder()
         .setTitle("🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝")
         .setDescription(
@@ -264,6 +264,7 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
           new ButtonBuilder()
           .setCustomId('re_fish')
           .setLabel('Re-fish?')
+          .setEmoji('1359384731329888368')
           .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
           .setCustomId('ocean_collection')
@@ -283,9 +284,9 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
       }
 
       // Final array of embeds
-      const finalEmbeds = [initialEmbed.setImage(`https://harshtiwari47.github.io/kasiko-public/images/fishing${1 + Math.floor(Math.random() * 4)}.jpg`),
-        resultEmbed];
+      const finalEmbeds = [initialEmbed.setImage(`https://harshtiwari47.github.io/kasiko-public/images/fishing${1 + Math.floor(Math.random() * 4)}.jpg`)];
       if (rewardEmbed) finalEmbeds.push(rewardEmbed);
+      if (resultEmbed) finalEmbeds.push(resultEmbed);
 
       await fishingMsg.edit({
         embeds: finalEmbeds,
