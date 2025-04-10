@@ -171,7 +171,7 @@ const ShipCmd = {
 
       ctx.fillStyle = "rgb(196,0,0)";
       ctx.font = "30px sans-serif";
-      ctx.fillText(`${score}%`, circleX, circleY + 50);
+      ctx.fillText(`${score}%`, circleX - 20, circleY + 80);
 
       const attachment = new AttachmentBuilder(await canvas.encode("png"), {
         name: "ship.png"
