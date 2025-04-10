@@ -39,6 +39,12 @@ const userSchema = new mongoose.Schema({
       min: 0,
       set: (value) => (value < 0 ? 0: value)
     },
+    popularity: {
+      type: Number,
+    default: 0,
+      min: 0,
+      set: (value) => (value < 0 ? 0: value)
+    },
     friendly: {
       type: Number,
     default: 0

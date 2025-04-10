@@ -126,7 +126,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     // Embed 1: Personal Info & Wealth Stats
     const embed1 = new EmbedBuilder()
     .setColor(EmbedColor || "#f6e59a")
-    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝ "} <@${userId.toString()}> 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦\n${ badges ? badges: 'Building wealth, trust, and empires starts from zero! <:spark:1355139233559351326>'}`+ (passInfo.isValid ? `\n**🜲 𝗣𝗔𝗦𝗦**: ${passInfo.isValid ? `${passInfo.emoji} **${passInfo.passType.toUpperCase()}**`: "404"}`: ''))
+    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝ "} <@${userId.toString()}> 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦ <:popularity:1359565087341543435> ${userData.popularity}\n${ badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`+ (passInfo.isValid ? `\n**🜲 𝗣𝗔𝗦𝗦**: ${passInfo.isValid ? `${passInfo.emoji} **${passInfo.passType.toUpperCase()}**`: "404"}`: ''))
     .addFields(
       // Financial Information
       {

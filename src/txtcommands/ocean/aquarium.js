@@ -627,10 +627,10 @@ export async function collectAquariumReward(context, author) {
       if (context.isCommand) {
         if (!context.deferred) await context.deferReply();
         return await context.editReply({
-          content: `⚠️ You can collect again in ${hours} hours and ${minutes} minutes.`
+          content: `<:aquarium:1301825002013851668> **${author.username}**, your aquarium will be open to visitors in ***${hours} hours and ${minutes} minutes***. You’ll be able to collect money once it opens.`
         });
       } else {
-        return context.send(`⚠️ You can collect again in ${hours} hours and ${minutes} minutes.`);
+        return context.send(`<:aquarium:1301825002013851668> **${author.username}**, your aquarium will be open to visitors in ***${hours} hours and ${minutes} minutes***. You’ll be able to collect money once it opens.`);
       }
     }
 
