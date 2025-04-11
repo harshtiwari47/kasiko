@@ -12,11 +12,15 @@ import {
 } from "@napi-rs/canvas";
 import fs from "fs";
 import path from "path";
+import redisClient from '../../../redis.js';
+import Server from '../../../models/Server.js';
 
 import {
   getUserData,
   updateUser
 } from '../../../database.js';
+
+import shippingQuotes from "./req/shipSuggestions.js";
 
 // Path to custom scores JSON file
 const shipDatabasePath = path.join(process.cwd(), "database", "customScores.json");
@@ -43,10 +47,13 @@ async function handleMessage(context, data) {
 
 const ShipCmd = {
   name: "ship",
-  description: "Test the love score between two users with interactive features!",
+  description: "Test the love score between two users with interactive features! Use /setshiproles to assign male and female roles for better matching, or use 'all' to include all genders if roles are already set.",
   aliases: ["love",
     "match"],
   cooldown: 10000,
+  example: ["ship",
+    "ship all",
+    "/setshiproles"],
   category: "🧩 Fun",
 
   // Pass in arguments and the universal "context" (which may be a message or an interaction)
@@ -55,6 +62,7 @@ const ShipCmd = {
       // Remove the command itself from arguments
       if (args.length > 0) args.shift();
       const isRandom = args[0]?.toLowerCase() === "random" || !args[0];
+      const isAll = args[0]?.toLowerCase() === "all";
 
       // Ensure we are in a guild
       if (!context.guild) {
@@ -66,6 +74,28 @@ const ShipCmd = {
 
       // Fetch guild members (this is required for random pairing)
       const allMembers = await context.guild.members.fetch();
+
+      let serverDoc;
+      // Cache server configuration
+      try {
+        const serverKey = `server:${context.guild.id}`;
+        const cachedServer = await redisClient.get(serverKey);
+
+        if (cachedServer) {
+          serverDoc = JSON.parse(cachedServer);
+        } else {
+          serverDoc = await Server.findOne({
+            id: context.guild.id
+          });
+          if (serverDoc) {
+            await redisClient.setEx(serverKey, 300, JSON.stringify(serverDoc)); // Cache 5 minutes
+          }
+        }
+      } catch (e) {
+        console.error('Server config error:', e);
+      }
+
+
       if (isRandom && (!allMembers || allMembers.size <= 1)) {
         return handleMessage(context, "Not enough members to perform `ship random`. At least 2 members are required!");
       }
@@ -89,14 +119,54 @@ const ShipCmd = {
         } else if (context.mentions && context.mentions.users.size === 1) {
           user1 = invoker;
           user2 = context.mentions.users.first();
-        } else if (isRandom && allMembers && allMembers.size > 1) {
+        } else if ((isAll || isRandom) && allMembers && allMembers.size > 1) {
+
           const randomMember1 = invoker;
-          let randomMember2 = allMembers.random();
-          while (randomMember1.id === randomMember2.id) {
+          let hasMaleRole;
+          let hasFemaleRole;
+          let femaleRoleId;
+          let maleRoleId;
+          user1 = randomMember1;
+
+          if (!user1.roles) user1.roles = context?.member?.roles;
+
+          if (!isAll && user1.roles && serverDoc && serverDoc?.shipRoles) {
+            if (serverDoc?.shipRoles?.male) {
+              maleRoleId = serverDoc.shipRoles.male;
+              hasMaleRole = user1.roles.cache.has(maleRoleId);
+            }
+
+            if (serverDoc?.shipRoles?.female) {
+              femaleRoleId = serverDoc.shipRoles.female;
+              hasFemaleRole = user1.roles.cache.has(femaleRoleId);
+            }
+          }
+
+          let modifiedAllMembers;
+
+          if (!isAll && hasMaleRole && femaleRoleId) {
+            modifiedAllMembers = allMembers.filter(member => member.roles.cache.has(femaleRoleId));
+          } else if (!isAll && hasFemaleRole && maleRoleId) {
+            modifiedAllMembers = allMembers.filter(member => member.roles.cache.has(maleRoleId));
+          }
+
+          let randomMember2;
+
+          if (!isAll && modifiedAllMembers) {
+            randomMember2 = modifiedAllMembers.random();
+          } else {
             randomMember2 = allMembers.random();
           }
-          user1 = randomMember1;
+
+          while (randomMember1.id === randomMember2.id) {
+            if (modifiedAllMembers) {
+              randomMember2 = modifiedAllMembers.random();
+            } else {
+              randomMember2 = allMembers.random();
+            }
+          }
           user2 = randomMember2.user;
+
         } else {
           return handleMessage(context, "Please mention one/two users or use `ship random` (in a server with enough members) to test a love score!");
         }
@@ -213,7 +283,7 @@ const ShipCmd = {
 
       // Create a collector for button interactions (only the invoker may interact).
       const filter = i => i.user.id === invoker.id;
-      const collector = responseMessage.createMessageComponentCollector({
+      const collector = responseMessage?.createMessageComponentCollector({
         filter,
         componentType: ComponentType.Button,
         time: 300000,
@@ -311,10 +381,14 @@ const ShipCmd = {
             }
           });
         } else if (interaction.customId === "pass_ship") {
+
+          const randomQuote = shippingQuotes[Math.floor(Math.random() * shippingQuotes.length)];
+
           await interaction.followUp({
-            content: `❤️ **${interaction.user.username}**, 𝘱𝘦𝘳𝘧𝘰𝘳𝘮𝘪𝘯𝘨 𝘢 𝘯𝘦𝘸 𝘴𝘩𝘪𝘱...`, ephemeral: true
+            content: `❤️ **${interaction.user.username}**, 𝘱𝘦𝘳𝘧𝘰𝘳𝘮𝘪𝘯𝘨 𝘢 𝘯𝘦𝘸 𝘴𝘩𝘪𝘱...\n${randomQuote}`, ephemeral: true
           });
 
+          args.unshift("ship");
           await ShipCmd.execute(args, context);
         }
         collector.stop();

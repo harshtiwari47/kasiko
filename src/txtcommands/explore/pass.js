@@ -547,6 +547,6 @@ aliases: ['royalpass', 'pass'],
 args: '<redeem|rewards|benefits|check>',
 cooldown: 10000,
 emoji: "⭐",
-category: 'Pass',
+category: '⭐ Pass',
 execute,
 };

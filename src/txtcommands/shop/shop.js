@@ -85,7 +85,7 @@ export default {
   related: ["cars",
     "structures",
     "jewelry",
-    "roses",
+    "roses", "rose",
     "buy",
     "sell"],
   cooldown: 8000,

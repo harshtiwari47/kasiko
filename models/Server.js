@@ -92,6 +92,16 @@ const channelSchema = new mongoose.Schema({
     prefix: {
       type: String,
     default: "kas"
+    },
+    shipRoles: {
+      male: {
+        type: String,
+      default: null
+      },
+      female: {
+        type: String,
+      default: null
+      }
     }
   });
 

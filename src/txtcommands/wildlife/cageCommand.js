@@ -57,7 +57,7 @@ async function showCageOverview(context, user) {
 
   const embed = new EmbedBuilder()
   .setTitle(`**${username.toUpperCase()}**'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 <:forest_tree:1354366758596776070>`)
-  .setDescription(`<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799>𝘓𝘝𝘓: ${user.globalExp}\n## ${animalEmojis}`)
+  .setDescription(`<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799> 𝘓𝘝𝘓: ${user.globalLevel}\n## ${animalEmojis}`)
   .setFooter({
     text: `Tip: use "cage <animalName>" to see more details about a specific animal.`
   });
