@@ -291,6 +291,13 @@ const ShipCmd = {
 
       collector.on("collect", async interaction => {
 
+        if (interaction.user.id !== invoker.id) {
+          return await interaction.reply({
+            content: "⚠️ You cannot interact with this button.",
+            ephemeral: true,
+          });
+        }
+
         await interaction.deferUpdate();
         // Disable the buttons.
         const disabledRow = new ActionRowBuilder().addComponents(
