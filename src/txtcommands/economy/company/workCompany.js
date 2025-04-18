@@ -38,14 +38,14 @@ export async function workCommand(message, args) {
     if (company.lastWorkAt && (now - company.lastWorkAt < COOLDOWN)) {
       const remaining = Math.ceil((COOLDOWN - (now - company.lastWorkAt)) / 60000);
       return handleMessage(message, {
-        content: `ⓘ **${username}**, you have already worked recently. Please wait ${remaining} minute(s) before working again.`
+        content: `⚠️ **${username}**, 𝘺𝘰𝘶 𝘩𝘢𝘷𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘸𝘰𝘳𝘬𝘦𝘥 𝘳𝘦𝘤𝘦𝘯𝘵𝘭𝘺.\n\n<:kasiko_stopwatch:1355056680387481620> Please wait **${remaining} minute(s)** before working again.`
       });
     }
 
     // Calculate the work reward.
     const baseReward = 50;
     const volatilityFactor = company.volatility / 10; // Adjustable factor
-    const reward = Math.floor((company.currentPrice * 0.0005) + baseReward + company.currentPrice * 0.05 + Math.random() * 50 * volatilityFactor);
+    const reward = Math.floor((company.currentPrice * 0.005) + baseReward + company.currentPrice * 0.05 + Math.random() * 50 * volatilityFactor);
 
     // Retrieve and update the user's cash balance
     const userData = await getUserData(userId);
@@ -83,14 +83,16 @@ export async function workCommand(message, args) {
 
     // Inform the user of their successful work completion via an embed
     const embed = new EmbedBuilder()
-    .setTitle("💼 WORK COMPLETED")
+    .setTitle("💼 𝗪𝗢𝗥𝗞 𝗖𝗢𝗠𝗣𝗟𝗘𝗧𝗘𝗗")
     .setDescription(
-      `**${username}**, you worked for **${company.name}** and earned <:kasiko_coin:1300141236841086977> ${reward}.\n` +
-      `Your hard work has boosted your company's growth!`
+      `**${username}**, 𝘺𝘰𝘶 𝘸𝘰𝘳𝘬𝘦𝘥 𝘧𝘰𝘳 **${company.name}** 𝘢𝘯𝘥 𝘦𝘢𝘳𝘯𝘦𝘥 <:kasiko_coin:1300141236841086977> **${reward}**.\n` +
+      `-# 𝘕𝘌𝘞 𝘚𝘛𝘖𝘊𝘒 𝘗𝘙𝘐𝘊𝘌𝘚: <:kasiko_coin:1300141236841086977> ${company.currentPrice}`
     )
     .setColor("#d36134")
-    .setThumbnail("https://harshtiwari47.github.io/kasiko-public/images/Company-Report.jpg")
-    .setTimestamp();
+    .setImage("https://harshtiwari47.github.io/kasiko-public/images/ceo-work.jpg")
+    .setFooter({
+      text: `𝖸𝗈𝗎𝗋 𝗁𝖺𝗋𝖽 𝗐𝗈𝗋𝗄 𝗁𝖺𝗌 𝖻𝗈𝗈𝗌𝗍𝖾𝖽 𝗒𝗈𝗎𝗋 𝖼𝗈𝗆𝗉𝖺𝗇𝗒'𝗌 𝗀𝗋𝗈𝗐𝗍𝗁!`
+    })
 
     return handleMessage(message, {
       embeds: [embed]

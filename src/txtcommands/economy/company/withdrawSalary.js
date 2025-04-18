@@ -40,7 +40,7 @@ export async function salaryCommand(message, args) {
       const remainingDays = Math.floor(remainingMs / (24 * 60 * 60 * 1000));
       const remainingHours = Math.ceil((remainingMs % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
       return handleMessage(message, {
-        content: `ⓘ **${username}**, you have already withdrawn your salary recently. Please wait ${remainingDays} day(s) and ${remainingHours} hour(s) before withdrawing your salary again.`
+        content: `⚠️ **${username}**, 𝘺𝘰𝘶 𝘩𝘢𝘷𝘦 𝘢𝘭𝘳𝘦𝘢𝘥𝘺 𝘸𝘪𝘵𝘩𝘥𝘳𝘢𝘸𝘯 𝘺𝘰𝘶𝘳 𝘴𝘢𝘭𝘢𝘳𝘺 𝘳𝘦𝘤𝘦𝘯𝘵𝘭𝘺.\n\n<:kasiko_stopwatch:1355056680387481620> Please wait **${remainingDays} day(s) and ${remainingHours} hour(s)** before *withdrawing* your salary again.`
       });
     }
 

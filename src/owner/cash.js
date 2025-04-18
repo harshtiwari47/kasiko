@@ -6,6 +6,9 @@ import {
   EmbedBuilder
 } from "discord.js";
 import OwnerModel from "../../models/Owner.js";
+import {
+  client
+} from "../../bot.js";
 
 
 export default {
@@ -38,15 +41,36 @@ export default {
 
 
     // If the reward has been claimed within the last 24 hours, calculate remaining time
-    if (lastDate === now && (todayWithdrawn + amount > 7500000)) {
+    if (lastDate === now && ((todayWithdrawn + amount) > 7500000)) {
       return message.channel.send(`❌ You can only withdraw **${(7500000 - todayWithdrawn) || 0}** today! 🏄🏻`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } else {
+    } else if (lastDate !== now) {
       todayWithdrawn = 0;
     }
 
+    // logs channel
+    const channel = client.channels?.cache?.get('1361928841307623506');
+    const embedTransaction = new EmbedBuilder()
+    .setTitle('𝗡𝗘𝗪 𝗧𝗥𝗔𝗡𝗦𝗔𝗖𝗧𝗜𝗢𝗡')
+    .setColor('Random');
+
     // If a userId is provided in args[2], transfer the amount to that account.
-    if (args[2]) {
-      const recipientId = args[2];
+    const target = message.mentions.users.first();
+
+    if (args[2] || target) {
+      const recipientId = target ? target.id: args[2].length >= 18 ? args[2]: message.author.id;
+
+      let discordUser;
+      try {
+        if (!target) {
+          discordUser = await client.users.fetch(recipientId);
+        } else {
+          discordUser = target;
+        }
+      } catch {
+        return message.channel.send("❌ That doesn’t look like a valid user ID.");
+      }
+
+
       let recipientData = await getUserData(recipientId);
       if (!recipientData) {
         return message.channel.send("❌ Failed to retrieve the target user's account data.");
@@ -64,10 +88,25 @@ export default {
         }, {
           "dailyWithdrawn.date": now,
           "dailyWithdrawn.amount": todayWithdrawn + amount,
-          "dailyWithdrawn.totalCashWithdrawn": (ownerDoc?.totalCashWithdrawn || 0) + amount
+          "totalCashWithdrawn": (ownerDoc?.totalCashWithdrawn || 0) + amount
         }, {
           new: true
         });
+
+        // log embed
+        embedTransaction
+        .setDescription([
+          `🏦 **From:** ${message.author.tag}`,
+          `**To:** ${discordUser.tag}`,
+          `**Amount:** <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()}`
+        ].join("\n"));
+
+        // then send it to your logs channel:
+        if (channel) {
+          channel.send({
+            embeds: [embedTransaction]
+          });
+        }
 
         const embed = new EmbedBuilder()
         .setDescription(`🏦 **${message.author.username}** transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash to <@${recipientId}>!`)
@@ -99,10 +138,25 @@ export default {
         }, {
           "dailyWithdrawn.date": now,
           "dailyWithdrawn.amount": todayWithdrawn + amount,
-          "dailyWithdrawn.totalCashWithdrawn": (ownerDoc?.totalCashWithdrawn || 0) + amount
+          "totalCashWithdrawn": (ownerDoc?.totalCashWithdrawn || 0) + amount
         }, {
           new: true
         });
+
+        // log embed
+        embedTransaction
+        .setDescription([
+          `🏦 **From:** ${message.author.tag}`,
+          `**To:** ${message.author.tag}`,
+          `**Amount:** <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()}`
+        ].join("\n"));
+
+        // then send it to your logs channel:
+        if (channel) {
+          channel.send({
+            embeds: [embedTransaction]
+          });
+        }
 
         const embed = new EmbedBuilder()
         .setDescription(`🏦 **${message.author.username}** withdrew <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!`)

@@ -22,11 +22,11 @@ export const sendConfirmation = async (message, userId, amount, recipient) => {
       dynamic: true
     })
   })
-  .setTitle('Confirm Transaction')
-  .setDescription(`Are you sure you want to send <:kasiko_coin:1300141236841086977> **${Number(amount).toLocaleString()}** to <@${recipient}>?`)
+  .setTitle('🧾 𝗖𝗢𝗡𝗙𝗜𝗥𝗠 𝗧𝗥𝗔𝗡𝗦𝗔𝗖𝗧𝗜𝗢𝗡')
+  .setDescription(`𝘈𝘳𝘦 𝘺𝘰𝘶 𝘴𝘶𝘳𝘦 𝘺𝘰𝘶 𝘸𝘢𝘯𝘵 𝘵𝘰 𝘴𝘦𝘯𝘥 <:kasiko_coin:1300141236841086977> **${Number(amount).toLocaleString()}** to <@${recipient}>?\n\n\`\`\`ᴄʟɪᴄᴋ 'ʏᴇꜱ' ᴛᴏ ᴄᴏɴꜰɪʀᴍ ᴛʜᴇ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ, ᴏʀ 'ɴᴏ' ᴛᴏ ᴅᴇᴄʟɪɴᴇ.\`\`\``)
   .addFields(
     {
-      name: 'Warning', value: 'We do not allow any form of monetary trade or exchange.'
+      name: '⚠️ 𝗪𝗮𝗿𝗻𝗶𝗻𝗴', value: '-# 𝑊𝑒 𝑑𝑜 𝑛𝑜𝑡 𝑎𝑙𝑙𝑜𝑤 𝑎𝑛𝑦 𝑓𝑜𝑟𝑚 𝑜𝑓 𝑚𝑜𝑛𝑒𝑡𝑎𝑟𝑦 𝑡𝑟𝑎𝑑𝑒 𝑜𝑟 𝑒𝑥𝑐ℎ𝑎𝑛𝑔𝑒.'
     }
   )
   .setTimestamp();
@@ -99,11 +99,13 @@ export async function give(message, userId, amount, recipientId) {
     .addComponents(
       new ButtonBuilder()
       .setCustomId('confirmgiving')
-      .setLabel('✅ YES')
+      .setLabel('𝗬𝗘𝗦')
+      .setEmoji('1356865976737464441')
       .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
       .setCustomId('cancelgiving')
-      .setLabel('❌ NO')
+      .setLabel('𝗡𝗢')
+      .setEmoji('1356880019825365052')
       .setStyle(ButtonStyle.Danger)
     );
 

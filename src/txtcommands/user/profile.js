@@ -147,7 +147,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
 
     if (ownerDetail) {
       embed1.setFooter({
-        text: `${ownerDetail === 1 ? "ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘖𝘞𝘕𝘌𝘙": "ꗃ ᴋᴀꜱɪᴋᴏ ᴍᴏᴅᴇʀᴀᴛᴏʀ"}`
+        text: `${ownerDetail === 3 ? "ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘚𝘜𝘗𝘌𝘙𝘌𝘔𝘌": "ꗃ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘋𝘐𝘙𝘌𝘊𝘛𝘖𝘙"}`
       })
     }
 
@@ -158,7 +158,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     .setDescription(
       `**⤿🚘 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
       `**⤿🏡 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
-      `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: ${passInfo.isValid && passInfo.passType === "celestia" ? `1`: "0"}\n`
+      `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo.isValid && passInfo.passType === "celestia" ? `1`: "0"}**\n`
     )
     .setFooter({
       text: `${userData.profileBio ? userData.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`

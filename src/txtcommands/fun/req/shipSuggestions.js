@@ -20,7 +20,8 @@ const shippingQuotes = [
   "Admins can set a custom prefix for the bot using **`kas prefix <new>`**. To check the current prefix, just use **`kas prefix`**.",
   "Want to ship more? Use **`ship all`** to pair with all server members, regardless of gender. The **`ship`** command normally gives random results — or matches only with the opposite gender if set via the **`/setshiproles`** slash command. You can also manually ship people by using **`ship @user1 @user2`** or **`just ship @user`**.",
   "Kasiko isn’t just about shipping — there’s a whole economy waiting for you! Use the help command to explore everything Kasiko has to offer.",
-  "Want a custom ship between two users or with your partner? Join our support server using kas guild to request it!"
+  "Want a custom ship between two users or with your partner? Join our support server using kas guild to request it!",
+  "Use **`popularity`** to check the server's most popular people."
 ];
 
 export default shippingQuotes;

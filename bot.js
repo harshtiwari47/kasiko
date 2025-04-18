@@ -418,6 +418,41 @@ client.on('guildDelete', async (guild) => {
   const serverId = guild.id;
   const serverName = guild.name;
 
+  try {
+    const channel = client.channels?.cache?.get('1345371713390776380');
+
+    if (!channel || channel.type !== ChannelType.GuildText) {
+      console.error(`Channel with ID 1345371713390776380 not found or is not a text channel in ${guild.name}`);
+    }
+
+    // Fetch the owner details
+    const owner = await guild.fetchOwner();
+
+    // Create an embed message
+    const embed = new EmbedBuilder()
+    .setTitle('𝙎𝙚𝙧𝙫𝙚𝙧 𝙍𝙀𝙈𝙊𝙑𝙀𝘿')
+    .setColor("#000000")
+    .addFields(
+      {
+        name: 'Server Name', value: guild.name, inline: true
+      },
+      {
+        name: 'Total Members', value: guild?.memberCount.toString(), inline: true
+      },
+      {
+        name: 'Owner', value: owner.user.tag, inline: true
+      }
+    )
+    .setTimestamp();
+
+    // Send the embed message
+    await channel.send({
+      embeds: [embed]
+    });
+  } catch (e) {
+    console.error(e);
+  }
+
   // Find and delete the server record from the database
   await Server.findOneAndDelete({
     id: serverId

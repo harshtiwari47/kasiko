@@ -216,11 +216,11 @@ export async function marriage(message) {
         return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
       })
 
-      return message.channel.send(`<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\nYou are married to **${partner.username} 💒**.\n💞⁠ Couple BondXP: ** ${bondXP}**\n✿⁠ Married: **${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
-        `🚼 **Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
-        `💍 **Ring:** ${ring}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`### <a:red_heart:1356865968164569158> 𝙍𝙀𝙇𝘼𝙏𝙄𝙊𝙉𝙎𝙃𝙄𝙋 𝙎𝙏𝘼𝙏𝙐𝙎\nᵔᴗᵔ 𝘠𝘰𝘶 𝘢𝘳𝘦 𝘮𝘢𝘳𝘳𝘪𝘦𝘥 𝘵𝘰 **${partner.username}**.\n💞 **𝐶𝑜𝑢𝑝𝑙𝑒 𝐵𝑜𝑛𝑑𝑋𝑃 ~ ${bondXP}**\n:lotus:**𝑀𝑎𝑟𝑟𝑖𝑒𝑑 ~ ${countdownInDays}  days ago**\n${mEmojies ? `# ${mEmojies}`: ``}\n` +
+        `🚼 **𝐶ℎ𝑖𝑙𝑑𝑟𝑒𝑛 ~ ${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
+        `💍 **𝑅𝑖𝑛𝑔 ~ ${ring}**`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send("<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1356866221529628792> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("### <a:red_heart:1356865968164569158> 𝙍𝙀𝙇𝘼𝙏𝙄𝙊𝙉𝙎𝙃𝙄𝙋 𝙎𝙏𝘼𝙏𝙐𝙎\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1356866221529628792> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -694,7 +694,8 @@ export default {
     "divorce",
     "love",
     "roses",
-    "m"],
+    "m",
+    "rose"],
   args: "<command> [parameters]",
   example: [
     "marry <@user>",
@@ -738,7 +739,7 @@ export default {
         return Marriage.forceDivorce(message); // Divorce a user
       }
 
-      if (args[0] === "roses") {
+      if (args[0] === "roses" || args[0] === "rose") {
         if (args[1] && Helper.isNumber(args[1]) && args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.sendRoses(Helper.extractUserId(args[2]), parseInt(args[1]), message); // Send roses to a user
         }
@@ -766,6 +767,7 @@ export default {
         return Marriage.forceDivorce(message); // Divorce a user
 
       case "roses":
+      case "rose":
         if (args[2] && Helper.isNumber(args[2]) && Helper.isUserMention(args[3], message)) {
           return Marriage.sendRoses(Helper.extractUserId(args[3]), parseInt(args[2]), message); // Send roses to a user
         }

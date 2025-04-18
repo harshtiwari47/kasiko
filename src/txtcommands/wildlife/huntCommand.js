@@ -167,46 +167,56 @@ export async function huntCommand(context, {
       usedBoosters.push('Lucky Charm');
     }
 
-    // 7) Determine which animal to spawn based on nextRarityIndex
-
     let nextIndex;
 
     const rarityBase = 0.84; // Base probability for common items
     const rarityScale = 0.018; // Incremental difficulty per rarity level
     const maxLimit = 0.96; // Maximum probability (94%)
 
+    // Calculate and clamp the rarity threshold for this spawn
     let rarityThreshold = rarityBase + (user.hunt.nextRarityIndex * rarityScale);
-
-    // Clamp the threshold to not exceed the max limit
     rarityThreshold = Math.min(rarityThreshold, maxLimit);
 
-    if (Math.random() > rarityThreshold) {
-      nextIndex = user.hunt.nextRarityIndex;
-      if (nextIndex >= animals.length) {
-        nextIndex = animals.length - 1;
+    // Define a function that encapsulates the logic to pick an index
+    function pickAnimalIndex() {
+      let index;
+      if (Math.random() > rarityThreshold) {
+        index = user.hunt.nextRarityIndex;
+        if (index >= animals.length) {
+          index = animals.length - 1;
+        }
+      } else {
+        index = Math.max(1, Math.floor(Math.random() * user.hunt.nextRarityIndex));
       }
-    } else {
-      nextIndex = Math.max(1, Math.floor(Math.random() * user.hunt.nextRarityIndex));
+      return index;
     }
 
-    // Grab the chosen animal
+    // Initially pick an index
+    nextIndex = pickAnimalIndex();
+
+    // Re-pick until we have a defined, non-null animal entry.
+    while (animals[nextIndex] == null) {
+      nextIndex = pickAnimalIndex();
+    }
+
+    // Grab the chosen animal data
     const chosenAnimalData = animals[nextIndex];
 
     // Add or increment that animal in user's inventory
     const existingAnimal = user.hunt.animals.find(
-      (a) => a.name === chosenAnimalData.name
+      (a) => a.name === chosenAnimalData?.name
     );
     if (existingAnimal) {
       existingAnimal.totalAnimals += 1;
-    } else {
+    } else if (chosenAnimalData.name) {
       user.hunt.animals.push({
         name: chosenAnimalData.name,
-        emoji: chosenAnimalData.emoji,
+        emoji: chosenAnimalData?.emoji,
         totalAnimals: 1, // start at 1
         level: 1,
         exp: 0,
-        hp: chosenAnimalData.baseHp,
-        attack: chosenAnimalData.baseAttack,
+        hp: chosenAnimalData?.baseHp,
+        attack: chosenAnimalData?.baseAttack,
       });
     }
 
@@ -249,7 +259,7 @@ export async function huntCommand(context, {
       );
     }
     lines2.push(
-      `# **${chosenAnimalData.emoji} ${chosenAnimalData.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**\n`
+      `# **${chosenAnimalData.emoji} ${chosenAnimalData?.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**\n`
     );
     lines2.push(`-# 𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`);
     if (newlyAcquiredBooster) {
@@ -302,7 +312,7 @@ export default {
     const avatarUrl = context.user
     ? context.user.displayAvatarURL({
       dynamic: true
-    }) : context.author.displayAvatarURL({
+    }): context.author.displayAvatarURL({
       dynamic: true
     });
 
