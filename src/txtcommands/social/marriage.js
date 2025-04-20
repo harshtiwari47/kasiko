@@ -152,7 +152,7 @@ export async function setMarriageRing(message, ringId) {
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     } else {
-      return message.channel.send("<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `marry @username` to propose <:Bouquet:1356866221529628792> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("### <a:red_heart:1356865968164569158> 𝙍𝙀𝙇𝘼𝙏𝙄𝙊𝙉𝙎𝙃𝙄𝙋 𝙎𝙏𝘼𝙏𝙐𝙎\n**You are not married**.\n𝘛𝘺𝘱𝘦 ` 𝙆𝙖𝙨 𝙢𝙖𝙧𝙧𝙮 @𝙪𝙨𝙚𝙧𝙣𝙖𝙢𝙚 ` 𝘵𝘰 𝘱𝘳𝘰𝘱𝘰𝘴𝘦 <:Bouquet:1356866221529628792> 𝘵𝘰 𝘴𝘰𝘮𝘦𝘰𝘯𝘦!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -220,7 +220,7 @@ export async function marriage(message) {
         `🚼 **𝐶ℎ𝑖𝑙𝑑𝑟𝑒𝑛 ~ ${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n` +
         `💍 **𝑅𝑖𝑛𝑔 ~ ${ring}**`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
-      return message.channel.send("### <a:red_heart:1356865968164569158> 𝙍𝙀𝙇𝘼𝙏𝙄𝙊𝙉𝙎𝙃𝙄𝙋 𝙎𝙏𝘼𝙏𝙐𝙎\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1356866221529628792> to someone!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("### <a:red_heart:1356865968164569158> 𝙍𝙀𝙇𝘼𝙏𝙄𝙊𝙉𝙎𝙃𝙄𝙋 𝙎𝙏𝘼𝙏𝙐𝙎\n**You are not married**.\n𝘛𝘺𝘱𝘦 ` 𝙆𝙖𝙨 𝙢𝙖𝙧𝙧𝙮 @𝙪𝙨𝙚𝙧𝙣𝙖𝙢𝙚 ` 𝘵𝘰 𝘱𝘳𝘰𝘱𝘰𝘴𝘦 <:Bouquet:1356866221529628792> 𝘵𝘰 𝘴𝘰𝘮𝘦𝘰𝘯𝘦!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -613,7 +613,7 @@ export async function dailyRewards(userId, username, context) {
 
     if (!userData?.family?.spouse) {
       return await handleMessage(context, {
-        content: "<a:red_heart:1356865968164569158> 𝑹𝒆𝒍𝒂𝒕𝒊𝒐𝒏𝒔𝒉𝒊𝒑 𝑺𝒕𝒂𝒕𝒖𝒔\n**You are not married**.\nType `Kas marry @username` to propose <:Bouquet:1356866221529628792> to someone!"
+        content: "### <a:red_heart:1356865968164569158> 𝙍𝙀𝙇𝘼𝙏𝙄𝙊𝙉𝙎𝙃𝙄𝙋 𝙎𝙏𝘼𝙏𝙐𝙎\n**You are not married**.\n𝘛𝘺𝘱𝘦 ` 𝙆𝙖𝙨 𝙢𝙖𝙧𝙧𝙮 @𝙪𝙨𝙚𝙧𝙣𝙖𝙢𝙚 ` 𝘵𝘰 𝘱𝘳𝘰𝘱𝘰𝘴𝘦 <:Bouquet:1356866221529628792> 𝘵𝘰 𝘴𝘰𝘮𝘦𝘰𝘯𝘦!"
       });
     }
 

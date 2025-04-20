@@ -252,7 +252,7 @@ export async function huntCommand(context, {
     // Construct the success embed
     const lines = [];
     const lines2 = [];
-    lines.push(`## 🅷🆄🅽🆃\n<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}**...\n## 💥<:rifle1:1352119137421234187><:rifle2:1352119217687625799>`);
+    lines.push(`## 🅷🆄🅽🆃\n<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}**...`);
     if (usedBoosters.length > 0) {
       lines.push(
         `> *Used Boosters:* \`${usedBoosters.join(', ')}\``
@@ -269,15 +269,15 @@ export async function huntCommand(context, {
     }
 
     const embed = new EmbedBuilder().setDescription(lines.join('\n'))
-    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/forest.jpg`)
-    .setFooter({
-      text: "Use 𝙘𝙖𝙜𝙚 for hunted animals"
-    })
+    .setThumbnail(`https://cdn.discordapp.com/emojis/1363425460394135714.png`)
 
     const embed2 = new EmbedBuilder().setDescription(lines2.join('\n'))
     .setAuthor({
       name: `You successfully caught:`, iconURL: profile
-    });
+    })
+    .setFooter({
+      text: "Use 𝙘𝙖𝙜𝙚 for hunted animals"
+    })
 
     return handleMessage(context, {
       embeds: [embed, embed2]

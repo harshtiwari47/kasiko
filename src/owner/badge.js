@@ -23,6 +23,11 @@ export default {
       return message.channel.send("❌ Please specify a valid operation: `add` or `remove`.");
     }
 
+    if (args[3]) {
+      args[3] = args[3].replace("<", "");
+      args[3] = args[3].replace(">", "");
+    }
+
     // Determine if a user is mentioned.
     // If a valid user is mentioned, use that user's ID and shift the badgeID index.
     let targetUser = message.mentions.users.first();

@@ -84,8 +84,8 @@ export async function portfolioCommand(context) {
 
       const isProfit = currentValue > boughtPrice;
 
-      portfolioDetails += `**${company.name}**\n` +
-      `𝐒𝐡𝐚𝐫𝐞𝐬: **${sharesOwned}** ${isProfit ? "<:stocks_profit:1321342107574599691>": "<:stocks_loss:1321342088020885525>"}\n` +
+      portfolioDetails += `<:company:1363405037552009427> **${company.name}** ${isProfit ? "<:stocks_profit:1321342107574599691>": "<:stocks_loss:1321342088020885525>"}\n` +
+      `𝐒𝐡𝐚𝐫𝐞𝐬: **${sharesOwned}** ` +
       `𝐕𝐚𝐥𝐮𝐞: <:kasiko_coin:1300141236841086977> ${currentValue.toLocaleString()}\n`;
 
       // Add company option for selling if the user owns shares

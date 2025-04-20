@@ -53,10 +53,10 @@ export function createStockEmbed(name, stock, ownerView = false) {
   let embedColor;
   switch (stock.trend.toLowerCase()) {
     case 'up':
-      embedColor = '#28a745'; // Green
+      embedColor = '#7ddf93'; // Green
       break;
     case 'down':
-      embedColor = '#dc3545'; // Red
+      embedColor = '#ef6f7b'; // Red
       break;
     case 'stable':
     default:
@@ -66,19 +66,19 @@ export function createStockEmbed(name, stock, ownerView = false) {
 
   // First Embed: General Overview
   const generalInfoEmbed = new EmbedBuilder()
-  .setTitle(`${name}`)
+  .setTitle(`<:company:1363405037552009427> ${name}`)
   .setColor(embedColor)
   .addFields(
     {
-      name: "General Overview",
-      value: `**Description**: ${stock.description}\n` +
+      name: "𝙂𝙚𝙣𝙚𝙧𝙖𝙡 𝙊𝙫𝙚𝙧𝙫𝙞𝙚𝙬",
+      value: `-# ${stock.description}\n` +
       `**Sector**: ${stock.sector}\n` +
-      `**CEO**: ${stock.CEO || stock.ceo}`,
+      `**CEO**: <:throne:1350387076834791486> ${stock.CEO || stock.ceo}`,
       inline: false
   },
   {
-    name: "Current Status",
-    value: `**Current Price**: <:kasiko_coin:1300141236841086977> ${stock.currentPrice.toLocaleString()}\n` +
+    name: "𝘾𝙪𝙧𝙧𝙚𝙣𝙩 𝙎𝙩𝙖𝙩𝙪𝙨",
+    value: `**Current Price**: <:kasiko_coin:1300141236841086977> **${stock.currentPrice.toLocaleString()}**\n` +
     `**Trend**: ${capitalizeFirstLetter(stock.trend)} ${stock.trend.toLowerCase() === "up" ? "<:stocks_profit:1321342107574599691>": stock.trend.toLowerCase() === "down" ? "<:stocks_loss:1321342088020885525>": "~"}\n` +
     `**Volatility**: ${stock.volatility}`,
     inline: false
@@ -94,16 +94,16 @@ const financialDetailsEmbed = new EmbedBuilder()
 .setColor(embedColor)
 .addFields(
   {
-    name: "Financial Details",
+    name: "𝙁𝙞𝙣𝙖𝙣𝙘𝙞𝙖𝙡 𝘿𝙚𝙩𝙖𝙞𝙡𝙨",
     value: `**P/E Ratio**: ${stock.PEratio ? stock.PEratio : stock.peRatio}\n` +
     `**Dividend Yield**: ${stock.dividendYield}\n` +
     `**Market Cap**: <:kasiko_coin:1300141236841086977> ${stock.marketCap}`,
     inline: false
   },
   {
-    name: "Performance Metrics (Last 10)",
-    value: `**High**: ${Math.max(...stock.last10Prices).toLocaleString()}\n` +
-    `**Low**: ${Math.min(...stock.last10Prices).toLocaleString()}`,
+    name: "𝙋𝙚𝙧𝙛𝙤𝙧𝙢𝙖𝙣𝙘𝙚 𝙈𝙚𝙩𝙧𝙞𝙘𝙨 (Last 10)",
+    value: `**High**: <:kasiko_coin:1300141236841086977> ${Math.max(...stock.last10Prices).toLocaleString()}\n` +
+    `**Low**: <:kasiko_coin:1300141236841086977> ${Math.min(...stock.last10Prices).toLocaleString()}`,
     inline: false
   }
 );
@@ -123,7 +123,7 @@ if (ownerView) {
   `**Funding Rounds:** ${stock.fundingRounds ? stock.fundingRounds.length: 0}`;
 
   const ownerViewEmbed = new EmbedBuilder()
-  .setTitle("Owner View")
+  .setTitle("𝗢𝗪𝗡𝗘𝗥 𝗩𝗜𝗘𝗪")
   .setColor(embedColor)
   .setDescription(ownerDetails);
 
@@ -166,12 +166,12 @@ export async function sendPaginatedStocks(context) {
     const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("previousCompany")
-        .setLabel("⟨ PREVIOUS")
+        .setLabel("◀ PREVIOUS")
         .setStyle(ButtonStyle.Primary)
         .setDisabled(true),
       new ButtonBuilder()
         .setCustomId("nextCompany")
-        .setLabel("NEXT ⟩")
+        .setLabel("NEXT ▶")
         .setStyle(ButtonStyle.Primary)
         .setDisabled(companies.length <= 1),
       new ButtonBuilder()

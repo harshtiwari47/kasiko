@@ -145,17 +145,18 @@ async function createLeaderboardEmbed( {
 
       // Calculate user's overall rank based on their position in the paginated list.
       let userIndex = ((page - 1) * itemsPerPage) + index + 1;
-      let posIcon = "<:pop_icon:123456789012345678>"; // replace with an appropriate popularity icon
-      console.log(user.popularity)
+      let posIcon = "<:rose:1343097565738172488>"; // popularity rose icon
+
       // Optionally show special icons for top positions.
-      if (userIndex === 1) posIcon = "<:crown:123456789012345678>";
+      if (userIndex === 1) posIcon = "<:throne:1350387076834791486>";
       else if (userIndex === 2) posIcon = "🥈";
       else if (userIndex === 3) posIcon = "🥉";
 
       leaderboard += `${userIndex === 1 ? "## ": userIndex === 2 ? "### ": userIndex === 3 ? "### ": ""}**${posIcon}** **${userDetails.username}** - <:popularity:1359565087341543435> **\`${Number(user.popularity?.toFixed(1) || 0).toLocaleString()}\`**\n`;
     }
 
-    const userPosition = userRank && typeof userRank === "number" ? userRank: "Unranked";
+    const userPosition = userRank && userRank <= itemsPerPage * 3 ? userRank: userRank || "Unranked";
+
 
     const embed = new EmbedBuilder()
     .setTitle(`<:trophy:1352897371595477084> 𝗦𝗘𝗥𝗩𝗘𝗥 𝗣𝗢𝗣𝗨𝗟𝗔𝗥𝗜𝗧𝗬  ✧`)

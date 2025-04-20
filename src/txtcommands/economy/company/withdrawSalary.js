@@ -67,11 +67,10 @@ export async function salaryCommand(message, args) {
     await company.save();
 
     const embed = new EmbedBuilder()
-    .setTitle("💼 SALARY WITHDRAWAL")
-    .setDescription(`💸 **${username}**, you have withdrawn your salary from **${company.name}** and received <:kasiko_coin:1300141236841086977> ${salaryReward}.`)
-    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/bosschair.jpg`)
+    .setTitle("💼 𝗦𝗔𝗟𝗔𝗥𝗬 𝗪𝗜𝗧𝗛𝗗𝗥𝗔𝗪𝗔𝗟")
+    .setDescription(`💸 **${username}**, you have withdrawn your salary from **${company.name}** and received <:kasiko_coin:1300141236841086977> **${salaryReward}**.`)
+    .setImage("https://harshtiwari47.github.io/kasiko-public/images/ceo-work.jpg")
     .setColor("#60faa4")
-    .setTimestamp();
 
     return handleMessage(message, {
       embeds: [embed]

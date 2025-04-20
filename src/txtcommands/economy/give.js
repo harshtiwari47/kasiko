@@ -88,6 +88,13 @@ export async function give(message, userId, amount, recipientId) {
           `ⓘ Try sending <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** or less.`
         );
       }
+    } else if (Number(amount) > dailyLimit) {
+      return message.channel.send(
+        `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
+        `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
+        `ッ They can receive up to <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** more today.\n\n` +
+        `ⓘ Try sending <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** or less.`
+      );
     }
 
     const embed = await sendConfirmation(message, userId, amount, recipientId);
