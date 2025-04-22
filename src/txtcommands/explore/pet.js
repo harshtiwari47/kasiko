@@ -1,26 +1,156 @@
 import {
-  EmbedBuilder
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType
 } from "discord.js";
 import UserPet from "../../../models/Pet.js";
 import petImages from "./helpers/petImages.json" with {
   type: "json"
-}; // Pet images JSON
-
+};
 import {
   Helper
-} from '../../../helper.js';
+} from "../../../helper.js";
 
-// Function to get pet image based on type and level
+// Universal message handler for both slash and text commands
+async function handleMessage(context, data) {
+  const isInteraction = !!context.isCommand;
+
+  if (isInteraction) {
+    if (!context.deferred) {
+      await context.deferReply()
+      .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    return context
+    .editReply(data)
+    .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
+  } else {
+    return context
+    .channel
+    .send(data)
+    .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  }
+}
+
+// Function to retrieve pet image based on type and level
 function getPetImage(petType, petLevel) {
-
-  if (petLevel > 10) petLevel = 10;
+  if (petLevel > 10) {
+    petLevel = 10;
+  }
 
   if (petImages[petType] && petImages[petType][petLevel]) {
     return petImages[petType][petLevel];
   }
-  return null; // Return null if no image found
+
+  return null;
 }
 
+// Handler: Display help embed with all pet commands
+async function petHelp(context) {
+  const embed = new EmbedBuilder()
+  .setTitle("🐱 𝗣𝗘𝗧 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 𝗛𝗘𝗟𝗣")
+  .addFields(
+    {
+      name: "pet rename <old> <new>",
+      value: "Rename your pet (max 14 characters)."
+    },
+    {
+      name: "pet switch <name>",
+      value: "Switch your active pet by name."
+    },
+    {
+      name: "pet food",
+      value: "Check how much food you have available."
+    },
+    {
+      name: "pet list",
+      value: "View a list of all your pets with details."
+    },
+    {
+      name: "pet view",
+      value: "View details and image of your active pet."
+    }
+  )
+  .setFooter({
+    text: "Use e.g. `pet rename Fluffy Spot`, or `pet help`."
+  });
+
+  await handleMessage(context, {
+    embeds: [embed]
+  });
+}
+
+// Handler: Feed the active pet if cooldown and resources allow
+async function petFeed(userPetData, petId) {
+  const now = Date.now();
+  const pet = userPetData.pets[petId];
+
+  if (pet.lastFeed && Helper.checkTimeGap(pet.lastFeed, now) < 3) {
+    const remaining = (
+      3 - Helper.checkTimeGap(pet.lastFeed, now, {
+        format: 'hours'
+      })
+    ).toFixed(1);
+
+    return {
+      content: `⏳ Please wait ${remaining} hours before feeding again.`,
+      data: userPetData
+    }
+  }
+
+  if (userPetData.food <= 0) {
+    return {
+      content: "⚠️ You don't have enough food! Collect food via fishing or daily rewards.",
+      data: userPetData
+    };
+  }
+
+  pet.feed++;
+  pet.exp += 20;
+  userPetData.food--;
+  pet.lastFeed = now;
+
+  await userPetData.save();
+
+  return {
+    content: `**${pet.name}** has been fed and is happy! 🍖`,
+    data: userPetData
+  }
+}
+
+// Handler: Rename a pet by specifying old and new names
+async function petRename(context, userPetData, args) {
+  const oldName = args[2];
+  const newName = args[3];
+
+  if (!oldName || !newName) {
+    return handleMessage(context, {
+      content: "⚠️ Usage: pet rename <old_name> <new_name> (max 14 chars)."
+    });
+  }
+
+  const pet = userPetData.pets.find(
+    p => p.name.toLowerCase() === oldName.toLowerCase()
+  );
+
+  if (!pet) {
+    return handleMessage(context, {
+      content: "⚠️ No pet found with that name."
+    });
+  }
+
+  pet.name = newName.substring(0, 14);
+  await userPetData.save();
+
+  await handleMessage(context, {
+    content: `✏️ Pet **${oldName}** has been renamed to **${pet.name}**.`
+  });
+}
+
+// List of cat-specific talk phrases
 const catTalks = [
   "I demand a snack every time I blink at you. It's a scientific fact.",
   "Why is the laser pointer always my greatest nemesis and most beloved toy at the same time?",
@@ -34,347 +164,334 @@ const catTalks = [
   "Oh, you thought you were going to the bathroom alone? Cute."
 ];
 
-// Command handler for pet actions
-export default {
-  name: "pet",
-  description: "Manage your pets! Feed them, exercise, walk, pat, rename, and more.",
-  aliases: ["pets",
-    "feed",
-    "walk",
-    "excercise",
-    "mypet"],
-  args: "<action> [parameters]",
-  example: [
-    "pet help",
-    "feed | pet feed",
-    "pet rename Fluffy Spot",
-    "pet switch Spot",
-    "excercise | pet exercise",
-    "walk | pet walk",
-    "pat | pet pat",
-    "pet list",
-    "pet food",
-    "pet view Fluffy",
-    "pet talk"
-  ],
-  emoji: "😻",
-  category: "🍬 Explore",
-  cooldown: 10000,
+// Handler: Let the pet talk
+function petTalk() {
+  const talk = catTalks[Math.floor(Math.random() * catTalks.length)];
+  return talk;
+}
 
-  // Main function for executing pet commands
-  execute: async (args, interaction) => {
-    try {
-      const userId = interaction.author.id; // Get the user's ID
-      // Fetch the user data from the database
-      let userPetData = await UserPet.findOne({
-        id: userId
-      });
+// Handler: Switch active pet by name
+async function petSwitch(context, userPetData, args) {
+  const name = args[2];
 
-      if (!userPetData) {
-        userPetData = await new UserPet( {
-          id: userId,
-        })
-      }
-
-      if (!userPetData) return;
-
-      // Command for viewing help
-      if (args[1] === "help") {
-        const embed = new EmbedBuilder()
-        .setColor("#ff004b")
-        .setTitle("Pet Commands Help")
-        .addFields(
-          {
-            name: "**feed**",
-            value: "Feed your active pet. Feeding requires food, which can be earned via fishing or daily rewards.",
-          },
-          {
-            name: "**pet rename <pet_name> <new_name>**",
-            value: "Rename your pet. For example, `pet rename Fluffy Spot` renames 'Fluffy' to 'Spot' (max: 14 characters).",
-          },
-          {
-            name: "**pet switch <pet_name>**",
-            value: "Switch your active pet to another pet by name.",
-          },
-          {
-            name: "**exercise**",
-            value: "Exercise a specific pet to gain experience points. Pets level up when they reach the required experience threshold.",
-          },
-          {
-            name: "**walk**",
-            value: "Take your pet for a walk. This boosts experience points and energizes your pet.",
-          },
-          {
-            name: "**pat**",
-            value: "Show affection to your pet by patting or loving them. Your pet gains experience and becomes happier.",
-          },
-          {
-            name: "**pet food**",
-            value: "Check how much food you have available to feed your pets.",
-          },
-          {
-            name: "**pet talk**",
-            value: "Listen what your pet saying!",
-          },
-          {
-            name: "**pet list**",
-            value: "View a list of all your pets, including their names, levels, and types.",
-          },
-          {
-            name: "**pet view**",
-            value: "View detailed information and an image of a current pet.",
-          },
-          {
-            name: "**pet help**",
-            value: "Display this help menu with all available commands.",
-          }
-        )
-        .setFooter({
-          text: "Use the respective command with the correct arguments to interact with your pets. For example: `pet feed Fluffy` or `pet rename Fluffy Spot`.",
-        });
-
-        return interaction.channel.send({
-          embeds: [embed],
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      const petId = parseInt(userPetData.active || 0); // Pet index (ID) based on arguments
-
-
-      let threshold = 150;
-      let lvlUpReward = 10; // foods
-      let lvl = Math.floor(Math.sqrt(userPetData.pets[petId].exp / threshold)) || 0;
-      let lvlUp = false;
-
-      if (!(lvl === userPetData.pets[petId].level)) {
-        userPetData.pets[petId].level = lvl;
-        lvlUpReward = 10 + userPetData.pets[petId].level;
-        userPetData.food += lvlUpReward;
-        lvlUp = true;
-        await userPetData.save()
-      }
-
-      if (lvlUp) {
-        interaction.channel.send(`**<@${interaction.author.id}>**, your pet **${userPetData.pets[petId].name}** has reached level **${userPetData.pets[petId].level}**! 🎉 You received 🍖 **${lvlUpReward}** foods.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      // Feed command
-      if (args[1] === "feed" || args[0] === "feed") {
-
-        if (userPetData.pets[petId].lastFeed && Helper.checkTimeGap(userPetData.pets[petId].lastFeed, Date.now()) < 3) {
-          const remainingTime = 3 - Helper.checkTimeGap(userPetData.pets[petId].lastFeed, Date.now(), {
-            format: 'hours'
-          }).toFixed(1);
-          return interaction.channel.send(`<@${userId}>, you cannot feed again for another ${remainingTime.toFixed(1)} hours.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-
-        if (userPetData.food > 0) {
-          const pet = userPetData.pets[petId];
-          pet.feed++;
-          pet.exp += 20;
-          userPetData.food--; // Reduce the available food
-          pet.lastFeed = Date.now();
-
-          await userPetData.save();
-          const petImageUrls = getPetImage(pet.petId, pet.level);
-
-          const embed = new EmbedBuilder()
-          .setColor('#ff69b4') // A cute pink color
-          .setDescription(`**Yummy, yay!** 😻🎉\n**${interaction.author.username}**, **${pet.name}** has been fed and is purring with joy! 🐾💖\n\nYou can feed ${pet.name} again after 3 hour! 🍽️`)
-          .setThumbnail(petImageUrls ? petImageUrls[0]: null);
-
-          return interaction.channel.send({
-            embeds: [embed]
-          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-
-        } else {
-          return interaction.channel.send("⚠️ You don't have enough food to feed your pet! Get some food while fishing or collect daily food from daily rewards.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-      }
-
-      // Rename command
-      if (args[1] === "rename") {
-        if (args[2] && args[2].toLowerCase() && args[3] && args[3].toLowerCase()) {
-          const pet = userPetData.pets.find(pets => pets.name && pets.name.toLowerCase() === args[2].toLowerCase());
-          if (pet) {
-            pet.name = args[3].substring(0, 14); // Rename the pet
-            await userPetData.save();
-            return interaction.channel.send(`✏️🐹 **${interaction.author.username}**, **${args[2]}** has been renamed to **${args[3]}**!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          } else {
-            return interaction.channel.send("⚠️ No pet found with this name. `kas pet rename <name> <new name (max: 14)>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-        } else {
-          return interaction.channel.send("⚠️ Please provide a new name for your pet. `kas pet rename <name> <new name (max: 14)>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-      }
-
-      if (args[1] === "talk") {
-        const pet = userPetData.pets[petId];
-
-        if (pet.type === "cat") {
-          let talk = catTalks[Math.floor(Math.random() * catTalks.length)];
-          const petImageUrls = getPetImage(pet.petId, pet.level);
-
-          const embed = new EmbedBuilder()
-          .setColor('#f5b7c1') // A cute pink color
-          .setDescription(`🗣️ ${talk}`)
-          .setThumbnail(petImageUrls ? petImageUrls[0]: null);
-
-          return interaction.reply({
-            embeds: [embed]
-          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        } else {
-          // other pet talk
-        }
-      }
-
-      // Switch command
-      if (args[1] === "switch") {
-        if (args[2]) {
-          const pet = userPetData.pets.find(p =>
-            p.name && p.name.trim().toLowerCase().normalize("NFKC") === args[2].toLowerCase().normalize("NFKC")
-          );
-
-          if (pet) {
-            userPetData.active = userPetData.pets.indexOf(pet);
-            await userPetData.save();
-
-            return interaction.channel.send(`✅ **${interaction.author.username}**, **${pet.name}** is now your active pet!`)
-            .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          } else {
-            return interaction.channel.send(`⚠️ Please provide the correct pet name!`)
-            .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-        } else {
-          return interaction.channel.send(`⚠️ Please provide the pet name!\n\`kas pet active <name>\``)
-          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-      }
-
-      // Exercise command
-      if (args[0] === "excercise" || args[1] === "exercise") {
-
-        if (userPetData.pets[petId].lastExercise && Helper.checkTimeGap(userPetData.pets[petId].lastExercise, Date.now()) < 6) {
-          const remainingTime = 6 - Helper.checkTimeGap(userPetData.pets[petId].lastExercise, Date.now(), {
-            format: 'hours'
-          }).toFixed(1);
-          return interaction.channel.send(`<@${userId}>, you cannot make pet excercise again for another ${remainingTime.toFixed(1)} hours.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-
-        const pet = userPetData.pets[petId];
-        pet.lastExercise = Date.now();
-        pet.exp += 10; // Adding experience points after exercise
-        await userPetData.save();
-        const petImageUrls = getPetImage(pet.petId, pet.level);
-
-        const embed = new EmbedBuilder()
-        .setColor('#00BFFF') // A refreshing blue color
-        .setDescription(`🐱🏋🏻 **Yippee!**\n**${interaction.author.username}**, **${pet.name}** just had a great workout and gained some energy!\nKeep it up! 🔥🐾`)
-        .setThumbnail(petImageUrls ? petImageUrls[0]: null);
-
-        return interaction.channel.send({
-          embeds: [embed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      // Pat command
-      if (args[0] === "pat" || args[1] === "pat" || args[1] === "love") {
-
-        if (userPetData.pets[petId].lastPatTime && Helper.checkTimeGap(userPetData.pets[petId].lastPatTime, Date.now()) < 3) {
-          const remainingTime = 3 - Helper.checkTimeGap(userPetData.pets[petId].lastPatTime, Date.now(), {
-            format: 'hours'
-          }).toFixed(1);
-          return interaction.channel.send(`<@${userId}>, you cannot pat again for another ${remainingTime.toFixed(1)} hours.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-
-        const pet = userPetData.pets[petId];
-        pet.lastPatTime = Date.now();
-        pet.exp += 10; // Adding experience points after pat
-        await userPetData.save();
-        const petImageUrls = getPetImage(pet.petId, pet.level);
-
-        const embed = new EmbedBuilder()
-        .setColor('#e22651')
-        .setDescription(`**${interaction.author.username}**, 🐾 **${pet.name}** wiggled with joy after your gentle pats! 💕 You're making their day pawsitively amazing! 😄`)
-        .setThumbnail(petImageUrls ? petImageUrls[0]: null);
-
-        return interaction.channel.send({
-          embeds: [embed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      // Walk command
-      if (args[0] === "walk" || args[0] === "walk") {
-
-        if (userPetData.pets[petId].lastWalkTime && Helper.checkTimeGap(userPetData.pets[petId].lastWalkTime, Date.now()) < 6) {
-          const remainingTime = 6 - Helper.checkTimeGap(userPetData.pets[petId].lastExercise, Date.now(), {
-            format: 'hours'
-          }).toFixed(1);
-          return interaction.channel.send(`<@${userId}>, you cannot take pet for walk again for another ${remainingTime.toFixed(1)} hours.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-
-        const pet = userPetData.pets[petId];
-        pet.lastWalkTime = Date.now();
-        pet.exp += 10; // Adding experience points after waking
-        await userPetData.save();
-        const petImageUrls = getPetImage(pet.petId, pet.level);
-
-        const embed = new EmbedBuilder()
-        .setColor('#26e275')
-        .setDescription(`**Woohoo! 🍃**\n**${interaction.author.username}**, **${pet.name}** enjoyed a refreshing walk and is feeling super energized! 🌟🐾\nWhat a pawsome adventure! 🌀`)
-        .setThumbnail(petImageUrls ? petImageUrls[0]: null);
-        return interaction.channel.send({
-          embeds: [embed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      // Check food command
-      if (args[1] === "food") {
-        return interaction.channel.send(`🍖 **${interaction.author.username}**, You have **${userPetData.food}** pet food available.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      // List command
-      if (args[1] === "list") {
-        const petListEmbed = new EmbedBuilder()
-        .setTitle(`${interaction.author.username}'s 𝐏𝐞𝐭𝐬`)
-        .setColor("#c3126a")
-        .setDescription(userPetData.pets.map((pet, index) => {
-          return `${index}. ${pet.name} - 𝑳𝒆𝒗𝒆𝒍  ${pet.level} (${pet.type})`;
-        }).join("\n"));
-
-        return interaction.channel.send({
-          embeds: [petListEmbed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      // View command
-      if (args.length === 1 || args[1] === "view") {
-        const pet = userPetData.pets[petId];
-        const petImageUrls = getPetImage(pet.petId, pet.level);
-
-        let currentLevel = Math.floor(Math.sqrt(pet.exp / threshold)) || 0;
-        let nextLevel = currentLevel + 1;
-        let nextLevelXP = nextLevel ** 2 * threshold;
-
-        const petEmbed = new EmbedBuilder()
-        .setTitle(`${pet.name} (𝑳𝒆𝒗𝒆𝒍  ${pet.level})`)
-        .setColor("#FF00FF")
-        .setDescription(`**𝐴𝑛𝑖𝑚𝑎𝑙 **: ${pet.type}\n**𝐹𝑒𝑒𝑑**: ${pet.feed}\n**𝐸𝑥𝑝**: ${pet.exp}/${nextLevelXP}`)
-        .setThumbnail(petImageUrls ? petImageUrls[0]: null); // Add pet image if available
-
-        return interaction.channel.send({
-          embeds: [petEmbed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      // If the command is unrecognized
-
-      return interaction.channel.send("⚠️ Invalid command. Type `pet help` for a list of available commands.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } catch (e) {
-      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-        console.error(e);
-      }
-      return interaction?.channel?.send(`⚠ Something went wrong in pets commands! 🐶\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
+  if (!name) {
+    return handleMessage(context, {
+      content: "⚠️ Usage: pet switch <pet_name>."
+    });
   }
+
+  const pet = userPetData.pets.find(
+    p => p.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (!pet) {
+    return handleMessage(context, {
+      content: "⚠️ No pet found with that name."
+    });
+  }
+
+  userPetData.active = userPetData.pets.indexOf(pet);
+  await userPetData.save();
+
+  await handleMessage(context, {
+    content: `✅ ${pet.name} is now your active pet.`
+  });
+}
+
+// Handler: Common actions (exercise, pat, walk) with cooldowns and exp gains
+async function petAction(userPetData, petId, action) {
+  const now = Date.now();
+
+  const cooldowns = {
+    excercise: 6,
+    walk: 6,
+    pat: 3
+  };
+
+  const expValues = {
+    excercise: 10,
+    walk: 10,
+    pat: 10
+  };
+
+  const fieldKeys = {
+    excercise: 'lastExercise',
+    walk: 'lastWalkTime',
+    pat: 'lastPatTime'
+  };
+
+  const lastTime = userPetData.pets[petId][fieldKeys[action]];
+  const limit = cooldowns[action];
+
+  if (lastTime && Helper.checkTimeGap(lastTime, now) < limit) {
+    const remaining = (
+      limit - Helper.checkTimeGap(lastTime, now, {
+        format: 'hours'
+      })
+    ).toFixed(1);
+
+    return {
+      content: `⏳ Please wait ${remaining} hours before ${action}.`,
+      data: userPetData
+    };
+  }
+
+  const pet = userPetData.pets[petId];
+
+  pet[fieldKeys[action]] = now;
+  pet.exp += expValues[action];
+
+  await userPetData.save();
+
+  const actionMsgs = {
+    exercise: `Whoa, ***${pet.name}*** just crushed that workout and is zooming with joy! 🔥🐾`,
+    walk: `Yippee! ***${pet.name}*** pranced along the path, sniffing every leaf and soaking up the sunshine! 🌿☀️`,
+    pat: `Squee! ***${pet.name}*** is in full cuddle mode and purring for more pats! 💖🎶`
+  };
+
+  return {
+    content: actionMsgs[action],
+    data: userPetData
+  }
+}
+
+// Handler: Display available pet food
+async function petFood(context, userPetData) {
+  await handleMessage(context, {
+    content: `🍖 You have ${userPetData.food} food remaining.`
+  });
+}
+
+// Handler: List all pets with their stats
+async function petList(context, userPetData) {
+  const list = userPetData.pets
+  .map((pet, index) => `
+    **${pet.name}** - 𝐿𝑒𝑣𝑒𝑙 ${pet.level} (*${pet.type}*)`
+  )
+  .join("\n- ");
+
+  const profile = context.user
+  ? context.user.displayAvatarURL({
+    dynamic: true
+  }): context.author.displayAvatarURL({
+    dynamic: true
+  });
+
+  const embed = new EmbedBuilder()
+  .setTitle("🐱 𝙔𝙊𝙐𝙍 𝙋𝙀𝙏𝙎")
+  .setDescription("- " + list)
+  .setColor("#630872")
+  .setAuthor({
+    name: `${context.user ? context.user.username : context.author.username}`,
+    iconURL: profile
+  });
+
+  await handleMessage(context, {
+    embeds: [embed]
+  });
+}
+
+// Handler: View active pet with interactive buttons
+async function petView(context, userPetData, petId) {
+  let pet = userPetData.pets[petId];
+  const imgUrls = getPetImage(pet.petId, pet.level);
+
+  const profile = context.user
+  ? context.user.displayAvatarURL({
+    dynamic: true
+  }): context.author.displayAvatarURL({
+    dynamic: true
+  });
+
+  const buildMainEmbeds = (pet, updateMessage) => {
+
+    const threshold = 100;
+    const nextLevelExp = threshold * (pet.level + 1) * (pet.level + 1);
+
+    const returnEmbed1 = new EmbedBuilder()
+    .setTitle(`${pet.name} (Level ${pet.level})`)
+    .setDescription(
+      `-# **TYPE** ⨳ ${pet.type}\n` +
+      `- ***FEED COUNT*** ${pet.feed}\n` +
+      `- ***EXPERIENCE*** ${pet.exp} / ${nextLevelExp}`
+    )
+    .setThumbnail(imgUrls ? imgUrls[0]: null)
+    .setColor("#FF00FF");
+
+    const returnEmbed2 = new EmbedBuilder()
+    .setDescription(!updateMessage ? petTalk(): updateMessage)
+    .setAuthor({
+      name: "`𝗉𝖾𝗍 𝗁𝖾𝗅𝗉` 𝘧𝘰𝘳 𝘤𝘮𝘥𝘴" + `  ⨳ 🍖 ${userPetData.food}`, iconURL: profile
+    });
+
+    return [returnEmbed1,
+      returnEmbed2];
+  }
+
+  const embeds = buildMainEmbeds(pet, "");
+
+  // Action row with buttons for interactive pet actions
+  const actionRow = new ActionRowBuilder()
+  .addComponents(
+    new ButtonBuilder()
+    .setCustomId("pet_feed")
+    .setLabel("🍖 𝗙𝗘𝗘𝗗")
+    .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+    .setCustomId("pet_pat")
+    .setLabel("☺️ 𝗣𝗔𝗧")
+    .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+    .setCustomId("pet_walk")
+    .setLabel("🚶🏻‍♂️ 𝗪𝗔𝗟𝗞")
+    .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+    .setCustomId("pet_exercise")
+    .setLabel("🤸🏻‍♂️ 𝗘𝗫𝗘𝗥𝗖𝗜𝗦𝗘")
+    .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+    .setCustomId("pet_play")
+    .setLabel("⚾ 𝗣𝗟𝗔𝗬")
+    .setStyle(ButtonStyle.Secondary)
+  );
+
+  let sentMessage;
+
+  const response = await handleMessage(context, {
+    embeds: embeds,
+    components: [actionRow]
+  });
+
+  if (context.isCommand) {
+    sentMessage = await context.fetchReply();
+  } else {
+    sentMessage = response;
+  }
+
+  // Collector filter: only allow original user to interact
+  const filter = interaction =>
+  interaction.user.id === (context.user?.id || context.author.id);
+
+  // Create collector to handle button clicks for 60 seconds
+  const collector = sentMessage.createMessageComponentCollector({
+    filter,
+    componentType: ComponentType.Button,
+    time: 60000
+  });
+
+  collector.on("collect", async interaction => {
+    const id = interaction.customId;
+    await interaction.deferUpdate();
+    let response;
+
+    switch (id) {
+      case "pet_feed":
+        response = await petFeed(userPetData, petId);
+        break;
+      case "pet_pat":
+        response = await petAction(userPetData, petId, "pat");
+        break;
+      case "pet_walk":
+        response = await petAction(userPetData, petId, "walk");
+        break;
+      case "pet_exercise":
+        response = await petAction(userPetData, petId, "excercise");
+        break;
+      case "pet_play":
+        response = {
+          content: `Yay! ${pet.name} is chasing toys and tumbling around in pure playtime bliss! 🧸✨`,
+          data: userPetData
+        }
+        break;
+    }
+
+    userPetData = response.data;
+    pet = userPetData.pets[petId];
+
+    const embeds = buildMainEmbeds(pet, response.content);
+    await interaction.editReply({
+      embeds: embeds
+  });
+
+    // Disable buttons after interaction
+  });
+
+collector.on("end", async collected => {
+  try {
+    // Disable all buttons when collector ends
+    const disabledRow = new ActionRowBuilder().addComponents(
+      actionRow.components.map(button => button.setDisabled(true))
+    );
+
+    await sentMessage.edit({
+      components: [disabledRow]
+  });
+} catch (err) {}
+});
+}
+
+// Main command export definition
+export default {
+name: "pet",
+description: "Manage your virtual pets!",
+aliases: ["pets",
+"mypet"],
+args: "<action> [parameters]",
+example: ["pet help"],
+cooldown: 10000,
+
+async execute(args, context) {
+const userId = context.user?.id || context.author.id;
+let userPetData = await UserPet.findOne({
+id: userId
+});
+
+if (!userPetData) {
+userPetData = new UserPet( {
+id: userId
+});
+}
+
+const activeId = parseInt(userPetData.active) || 0;
+
+// Auto-level-up logic
+const threshold = 100;
+const now = Date.now();
+const calculatedLevel = Math.floor(
+Math.sqrt(userPetData.pets[activeId].exp / threshold)
+) || 0;
+
+if (calculatedLevel !== userPetData.pets[activeId].level) {
+userPetData.pets[activeId].level = calculatedLevel;
+const reward = 10 + calculatedLevel;
+userPetData.food += reward;
+await userPetData.save();
+
+await handleMessage(context, {
+content: `🎉 Level up! ${
+userPetData.pets[activeId].name
+} is now level ${calculatedLevel}! You earned ${reward} food.`
+});
+}
+
+switch (args[1]) {
+case "help":
+return petHelp(context);
+case "rename":
+return petRename(context, userPetData, args);
+case "switch":
+return petSwitch(context, userPetData, args);
+case "food":
+return petFood(context, userPetData);
+case "list":
+return petList(context, userPetData);
+case undefined:
+case "view":
+return petView(context, userPetData, activeId);
+default:
+return handleMessage(context, {
+content: "⚠️ Invalid command. Type `pet help` for a list of valid commands."
+});
+}
+}
 };

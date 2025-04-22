@@ -296,7 +296,7 @@ export default {
       } else {
         amount = parseInt(args[1]);
         if (isNaN(amount) || amount < 1000 || amount > 1500000) {
-          return message.channel.send("⚠ Invalid amount! The betting range is between <:kasiko_coin:1300141236841086977> 1,000 and <:kasiko_coin:1300141236841086977> 15,00,000.")
+          return message.channel.send("⚠ 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗮𝗺𝗼𝘂𝗻𝘁! The betting range is between <:kasiko_coin:1300141236841086977> **1,000** and <:kasiko_coin:1300141236841086977> **15,00,000**.")
           .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }

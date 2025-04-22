@@ -130,10 +130,10 @@ export default {
         toss(message.author.id, amount, message.channel, choice);
       } else {
         // Send usage error if the amount argument is invalid
-        await message.channel.send("⚠️ Invalid cash amount! Amount should be an integer.\n\n"
-          + "**Use:** `tosscoin <amount> <choice>`\n"
+        await message.channel.send("⨳ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘤𝘢𝘴𝘩 𝘢𝘮𝘰𝘶𝘯𝘵*!*\n\n"
+          + "**Use:** `tosscoin <`**`amount`**`> <`**`choice`**`>`\n"
           + "- **Choice**: `heads(h) | tails(t)`\n"
-          + "-# Default choice is heads.");
+          + "-# ᴅᴇꜰᴀᴜʟᴛ ᴄʜᴏɪᴄᴇ ɪꜱ ʜᴇᴀᴅꜱ.");
         return;
       }
     } catch (err) {
