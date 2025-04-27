@@ -8,7 +8,7 @@ const embed = new EmbedBuilder()
 .setDescription("Here are the available commands for managing your Ice Cream Shop:")
 .addFields(
   {
-    name: "💢 General", value: "`ice create <shopname (no space)>`, status`, `shop`, `layout`, `leaderboard`"
+    name: "💢 General", value: "`ice create <shopname (no space)>`, `shop`, `layout`, `leaderboard`"
   },
   {
     name: "🍧 Flavours",
@@ -20,7 +20,7 @@ const embed = new EmbedBuilder()
   },
   {
     name: "💰 Economy",
-    value: "`exchange <amount>` (convert loyalty points into cash), `daily` (claim your daily bonus)"
+    value: "`exchange <amount>` (convert loyalty points into <:kasiko_coin:1300141236841086977> cash), `daily` (claim your daily bonus)"
   }
 )
 .setFooter({

@@ -439,7 +439,7 @@ aliases: ["pets",
 args: "<action> [parameters]",
 example: ["pet help"],
 cooldown: 10000,
-
+category: "🍬 Explore",
 async execute(args, context) {
 const userId = context.user?.id || context.author.id;
 let userPetData = await UserPet.findOne({

@@ -97,6 +97,25 @@ async function handleProfile(ctx) {
       });
     }
 
+    const upgradeCost = Number(Math.floor((alien.tech/10) * (alien.tech/10) * 25)) + 500;
+
+    // Enforce a 3-hour cooldown between harvests
+    let footerMsg = ".𖥔 ݁ ˖ִ ࣪𖤐 𝘠𝘰𝘶 𝘤𝘢𝘯 𝘩𝘢𝘳𝘷𝘦𝘴𝘵 𝘯𝘰𝘸!";
+    let disableHarvest = false;
+    const now = new Date();
+    const cooldownDuration = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+    if (alien.lastHarvest) {
+      const nextAvailableTime = new Date(alien.lastHarvest.getTime() + cooldownDuration);
+      if (now < nextAvailableTime) {
+        const remainingMs = nextAvailableTime - now;
+        const hours = Math.floor(remainingMs / (60 * 60 * 1000));
+        const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((remainingMs % (60 * 1000)) / 1000);
+        footerMsg = `⏱ 𝘞𝘢𝘪𝘵   ${hours}h ${minutes}m ${seconds}s   𝘵𝘰 𝘩𝘢𝘳𝘷𝘦𝘴𝘵 𝘢𝘨𝘢𝘪𝘯.`;
+        disableHarvest = true;
+      }
+    }
+
     // Categorize the embed fields into sections.
     const profileEmbed = new EmbedBuilder()
     .setTitle(`🛸 𝔸𝕝𝕚𝕖𝕟 ℙ𝕣𝕠𝕗𝕚𝕝𝕖: ${alien.name}`)
@@ -104,7 +123,7 @@ async function handleProfile(ctx) {
     .addFields(
       {
         name: "🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇",
-        value: `<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"}\n${alienCrownEmo} **Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}\n${alienEnEmo} **Energy:** ${alien.energy}\n${alienTechEmo} **Tech:** ${alien.tech}`,
+        value: `<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo} **Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}`,
         inline: false
       },
       {
@@ -119,22 +138,27 @@ async function handleProfile(ctx) {
       }
     )
     .setFooter({
-      text: ".𖥔 ݁ ˖ִ ࣪𖤐 𝖤𝗆𝖻𝗋𝖺𝖼𝖾 𝗒𝗈𝗎𝗋 𝖺𝗅𝗂𝖾𝗇 𝖽𝖾𝗌𝗍𝗂𝗇𝗒!"
+      text: footerMsg
     });
 
     // Build quick-action buttons.
     const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
       .setCustomId("alien_upgrade")
-      .setLabel("⏫ UPGRADE")
+      .setLabel("UPGRADE")
+      .setDisabled(alien.resources >= upgradeCost ? false: true)
+      .setEmoji('1336344266242527294')
       .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
       .setCustomId("alien_harvest")
-      .setLabel("🌾 HARVEST")
+      .setLabel("HARVEST")
+      .setDisabled(disableHarvest)
+      .setEmoji('1365911635465601104')
       .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
       .setCustomId("alien_disguise")
-      .setLabel("🎭 DISGUISE")
+      .setLabel("DISGUISE")
+      .setEmoji('1336360322516123669')
       .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
       .setCustomId("alien_help")
@@ -173,7 +197,30 @@ async function handleProfile(ctx) {
               return await handleUpgrade(ctx);
               break;
             case "alien_harvest":
-              return await handleHarvest(ctx);
+              await handleHarvest(ctx);
+
+              // Grab the current components (ActionRows) from the message
+              const current = interaction.message.components;
+
+              // Map each row → new ActionRowBuilder, disabling harvest
+              const newRows = current.map(row => {
+                const rowBuilder = new ActionRowBuilder();
+                for (const comp of row.components) {
+                  // If this is the harvest button, disable it
+                  if (comp.customId === "alien_harvest") {
+                    rowBuilder.addComponents(
+                      ButtonBuilder.from(comp).setDisabled(true)
+                    );
+                  } else {
+                    rowBuilder.addComponents(comp);
+                  }
+                }
+                return rowBuilder;
+              });
+
+              await interaction.editReply({
+                components: newRows
+              });
               break;
             case "alien_help":
               return await handleAlienHelp(ctx);
@@ -182,7 +229,8 @@ async function handleProfile(ctx) {
               return await handleDisguise(ctx);
               break;
             case "alien_battle":
-              return await handleBattle(ctx, []);
+              return await handleBattle(ctx,
+                []);
               break;
             default:
               return await interaction.followUp({
@@ -1092,11 +1140,11 @@ async function simulateBattle(ctx, alien, opponent) {
           damageToOpp *= 2;
           battleLog += `💥 **Critical Strike!** ${alien.name} **${attackMove}** with stellar force!\n`;
         } else {
-          battleLog += `⚡ **${alien.name} ${attackMove}!**\n`;
+          battleLog += `<:lighting_icon_kasiko:1354393463931670568> **${alien.name} ${attackMove}!**\n`;
         }
 
         oppHP -= damageToOpp;
-        battleLog += `👽 **${alien.name} deals ${damageToOpp} damage** to ${opponent.name}.\n`;
+        battleLog += ` <:aliens_nano:1336345303212752979 **${alien.name} deals ${damageToOpp} damage** to ${opponent.name}.\n`;
         battleLog +=
         oppHP > 0
         ? `(${opponent.name}: ${generateHealthBar(oppHP, oppMaxHP)})\n`: `💀 **${opponent.name} is obliterated!**\n`;
@@ -1129,11 +1177,11 @@ async function simulateBattle(ctx, alien, opponent) {
           damageToUser *= 2;
           battleLog += `💥 **Counter Critical!** ${opponent.name} **${attackMove}** with devastating force!\n`;
         } else {
-          battleLog += `⚡ **${opponent.name} ${attackMove}!**\n`;
+          battleLog += `<:lighting_icon_kasiko:1354393463931670568> **${opponent.name} ${attackMove}!**\n`;
         }
 
         userHP -= damageToUser;
-        battleLog += `⚡ **${opponent.name} deals ${damageToUser} damage** to ${alien.name}.\n`;
+        battleLog += `<:lighting_icon_kasiko:1354393463931670568> **${opponent.name} deals ${damageToUser} damage** to ${alien.name}.\n`;
         battleLog +=
         userHP > 0
         ? `(${alien.name}: ${generateHealthBar(userHP, userMaxHP)})\n`: `💀 **${alien.name} has fallen!**\n`;
@@ -1159,7 +1207,7 @@ async function simulateBattle(ctx, alien, opponent) {
       // The user lost
       const penalty = Math.floor(Math.random() * 30) + 30;
       alien.resources = Math.max(0, alien.resources - penalty);
-      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n⚠️ **${alien.name} lost ${alienResEmo} ${penalty} resources.**`;
+      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n⚠️ **${alien.name} lost ${alienResEmo} ***${penalty}*** resources.**`;
 
       // If opponent is not AI, give them some reward
       if (opponent.userId !== "AI" && typeof opponent.save === "function") {
@@ -1172,7 +1220,7 @@ async function simulateBattle(ctx, alien, opponent) {
       const reward = Math.floor(Math.random() * 50) + 50;
       alien.resources += reward;
       alien.influence += 1;
-      resultMessage = `🏆 **Victory!** ${alien.name} has conquered the battlefield!\n🎖️ **Reward:** ${alienResEmo} ${reward} resources gained!`;
+      resultMessage = `<:trophy:1352897371595477084> **Victory!** ${alien.name} has conquered the battlefield!\n<:gift:1350355327018729517> **Reward:** ${alienResEmo} ***${reward}*** resources gained!`;
 
       // If opponent is not AI, penalize them
       if (opponent.userId !== "AI" && typeof opponent.save === "function") {
@@ -1192,7 +1240,7 @@ async function simulateBattle(ctx, alien, opponent) {
         const reward = Math.floor(Math.random() * 50) + 50;
         alien.resources += reward;
         alien.influence += 1;
-        resultMessage = `🏆 **Victory by Endurance!**\n ***${alien.name}*** survives with more HP!\n🎖️ **Reward:** ${alienResEmo} ${reward} resources gained!`;
+        resultMessage = `<:trophy:1352897371595477084> **Victory by Endurance!**\n ***${alien.name}*** survives with more HP!\n<:gift:1350355327018729517> **Reward:** ${alienResEmo} ***${reward}*** resources gained!`;
 
         if (opponent.userId !== "AI" && typeof opponent.save === "function") {
           opponent.resources = Math.max(
@@ -1454,8 +1502,10 @@ async function handleTextCommand(ctx, args) {
         return await handleEnergyExchange(ctx,
           args[1]);
       case "upgrade":
+      case "up":
         return await handleUpgrade(ctx);
       case "battle":
+      case "b":
         return await handleBattle(ctx,
           args);
       case "help":

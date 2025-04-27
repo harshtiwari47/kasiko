@@ -12,7 +12,7 @@ export async function scavengerHunt(id, location, channel) {
     let userData = await getUserData(id);
 
     if (!userData) {
-      return channel.send(`⚠️ **${guild.user.username}**, you need to register first to start a scavenger hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return channel.send(`<:warning:1366050875243757699> **${guild.user.username}**, you need to register first to start a scavenger hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const locations = {
@@ -44,7 +44,7 @@ export async function scavengerHunt(id, location, channel) {
     };
 
     if (!locations[location]) {
-      return channel.send(`⚠️ Invalid location! Choose one of these: ${Object.keys(locations).join(", ")}.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return channel.send(`<:warning:1366050875243757699> Invalid location! Choose one of these: ${Object.keys(locations).join(", ")}.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const suspenseMessage = await channel.send(
@@ -85,7 +85,7 @@ export async function scavengerHunt(id, location, channel) {
     } else {
       // Trap message
       const trap = locations[location].trap;
-      message = `🚨 Oh no, **${guild.user.username}**! You stumbled upon ${trap} in the **${location}**. You barely escaped with your life! No rewards this time.`;
+      message = `<:alert:1366050815089053808> Oh no, **${guild.user.username}**! You stumbled upon ${trap} in the **${location}**. You barely escaped with your life! No rewards this time.`;
     }
 
     // Save updated user data
@@ -103,7 +103,7 @@ export async function scavengerHunt(id, location, channel) {
     // Add chance for Double or Nothing
     if (isTreasure && Math.random() < 0.3) {
       const gambleMessage = await channel.send(
-        `💰 **${guild.user.username}**, you've found a mysterious treasure chest! Would you like to risk your <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}** for a chance to double it? Type \`yes\` to gamble or \`no\` to keep your reward!`
+        `<:moneybag:1365976001179553792> **${guild.user.username}**, you've found a mysterious treasure chest! Would you like to risk your <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}** for a chance to double it? Type \`yes\` to gamble or \`no\` to keep your reward!`
       );
 
       // Await user response

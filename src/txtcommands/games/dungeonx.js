@@ -268,7 +268,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
       } else {
         // TREASURE (or other) ENCOUNTER.
         const treasureAmount = Math.floor(Math.random() * (reward[1] - reward[0] + 1)) + reward[0];
-        outcomeMessage = `💰 You found a treasure chest containing <:kasiko_coin:1300141236841086977> **${treasureAmount.toLocaleString()}**!`;
+        outcomeMessage = `<:moneybag:1365976001179553792> You found a treasure chest containing <:kasiko_coin:1300141236841086977> **${treasureAmount.toLocaleString()}**!`;
         try {
           await suspenseMessage.edit({
             content: outcomeMessage,

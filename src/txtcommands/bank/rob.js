@@ -69,7 +69,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
         value: 'Answer within **25 seconds** or the law catches up with you!\n- No need to use a prefix.'
       },
       {
-        name: '⚠️ **Be Careful!**',
+        name: '<:warning:1366050875243757699> **Be Careful!**',
         value: 'If your opponent solves the puzzle first, you will lose the challenge!'
       }
     )
@@ -148,15 +148,15 @@ export async function attemptRobbery(userId, targetUserId, message) {
             .setColor('#ff3333')
             .setTitle('🚔 **𝐂𝐨𝐫𝐫𝐞𝐜𝐭 𝐁𝐮𝐭 𝐂𝐚𝐮𝐠𝐡𝐭!**')
             .setDescription(
-              `**${username}**, you got caught in the act! 😨\n` +
-              `You were too slow, and the police took your **10% cash** as punishment. 🚨`
+              `<:alert:1366050815089053808> **${username}**, 𝗒𝗈𝗎 𝗀𝗈𝗍 𝖼𝖺𝗎𝗀𝗁𝗍 𝗂𝗇 𝗍𝗁𝖾 𝖺𝖼𝗍! 🤧\n` +
+              `-# 𝘠𝘰𝘶 𝘸𝘦𝘳𝘦 𝘵𝘰𝘰 𝘴𝘭𝘰𝘸, 𝘢𝘯𝘥 𝘵𝘩𝘦 𝘱𝘰𝘭𝘪𝘤𝘦 𝘵𝘰𝘰𝘬 𝘺𝘰𝘶𝘳 **10% cash** 𝘢𝘴 𝘱𝘶𝘯𝘪𝘴𝘩𝘮𝘦𝘯𝘵.`
             )
             .addFields(
               {
-                name: '💰 **Penalty:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
+                name: '<:moneybag:1365976001179553792> **𝙋𝙚𝙣𝙖𝙡𝙩𝙮:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
               },
               {
-                name: '💵 **Victim Rewarded:**', value: `${message.mentions.users.first().username} received <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
+                name: '💵 **𝙑𝙞𝙘𝙩𝙞𝙢 𝙍𝙚𝙬𝙖𝙧𝙙𝙚𝙙:**', value: `${message.mentions.users.first().username} received <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
               }
             )
             .setFooter({
@@ -198,14 +198,14 @@ export async function attemptRobbery(userId, targetUserId, message) {
             )
             .addFields(
               {
-                name: '💰 **You took:**', value: `<:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** cash`
+                name: '<:moneybag:1365976001179553792> **𝙔𝙤𝙪 𝙩𝙤𝙤𝙠:**', value: `<:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** cash`
               },
               {
-                name: '💵 **Victim lost:**', value: `<:kasiko_coin:1300141236841086977> **${robberyAmount.toLocaleString()}** cash`
+                name: '💵 **𝙑𝙞𝙘𝙩𝙞𝙢 𝙡𝙤𝙨𝙩:**', value: `<:kasiko_coin:1300141236841086977> **${robberyAmount.toLocaleString()}** cash`
               }
             )
             .setFooter({
-              text: 'Enjoy your spoils! 🤑'
+              text: 'ᴇɴᴊᴏʏ ʏᴏᴜʀ ꜱᴘᴏɪʟꜱ! 🤑'
             })
             .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/robber.png`)
 
@@ -280,14 +280,14 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
           const failEmbed = new EmbedBuilder()
           .setColor('#ff3333') // Red for failure
-          .setTitle('🚨 **𝐘𝐨𝐮 𝐆𝐨𝐭 𝐂𝐚𝐮𝐠𝐡𝐭!**')
+          .setTitle('<:alert:1366050815089053808> **𝐘𝐨𝐮 𝐆𝐨𝐭 𝐂𝐚𝐮𝐠𝐡𝐭!**')
           .setDescription(
             `**${message.author.username}**, you failed to solve the puzzle! 😱\n` +
             `The victim's security team caught you, and you lost **10% of your cash**.`
           )
           .addFields(
             {
-              name: '💰 **Penalty:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
+              name: '<:moneybag:1365976001179553792> **Penalty:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
             },
             {
               name: '💵 **Victim Rewarded:**', value: `${message.mentions.users.first().username} <:kasiko_coin:1300141236841086977> received **${penalty.toLocaleString()}** cash.`
@@ -361,7 +361,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
     if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
       console.error(error);
     }
-    return message.channel.send("🚨 **An unexpected error occurred. Please try again later.**").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send("<:alert:1366050815089053808> **An unexpected error occurred. Please try again later.**").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 

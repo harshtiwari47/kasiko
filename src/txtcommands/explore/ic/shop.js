@@ -72,7 +72,7 @@ export async function playerShopInfo(playerShop, flavors, userId, username, cont
       .setDisabled(false),
       new ButtonBuilder()
       .setCustomId('ice_help')
-      .setLabel(`⚠️`)
+      .setLabel(`❔`)
       .setStyle(ButtonStyle.Primary)
       .setDisabled(false)
     );

@@ -190,13 +190,13 @@ export const Bank = {
       .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/royal-bank.jpg`)
       .addFields(
         {
-          name: '❍ 𝗗𝗜𝗣𝗢𝗦𝗜𝗧', value: `<:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`, inline: true
+          name: '<:locker:1366052984546656257> 𝗗𝗜𝗣𝗢𝗦𝗜𝗧', value: `<:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`, inline: true
         },
         {
-          name: '❍ 𝗖𝗔𝗣𝗔𝗖𝗜𝗧𝗬', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
+          name: '<:locker:1366052984546656257> 𝗖𝗔𝗣𝗔𝗖𝗜𝗧𝗬', value: `<:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`, inline: true
         },
         {
-          name: '❍ 𝗖𝗔𝗦𝗛 𝗜𝗡 𝗛𝗔𝗡𝗗', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true
+          name: '<:locker:1366052984546656257> 𝗖𝗔𝗦𝗛 𝗜𝗡 𝗛𝗔𝗡𝗗', value: `<:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`, inline: true
         }
       )
       .setAuthor({

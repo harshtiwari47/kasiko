@@ -169,7 +169,7 @@ export default {
         const shopName = args[1].substring(0, 15);
 
         if (playerShop) {
-          return message.channel.send(`⚠️🍧 **${message.author.username}**, you already have a shop!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699>🍧 **${message.author.username}**, you already have a shop!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         const newShop = new IceCreamShop( {
@@ -254,7 +254,7 @@ export default {
 
           if (!args[2]) {
             return message.channel.send(
-              `⚠️ **${message.author.username}**, please mention the ice cream 🍨 name you want to share with your friend!\n\`icecream share @username <icecream>\``
+              `<:warning:1366050875243757699> **${message.author.username}**, please mention the ice cream 🍨 name you want to share with your friend!\n\`icecream share @username <icecream>\``
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
@@ -262,7 +262,7 @@ export default {
 
           if (!playerShop.flavors.some(flavour => flavour.name === sharedIceCreamName && flavour.items > 0)) {
             return message.channel.send(
-              `⚠️ **${message.author.username}**, no ice cream 🍨 with this name was found in your collection, or you don't have any left. Please check your collection and try again!`
+              `<:warning:1366050875243757699> **${message.author.username}**, no ice cream 🍨 with this name was found in your collection, or you don't have any left. Please check your collection and try again!`
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
@@ -284,7 +284,7 @@ export default {
 
           if (targetShop.shopLevel < sharedIceCream.level) {
             return message.channel.send(
-              `⚠️ **${message.author.username}**, your friend's shop level is too low to receive this ice cream 🍨. Encourage them to level up their shop and try again!`
+              `<:warning:1366050875243757699> **${message.author.username}**, your friend's shop level is too low to receive this ice cream 🍨. Encourage them to level up their shop and try again!`
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
@@ -331,7 +331,7 @@ export default {
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (e) {
           console.error(e);
-          return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while sharing ice cream 🍯!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, something went wrong while sharing ice cream 🍯!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -395,7 +395,7 @@ export default {
         .setDescription(`**${message.author.username}**, your shop's **${upgradeMessage}** has been improved! 🚀`)
         .addFields(
           {
-            name: `${upgradeType === "machine" ? "💰 Cash": "✪ Loyalty"} Spent`, value: `${upgradeType === "machine" ? "<:creamcash:1309495440030302282> -" + upgradeCost + "cash": "✪⁠" + upgradeRoyaltyCost + "loyalty"}`
+            name: `${upgradeType === "machine" ? "<:moneybag:1365976001179553792> Cash": "✪ Loyalty"} Spent`, value: `${upgradeType === "machine" ? "<:creamcash:1309495440030302282> -" + upgradeCost + "cash": "✪⁠" + upgradeRoyaltyCost + "loyalty"}`
           },
           {
             name: `📈 Shop ${upgradeType === "machine" ? "Level": "Layout"}`, value: `${upgradeType === "machine" ? playerShop.shopLevel: playerShop.shopLayout}`
@@ -420,7 +420,7 @@ export default {
 
           if (level > 2 || level < 0) {
             return message.channel.send(
-              `⚠️ Currently, only the up to \`level 2\` layout is available!`
+              `<:warning:1366050875243757699> Currently, only the up to \`level 2\` layout is available!`
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
@@ -437,7 +437,7 @@ export default {
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
           return message.channel.send(
-            `⚠️ **${message.author.username}**, please provide a valid level (1-2) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
+            `<:warning:1366050875243757699> **${message.author.username}**, please provide a valid level (1-2) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
           ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
@@ -448,7 +448,7 @@ export default {
           let amount = parseInt(args[1]);
 
           if (playerShop.loyaltyPoints < amount) {
-            return message.channel.send(`⚠️ **${message.author.username}**, your shop doesn't have ✪⁠ ${amount} loyalty points.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, your shop doesn't have ✪⁠ ${amount} loyalty points.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const user = await User.findOne({
@@ -456,7 +456,7 @@ export default {
           });
 
           if (!user) {
-            return message.channel.send(`⚠️ **${message.author.username}**, your account doesn't exist in Kasiko.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, your account doesn't exist in Kasiko.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           user.cash += amount * 750;
@@ -467,7 +467,7 @@ export default {
 
           return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount *750).toLocaleString()} cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(`⚠️ **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -511,7 +511,7 @@ export default {
           await playerShop.save();
 
           const bonusEmbed = new EmbedBuilder()
-          .setTitle("🎉 𝐃𝐚𝐢𝐥𝐲 𝐁𝐨𝐧𝐮𝐬 𝐂𝐥𝐚𝐢𝐦𝐞𝐝!")
+          .setTitle("🍧 𝐃𝐚𝐢𝐥𝐲 𝐁𝐨𝐧𝐮𝐬 𝐂𝐥𝐚𝐢𝐦𝐞𝐝!")
           .setDescription(`**${message.author.username}** received today's reward, including +1 reputation points!\nYou can claim 20 loyalty points, plus 20 for every 150 reputation!`)
           .addFields(
             {
@@ -547,7 +547,7 @@ export default {
 
     } catch (e) {
       console.error(e);
-      return message.channel.send(`⚠️ **${message.author.username}**, something went wrong while executing the ice cream shop command! 🍧🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, something went wrong while executing the ice cream shop command! 🍧🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };
