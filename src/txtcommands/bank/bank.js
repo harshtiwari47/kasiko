@@ -47,13 +47,15 @@ export const Bank = {
       }
 
       // Deduct cash and increase bank deposit
-      userData.cash = Math.max(0, userData.cash - Number(amount));
-      const newDeposit = account.deposit + amount;
+      let newDeposit = account.deposit + amount;
       const bankLimit = account.level * (BankInfo.storage || 300000);
 
       if (newDeposit > bankLimit) {
-        return message.channel.send(`⚠️ Oops! ***${message.author.username}***, you can't deposit an amount exceeding your account's deposit limit of <:kasiko_coin:1300141236841086977> **${bankLimit}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        amount = Math.max(0, amount - (newDeposit - bankLimit));
+        newDeposit = bankLimit;
       }
+
+      userData.cash = Math.max(0, userData.cash - Number(amount));
 
       try {
         await updateUser(userId, {

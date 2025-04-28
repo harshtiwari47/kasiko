@@ -23,6 +23,20 @@ import {
 
 import redisClient from "../../../redis.js";
 
+const emojiList = {
+  "wood": "<:wood:1366433544817086554>",
+  "metal": "<:metal:1366433796639162378>",
+  "carrot": "<:carrot:1366433463120695417>",
+  "supplies": "<:supplies:1366433993427259462>",
+  "scratch": "<:scratch:1366434067163254915>",
+  "fist": "<:fist:1366433331650232330>",
+  "shield": "<:zombie_shield:1366433228138872893>",
+  "shelter": "<:shelter:1366433165899727011>",
+  "shovel": "<:shovel:1366433062140903525>",
+  "medkit": "<:medkit:1366433010798428271>",
+  "reward": "<:reward_box:1366435558011965500>"
+}
+
 const weaponsStats = [{
   weapon: '🥊',
   name: 'Glove',
@@ -222,9 +236,9 @@ function createZombieEmbed(gameData) {
   .setDescription(
     `### <:lily:1318792945343791214> <@${gameData.id}>'s Apocalypse Stats\n` +
     `**❤️ Health:** ${gameData.health} HP\n` +
-    `**🏚️ Level:** Level ${gameData.level}\n` +
+    `**${emojiList.shelter} Level:** Level ${gameData.level}\n` +
     `**🧟 Kills:** ${gameData.kill} kills\n` +
-    `**🪓 Active Weapon:** ***${gameData.activeWeapon.weapon} ${gameData.activeWeapon.name}*** (Lvl: **${gameData.activeWeapon.level}**)`
+    `**${emojiList.shovel} Active Weapon:** ***${gameData.activeWeapon.weapon} ${gameData.activeWeapon.name}*** (Lvl: **${gameData.activeWeapon.level}**)`
   )
   .setFooter({
     text: `📖 zombie story ${gameData.level}`
@@ -234,10 +248,10 @@ function createZombieEmbed(gameData) {
   .setColor('#1a371b')
   .setTitle(`Resources`)
   .setDescription(
-    `**🪵 Wood:** ${gameData.resources.wood} units\n` +
-    `**⚙️ Metal:** ${gameData.resources.metal} units\n` +
-    `**💊 Medkits:** ${gameData.resources.medkit} units\n` +
-    `**🥕 Food:** ${gameData.resources.food} units\n` +
+    `**${emojiList.wood} Wood:** ${gameData.resources.wood} units\n` +
+    `**${emojiList.metal} Metal:** ${gameData.resources.metal} units\n` +
+    `**${emojiList.medkit} Medkits:** ${gameData.resources.medkit} units\n` +
+    `**${emojiList.carrot} Food:** ${gameData.resources.food} units\n` +
     `-# \`kas zombie help\``
   )
   .setFooter({
@@ -409,14 +423,16 @@ export async function zombieSurvival(id, playerInfo, channel) {
 
         new ButtonBuilder()
         .setCustomId("fight")
-        .setLabel("⚔️ Fight")
+        .setLabel("Fight")
+        .setEmoji("1366433331650232330")
         .setDisabled(disable.some(id => id === "fight"))
         .setStyle(ButtonStyle.Danger),
 
         new ButtonBuilder()
         .setCustomId("hide")
         .setDisabled(disable.some(id => id === "hide"))
-        .setLabel("🛡️ Hide")
+        .setLabel("Hide")
+        .setEmoji("1366433228138872893")
         .setStyle(ButtonStyle.Success),
 
         new ButtonBuilder()
@@ -473,7 +489,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
           outcome = `🔍 **${guild.user.username}** scavenged the area and found **${supplies} supplies**!\n- Stamina reduced by 10.`;
           embedColor = "Blue";
           image = "https://harshtiwari47.github.io/kasiko-public/images/zmb6.jpg";
-          lilyHelp = "Use 'search' to gather supplies to craft your weapon 🛠, but lose stamina! ⚡";
+          lilyHelp = "Use ***search*** to gather supplies to craft your weapon 🛠, but lose stamina! ⚡";
         } else if (choice === "fight") {
           const damage = Math.floor(Math.random() * 30) + 20;
           const zombieDamage = Math.floor(Math.random() * 15) + 10;
@@ -484,14 +500,14 @@ export async function zombieSurvival(id, playerInfo, channel) {
 
           zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
 
-          outcome = `⚔️ **${guild.user.username}** bravely fought a zombie!\n` +
-          `- Damage dealt: **${damage}**\n- Health lost: **${zombieDamage}**\n- Weapon durability reduced by 10.`;
+          outcome = `${emojiList.fist} **${guild.user.username}** 𝘣𝘳𝘢𝘷𝘦𝘭𝘺 𝘧𝘰𝘶𝘨𝘩𝘵 𝘢 𝘻𝘰𝘮𝘣𝘪𝘦!\n` +
+          `- :boom: 𝘿𝙖𝙢𝙖𝙜𝙚 𝙙𝙚𝙖𝙡𝙩 ~ **${damage}**\n- :broken_heart: 𝙃𝙚𝙖𝙡𝙩𝙝 𝙡𝙤𝙨𝙩 ~ **${zombieDamage}**\n- 𝑾𝒆𝒂𝒑𝒐𝒏 𝒅𝒖𝒓𝒂𝒃𝒊𝒍𝒊𝒕𝒚 𝒓𝒆𝒅𝒖𝒄𝒆𝒅 𝒃𝒚 10.`;
           embedColor = "Red";
-          lilyHelp = "Use 'fight' to battle zombies, but it risks your HP and weapon durability! 🪤";
+          lilyHelp = "Use ***fight*** to battle zombies, but it risks your HP and weapon durability! 🪤";
         } else if (choice === "hide") {
           const success = Math.random() < 0.7;
           if (success) {
-            outcome = `🛡️ You successfully hid from the zombies and regained **10 stamina**.`;
+            outcome = `${emojiList.shield} You successfully hid from the zombies and regained **10 stamina**.`;
             gameData.stamina += 10;
           } else {
             gameData.health -= 15;
@@ -499,7 +515,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
           }
           image = "https://harshtiwari47.github.io/kasiko-public/images/zmb3.jpg";
           embedColor = "Yellow";
-          lilyHelp = "Use 'hide' to regain some ⚡ stamina, helping you in your search 🔍!";
+          lilyHelp = "Use ***hide*** to regain some ⚡ stamina, helping you in your search 🔍!";
 
         } else if (choice === "craft") {
           image = "https://harshtiwari47.github.io/kasiko-public/images/zmb5.jpg";
@@ -510,17 +526,17 @@ export async function zombieSurvival(id, playerInfo, channel) {
             outcome = `🔧 You crafted and repaired your weapon! **Durability +30** (Cost: 50 supplies).`;
             embedColor = "Blue";
           } else {
-            outcome = `❌ Not enough supplies to craft! You need at least **50 supplies**.`;
+            outcome = `<:alert:1366050815089053808> Not enough supplies to craft! You need at least **50 supplies**.`;
             embedColor = "Green";
           }
 
-          lilyHelp = "Using 'craft weapon' enhances your defense and boosts weapon durability for fight! 🛠";
+          lilyHelp = "Using ***craft weapon*** enhances your defense and boosts weapon durability for fight! 🛠";
         } else if (choice === "weapon") {
           image = "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg";
           let killedZombies = Math.min((playerInfo.activeWeapon.minHunt + Math.floor(Math.random() * playerInfo.activeWeapon.maxHunt)), playerInfo.activeWeapon.maxHunt);
           gameData.zombiesKilled += killedZombies;
 
-          outcome = `⚔️ **${guild.user.username}** used their weapon ${playerInfo.activeWeapon.weapon} and killed ${killedZombies} zombie${killedZombies === 1 ? '': 's'}!\n`;
+          outcome = `${emojiList.shovel} **${guild.user.username}** used their weapon ${playerInfo.activeWeapon.weapon} and killed ${killedZombies} zombie${killedZombies === 1 ? '': 's'}!\n`;
 
           disableOptions.push("weapon");
           embedColor = "#822fea";
@@ -547,11 +563,12 @@ export async function zombieSurvival(id, playerInfo, channel) {
           return interaction.update({
             embeds: [
               new EmbedBuilder()
-              .setTitle("☠️ 𝒀𝒐𝒖 𝑫𝒊𝒆𝒅")
               .setDescription(
+                `## ${emojiList.scratch} 𝒁𝒐𝒎𝒃𝒊𝒆 𝑨𝒑𝒐𝒄𝒂𝒍𝒚𝒑𝒔𝒆 𝑺𝒕𝒓𝒊𝒌𝒆𝒔!\n`
                 `**${guild.user.username}** succumbed to the zombie horde...\n` +
-                `- 🧟 Total Zombies Killed: **${gameData.zombiesKilled}**\n` +
-                `- 📦 Supplies Gathered: **${gameData.supplies}**`
+                `- 🧟 𝗧𝗼𝘁𝗮𝗹 𝗭𝗼𝗺𝗯𝗶𝗲𝘀 𝗞𝗶𝗹𝗹𝗲𝗱: **${gameData.zombiesKilled}**\n` +
+                `- ${emojiList.supplies} 𝗦𝘂𝗽𝗽𝗹𝗶𝗲𝘀 𝗚𝗮𝘁𝗵𝗲𝗿𝗲𝗱: **${gameData.supplies}**\n` +
+                `𝘚𝘶𝘱𝘱𝘭𝘪𝘦𝘴 𝘣𝘰𝘯𝘶𝘴 ~ <:kasiko_coin:1300141236841086977> **${gameData.supplies * 10}**`
               )
               .setColor("DarkGrey")
             ],
@@ -571,7 +588,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
           `❤️ **Health:** ${gameData.health} ` +
           `⚡ **Stamina:** ${gameData.stamina}\n` +
           `🛠️ **Weapon Durability:** ${gameData.weaponDurability}\n` +
-          `📦 **Supplies:** ${gameData.supplies} ` +
+          `${emojiList.supplies} **Supplies:** ${gameData.supplies} ` +
           `🧟 **Zombies Killed:** ${gameData.zombiesKilled}`)
         .setColor(embedColor);
         if (image) {
@@ -608,11 +625,11 @@ export async function zombieSurvival(id, playerInfo, channel) {
             let medkit = 1 + Math.floor(Math.random() * 2);
             let metal = 10 + Math.floor(Math.random() * 30);
 
-            rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
-            `- <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
-            `- 🪵 Wood: **${wood}**\n` +
-            `- 💊 Medkit: **${medkit}**\n` +
-            `- ⚙️ Metal: **${metal}**`;
+            rewardMessage =
+            `- - <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
+            `- - ${emojiList.wood} Wood: **${wood}**\n` +
+            `- - ${emojiList.medkit} Medkit: **${medkit}**\n` +
+            `- - ${emojiList.metal} Metal: **${metal}**`;
 
             playerInfo.resources.wood += wood;
             playerInfo.resources.medkit += medkit;
@@ -628,11 +645,11 @@ export async function zombieSurvival(id, playerInfo, channel) {
             let medkit = 1 + Math.floor(Math.random() * 1);
             let metal = 10 + Math.floor(Math.random() * 25);
 
-            rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
-            `- <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
-            `- 🪵 Wood: **${wood}**\n` +
-            `- 💊 Medkit: **${medkit}**\n` +
-            `- ⚙️ Metal: **${metal}**`;
+            rewardMessage =
+            `- - <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
+            `- - ${emojiList.wood} Wood: **${wood}**\n` +
+            `- - ${emojiList.medkit} Medkit: **${medkit}**\n` +
+            `- - ${emojiList.metal} Metal: **${metal}**`;
 
             playerInfo.resources.wood += wood;
             playerInfo.resources.medkit += medkit;
@@ -648,11 +665,11 @@ export async function zombieSurvival(id, playerInfo, channel) {
             let food = 1 + Math.floor(Math.random() * 20);
             let metal = 10 + Math.floor(Math.random() * 10);
 
-            rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
-            `- <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
-            `- 🪵 Wood: **${wood}**\n` +
-            `- 🥕 Food: **${food}**\n` +
-            `- ⚙️ Metal: **${metal}**`;
+            rewardMessage =
+            `- - <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
+            `- - ${emojiList.wood} Wood: **${wood}**\n` +
+            `- - ${emojiList.carrot} Food: **${food}**\n` +
+            `- - ${emojiList.metal} Metal: **${metal}**`;
 
             playerInfo.resources.wood += wood;
             playerInfo.resources.food += food;
@@ -666,9 +683,9 @@ export async function zombieSurvival(id, playerInfo, channel) {
             let wood = 10 + Math.floor(Math.random() * 10);
             let food = 1 + Math.floor(Math.random() * 20);
 
-            rewardMessage = `➤ **${guild.user.username}**, here are your rewards:\n` +
-            `- 🪵 Wood: **${wood}**\n` +
-            `- 🥕 Food: **${food}**`;
+            rewardMessage =
+            `- - ${emojiList.wood} Wood: **${wood}**\n` +
+            `- - ${emojiList.carrot} Food: **${food}**`;
 
             playerInfo.resources.wood += wood;
             playerInfo.resources.food += food;
@@ -680,7 +697,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
 
           await playerInfo.save();
 
-          await channel.send(`## 𝒁𝒐𝒎𝒃𝒊𝒆 𝑨𝒑𝒐𝒄𝒂𝒍𝒚𝒑𝒔𝒆 𝑺𝒕𝒓𝒊𝒌𝒆𝒔!\n<:zombie3:1318799748139974689> A horde of zombies swarms you! **${guild.user.username}** couldn't escape in time ⏱️\n${rewardMessage}`);
+          await channel.send(`-# ## <:zombie3:1318799748139974689>  𝙰 𝚟𝚒𝚌𝚒𝚘𝚞𝚜 𝚑𝚘𝚛𝚍𝚎 𝚘𝚏 𝚣𝚘𝚖𝚋𝚒𝚎𝚜 𝚑𝚊𝚜 𝚊𝚝𝚝𝚊𝚌𝚔𝚎𝚍!\n⨳  𝚄𝚗𝚏𝚘𝚛𝚝𝚞𝚗𝚊𝚝𝚎𝚕𝚢, **${guild.user.username}** 𝚌𝚘𝚞𝚕𝚍𝚗'𝚝 𝚎𝚜𝚌𝚊𝚙𝚎 𝚒𝚗 𝚝𝚒𝚖𝚎. :stopwatch:\n## ${emojiList.reward} **Rewards Earned:**\n${rewardMessage}`);
         } catch (err) {}
       });
   } catch (e) {
@@ -718,7 +735,7 @@ async function viewUserWeaponCollection(playerInfo, message) {
       nextButton);
 
     if (!playerInfo.weapons || playerInfo.weapons.length === 0) {
-      return message.reply("⚠️ You don't have any weapons in your collection.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.reply("<:warning:1366050875243757699> You don't have any weapons in your collection.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     // Function to generate the embed for the current page
@@ -736,7 +753,7 @@ async function viewUserWeaponCollection(playerInfo, message) {
         let weaponData = weaponsStats.find(weaponDetails => weaponDetails.name.toLowerCase() === weapon.name.toLowerCase());
         embed.addFields({
           name: `Weapon ${start + index + 1}: ${weapon.name} ${weapon.weapon}`,
-          value: `- **Min Hunt**: ${weapon.minHunt}\n- **Max Hunt**: ${weapon.maxHunt}\n- **Level**: ${weapon.level}\n- **Cost**: ⚙️ ${weaponData.cost}`,
+          value: `- **Min Hunt**: ${weapon.minHunt}\n- **Max Hunt**: ${weapon.maxHunt}\n- **Level**: ${weapon.level}\n- **Cost**: ${emojiList.metal} ${weaponData.cost}`,
           inline: true,
         });
       });
@@ -791,7 +808,7 @@ async function viewUserWeaponCollection(playerInfo, message) {
     if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
       console.error(e);
     }
-    return message.reply("⚠️ Something went wrong while checking your weapons!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.reply("<:warning:1366050875243757699> Something went wrong while checking your weapons!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -847,11 +864,11 @@ export default {
         let weaponName = args[2] ? args[2].toLowerCase(): null;
 
         if (!weaponName) {
-          return message.channel.send(`⚠️ **${message.author.username}**, please provide the weapon name from your collection that you want to use currently!\nExample: \`zombie active glove\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, please provide the weapon name from your collection that you want to use currently!\nExample: \`zombie active glove\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         if (!playerInfo.weapons.some(weapon => weapon.name.toLowerCase() === weaponName)) {
-          return message.channel.send(`⚠️ **${message.author.username}**, no such weapon found in your apocalypse inventory!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, no such weapon found in your apocalypse inventory!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         let weaponData = playerInfo.weapons.find(weapon => weapon.name.toLowerCase() === weaponName);
@@ -862,21 +879,21 @@ export default {
 
         await playerInfo.save();
 
-        return message.channel.send(`🧟🪓 **${message.author.username}**, from now on you are using **${playerInfo.activeWeapon.weapon} ${playerInfo.activeWeapon.name}** during your zombie hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send(`🧟${emojiList.shovel} **${message.author.username}**, from now on you are using **${playerInfo.activeWeapon.weapon} ${playerInfo.activeWeapon.name}** during your zombie hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (subCommand === "modify") {
         let weaponName = args[2] ? args[2].toLowerCase(): null;
 
         if (!weaponName) {
-          return message.channel.send(`⚠️ **${message.author.username}**, please provide the weapon name from your collection that you want to use currently!\nExample: \`zombie modify glove\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, please provide the weapon name from your collection that you want to use currently!\nExample: \`zombie modify glove\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         // Find the weapon in the player's collection
         let WeaponIndex = playerInfo.weapons.findIndex(weapon => weapon.name.toLowerCase() === weaponName);
 
         if (WeaponIndex === -1) {
-          return message.channel.send(`⚠️ **${message.author.username}**, no such weapon found in your apocalypse inventory!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, no such weapon found in your apocalypse inventory!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         let WeaponInCollection = playerInfo.weapons[WeaponIndex];
@@ -884,7 +901,7 @@ export default {
         // Check if the player has enough resources
         let WeaponDetails = weaponsStats.find(weapon => weapon.name.toLowerCase() === weaponName);
         if (WeaponDetails.cost && playerInfo.resources.metal < WeaponDetails.cost) {
-          return message.channel.send(`⚠️ **${message.author.username}**, you don't have enough ⚙️ Metal to level up **${weaponName}**!\nRequired: ⚙️ ${WeaponDetails.cost}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you don't have enough ${emojiList.metal} Metal to level up **${weaponName}**!\nRequired: ${emojiList.metal} ${WeaponDetails.cost}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         // Update the weapon in the collection
@@ -906,7 +923,7 @@ export default {
         // Save the changes to the database
         try {
           await playerInfo.save();
-          return message.channel.send(`🧟🪓 **${message.author.username}**, you have upgraded your **${WeaponInCollection.weapon} ${WeaponInCollection.name}** to level ${WeaponInCollection.level}!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`🧟${emojiList.shovel} **${message.author.username}**, you have upgraded your **${WeaponInCollection.weapon} ${WeaponInCollection.name}** to level ${WeaponInCollection.level}!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (error) {
           console.error("Error saving playerInfo:", error);
           return message.channel.send(`❌ An error occurred while saving your data. Please try again.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -937,11 +954,11 @@ export default {
           })
 
           await playerInfo.save();
-          return message.channel.send(`🏠 **${message.author.username}**, you have successfully upgraded your shelter to Level **${playerInfo.level}** using 🪵 **${woodReq}** wood!\n${newWeaponMessage}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`🏠 **${message.author.username}**, you have successfully upgraded your shelter to Level **${playerInfo.level}** using ${emojiList.wood} **${woodReq}** wood!\n${newWeaponMessage}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else if (numberOfTimesLevelUp === 0 || numberOfTimesLevelUp < 0) {
-          return message.channel.send(`⚠️ What’s that? Please provide a valid number for upgrade!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> What’s that? Please provide a valid number for upgrade!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(`⚠️ **${message.author.username}**, you don’t have enough 🪵 **${numberOfTimesLevelUp * 100} **wood in your apocalypse resources to upgrade your shelter.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you don’t have enough ${emojiList.wood} **${numberOfTimesLevelUp * 100} **wood in your apocalypse resources to upgrade your shelter.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -951,11 +968,11 @@ export default {
           playerInfo.resources.medkit -= numberOfMed;
           playerInfo.health += 50 * numberOfMed;
           await playerInfo.save();
-          return message.channel.send(`⛑️💊 **${message.author.username}**, you have successfully used **${numberOfMed}** and gained ${numberOfMed * 50} HP for your apocalypse hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`${emojiList.medkit} **${message.author.username}**, you have successfully used **${numberOfMed}** and gained ${numberOfMed * 50} HP for your apocalypse hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else if (numberOfMed === 0 || numberOfMed < 0) {
-          return message.channel.send(`⚠️ What’s that? Please provide a valid number for medkit/cure!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> What’s that? Please provide a valid number for medkit/cure!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(`⚠️ **${message.author.username}**, you don't have enough medkit in your apocalypse resources to cure!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you don't have enough medkit in your apocalypse resources to cure!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -965,11 +982,11 @@ export default {
           playerInfo.resources.food -= numberOfFood;
           playerInfo.health += 10 * numberOfFood;
           await playerInfo.save();
-          return message.channel.send(`⛑️🥕 **${message.author.username}**, you have successfully eaten your food and gained ${numberOfFood * 10} HP for your apocalypse hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`${emojiList.medkit}${emojiList.carrot}**${message.author.username}**, you have successfully eaten your food and gained ${numberOfFood * 10} HP for your apocalypse hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else if (numberOfFood === 0 || numberOfFood < 0) {
-          return message.channel.send(`⚠️ What’s that? Please provide a valid number for food!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> What’s that? Please provide a valid number for food!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(`⚠️ **${message.author.username}**, you don't have enough food in your apocalypse resources to eat!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you don't have enough food in your apocalypse resources to eat!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -985,7 +1002,7 @@ export default {
           let userData = await getUserData(message.author.id);
 
           if (userData.cash <= 3000) {
-            return message.channel.send(`⚠️ **${message.author.username}**, you don't have <:kasiko_coin:1300141236841086977> 3000 cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you don't have <:kasiko_coin:1300141236841086977> 3000 cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           userData.cash -= 3000;
@@ -995,7 +1012,7 @@ export default {
           await updateUser(message.author.id, userData);
 
           return message.channel.send(
-            `⛑️ **${message.author.username}**, survivor, you have been healed and gained **+100 HP**! Stay strong and keep moving forward!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            `${emojiList.medkit} **${message.author.username}**, survivor, you have been healed and gained **+100 HP**! Stay strong and keep moving forward!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (err) {
           return message.channel.send(`⚠ **${message.author.username}**, something went wrong during healing!\n-# **Error**: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }

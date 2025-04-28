@@ -123,7 +123,7 @@ async function handleProfile(ctx) {
     .addFields(
       {
         name: "🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇",
-        value: `<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo} **Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}`,
+        value: `<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo}\n**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}`,
         inline: false
       },
       {
@@ -159,6 +159,11 @@ async function handleProfile(ctx) {
       .setCustomId("alien_disguise")
       .setLabel("DISGUISE")
       .setEmoji('1336360322516123669')
+      .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+      .setCustomId("aliens_ability")
+      .setLabel("ABILITIES")
+      .setEmoji('1336346125791137855')
       .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
       .setCustomId("alien_help")
@@ -227,6 +232,33 @@ async function handleProfile(ctx) {
               break;
             case "alien_disguise":
               return await handleDisguise(ctx);
+              break;
+            case "aliens_ability":
+              await handleAbilitiesList(ctx);
+
+              // Grab the current components (ActionRows) from the message
+              const currentAbButton = interaction.message.components;
+
+              // Map each row → new ActionRowBuilder, disabling harvest
+              const newRowsAb = currentAbButton.map(row => {
+                const rowBuilder = new ActionRowBuilder();
+                for (const comp of row.components) {
+                  // If this is the harvest button, disable it
+                  if (comp.customId === "aliens_ability") {
+                    rowBuilder.addComponents(
+                      ButtonBuilder.from(comp).setDisabled(true)
+                    );
+                  } else {
+                    rowBuilder.addComponents(comp);
+                  }
+                }
+                return rowBuilder;
+              });
+
+              await interaction.editReply({
+                components: newRowsAb
+              });
+
               break;
             case "alien_battle":
               return await handleBattle(ctx,
@@ -510,7 +542,7 @@ async function handleAbilitiesList(ctx) {
         `\n⟡ **𝖳𝖾𝖼𝗁 𝖨𝗇𝖼𝗋𝖾𝗆𝖾𝗇𝗍:** +${ability.techIncrement}`
       )
       .setFooter({
-        text: `⤿ 𝘗𝘢𝘨𝘦 ${pageIndex + 1} 𝘖𝘧 ${totalPages}`
+        text: `⤿ 𝘗𝘢𝘨𝘦 ${pageIndex + 1} 𝘖𝘧 ${totalPages} | 𝘙𝘌𝘘𝘜𝘐𝘙𝘌𝘔𝘌𝘕𝘛𝘚: alien inventory`
       });
 
       if (ability.upgradeRequirements && ability.upgradeRequirements.length > 0) {
@@ -521,6 +553,7 @@ async function handleAbilitiesList(ctx) {
           name: 'Upgrade Requirements', value: reqText, inline: false
         });
       }
+
       return embed;
     }
 
@@ -744,8 +777,8 @@ async function handleInventoryList(ctx) {
 
       pageItems.forEach(item => {
         embed.addFields({
-          name: `<:left:1350355384111468576> ${item.emoji} ${item.itemName}`,
-          value: `**Quantity:** ${item.quantity}`,
+          name: `<:left:1350355384111468576> ${item.emoji} ${item.itemName?.toUpperCase()}`,
+          value: `-# **𝘘𝘜𝘈𝘕𝘛𝘐𝘛𝘠 ~ ** ${item.quantity}`,
           inline: false,
         });
       });
@@ -1144,7 +1177,7 @@ async function simulateBattle(ctx, alien, opponent) {
         }
 
         oppHP -= damageToOpp;
-        battleLog += ` <:aliens_nano:1336345303212752979 **${alien.name} deals ${damageToOpp} damage** to ${opponent.name}.\n`;
+        battleLog += ` <:aliens_nano:1336345303212752979> **${alien.name} deals ${damageToOpp} damage** to ${opponent.name}.\n`;
         battleLog +=
         oppHP > 0
         ? `(${opponent.name}: ${generateHealthBar(oppHP, oppMaxHP)})\n`: `💀 **${opponent.name} is obliterated!**\n`;
