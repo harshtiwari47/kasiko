@@ -34,7 +34,13 @@ const emojiList = {
   "shelter": "<:shelter:1366433165899727011>",
   "shovel": "<:shovel:1366433062140903525>",
   "medkit": "<:medkit:1366433010798428271>",
-  "reward": "<:reward_box:1366435558011965500>"
+  "reward": "<:reward_box:1366435558011965500>",
+  "syringe": "<:syringe:1366621473267122197>",
+  "tools": "<:tools:1366621543177912442>",
+  "eva": "<:eva:1366632251856781352>",
+  "zombie": "<:zombie:1366632304054632528>",
+  "bottle": "<:kerosene_bottle:1366632375689281666>",
+  "bomb": "<:bomb:1366632465015504946>"
 }
 
 const weaponsStats = [{
@@ -237,7 +243,7 @@ function createZombieEmbed(gameData) {
     `### <:lily:1318792945343791214> <@${gameData.id}>'s Apocalypse Stats\n` +
     `**❤️ Health:** ${gameData.health} HP\n` +
     `**${emojiList.shelter} Level:** Level ${gameData.level}\n` +
-    `**🧟 Kills:** ${gameData.kill} kills\n` +
+    `**${emojiList.zombie} Kills:** ${gameData.kill} kills\n` +
     `**${emojiList.shovel} Active Weapon:** ***${gameData.activeWeapon.weapon} ${gameData.activeWeapon.name}*** (Lvl: **${gameData.activeWeapon.level}**)`
   )
   .setFooter({
@@ -402,7 +408,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
     // Starting game embed
     const introEmbed = new EmbedBuilder()
     .setDescription(
-      `## 🧟 ᤁᴏ꧑ხıɛ ᥉ᤙɾ᥎ı᥎ɑꝇ\n**${guild.user.username}**, you find yourself surrounded in a zombie-infested world. Your goal: **SURVIVE**!\n\n` +
+      `## ${emojiList.zombie} ᤁᴏ꧑ხıɛ ᥉ᤙɾ᥎ı᥎ɑꝇ\n**${guild.user.username}**, you find yourself surrounded in a zombie-infested world. Your goal: **SURVIVE**!\n\n` +
       "You can take actions like **Search**, **Fight**, **Hide**, **Craft Weapon**, or **Special Weapon**. Choose wisely to manage your **Health**, **Stamina**, and **Supplies**.\n" +
       "Good luck! You have 1 minute and 30 seconds."
     )
@@ -467,7 +473,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
         let outcome = "";
         let embedColor = "DarkRed";
         let image = null;
-        let statusTitle = "Zombie Survival Update `🧟`";
+        let statusTitle = `Zombie Survival Update ${emojiList.zombie}`;
         let lilyHelp = `Best of luck, Survivor!`;
 
         let zombies = {
@@ -511,7 +517,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             gameData.stamina += 10;
           } else {
             gameData.health -= 15;
-            outcome = `🧟 A zombie spotted you while hiding! You lost **15 health**.`;
+            outcome = `${emojiList.zombie} A zombie spotted you while hiding! You lost **15 health**.`;
           }
           image = "https://harshtiwari47.github.io/kasiko-public/images/zmb3.jpg";
           embedColor = "Yellow";
@@ -560,20 +566,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
         // Check if user is dead
         if (gameData.health <= 0) {
           collector.stop();
-          return interaction.update({
-            embeds: [
-              new EmbedBuilder()
-              .setDescription(
-                `## ${emojiList.scratch} 𝒁𝒐𝒎𝒃𝒊𝒆 𝑨𝒑𝒐𝒄𝒂𝒍𝒚𝒑𝒔𝒆 𝑺𝒕𝒓𝒊𝒌𝒆𝒔!\n`
-                `**${guild.user.username}** succumbed to the zombie horde...\n` +
-                `- 🧟 𝗧𝗼𝘁𝗮𝗹 𝗭𝗼𝗺𝗯𝗶𝗲𝘀 𝗞𝗶𝗹𝗹𝗲𝗱: **${gameData.zombiesKilled}**\n` +
-                `- ${emojiList.supplies} 𝗦𝘂𝗽𝗽𝗹𝗶𝗲𝘀 𝗚𝗮𝘁𝗵𝗲𝗿𝗲𝗱: **${gameData.supplies}**\n` +
-                `𝘚𝘶𝘱𝘱𝘭𝘪𝘦𝘴 𝘣𝘰𝘯𝘶𝘴 ~ <:kasiko_coin:1300141236841086977> **${gameData.supplies * 10}**`
-              )
-              .setColor("DarkGrey")
-            ],
-            components: []
-          });
+          return;
         }
 
         const statusTitleEmbed = new EmbedBuilder()
@@ -587,9 +580,9 @@ export async function zombieSurvival(id, playerInfo, channel) {
         .setDescription(
           `❤️ **Health:** ${gameData.health} ` +
           `⚡ **Stamina:** ${gameData.stamina}\n` +
-          `🛠️ **Weapon Durability:** ${gameData.weaponDurability}\n` +
+          `${emojiList.tools} **Weapon Durability:** ${gameData.weaponDurability}\n` +
           `${emojiList.supplies} **Supplies:** ${gameData.supplies} ` +
-          `🧟 **Zombies Killed:** ${gameData.zombiesKilled}`)
+          `${emojiList.zombie} **Zombies Killed:** ${gameData.zombiesKilled}`)
         .setColor(embedColor);
         if (image) {
           statusTitleEmbed.setThumbnail(image)
@@ -605,19 +598,21 @@ export async function zombieSurvival(id, playerInfo, channel) {
           embeds: [statusTitleEmbed, statusDesEmbed, statusEmbed],
           components: [actionRow(disableOptions, playerInfo.activeWeapon)]
         });
-      } catch (err) {}
+      } catch (err) {
+        console.log(err)
+      }
     });
 
     collector.on("end",
       async () => {
         try {
-          await gameMessage.edit({
-            components: []
-          });
+          await gameMessage.delete().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
           let rewardMessage = "";
 
           let reward = Math.random();
+
+          let userData = await getUserData(id);
 
           if (reward > 0.9 && gameData.zombiesKilled > 7) {
             let cash = 15000 + Math.floor(Math.random() * 15000);
@@ -626,7 +621,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             let metal = 10 + Math.floor(Math.random() * 30);
 
             rewardMessage =
-            `- - <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
+            `- - <:kasiko_coin:1300141236841086977> Cash: **${cash}**\n` +
             `- - ${emojiList.wood} Wood: **${wood}**\n` +
             `- - ${emojiList.medkit} Medkit: **${medkit}**\n` +
             `- - ${emojiList.metal} Metal: **${metal}**`;
@@ -635,10 +630,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             playerInfo.resources.medkit += medkit;
             playerInfo.resources.metal += metal;
 
-            let userData = await getUserData(id);
             userData.cash += cash;
-            await updateUser(id, userData);
-
           } else if (reward > 0.75 && gameData.zombiesKilled > 4) {
             let cash = 10000 + Math.floor(Math.random() * 10000);
             let wood = 20 + Math.floor(Math.random() * 25);
@@ -646,7 +638,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             let metal = 10 + Math.floor(Math.random() * 25);
 
             rewardMessage =
-            `- - <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
+            `- - <:kasiko_coin:1300141236841086977> Cash: **${cash}**\n` +
             `- - ${emojiList.wood} Wood: **${wood}**\n` +
             `- - ${emojiList.medkit} Medkit: **${medkit}**\n` +
             `- - ${emojiList.metal} Metal: **${metal}**`;
@@ -655,10 +647,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             playerInfo.resources.medkit += medkit;
             playerInfo.resources.metal += metal;
 
-            let userData = await getUserData(id);
             userData.cash += cash;
-            await updateUser(id, userData);
-
           } else if (reward > 0.5 && gameData.zombiesKilled > 3) {
             let cash = 5000 + Math.floor(Math.random() * 5000);
             let wood = 20 + Math.floor(Math.random() * 10);
@@ -666,7 +655,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             let metal = 10 + Math.floor(Math.random() * 10);
 
             rewardMessage =
-            `- - <:kasiko_coin:1300141236841086977> Cash: ${cash}\n` +
+            `- - <:kasiko_coin:1300141236841086977> Cash: **${cash}**\n` +
             `- - ${emojiList.wood} Wood: **${wood}**\n` +
             `- - ${emojiList.carrot} Food: **${food}**\n` +
             `- - ${emojiList.metal} Metal: **${metal}**`;
@@ -697,7 +686,22 @@ export async function zombieSurvival(id, playerInfo, channel) {
 
           await playerInfo.save();
 
-          await channel.send(`-# ## <:zombie3:1318799748139974689>  𝙰 𝚟𝚒𝚌𝚒𝚘𝚞𝚜 𝚑𝚘𝚛𝚍𝚎 𝚘𝚏 𝚣𝚘𝚖𝚋𝚒𝚎𝚜 𝚑𝚊𝚜 𝚊𝚝𝚝𝚊𝚌𝚔𝚎𝚍!\n⨳  𝚄𝚗𝚏𝚘𝚛𝚝𝚞𝚗𝚊𝚝𝚎𝚕𝚢, **${guild.user.username}** 𝚌𝚘𝚞𝚕𝚍𝚗'𝚝 𝚎𝚜𝚌𝚊𝚙𝚎 𝚒𝚗 𝚝𝚒𝚖𝚎. :stopwatch:\n## ${emojiList.reward} **Rewards Earned:**\n${rewardMessage}`);
+          userData.cash += (gameData?.supplies || 0) * 10;
+          await updateUser(id, userData);
+
+          await channel.send({
+            content: "## ```𝑨 𝒗𝒊𝒄𝒊𝒐𝒖𝒔 𝒉𝒐𝒓𝒅𝒆 𝒐𝒇 𝒛𝒐𝒎𝒃𝒊𝒆𝒔 𝒉𝒂𝒔 𝒂𝒕𝒕𝒂𝒄𝒌𝒆𝒅!```\n" + `<:zombie3:1318799748139974689> \`𝚄𝚗𝚏𝚘𝚛𝚝𝚞𝚗𝚊𝚝𝚎𝚕𝚢, \`**\`${guild.user.username}\`** \`𝚌𝚘𝚞𝚕𝚍𝚗'𝚝 𝚎𝚜𝚌𝚊𝚙𝚎 𝚒𝚗 𝚝𝚒𝚖𝚎.\` ${emojiList.scratch}\n## ${emojiList.reward} **Rewards Earned:**\n${rewardMessage}`,
+            embeds: [
+              new EmbedBuilder()
+              .setDescription(
+                `## <:lily:1318792945343791214> 𝒁𝒐𝒎𝒃𝒊𝒆 𝑨𝒑𝒐𝒄𝒂𝒍𝒚𝒑𝒔𝒆 𝑺𝒕𝒓𝒊𝒌𝒆𝒔!\n` +
+                `- ${emojiList.zombie} 𝗧𝗼𝘁𝗮𝗹 𝗭𝗼𝗺𝗯𝗶𝗲𝘀 𝗞𝗶𝗹𝗹𝗲𝗱: **${gameData.zombiesKilled}**\n` +
+                `- ${emojiList.supplies} 𝗦𝘂𝗽𝗽𝗹𝗶𝗲𝘀 𝗚𝗮𝘁𝗵𝗲𝗿𝗲𝗱: **${gameData.supplies}**\n` +
+                `𝘚𝘶𝘱𝘱𝘭𝘪𝘦𝘴 𝘣𝘰𝘯𝘶𝘴 ~ <:kasiko_coin:1300141236841086977> **${gameData.supplies * 10}**`
+              )
+              .setColor("DarkGrey")
+            ]
+          });
         } catch (err) {}
       });
   } catch (e) {
@@ -721,13 +725,13 @@ async function viewUserWeaponCollection(playerInfo, message) {
 
     const prevButton = new ButtonBuilder()
     .setCustomId('prev_page')
-    .setLabel('Previous')
+    .setLabel('◀ 𝗣𝗿𝗲𝘃𝗶𝗼𝘂𝘀')
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(currentPage === 0);
 
     const nextButton = new ButtonBuilder()
     .setCustomId('next_page')
-    .setLabel('Next')
+    .setLabel('𝗡𝗲𝘅𝘁 ▶')
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(currentPage === totalPages - 1);
 
@@ -741,9 +745,8 @@ async function viewUserWeaponCollection(playerInfo, message) {
     // Function to generate the embed for the current page
     const generateEmbed = () => {
       const embed = new EmbedBuilder()
-      .setColor('#35151b')
-      .setTitle(`**${message.author.username}**'s Weapon Collection`)
-      .setDescription('Here are your weapons and their stats:');
+      .setTitle(`<:lily:1318792945343791214> **${message.author.username}**'s Weapon Collection`)
+      .setDescription('-# 𝘏𝘦𝘳𝘦 𝘢𝘳𝘦 𝘺𝘰𝘶𝘳 𝘸𝘦𝘢𝘱𝘰𝘯𝘴 𝘢𝘯𝘥 𝘵𝘩𝘦𝘪𝘳 𝘴𝘵𝘢𝘵𝘴:');
 
       const start = currentPage * itemsPerPage;
       const end = Math.min(start + itemsPerPage, playerInfo.weapons.length);
@@ -752,7 +755,7 @@ async function viewUserWeaponCollection(playerInfo, message) {
       playerInfo.weapons.slice(start, end).forEach((weapon, index) => {
         let weaponData = weaponsStats.find(weaponDetails => weaponDetails.name.toLowerCase() === weapon.name.toLowerCase());
         embed.addFields({
-          name: `Weapon ${start + index + 1}: ${weapon.name} ${weapon.weapon}`,
+          name: `<:spark:1355139233559351326> 𝗪𝗘𝗔𝗣𝗢𝗡 ${start + index + 1}: ${weapon.name} ${weapon.weapon}`,
           value: `- **Min Hunt**: ${weapon.minHunt}\n- **Max Hunt**: ${weapon.maxHunt}\n- **Level**: ${weapon.level}\n- **Cost**: ${emojiList.metal} ${weaponData.cost}`,
           inline: true,
         });
@@ -845,11 +848,15 @@ export default {
         const cachedBattle = await redisClient.get(`user:${message.author.id}:zombieBattle`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
         if (cachedBattle) {
-          return message.channel.send("🧟 Please wait. 2 minutes haven't passed yet.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`${emojiList.zombie} Please wait. 2 minutes haven't passed yet.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         if (playerInfo.health <= 100) {
-          return message.reply("🧟 Your health is critically low, survivor! You need more than 100 HP to be battle-ready. Heal +100 HP for <:kasiko_coin:1300141236841086977> 3000 cash by using `kas z heal`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(
+            `${emojiList.eva} **${message.author.username}**, 𝘺𝘰𝘶𝘳 𝘩𝘦𝘢𝘭𝘵𝘩 𝘪𝘴 𝘤𝘳𝘪𝘵𝘪𝘤𝘢𝘭𝘭𝘺 𝘭𝘰𝘸, 𝘴𝘶𝘳𝘷𝘪𝘷𝘰𝘳! ${emojiList.scratch} \n` +
+            "-# ```Y𝘰𝘶 𝘯𝘦𝘦𝘥 𝘮𝘰𝘳𝘦 𝘵𝘩𝘢𝘯 100 𝘏𝘗 𝘵𝘰 𝘣𝘦 𝘣𝘢𝘵𝘵𝘭𝘦-𝘳𝘦𝘢𝘥𝘺.```\n" +
+            `${emojiList.syringe} 𝖨𝗇𝗌𝗍𝖺𝗇𝗍𝗅𝗒 𝗁𝖾𝖺𝗅 **+100 HP** using a _*med syringe*_ for <:kasiko_coin:1300141236841086977> **3000 cash** by using ***\`kas z heal\`***.`
+          ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         return zombieSurvival(message.author.id, playerInfo,
@@ -879,7 +886,7 @@ export default {
 
         await playerInfo.save();
 
-        return message.channel.send(`🧟${emojiList.shovel} **${message.author.username}**, from now on you are using **${playerInfo.activeWeapon.weapon} ${playerInfo.activeWeapon.name}** during your zombie hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send(`${emojiList.zombie}${emojiList.shovel} **${message.author.username}**, from now on you are using **${playerInfo.activeWeapon.weapon} ${playerInfo.activeWeapon.name}** during your zombie hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (subCommand === "modify") {
@@ -923,7 +930,7 @@ export default {
         // Save the changes to the database
         try {
           await playerInfo.save();
-          return message.channel.send(`🧟${emojiList.shovel} **${message.author.username}**, you have upgraded your **${WeaponInCollection.weapon} ${WeaponInCollection.name}** to level ${WeaponInCollection.level}!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`${emojiList.zombie}${emojiList.shovel} **${message.author.username}**, you have upgraded your **${WeaponInCollection.weapon} ${WeaponInCollection.name}** to level ${WeaponInCollection.level}!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (error) {
           console.error("Error saving playerInfo:", error);
           return message.channel.send(`❌ An error occurred while saving your data. Please try again.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
