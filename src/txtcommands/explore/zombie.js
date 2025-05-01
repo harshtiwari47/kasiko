@@ -21,209 +21,15 @@ import {
   ComponentType
 } from "discord.js";
 
+import zombieSurvivalBadges from "./zombie/zombieSurvivalBadges.js";
+import weaponsStats from "./zombie/weaponsStats.js";
 import redisClient from "../../../redis.js";
 
-const emojiList = {
-  "wood": "<:wood:1366433544817086554>",
-  "metal": "<:metal:1366433796639162378>",
-  "carrot": "<:carrot:1366433463120695417>",
-  "supplies": "<:supplies:1366433993427259462>",
-  "scratch": "<:scratch:1366434067163254915>",
-  "fist": "<:fist:1366433331650232330>",
-  "shield": "<:zombie_shield:1366433228138872893>",
-  "shelter": "<:shelter:1366433165899727011>",
-  "shovel": "<:shovel:1366433062140903525>",
-  "medkit": "<:medkit:1366433010798428271>",
-  "reward": "<:reward_box:1366435558011965500>",
-  "syringe": "<:syringe:1366621473267122197>",
-  "tools": "<:tools:1366621543177912442>",
-  "eva": "<:eva:1366632251856781352>",
-  "zombie": "<:zombie:1366632304054632528>",
-  "bottle": "<:kerosene_bottle:1366632375689281666>",
-  "bomb": "<:bomb:1366632465015504946>"
-}
-
-const weaponsStats = [{
-  weapon: '🥊',
-  name: 'Glove',
-  minHunt: 1,
-  maxHunt: 2,
-  level: 1,
-  cost: 100,
-  rarity: 'common',
-  unlockAt: 1
-},
-  {
-    weapon: '💣',
-    name: 'Bomb',
-    minHunt: 20,
-    maxHunt: 40,
-    level: 1,
-    cost: 500,
-    rarity: 'epic',
-    unlockAt: 15
-  },
-  {
-    weapon: '🔪',
-    name: 'Knife',
-    minHunt: 1,
-    maxHunt: 3,
-    level: 1,
-    cost: 150,
-    rarity: 'uncommon',
-    unlockAt: 3
-  },
-  {
-    weapon: '🛡️',
-    name: 'Shield',
-    minHunt: 8,
-    maxHunt: 15,
-    level: 1,
-    cost: 200,
-    rarity: 'rare',
-    unlockAt: 7
-  },
-  {
-    weapon: '🗡️',
-    name: 'Sword',
-    minHunt: 15,
-    maxHunt: 30,
-    level: 1,
-    cost: 300,
-    rarity: 'uncommon',
-    unlockAt: 6
-  },
-  {
-    weapon: '🏒',
-    name: 'Stick',
-    minHunt: 18,
-    maxHunt: 35,
-    level: 1,
-    cost: 400,
-    rarity: 'epic',
-    unlockAt: 16
-  },
-  {
-    weapon: '🪃',
-    name: 'Crate',
-    minHunt: 25,
-    maxHunt: 50,
-    level: 1,
-    cost: 800,
-    rarity: 'legendary',
-    unlockAt: 18
-  },
-  {
-    weapon: '🏹',
-    name: 'Bow',
-    minHunt: 2,
-    maxHunt: 4,
-    level: 1,
-    cost: 200,
-    rarity: 'common',
-    unlockAt: 2
-  },
-  {
-    weapon: '🔫',
-    name: 'Gun',
-    minHunt: 30,
-    maxHunt: 60,
-    level: 1,
-    cost: 1000,
-    rarity: 'legendary',
-    unlockAt: 20
-  },
-  {
-    weapon: '🧨',
-    name: 'Dynamite',
-    minHunt: 35,
-    maxHunt: 70,
-    level: 1,
-    cost: 1200,
-    rarity: 'epic',
-    unlockAt: 17
-  },
-  {
-    weapon: '🪓',
-    name: 'Axe',
-    minHunt: 22,
-    maxHunt: 45,
-    level: 1,
-    cost: 350,
-    rarity: 'rare',
-    unlockAt: 10
-  },
-  {
-    weapon: '⛏️',
-    name: 'Pickaxe',
-    minHunt: 3,
-    maxHunt: 7,
-    level: 1,
-    cost: 250,
-    rarity: 'uncommon',
-    unlockAt: 5
-  },
-  {
-    weapon: '🔨',
-    name: 'Hammer',
-    minHunt: 20,
-    maxHunt: 50,
-    level: 1,
-    cost: 400,
-    rarity: 'epic',
-    unlockAt: 14
-  }];
-
-const zombieSurvivalBadges = [{
-  badge: '🧟‍♂️',
-  name: 'Zombie Slayer',
-  rarity: 'common'
-},
-  {
-    badge: '🔥',
-    name: 'Firestarter',
-    rarity: 'uncommon'
-  },
-  {
-    badge: '⚔️',
-    name: 'Blade Master',
-    rarity: 'rare'
-  },
-  {
-    badge: '💀',
-    name: 'Grim Reaper',
-    rarity: 'epic'
-  },
-  {
-    badge: '🛡️',
-    name: 'Shield Bearer',
-    rarity: 'common'
-  },
-  {
-    badge: '🎯',
-    name: 'Perfect Aim',
-    rarity: 'legendary'
-  },
-  {
-    badge: '🧰',
-    name: 'Survivalist',
-    rarity: 'uncommon'
-  },
-  {
-    badge: '🔫',
-    name: 'Gun Slinger',
-    rarity: 'rare'
-  },
-  {
-    badge: '💥',
-    name: 'Explosion Expert',
-    rarity: 'epic'
-  },
-  {
-    badge: '🏆',
-    name: 'Top Survivor',
-    rarity: 'legendary'
-  }];
+import locations from "./zombie/locations.js";
+import emojiList from "./zombie/emojiList.js";
+import {
+  handleLocItems
+} from "./zombie/handleItems.js";
 
 function getShelterImg(level) {
   if (level > 15) level = 15;
@@ -386,7 +192,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
   try {
     const guild = await channel.guild.members.fetch(id);
     let disableOptions = [];
-    const gameData = {}
+    let gameData = {}
 
     playerInfo.lastBattle.time = new Date();
     playerInfo.lastBattle.active = true;
@@ -405,17 +211,35 @@ export async function zombieSurvival(id, playerInfo, channel) {
     if (!gameData.zombiesKilled) gameData.zombiesKilled = 0; // Default zombies killed: 0
     if (!gameData.weaponDurability) gameData.weaponDurability = 100; // Default weapon durability: 100
 
+    let targetLocation = locations.filter(loc => playerInfo.kill >= loc.killRequired);
+    targetLocation = targetLocation[Math.floor(Math.random() * targetLocation.length)];
+
+
+    let currentZombies = 2; // NEW: how many are actively attacking
+    let totalZombiesSpawned = 2; // to cap at gameData.ZombiesToKill
+
+    let dealLocationItems = handleLocItems(gameData, targetLocation, currentZombies);
+    gameData = (dealLocationItems?.gameData || gameData);
+    currentZombies = (dealLocationItems?.currentZombies || currentZombies);
+
+    // bonus supplies
+    gameData.supplies += targetLocation.bonousSupplies;
+
+    gameData.ZombiesToKill = ((2 * playerInfo.level) + Math.ceil(Math.random() * targetLocation.maxZombies));
+
     // Starting game embed
     const introEmbed = new EmbedBuilder()
     .setDescription(
-      `## ${emojiList.zombie} ᤁᴏ꧑ხıɛ ᥉ᤙɾ᥎ı᥎ɑꝇ\n**${guild.user.username}**, you find yourself surrounded in a zombie-infested world. Your goal: **SURVIVE**!\n\n` +
-      "You can take actions like **Search**, **Fight**, **Hide**, **Craft Weapon**, or **Special Weapon**. Choose wisely to manage your **Health**, **Stamina**, and **Supplies**.\n" +
-      "Good luck! You have 1 minute and 30 seconds."
+      `## ${emojiList.zombie} ᤁᴏ꧑ხıɛ ᥉ᤙɾ᥎ı᥎ɑꝇ\n-# **${guild.user.username.toUpperCase()}**, you find yourself surrounded in a zombie-infested world. Your goal: **SURVIVE**!\n\n` +
+      `**𝗟𝗢𝗖𝗔𝗧𝗜𝗢𝗡**  ${targetLocation?.name}\n` +
+      `**𝗧𝗜𝗠𝗘**  2 minutes\n` +
+      "> ◎ `𝘠𝘰𝘶 𝘤𝘢𝘯 𝘵𝘢𝘬𝘦 𝘢𝘤𝘵𝘪𝘰𝘯𝘴 𝘭𝘪𝘬𝘦 `**`ꜱᴇᴀʀᴄʜ`**`, `**`ꜰɪɢʜᴛ`**`, `**`ʜɪᴅᴇ`**`, `**`ᴄʀᴀꜰᴛ ᴡᴇᴀᴘᴏɴ`**`, 𝘰𝘳 `**`ꜱᴘᴇᴄɪᴀʟ ᴡᴇᴀᴘᴏɴ`**`. 𝘊𝘩𝘰𝘰𝘴𝘦 𝘸𝘪𝘴𝘦𝘭𝘺 𝘵𝘰 𝘮𝘢𝘯𝘢𝘨𝘦 𝘺𝘰𝘶𝘳 `**`ʜᴇᴀʟᴛʜ`**`, `**`ꜱᴛᴀᴍɪɴᴀ`**`, 𝘢𝘯𝘥 `**`ꜱᴜᴘᴘʟɪᴇꜱ`**.\n" +
+      `${dealLocationItems?.message && dealLocationItems?.message !== "" ? dealLocationItems?.message: ""} ${targetLocation.bonousSupplies ? `\n-# **𝖡𝗈𝗇𝗎𝗌 𝖲𝗎𝗉𝗉𝗅𝗂𝖾𝗌** ${emojiList.supplies} ${targetLocation.bonousSupplies}`: ""}`
     )
-    .setImage("https://harshtiwari47.github.io/kasiko-public/images/zmb2.png")
-    .setColor("DarkRed")
+    .setImage(targetLocation?.url)
+    .setColor(targetLocation?.color)
     .setFooter({
-      text: "Make your choice by clicking the buttons below."
+      text: "𝘔𝘢𝘬𝘦 𝘺𝘰𝘶𝘳 𝘤𝘩𝘰𝘪𝘤𝘦 𝘣𝘺 𝘤𝘭𝘪𝘤𝘬𝘪𝘯𝘨 𝘵𝘩𝘦 𝘣𝘶𝘵𝘵𝘰𝘯𝘴 𝘣𝘦𝘭𝘰𝘸."
     });
 
     // Action Buttons
@@ -460,162 +284,278 @@ export async function zombieSurvival(id, playerInfo, channel) {
       components: [actionRow(disableOptions, playerInfo.activeWeapon)]
     });
 
+    const zombiesEmbed = (logDetails, isFooter = false) => {
+      const EmbedGen = new EmbedBuilder()
+      .setTitle('𝙕𝙤𝙢𝙗𝙞𝙚𝙨 𝙒𝙖𝙫𝙚')
+      .setDescription(
+        `𝗭𝗢𝗠𝗕𝗜𝗘𝗦: **${gameData.ZombiesToKill}**\n` +
+        `𝗔𝗧𝗧𝗔𝗖𝗞𝗜𝗡𝗚: ${currentZombies}\n` +
+        `${logDetails && !isFooter ? logDetails: ""}`
+      )
+      .setThumbnail(targetLocation?.url);
+
+      if (isFooter) {
+        EmbedGen.setFooter({
+          text: logDetails
+        })
+      }
+
+      return EmbedGen;
+    }
+
+    const generateStatusEmbed = (embedColor) => {
+      return new EmbedBuilder()
+      .setDescription(
+        `❤️ **Health:** ${gameData.health} ` +
+        `⚡ **Stamina:** ${gameData.stamina}\n` +
+        `${emojiList.tools} **Weapon Durability:** ${gameData.weaponDurability}\n` +
+        `${emojiList.supplies} **Supplies:** ${gameData.supplies} ` +
+        `${emojiList.zombie} **Zombies Killed:** ${gameData.zombiesKilled}`)
+      .setColor(embedColor ? embedColor: "#d32b2b");
+    }
+
+    let zombiesEmbedShow = zombiesEmbed();
+
+    // Spawn wave every 30s
+    const spawnTimer = setInterval(async () => {
+      // compute how many left we can spawn
+      const remaining = gameData.ZombiesToKill - totalZombiesSpawned;
+      if (remaining <= 0) {
+        clearInterval(spawnTimer);
+        return;
+      }
+      const newZombies = Math.min(
+        remaining,
+        Math.floor(Math.random() * Math.min((playerInfo.activeWeapon.minHunt + Math.floor(Math.random() * playerInfo.activeWeapon.maxHunt)), playerInfo.activeWeapon.maxHunt)) + 1 // 1–4 spawns
+      );
+      currentZombies += newZombies;
+      totalZombiesSpawned += newZombies;
+
+      // Update the “zombiesEmbedShow” with arrival message
+      zombiesEmbedShow = zombiesEmbed(
+        `💀 **${newZombies}** more zombies have appeared! `
+      );
+
+      const currentEmbeds = gameMessage?.embeds?.map(e => EmbedBuilder.from(e));
+      const updatedEmbeds = currentEmbeds?.map(embed =>
+        embed.data.title === "𝙕𝙤𝙢𝙗𝙞𝙚𝙨 𝙒𝙖𝙫𝙚" ? zombiesEmbedShow: embed
+      );
+
+      if (gameData.weaponDurability > 0) {
+        if (disableOptions.some(id => id === "fight")) {
+          disableOptions = disableOptions.filter(id => id !== "fight");
+        }
+      }
+
+      await gameMessage?.edit({
+        embeds: updatedEmbeds,
+        components: [actionRow(disableOptions, playerInfo.activeWeapon)]
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    },
+      20_000);
+
+
     // Collect Button Clicks
     const filter = (interaction) => interaction.user.id === id;
     const collector = gameMessage.createMessageComponentCollector({
       filter,
-      time: 90000 // 1.3 - minute timeout
+      time: 120000 // 2 - minute timeout
     });
 
-    collector.on("collect", async (interaction) => {
-      try {
-        const choice = interaction.customId;
-        let outcome = "";
-        let embedColor = "DarkRed";
-        let image = null;
-        let statusTitle = `Zombie Survival Update ${emojiList.zombie}`;
-        let lilyHelp = `Best of luck, Survivor!`;
+    const damageTimer = setInterval(async () => {
+      if (currentZombies > 0) {
+        const dmg = currentZombies * 4;
+        gameData.health -= dmg;
 
-        let zombies = {
-          1: "1318799726283460630",
-          2: "1318799737176064000",
-          3: "1318799748139974689",
-          4: "1318799778410139719",
-          5: "1318799826086793297",
-          6: "1318799841979138048"
-        }
+        zombiesEmbedShow = zombiesEmbed(
+          `⚠️ ${currentZombies} zombie${currentZombies > 1 ? "s": ""} attacked you for ${dmg} damage!`, true
+        );
 
-        let zombieThumb = null;
+        const currentEmbeds = gameMessage?.embeds?.map(e => EmbedBuilder.from(e));
+        const updatedEmbeds = currentEmbeds?.map(embed =>
+          embed.data.title === "𝙕𝙤𝙢𝙗𝙞𝙚𝙨 𝙒𝙖𝙫𝙚" ? zombiesEmbedShow: embed
+        );
 
-        // Handle Player Actions
-        if (choice === "search") {
-          const supplies = Math.floor(Math.random() * 100) + 20;
-          gameData.supplies += supplies;
-          gameData.stamina -= 10;
-          outcome = `🔍 **${guild.user.username}** scavenged the area and found **${supplies} supplies**!\n- Stamina reduced by 10.`;
-          embedColor = "Blue";
-          image = "https://harshtiwari47.github.io/kasiko-public/images/zmb6.jpg";
-          lilyHelp = "Use ***search*** to gather supplies to craft your weapon 🛠, but lose stamina! ⚡";
-        } else if (choice === "fight") {
-          const damage = Math.floor(Math.random() * 30) + 20;
-          const zombieDamage = Math.floor(Math.random() * 15) + 10;
-          image = "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg";
-          gameData.zombiesKilled += 1;
-          gameData.weaponDurability -= Math.floor(Math.random() * 20) + 10;
-          gameData.health -= zombieDamage;
+        updatedEmbeds.pop();
 
-          zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
+        updatedEmbeds.push(generateStatusEmbed());
 
-          outcome = `${emojiList.fist} **${guild.user.username}** 𝘣𝘳𝘢𝘷𝘦𝘭𝘺 𝘧𝘰𝘶𝘨𝘩𝘵 𝘢 𝘻𝘰𝘮𝘣𝘪𝘦!\n` +
-          `- :boom: 𝘿𝙖𝙢𝙖𝙜𝙚 𝙙𝙚𝙖𝙡𝙩 ~ **${damage}**\n- :broken_heart: 𝙃𝙚𝙖𝙡𝙩𝙝 𝙡𝙤𝙨𝙩 ~ **${zombieDamage}**\n- 𝑾𝒆𝒂𝒑𝒐𝒏 𝒅𝒖𝒓𝒂𝒃𝒊𝒍𝒊𝒕𝒚 𝒓𝒆𝒅𝒖𝒄𝒆𝒅 𝒃𝒚 10.`;
-          embedColor = "Red";
-          lilyHelp = "Use ***fight*** to battle zombies, but it risks your HP and weapon durability! 🪤";
-        } else if (choice === "hide") {
-          const success = Math.random() < 0.7;
-          if (success) {
-            outcome = `${emojiList.shield} You successfully hid from the zombies and regained **10 stamina**.`;
-            gameData.stamina += 10;
-          } else {
-            gameData.health -= 15;
-            outcome = `${emojiList.zombie} A zombie spotted you while hiding! You lost **15 health**.`;
-          }
-          image = "https://harshtiwari47.github.io/kasiko-public/images/zmb3.jpg";
-          embedColor = "Yellow";
-          lilyHelp = "Use ***hide*** to regain some ⚡ stamina, helping you in your search 🔍!";
-
-        } else if (choice === "craft") {
-          image = "https://harshtiwari47.github.io/kasiko-public/images/zmb5.jpg";
-
-          if (gameData.supplies >= 50) {
-            gameData.supplies -= 50;
-            gameData.weaponDurability += 30;
-            outcome = `🔧 You crafted and repaired your weapon! **Durability +30** (Cost: 50 supplies).`;
-            embedColor = "Blue";
-          } else {
-            outcome = `<:alert:1366050815089053808> Not enough supplies to craft! You need at least **50 supplies**.`;
-            embedColor = "Green";
-          }
-
-          lilyHelp = "Using ***craft weapon*** enhances your defense and boosts weapon durability for fight! 🛠";
-        } else if (choice === "weapon") {
-          image = "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg";
-          let killedZombies = Math.min((playerInfo.activeWeapon.minHunt + Math.floor(Math.random() * playerInfo.activeWeapon.maxHunt)), playerInfo.activeWeapon.maxHunt);
-          gameData.zombiesKilled += killedZombies;
-
-          outcome = `${emojiList.shovel} **${guild.user.username}** used their weapon ${playerInfo.activeWeapon.weapon} and killed ${killedZombies} zombie${killedZombies === 1 ? '': 's'}!\n`;
-
-          disableOptions.push("weapon");
-          embedColor = "#822fea";
-          zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
-
-          lilyHelp = "Your special weapon can be used once for maximum impact! 💥";
-        }
-
-        if (gameData.stamina < 1) {
-          disableOptions.push("search");
-        } else if (disableOptions.some(id => id === "search")) {
-          disableOptions = disableOptions.filter(id => id !== "search");
-        }
-
-        if (gameData.weaponDurability < 1) {
-          disableOptions.push("fight");
-        } else if (disableOptions.some(id => id === "fight")) {
-          disableOptions = disableOptions.filter(id => id !== "fight");
-        }
-
-        // Check if user is dead
-        if (gameData.health <= 0) {
+        if (gameData.health < 0) {
           collector.stop();
-          return;
         }
 
-        const statusTitleEmbed = new EmbedBuilder()
-        .setDescription(`### ${statusTitle}\n-# <:lily:1318792945343791214> ${lilyHelp}`)
-
-        // Update Game Status
-        const statusDesEmbed = new EmbedBuilder()
-        .setDescription(`${outcome}`);
-
-        const statusEmbed = new EmbedBuilder()
-        .setDescription(
-          `❤️ **Health:** ${gameData.health} ` +
-          `⚡ **Stamina:** ${gameData.stamina}\n` +
-          `${emojiList.tools} **Weapon Durability:** ${gameData.weaponDurability}\n` +
-          `${emojiList.supplies} **Supplies:** ${gameData.supplies} ` +
-          `${emojiList.zombie} **Zombies Killed:** ${gameData.zombiesKilled}`)
-        .setColor(embedColor);
-        if (image) {
-          statusTitleEmbed.setThumbnail(image)
-        } else {
-          statusTitleEmbed.setThumbnail("https://harshtiwari47.github.io/kasiko-public/images/zmb2.png")
-        }
-
-        if (zombieThumb) {
-          statusDesEmbed.setThumbnail(zombieThumb)
-        }
-
-        await interaction.update({
-          embeds: [statusTitleEmbed, statusDesEmbed, statusEmbed],
-          components: [actionRow(disableOptions, playerInfo.activeWeapon)]
-        });
-      } catch (err) {
-        console.log(err)
+        await gameMessage?.edit({
+          embeds: updatedEmbeds
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
-    });
+    },
+      10_000);
+
+
+    collector.on("collect",
+      async (interaction) => {
+        try {
+          const choice = interaction.customId;
+          let outcome = "";
+          let embedColor = "DarkRed";
+          let image = null;
+          let statusTitle = `Zombie Survival Update ${emojiList.zombie}`;
+          let lilyHelp = `Best of luck, Survivor!`;
+
+          let zombies = {
+            1: "1318799726283460630",
+            2: "1318799737176064000",
+            3: "1318799748139974689",
+            4: "1318799778410139719",
+            5: "1318799826086793297",
+            6: "1318799841979138048"
+          }
+
+          let zombieThumb = null;
+
+          // Handle Player Actions
+          if (choice === "search") {
+            const supplies = Math.floor(Math.random() * 100) + 20;
+            gameData.supplies += supplies;
+            gameData.stamina -= 10;
+
+            let dealLocationItemsSearch = handleLocItems(gameData, targetLocation, currentZombies);
+            gameData = (dealLocationItemsSearch?.gameData || gameData);
+            currentZombies = (dealLocationItemsSearch?.currentZombies || currentZombies);
+
+            outcome = `🔍 **${guild.user.username}** scavenged the area and found **${supplies} supplies**!\n- Stamina reduced by 10.${dealLocationItemsSearch?.message ? dealLocationItemsSearch.message: ""}`;
+            embedColor = "Blue";
+            image = "https://harshtiwari47.github.io/kasiko-public/images/zmb6.jpg";
+            lilyHelp = "Use ***search*** to gather supplies to craft your weapon 🛠, but lose stamina! ⚡";
+          } else if (choice === "fight") {
+            const damage = Math.floor(Math.random() * 30) + 20;
+            image = "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg";
+            gameData.zombiesKilled += 1;
+            gameData.weaponDurability -= Math.floor(Math.random() * 20) + 10;
+            currentZombies = Math.max(0, currentZombies - 1);
+
+            zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
+
+            outcome = `${emojiList.fist} **${guild.user.username}** 𝘣𝘳𝘢𝘷𝘦𝘭𝘺 𝘧𝘰𝘶𝘨𝘩𝘵 𝘢 𝘻𝘰𝘮𝘣𝘪𝘦!\n` +
+            `- :boom: 𝗞𝗜𝗟𝗟𝗘𝗗 **1**`;
+            embedColor = "Red";
+            lilyHelp = "Use ***fight*** to battle zombies, but it risks your HP and weapon durability! 🪤";
+
+            zombiesEmbedShow = zombiesEmbed();
+          } else if (choice === "hide") {
+            const success = Math.random() < 0.7;
+            if (success) {
+              outcome = `${emojiList.shield} You successfully hid from the zombies and regained **10 stamina**.`;
+              gameData.stamina += 10;
+            } else {
+              gameData.health -= 15;
+              outcome = `${emojiList.zombie} A zombie spotted you while hiding! You lost **15 health**.`;
+            }
+            image = "https://harshtiwari47.github.io/kasiko-public/images/zmb3.jpg";
+            embedColor = "Yellow";
+            lilyHelp = "Use ***hide*** to regain some ⚡ stamina, helping you in your search 🔍!";
+
+          } else if (choice === "craft") {
+            image = "https://harshtiwari47.github.io/kasiko-public/images/zmb5.jpg";
+
+            if (gameData.supplies >= 50) {
+              gameData.supplies -= 50;
+              gameData.weaponDurability += 30;
+              outcome = `🔧 You crafted and repaired your weapon! **Durability +30** (Cost: 50 supplies).`;
+              embedColor = "Blue";
+            } else {
+              outcome = `<:alert:1366050815089053808> Not enough supplies to craft! You need at least **50 supplies**.`;
+              embedColor = "Green";
+            }
+
+            lilyHelp = "Using ***craft weapon*** enhances your defense and boosts weapon durability for fight! 🛠";
+          } else if (choice === "weapon") {
+            image = "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg";
+            let killedZombies = Math.min((playerInfo.activeWeapon.minHunt + Math.floor(Math.random() * playerInfo.activeWeapon.maxHunt)), playerInfo.activeWeapon.maxHunt);
+            gameData.zombiesKilled += Math.min(currentZombies, killedZombies);
+            currentZombies = Math.max(0, currentZombies - killedZombies);
+
+            outcome = `${emojiList.shovel} **${guild.user.username}** used their weapon ${playerInfo.activeWeapon.weapon} and killed ${killedZombies} zombie${killedZombies === 1 ? '': 's'}!\n`;
+
+            disableOptions.push("weapon");
+            embedColor = "#822fea";
+            zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
+
+            lilyHelp = "Your special weapon can be used once for maximum impact! 💥";
+
+            zombiesEmbedShow = zombiesEmbed();
+          }
+
+          if (gameData.stamina < 1) {
+            disableOptions.push("search");
+          } else if (disableOptions.some(id => id === "search")) {
+            disableOptions = disableOptions.filter(id => id !== "search");
+          }
+
+          if (gameData.weaponDurability < 1) {
+            disableOptions.push("fight");
+          } else if (disableOptions.some(id => id === "fight")) {
+            disableOptions = disableOptions.filter(id => id !== "fight");
+          }
+
+          if (currentZombies <= 0) {
+            if (!disableOptions.some(opt => opt === "fight")) {
+              disableOptions.push("fight");
+            }
+          } else if (disableOptions.some(id => id === "fight")) {
+            disableOptions = disableOptions.filter(id => id !== "fight");
+          }
+
+          // Check if user is dead
+          if (gameData.health <= 0) {
+            collector.stop();
+            return;
+          }
+
+          const statusTitleEmbed = new EmbedBuilder()
+          .setDescription(`### ${statusTitle}\n-# <:lily:1318792945343791214> ${lilyHelp}`)
+
+          // Update Game Status
+          const statusDesEmbed = new EmbedBuilder()
+          .setDescription(`${outcome}`);
+
+          const statusEmbed = generateStatusEmbed(embedColor);
+
+          if (image) {
+            statusTitleEmbed.setThumbnail(image)
+          } else {
+            statusTitleEmbed.setThumbnail("https://harshtiwari47.github.io/kasiko-public/images/zmb2.png")
+          }
+
+          if (zombieThumb) {
+            statusDesEmbed.setThumbnail(zombieThumb)
+          }
+
+          await interaction.update({
+            embeds: [statusTitleEmbed, statusDesEmbed, zombiesEmbedShow, statusEmbed],
+            components: [actionRow(disableOptions, playerInfo.activeWeapon)]
+          });
+        } catch (err) {
+          console.log(err)
+        }
+      });
 
     collector.on("end",
       async () => {
         try {
           await gameMessage.delete().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          clearInterval(spawnTimer);
+          clearInterval(damageTimer);
 
           let rewardMessage = "";
 
           let reward = Math.random();
 
           let userData = await getUserData(id);
+          const zombiesKilledReward = gameData.zombiesKilled * 200;
 
-          if (reward > 0.9 && gameData.zombiesKilled > 7) {
-            let cash = 15000 + Math.floor(Math.random() * 15000);
+          if (reward > 0.825 && gameData.zombiesKilled > 7) {
+            let cash = 15000 + Math.floor(Math.random() * 15000) + zombiesKilledReward;
             let wood = 20 + Math.floor(Math.random() * 30);
             let medkit = 1 + Math.floor(Math.random() * 2);
             let metal = 10 + Math.floor(Math.random() * 30);
@@ -631,8 +571,8 @@ export async function zombieSurvival(id, playerInfo, channel) {
             playerInfo.resources.metal += metal;
 
             userData.cash += cash;
-          } else if (reward > 0.75 && gameData.zombiesKilled > 4) {
-            let cash = 10000 + Math.floor(Math.random() * 10000);
+          } else if (reward > 0.6769 && gameData.zombiesKilled > 4) {
+            let cash = 10000 + Math.floor(Math.random() * 10000) + zombiesKilledReward;
             let wood = 20 + Math.floor(Math.random() * 25);
             let medkit = 1 + Math.floor(Math.random() * 1);
             let metal = 10 + Math.floor(Math.random() * 25);
@@ -648,8 +588,8 @@ export async function zombieSurvival(id, playerInfo, channel) {
             playerInfo.resources.metal += metal;
 
             userData.cash += cash;
-          } else if (reward > 0.5 && gameData.zombiesKilled > 3) {
-            let cash = 5000 + Math.floor(Math.random() * 5000);
+          } else if (reward > 0.5269 && gameData.zombiesKilled > 3) {
+            let cash = 5000 + Math.floor(Math.random() * 5000) + zombiesKilledReward;
             let wood = 20 + Math.floor(Math.random() * 10);
             let food = 1 + Math.floor(Math.random() * 20);
             let metal = 10 + Math.floor(Math.random() * 10);
@@ -671,8 +611,10 @@ export async function zombieSurvival(id, playerInfo, channel) {
           } else if (gameData.zombiesKilled > 2) {
             let wood = 10 + Math.floor(Math.random() * 10);
             let food = 1 + Math.floor(Math.random() * 20);
+            let cash = zombiesKilledReward;
 
             rewardMessage =
+            `- - <:kasiko_coin:1300141236841086977> Cash: **${cash}**\n` +
             `- - ${emojiList.wood} Wood: **${wood}**\n` +
             `- - ${emojiList.carrot} Food: **${food}**`;
 
@@ -709,6 +651,95 @@ export async function zombieSurvival(id, playerInfo, channel) {
       console.error(e);
     }
     return channel.send(`⚠ Something went wrong during the zombie survival! Please try again.\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  }
+}
+
+async function viewUserLocationCollection(playerInfo, message) {
+  try {
+    const itemsPerPage = 1; // Number of locations per page const totalPages = Math.ceil(locations.length / itemsPerPage); let currentPage = 0;
+    const totalPages = Math.ceil(locations.length / itemsPerPage);
+    let currentPage = 0;
+
+    // Create pagination buttons
+    const prevButton = new ButtonBuilder()
+    .setCustomId('prev_loc')
+    .setLabel('◀ Previous')
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(true);
+
+    const nextButton = new ButtonBuilder()
+    .setCustomId('next_loc')
+    .setLabel('Next ▶')
+    .setStyle(ButtonStyle.Secondary)
+    .setDisabled(totalPages <= 1);
+
+    const row = new ActionRowBuilder().addComponents(prevButton, nextButton);
+
+    // Helper to generate embed for the current page
+    const generateEmbed = () => {
+      const embed = new EmbedBuilder()
+      .setDescription(`## 🗺️ ${message.author.username}' s 𝑨𝒑𝒐𝒄𝒂𝒍𝒚𝒑𝒔𝒆 𝑳𝒐𝒄𝒂𝒕𝒊𝒐𝒏𝒔\n` + '-# Here are the game locations and their unlock status:');
+
+      const start = currentPage * itemsPerPage;
+      const end = Math.min(start + itemsPerPage, locations.length);
+
+      locations.slice(start, end).forEach((loc) => {
+        const unlocked = playerInfo.kill >= loc.killRequired;
+        embed.addFields({
+          name: `${loc.name} — ${unlocked ? 'ᴜɴʟᴏᴄᴋᴇᴅ': '🔒 ʟᴏᴄᴋᴇᴅ'}`,
+          value:
+          `- **${emojiList.zombie} Kills Required**: ${loc.killRequired}\n` +
+          `- **${emojiList.supplies} Bonus Supplies**: ${loc.bonousSupplies}\n` +
+          `- **🎒 Items Found**: ${loc.items.length ? loc.items.map(item => `${item.icon} **${item.name}**`).join(", "): "Unknown"}`,
+          inline: false
+        });
+        embed.setImage(loc.url);
+      });
+
+      return embed;
+    };
+
+    // Send initial embed with pagination
+    const reply = await message.channel.send({
+      embeds: [generateEmbed()],
+      components: [row],
+    });
+
+    // Collector to handle button interactions
+    const filter = (i) => i.isButton() && i.user.id === message.author.id;
+    const collector = reply.createMessageComponentCollector({
+      filter, time: 60000
+    });
+
+    collector.on('collect', async (interaction) => {
+      await interaction.deferUpdate();
+
+      if (interaction.customId === 'prev_loc' && currentPage > 0) {
+        currentPage--;
+      } else if (interaction.customId === 'next_loc' && currentPage < totalPages - 1) {
+        currentPage++;
+      }
+
+      // Update buttons disabled state
+      prevButton.setDisabled(currentPage === 0);
+      nextButton.setDisabled(currentPage === totalPages - 1);
+
+      // Edit the embed and components
+      await interaction.editReply({
+        embeds: [generateEmbed()],
+        components: [row],
+      });
+    });
+
+    collector.on('end',
+      (_, reason) => {
+        reply.edit({
+          components: []
+        }).catch(() => {});
+      });
+
+  } catch (e) {
+    console.error(e); return message.reply('⚠️ Something went wrong while fetching locations.').catch(() => {});
   }
 }
 
@@ -848,7 +879,7 @@ export default {
         const cachedBattle = await redisClient.get(`user:${message.author.id}:zombieBattle`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
         if (cachedBattle) {
-          return message.channel.send(`${emojiList.zombie} Please wait. 2 minutes haven't passed yet.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`${emojiList.zombie} Please wait. **2 minutes** haven't passed yet.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         if (playerInfo.health <= 100) {
@@ -865,6 +896,10 @@ export default {
 
       if (subCommand === "weapons" || subCommand === "weapon") {
         return viewUserWeaponCollection(playerInfo, message);
+      }
+
+      if (subCommand === "location" || subCommand === "l") {
+        return viewUserLocationCollection(playerInfo, message);
       }
 
       if (subCommand === "active") {
@@ -930,7 +965,7 @@ export default {
         // Save the changes to the database
         try {
           await playerInfo.save();
-          return message.channel.send(`${emojiList.zombie}${emojiList.shovel} **${message.author.username}**, you have upgraded your **${WeaponInCollection.weapon} ${WeaponInCollection.name}** to level ${WeaponInCollection.level}!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`${emojiList.zombie} ✶ ${emojiList.shovel} **${message.author.username}**, you have upgraded your **${WeaponInCollection.weapon} ${WeaponInCollection.name}** to level ${WeaponInCollection.level}!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (error) {
           console.error("Error saving playerInfo:", error);
           return message.channel.send(`❌ An error occurred while saving your data. Please try again.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -939,33 +974,39 @@ export default {
 
       if (subCommand === "upgrade") {
         let numberOfTimesLevelUp = args[2] && Number.isInteger(Number(args[2])) ? parseInt(args[2]): 1;
-        let woodReq = playerInfo.level * 100 * numberOfTimesLevelUp;
+        let woodReq = playerInfo.level * 150 * numberOfTimesLevelUp;
 
         if (numberOfTimesLevelUp > 0 && playerInfo.resources.wood >= woodReq) {
-          playerInfo.resources.wood -= 100 * numberOfTimesLevelUp;
+          playerInfo.resources.wood -= 150 * numberOfTimesLevelUp;
           playerInfo.level += numberOfTimesLevelUp;
 
-          let newWeapon = weaponsStats.find(weapon => weapon.unlockAt === playerInfo.level);
+          let newWeapons = weaponsStats.filter(weapon => weapon.unlockAt > (playerInfo.level - numberOfTimesLevelUp) && weapon.unlockAt <= playerInfo.level);
           let newWeaponMessage = "";
 
-          if (!playerInfo.weapons.some(weapon => weapon.name === newWeapon.name)) {
-            newWeaponMessage = `New weapon unlocked: ${newWeapon.weapon} **${newWeapon.name}**`
+          if (newWeapons.length) {
+            newWeaponMessage = `New weapon${newWeapons.length > 1 ? "s": ""} unlocked: ${newWeapons.map(weaponInfo => `${weaponInfo.weapon} **${weaponInfo.name}**`).join(", ")}`
+
+            newWeapons.forEach(newWeapon => {
+              if (newWeapon) {
+                playerInfo.weapons.push({
+                  name: newWeapon.name,
+                  weapon: newWeapon.weapon,
+                  maxHunt: newWeapon.maxHunt,
+                  minHunt: newWeapon.minHunt,
+                  level: 1,
+                });
+              }
+            });
           }
 
-          playerInfo.weapons.push({
-            name: newWeapon.name,
-            weapon: newWeapon.weapon,
-            maxHunt: newWeapon.maxHunt,
-            minHunt: newWeapon.minHunt,
-            level: 1,
-          })
-
           await playerInfo.save();
-          return message.channel.send(`🏠 **${message.author.username}**, you have successfully upgraded your shelter to Level **${playerInfo.level}** using ${emojiList.wood} **${woodReq}** wood!\n${newWeaponMessage}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`🏠 **${message.author.username}**, you have successfully upgraded your shelter to Level **${playerInfo.level}** using ${emojiList.wood} **${woodReq}** wood!\n${newWeaponMessage}`).catch(err => ![50001,
+            50013,
+            10008].includes(err.code) && console.error(err));
         } else if (numberOfTimesLevelUp === 0 || numberOfTimesLevelUp < 0) {
           return message.channel.send(`<:warning:1366050875243757699> What’s that? Please provide a valid number for upgrade!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you don’t have enough ${emojiList.wood} **${numberOfTimesLevelUp * 100} **wood in your apocalypse resources to upgrade your shelter.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you don’t have enough ${emojiList.wood} **${woodReq} **wood in your apocalypse resources to upgrade your shelter.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
@@ -1055,6 +1096,10 @@ export default {
           {
             name: 'upgrade',
             value: 'Upgrade your shelter level using wood.\n**Usage:** `zombie upgrade <timesToUpgrade>` (e.g., `zombie upgrade 2`)',
+          },
+          {
+            name: 'location',
+            value: 'Hunt at random unlocked locations.\n**Usage:** `zombie location`',
           },
           {
             name: 'cure',

@@ -72,13 +72,13 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
   }
 }
 
-export async function updateExpPoints(content, user, channel, guildId) {
+export async function updateExpPoints(content, user, channel, guildId, prefix) {
   try {
     const userData = await getUserData(user.id);
     if (!userData) return;
 
     userData.exp += 10;
-    if (content.includes("kas")) userData.exp += 10;
+    if (prefix && content.includes(prefix)) userData.exp += 10;
 
     let threshold = 100;
     let lvl = Math.floor(Math.sqrt(userData.exp / threshold)) || 0;

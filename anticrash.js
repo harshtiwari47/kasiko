@@ -80,6 +80,7 @@ const logger = winston.createLogger({
   exitOnError: false // Prevent Winston from exiting on handled exceptions.
 });
 
+
 // Global error handlers.
 // Catch synchronous errors that aren't caught elsewhere.
 process.on('uncaughtException', (error) => {
@@ -101,6 +102,8 @@ process.on('warning', (warning) => {
   if (warning.code === 'DEP0160') return; // Ignore multipleResolves deprecation warning
   console.warn(warning.name, warning.message);
 });
+
+
 
 console.log("[AntiCrash] Advanced error handling initialized.");
 

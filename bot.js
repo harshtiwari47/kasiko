@@ -216,7 +216,7 @@ client.on('messageCreate', async (message) => {
     }
 
     // update experience and level
-    updateExpPoints(message.content.toLowerCase(), message.author, message.channel, message?.guild.id);
+    updateExpPoints(message.content.toLowerCase(), message.author, message.channel, message?.guild.id, prefix);
 
     if (channelDoc && channelDoc.category) {
       if (channelDoc && !channelDoc.category.allAllowed) {
