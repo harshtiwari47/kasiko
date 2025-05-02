@@ -403,12 +403,21 @@ export async function zombieSurvival(id, playerInfo, channel) {
           let lilyHelp = `Best of luck, Survivor!`;
 
           let zombies = {
-            1: "1318799726283460630",
-            2: "1318799737176064000",
-            3: "1318799748139974689",
-            4: "1318799778410139719",
-            5: "1318799826086793297",
-            6: "1318799841979138048"
+            1: "1367864990723342397",
+            2: "1367865070167527496",
+            3: "1367865100697866406",
+            4: "1367865129965719672",
+            5: "1367865157111517284",
+            6: "1367865183329845298",
+            7: "1367865215441440859",
+            8: "1367865252158504990",
+            9: "1367865301273940069",
+            10: "1367865323843485726",
+            11: "1367865347918528602",
+            12: "1367865368281878528",
+            13: "1367865390612480021",
+            14: "1367865409331527800",
+            15: "1367865426255806475"
           }
 
           let zombieThumb = null;
@@ -502,7 +511,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
             if (!disableOptions.some(opt => opt === "fight")) {
               disableOptions.push("fight");
             }
-          } else if (disableOptions.some(id => id === "fight")) {
+          } else if (disableOptions.some(id => id === "fight") && gameData.weaponDurability >= 0) {
             disableOptions = disableOptions.filter(id => id !== "fight");
           }
 
@@ -629,6 +638,9 @@ export async function zombieSurvival(id, playerInfo, channel) {
           await playerInfo.save();
 
           userData.cash += (gameData?.supplies || 0) * 10;
+
+          if (gameData.zombiesKilled >= gameData.ZombiesToKill) userData.cash += 10000;
+
           await updateUser(id, userData);
 
           await channel.send({
@@ -639,7 +651,8 @@ export async function zombieSurvival(id, playerInfo, channel) {
                 `## <:lily:1318792945343791214> 𝒁𝒐𝒎𝒃𝒊𝒆 𝑨𝒑𝒐𝒄𝒂𝒍𝒚𝒑𝒔𝒆 𝑺𝒕𝒓𝒊𝒌𝒆𝒔!\n` +
                 `- ${emojiList.zombie} 𝗧𝗼𝘁𝗮𝗹 𝗭𝗼𝗺𝗯𝗶𝗲𝘀 𝗞𝗶𝗹𝗹𝗲𝗱: **${gameData.zombiesKilled}**\n` +
                 `- ${emojiList.supplies} 𝗦𝘂𝗽𝗽𝗹𝗶𝗲𝘀 𝗚𝗮𝘁𝗵𝗲𝗿𝗲𝗱: **${gameData.supplies}**\n` +
-                `𝘚𝘶𝘱𝘱𝘭𝘪𝘦𝘴 𝘣𝘰𝘯𝘶𝘴 ~ <:kasiko_coin:1300141236841086977> **${gameData.supplies * 10}**`
+                `𝘚𝘶𝘱𝘱𝘭𝘪𝘦𝘴 𝘣𝘰𝘯𝘶𝘴 ~ <:kasiko_coin:1300141236841086977> **${gameData.supplies * 10}**\n` +
+                `${gameData.zombiesKilled >= gameData.ZombiesToKill ? `𝘊𝘰𝘮𝘱𝘭𝘦𝘵𝘪𝘰𝘯 𝘉𝘰𝘯𝘶𝘴 ~ <:kasiko_coin:1300141236841086977> **10,000**`: ``}`
               )
               .setColor("DarkGrey")
             ]

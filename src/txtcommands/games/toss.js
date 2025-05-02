@@ -108,7 +108,7 @@ export default {
 
         let amount;
 
-        if (args[1] === "all") {
+        if (String(args[1]).toLowerCase() === "all") {
           amount = "all";
         } else {
           amount = parseInt(args[1]);

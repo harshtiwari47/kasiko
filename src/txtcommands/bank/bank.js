@@ -31,7 +31,7 @@ export const Bank = {
 
       if (!userData) return;
 
-      if (amount && amount === "all") amount = Number(userData.cash || 0);
+      if (amount && String(amount).toLowerCase() === "all") amount = Number(userData.cash || 0);
 
       if (userData.cash < Number(amount)) {
         return message.channel.send(
@@ -97,7 +97,7 @@ export const Bank = {
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      if (amount === "all") {
+      if (String(amount).toLowerCase() === "all") {
         amount = Math.max(0, account.deposit);
       }
 
@@ -245,7 +245,7 @@ export const Bank = {
 
       if (account.deposit < upgradeCost) {
         return message.channel.send(
-          `${message.author.username}, you need <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()} cash in Bank to upgrade to the next level.`
+          `<:warning:1366050875243757699> **${message.author.username}**, you need <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** cash in Bank to upgrade to the next level.`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 

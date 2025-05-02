@@ -1,20 +1,20 @@
 [
   {
-    "headline": "Rising Operational Costs Impact TENJIKU's Profit Margins",
-    "description": "Higher costs have affected TENJIKU's margins, resulting in lower-than-expected profits, with current prices at <:kasiko_coin:1300141236841086977> 29.8.",
+    "headline": "MARIN Reports Record Low Volatility at 4",
+    "description": "For the first time this year, MARIN has seen a record low in volatility, appealing to more risk-averse investors.",
+    "stat": "up",
+    "date": ""
+  },
+  {
+    "headline": "DENSITY Announces Layoffs to Reduce Operational Costs",
+    "description": "To optimize costs, DENSITY announced layoffs, a measure that affected its stock price, which now stands at <:kasiko_coin:1300141236841086977> 74.1.",
     "stat": "down",
     "date": ""
   },
   {
-    "headline": "Product Recall Impacts RFINANCE Stock Price",
-    "description": "A product recall has caused a temporary dip in RFINANCE's stock, with prices settling at <:kasiko_coin:1300141236841086977> 33.3 amid investor concerns.",
-    "stat": "down",
-    "date": ""
-  },
-  {
-    "headline": "Rising Operational Costs Impact CHAPRICOIN's Profit Margins",
-    "description": "Higher costs have affected CHAPRICOIN's margins, resulting in lower-than-expected profits, with current prices at <:kasiko_coin:1300141236841086977> 285.3.",
-    "stat": "down",
+    "headline": "RFINANCE Stock Surges Following Positive Forecast",
+    "description": "After a positive forecast from analysts, RFINANCE stock has surged to <:kasiko_coin:1300141236841086977> 48.1, with future growth anticipated.",
+    "stat": "up",
     "date": ""
   }
 ]

@@ -403,13 +403,15 @@ const ShipCmd = {
 
       collector.on("end",
         async collected => {
-          const disabledRow = new ActionRowBuilder().addComponents(
-            likeButton.setDisabled(true),
-            passButton.setDisabled(true)
-          );
-          await responseMessage.edit({
-            components: [disabledRow]
-          });
+          try {
+            const disabledRow = new ActionRowBuilder().addComponents(
+              likeButton.setDisabled(true),
+              passButton.setDisabled(true)
+            );
+            await responseMessage.edit({
+              components: [disabledRow]
+            });
+          } catch (err) {}
         });
     } catch (e) {
       console.error(e);

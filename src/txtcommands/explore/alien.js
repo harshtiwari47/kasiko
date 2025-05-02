@@ -699,8 +699,8 @@ async function handleAbilitiesList(ctx) {
 
     collector.on('end',
       async () => {
-        // After timeout, disable the buttons if the message is still editable.
-        if (message?.edit) {
+        try {
+          // After timeout, disable the buttons if the message is still editable.
           prevButton.setDisabled(true);
           upgradeButton.setDisabled(true);
           nextButton.setDisabled(true);
@@ -708,7 +708,8 @@ async function handleAbilitiesList(ctx) {
           await message.edit({
             components: [disabledRow]
           });
-        }
+
+        } catch (err) {}
       });
   } catch (error) {
     console.error(error);

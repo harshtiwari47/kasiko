@@ -17,12 +17,13 @@ export function handleLocItems(gameData, location, currentZombies) {
       if (currentZombies > 0) {
         gameData.zombiesKilled += currentZombies;
         currentZombies = 0;
-      } else {
+        finalData.message += `\n${item.message}`
+      } else if (gameData.zombiesKilled < gameData.ZombiesToKill) {
         gameData.zombiesKilled += item.kills;
         gameData.ZombiesToKill = Math.max(0, gameData.ZombiesToKill - item.kills);
+        finalData.message += `\n${item.message}`
       }
 
-      finalData.message += `\n${item.message}`
     }
   });
 

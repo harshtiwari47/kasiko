@@ -62,8 +62,11 @@ export const client = new Client( {
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-const TOKEN = process.env.BOT_TOKEN;
-const clientId = process.env.APP_ID;
+const developmentMode = false;
+
+const BotPrefix = developmentMode ? "ki": "kas";
+const TOKEN = developmentMode ? process.env.BOT_TOKENDEV: process.env.BOT_TOKEN;
+const clientId = developmentMode ? process.env.APP_IDDEV: process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -74,7 +77,7 @@ client.once('ready', async () => {
 client.on('messageCreate', async (message) => {
   try {
 
-    let prefix = "kas";
+    let prefix = BotPrefix;
 
     //return if author is bot
     if (message.author.bot || message.system || message.webhookId) return;
@@ -114,7 +117,7 @@ client.on('messageCreate', async (message) => {
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
     if (message.content.toLowerCase().startsWith("kasow")) return OwnerCommands(message.content.slice("kasow".toLowerCase().length).trim().split(/ +/), message);
 
-    if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith("kas"))) return
+    if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith(BotPrefix))) return
 
     // Check if user is command-banned
     const userId = message.author.id;
@@ -125,8 +128,8 @@ client.on('messageCreate', async (message) => {
     }
 
     let args;
-    if (message.content.toLowerCase().startsWith("kas")) {
-      args = message.content.slice("kas".toLowerCase().length).trim().split(/ +/);
+    if (message.content.toLowerCase().startsWith(BotPrefix)) {
+      args = message.content.slice(BotPrefix.toLowerCase().length).trim().split(/ +/);
     } else {
       args = message.content.slice(prefix.toLowerCase().length).trim().split(/ +/);
     }
@@ -501,7 +504,7 @@ async function getServerPrefix(message) {
         ownerId: serverOwnerId,
         allChannelsAllowed: true,
         channels: [],
-        prefix: "kas"
+        prefix: BotPrefix
       });
     }
 
@@ -512,7 +515,7 @@ async function getServerPrefix(message) {
     return existingServer.prefix
   } catch (e) {
     console.error(e);
-    return "kas";
+    return BotPrefix;
   }
 }
 

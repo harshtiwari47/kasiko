@@ -14,40 +14,51 @@ import {
 const flowersData = [{
   name: 'Tulip',
   key: 'tulip',
-  emoji: '🌷',
-  value: 100
+  emoji: '<:tulip:1367920273705144461>',
+  value: 150
 },
   {
     name: 'Cherry Blossom',
     key: 'cherryBlossom',
-    emoji: '🌸',
-    value: 120
+    emoji: '<:blossom:1367918702363934971>',
+    value: 170
   },
   {
     name: 'Rose',
     key: 'rose',
-    emoji: '🌹',
-    value: 160
+    emoji: '<:rose_flower:1367919954455953488>',
+    value: 210
   },
   {
     name: 'Hibiscus',
     key: 'hibiscus',
-    emoji: '🌺',
-    value: 200
+    emoji: '<:hibiscus:1367920122139902166>',
+    value: 250
   },
   {
     name: 'Sunflower',
     key: 'sunflower',
-    emoji: '🌻',
-    value: 250
+    emoji: '<:sunflower:1367919045977964554>',
+    value: 300
   },
   {
     name: 'Daisy',
     key: 'daisy',
-    emoji: '🌼',
-    value: 80
+    emoji: '<:daisy:1367919869659451402>',
+    value: 130
   },
-];
+  {
+    name: 'Lily',
+    key: 'lily',
+    emoji: '<:lily_flower:1367919606664007831>',
+    value: 350
+  },
+  {
+    name: 'Hyacinth',
+    key: 'hyacinth',
+    emoji: '<:hyacinth:1367920536453124168>',
+    value: 320
+  }];
 
 // Determine total capacity given the garden level
 function getGardenCapacity(level) {
@@ -71,7 +82,7 @@ async function startGarden(userId, username) {
     if (days) timeString += `${days} day${days > 1 ? 's': ''} `;
     if (hours) timeString += `${hours} hour${hours > 1 ? 's': ''} `;
     if (minutes) timeString += `${minutes} minute${minutes > 1 ? 's': ''}`;
-    return `𝐻𝑒𝑦 **${username}**, 𝑦𝑜𝑢𝑟 𝑔𝑎𝑟𝑑𝑒𝑛 𝑖𝑠 𝑎𝑙𝑟𝑒𝑎𝑑𝑦 𝑎𝑐𝑡𝑖𝑣𝑒! (𝖲𝗍𝖺𝗋𝗍𝖾𝖽 ${timeString} 𝖺𝗀𝗈)`;
+    return `<:garden:1367918916067921930> **${username}**, 𝑦𝑜𝑢𝑟 𝑔𝑎𝑟𝑑𝑒𝑛 𝑖𝑠 𝑎𝑙𝑟𝑒𝑎𝑑𝑦 𝑎𝑐𝑡𝑖𝑣𝑒! (𝖲𝗍𝖺𝗋𝗍𝖾𝖽 ***${timeString}*** 𝖺𝗀𝗈)`;
   }
 
   // Create or reset the garden’s start time
@@ -89,7 +100,7 @@ async function startGarden(userId, username) {
 
   const capacity = getGardenCapacity(userGarden.level);
   return (
-    `**${username}**, your garden is now started!\n` +
+    `<:garden:1367918916067921930> **${username}**, your garden is now started!\n` +
     `You can collect flowers every 10 minutes.\n` +
     `Current garden level: **${userGarden.level}** (Capacity: ${capacity} flowers).`
   );
@@ -150,6 +161,8 @@ async function collectFlowers(userId, username) {
     hibiscus: 0,
     sunflower: 0,
     daisy: 0,
+    hyacinth: 0,
+    lily: 0
   };
   for (let i = 0; i < flowersToAdd; i++) {
     const pick = flowersData[Math.floor(Math.random() * flowersData.length)];
@@ -168,14 +181,14 @@ async function collectFlowers(userId, username) {
   // Summarize
   const lines = flowersData
   .filter(f => distribution[f.key] > 0)
-  .map(f => `+${distribution[f.key]} ${f.emoji} ${f.name}`)
+  .map(f => `**+${distribution[f.key]}** ${f.emoji} ${f.name}`)
   .join('\n');
 
   const newTotal = currentTotal + flowersToAdd;
   return (
-    `⛲ | **${username}**, you collected **${flowersToAdd}** flowers!\n` +
-    lines + '\n' +
-    `You now have **${newTotal}** flowers (Capacity: ${capacity}).`
+    `## ⛲ | **${username}**, you collected **${flowersToAdd}** flowers!\n` +
+    lines + '\n\n' +
+    `<:garden:1367918916067921930> ***You now have ${newTotal} flowers (Capacity: ${capacity}).***`
   );
 }
 
@@ -198,7 +211,7 @@ async function exchangeFlowers(userId, username) {
       if (count > 0) {
         const earned = count * f.value;
         totalCash += earned;
-        summaryLines.push(`${count}x${f.emoji} => ${earned}`);
+        summaryLines.push(`- ${count}x ${f.emoji} ✶ **${earned}**`);
       }
     }
 
@@ -218,8 +231,8 @@ async function exchangeFlowers(userId, username) {
     await userGarden.save();
 
     return (
-      `⛲ | **${username}**, you exchanged all your flowers 💐 for <:kasiko_coin:1300141236841086977> **${totalCash}** 𝒄𝒂𝒔𝒉.\n` +
-      `Breakdown:\n${summaryLines.join('\n')}`
+      `⛲ | **${username}**, you exchanged all your flowers <:garden:1367918916067921930> for <:kasiko_coin:1300141236841086977> **${totalCash}** 𝒄𝒂𝒔𝒉.\n` +
+      `### 𝐵𝑅𝐸𝐴𝐾𝐷𝑂𝑊𝑁:\n${summaryLines.join('\n')}`
     );
   } catch (err) {
     return (
@@ -312,7 +325,7 @@ async function waterGarden(userId, username) {
   await userGarden.save();
 
   return (
-    `⛲ | You water your garden 💧, **${username}**! Your **next** flower collection will yield **50%** more flowers! 💐`
+    `⛲ | You water your garden <:droplet:1367918969888968835>, **${username}**! Your **next** flower collection will yield **50%** more flowers! 💐`
   );
 }
 
@@ -407,9 +420,24 @@ async function viewGardenStatus(userId, username) {
     if (readyToCollect < 0) readyToCollect = 0;
   }
 
+  const subscriptNumbers = {
+    '0': '₀',
+    '1': '₁',
+    '2': '₂',
+    '3': '₃',
+    '4': '₄',
+    '5': '₅',
+    '6': '₆',
+    '7': '₇',
+    '8': '₈',
+    '9': '₉'
+  };
+
+  const toSubscript = (num) => num.toString().split('').map(digit => subscriptNumbers[digit] || digit).join('');
+
   let flowerSummary = flowersData.map(f => {
     const count = userGarden.flowers[f.key];
-    return `${f.emoji} ${f.name}: ${count}`;
+    return `${f.emoji} ${toSubscript(Number(count ?? 0))}`;
   }).join(', ');
 
   // Water bonus?
@@ -421,9 +449,9 @@ async function viewGardenStatus(userId, username) {
     `**⛲ Garden Status**\n` +
     `• 𝙻𝚎𝚟𝚎𝚕: **${userGarden.level}** ` + `• 𝙲𝚊𝚙𝚊𝚌𝚒𝚝𝚢: **${capacity}**\n` +
     `• 𝚂𝚝𝚘𝚛𝚎𝚍: **${totalStored}** ` + `• 𝙰𝚟𝚊𝚒𝚕𝚊𝚋𝚕𝚎: **${readyToCollect}**\n` +
-    `• 💧 𝖶𝖺𝗍𝖾𝗋𝗂𝗇𝗀 𝖡𝗈𝗇𝗎𝗌: ${waterStatus}\n\n` +
-    `**💐 Flowers in Storage**\n` +
-    `${flowerSummary}`
+    `• <:droplet:1367918969888968835> 𝖶𝖺𝗍𝖾𝗋𝗂𝗇𝗀 𝖡𝗈𝗇𝗎𝗌: ${waterStatus}\n\n` +
+    `**<:flowers:1367918855959216150> Flowers in Storage**\n` +
+    `# ${flowerSummary}`
   );
 }
 
@@ -510,14 +538,16 @@ export default {
             `\`garden share @user flower amount\` - Gift flowers`
           },
           {
-            name: '🌺 Flower Types',
+            name: '<:flowers:1367918855959216150> Flower Types',
             value:
-            `🌷 Tulip (<:kasiko_coin:1300141236841086977> 50)\n` +
-            `🌸 Cherry (<:kasiko_coin:1300141236841086977> 60)\n` +
-            `🌹 Rose (<:kasiko_coin:1300141236841086977> 80)\n` +
-            `🌺 Hibiscus (<:kasiko_coin:1300141236841086977> 100)\n` +
-            `🌻 Sunflower (<:kasiko_coin:1300141236841086977> 150)\n` +
-            `🌼 Daisy (<:kasiko_coin:1300141236841086977> 40)`
+            `<:tulip:1367920273705144461> Tulip (<:kasiko_coin:1300141236841086977> 150)\n` +
+            `<:blossom:1367918702363934971> Cherry (<:kasiko_coin:1300141236841086977> 170)\n` +
+            `<:rose_flower:1367919954455953488> Rose (<:kasiko_coin:1300141236841086977> 210)\n` +
+            `<:hibiscus:1367920122139902166> Hibiscus (<:kasiko_coin:1300141236841086977> 250)\n` +
+            `<:sunflower:1367919045977964554> Sunflower (<:kasiko_coin:1300141236841086977> 300)\n` +
+            `<:daisy:1367919869659451402> Daisy (<:kasiko_coin:1300141236841086977> 130)\n` +
+            `<:lily_flower:1367919606664007831> Lily (<:kasiko_coin:1300141236841086977> 350)\n` +
+            `<:hyacinth:1367920536453124168> Hyacinth (<:kasiko_coin:1300141236841086977> 320)`
           },
           {
             name: '💡 Tips',
