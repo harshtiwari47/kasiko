@@ -256,10 +256,10 @@ async function activeShip(userId, message) {
         name: "STATS", value: `\`\`\`𝘋𝘈𝘔𝘈𝘎𝘌: ${activeShip.level * shipDetails.dmg} 𝘏𝘌𝘈𝘓𝘛𝘏: ${activeShip.level * shipDetails.health}\n𝘋𝘜𝘙𝘈𝘉𝘐𝘓𝘐𝘛𝘠: ${activeShip.durability} 𝘓𝘌𝘝𝘌𝘓: ${activeShip.level}\`\`\``, inline: false
       },
       {
-        name: "*NEXT LEVEL COST*", value: `<:coin:1304675604171460728> ${(activeShip.level + 1) * shipDetails.levelUpCost}`, inline: true
+        name: "*NEXT LEVEL COST*", value: `-# <:coin:1304675604171460728> ${(activeShip.level + 1) * shipDetails.levelUpCost}`, inline: true
       },
       {
-        name: "*REPAIR COST*", value: `<:coin:1304675604171460728> ${shipDetails.repairCost}  (*+25 Durability*)`, inline: true
+        name: "*REPAIR COST*", value: `-# <:coin:1304675604171460728> ${shipDetails.repairCost}  (*+25 Durability*)`, inline: true
       },
     )
     .setThumbnail(`https://cdn.discordapp.com/emojis/${shipDetails.emoji}.png`) // Optional: Add the ship's image

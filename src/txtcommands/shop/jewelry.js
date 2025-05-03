@@ -49,18 +49,18 @@ function createJewelryEmbed(item) {
   if (item.rarity.substring(0, 1).toUpperCase() === "E") iconRarity = `<:epic:1324666103028387851>`
 
   const embed = new EmbedBuilder()
-  .setTitle(item.name)
+  .setTitle("<:feather_outside_emoji:1355140550462017609> " + item.name)
   .setThumbnail(`https://cdn.discordapp.com/emojis/${item.emoji}.png`)
-  .setDescription(`${item.description}`)
+  .setDescription(`-# \`\`\`${item.description}\`\`\``)
   .addFields(
     {
       name: 'ID', value: item.id, inline: true
     },
     {
-      name: 'Price', value: `<:kasiko_coin:1300141236841086977> ${item.price.toLocaleString()}`, inline: true
+      name: 'PRICE', value: `<:kasiko_coin:1300141236841086977> ${item.price.toLocaleString()}`, inline: true
     },
     {
-      name: 'Rarity', value: `${iconRarity} ${item.rarity}` || 'common', inline: true
+      name: 'RARITY', value: `${iconRarity} ${item.rarity}` || 'common', inline: true
     }
   )
   .setColor('#64a0e7');

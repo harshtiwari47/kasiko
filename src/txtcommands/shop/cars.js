@@ -255,15 +255,15 @@ export async function usercars(context, targetUserId) {
 
         let description = '';
         description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n`;
-        description += ` **𝑶𝒘𝒏𝒔**: ${car.items}\n`;
-        description += ` **𝑪𝒂𝒓**: <:${car.id}_car:${carDetails.emoji}> \n`;
-        description += ` **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
-        description += ` **𝑰𝑫**: ${carDetails.id}\n`;
+        description += ` <:follow_reply:1368224897003946004> **𝑶𝒘𝒏𝒔**: ${car.items}\n`;
+        description += ` <:follow_reply:1368224897003946004> **𝑪𝒂𝒓**: <:${car.id}_car:${carDetails.emoji}> \n`;
+        description += ` <:follow_reply:1368224897003946004> **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
+        description += ` \`\`\`ID: ${carDetails.id}\`\`\`\n`;
 
         embed.setDescription(description.trim());
 
         if (carIndexInChunk === 0) {
-          embed.setTitle(`░ <@${userId}>'s GARRAGE ░ ✩`);
+          embed.setTitle(`░ <@${userId}>'s GARRAGE ✩`);
         }
 
         // Add footer with page numbers

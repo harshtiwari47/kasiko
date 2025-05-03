@@ -230,7 +230,7 @@ async function viewMiningStatus(userId, context, username) {
     userMining.availableCoal = availableCoal;
 
     const mineHeader = new EmbedBuilder()
-    .setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n\n-# ${miningStatus.content}`)
+    .setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n\n-# <:reply:1368224908307468408> ${miningStatus.content}`)
 
     const embed = new EmbedBuilder()
     .setColor(`#ab6c38`)
