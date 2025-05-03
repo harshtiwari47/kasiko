@@ -127,7 +127,7 @@ export default {
     try {
       let animalName = args[1] ? args[1].toLowerCase() : null;
       // Check if a third argument "all" is present
-      let sellAll = args[2] && args[2].toLowerCase() === 'all';
+      let sellAll = args[2] && String(args[2]).toLowerCase() === 'all';
       await sellCommand(context, { animalName, sellAll });
     } catch (e) {
       console.error(e);

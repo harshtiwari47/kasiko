@@ -59,7 +59,7 @@ async function showCageOverview(context, user) {
   .setTitle(`**${username.toUpperCase()}**'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 <:forest_tree:1354366758596776070>`)
   .setDescription(`<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799> 𝘓𝘝𝘓: ${user.globalLevel}\n## ${animalEmojis}`)
   .setFooter({
-    text: `Tip: use "cage <animalName>" to see more details about a specific animal.`
+    text: `Tip: use "cage <name>" for details, "sellanimal <name>" to sell.`
   });
 
   return handleMessage(context, {
@@ -107,17 +107,17 @@ async function showAnimalDetail(context, user, animalName) {
   .setTitle(`${foundAnimal.emoji} ${foundAnimal.name}`)
   .setDescription(
     [
-      `**𝗟𝗘𝗩𝗘𝗟** : **${foundAnimal.level}**`,
-      `**𝗘𝗫𝗣** : **${foundAnimal.exp}**`,
-      `**𝗛𝗣** : **${foundAnimal.hp}**`,
-      `**𝗔𝗧𝗧𝗔𝗖𝗞** : **${foundAnimal.attack}**`,
-      `**𝗧𝗢𝗧𝗔𝗟** : **${foundAnimal.totalAnimals}**`,
-      `-# ${chosenAnimalData?.description}`
+      `-# *\`\`\`${chosenAnimalData?.description}\`\`\`*`,
+      `<:follow_reply:1368224897003946004> **𝗟𝗘𝗩𝗘𝗟**: **${foundAnimal.level}**`,
+      `<:follow_reply:1368224897003946004> **𝗘𝗫𝗣**: **${foundAnimal.exp}**`,
+      `<:follow_reply:1368224897003946004> **𝗧𝗢𝗧𝗔𝗟**: **${foundAnimal.totalAnimals}**`,
+      `<:reply:1368224908307468408> **𝗧𝗬𝗣𝗘**: *${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708> EXCLUSIVE": "NORMAL"}*`,
+      `-# Use \`sellanimal ${foundAnimal.name} all\`  to sell!`
     ].join('\n')
   )
   .setThumbnail(`https://cdn.discordapp.com/emojis/${chosenAnimalData?.emojiId}.png`)
   .setFooter({
-    text: `Use "cage" with no arguments to see all your animals.`
+    text: `ᴜꜱᴇ "ᴄᴀɢᴇ" ᴡɪᴛʜ ɴᴏ ᴀʀɢᴜᴍᴇɴᴛꜱ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ʏᴏᴜʀ ᴀɴɪᴍᴀʟꜱ.`
   });
 
   return handleMessage(context, {

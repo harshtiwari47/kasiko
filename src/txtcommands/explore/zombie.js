@@ -798,7 +798,7 @@ async function viewUserWeaponCollection(playerInfo, message) {
       playerInfo.weapons.slice(start, end).forEach((weapon, index) => {
         let weaponData = weaponsStats.find(weaponDetails => weaponDetails.name.toLowerCase() === weapon.name.toLowerCase());
         embed.addFields({
-          name: `<:reply_bottom:1368225277452226643> WEAPON **${start + index + 1}** <:spark:1355139233559351326> ${weapon.weapon} ${weapon.name}`,
+          name: `<:reply_bottom:1368225277452226643> **${start + index + 1}** <:spark:1355139233559351326> ${weapon.weapon} ${weapon.name}`,
           value: `\`\`\`𝘔𝘐𝘕. 𝘏𝘜𝘕𝘛: ${weapon.minHunt}\n𝘔𝘈𝘟. 𝘏𝘜𝘕𝘛: ${weapon.maxHunt}\n𝘓𝘌𝘝𝘌𝘓: ${weapon.level}\n𝘊𝘖𝘚𝘛: ${weaponData.cost} metals\`\`\``,
           inline: true,
         });

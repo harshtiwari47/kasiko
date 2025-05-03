@@ -184,7 +184,7 @@ export const Bank = {
 
       const emebedHeader = new EmbedBuilder()
       .setColor("#a4bef2")
-      .setDescription("## <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `-# <:spark:1355139233559351326> **𝘓𝘌𝘝𝘌𝘓:** **${account.level}**\n-# **UPGRADE COST**: ** <:kasiko_coin:1300141236841086977> ${(300000 - additionalReward).toLocaleString()}**`)
+      .setDescription("## <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤\n" + `-# <:spark:1355139233559351326> **LEVEL:** **${account.level}**\n-# **UPGRADE COST**: ** <:kasiko_coin:1300141236841086977> ${(300000 - additionalReward).toLocaleString()}**`)
 
       const embed = new EmbedBuilder()
       .setColor('#dfe9fd') // Choose a color for the embed
