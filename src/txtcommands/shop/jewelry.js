@@ -51,19 +51,18 @@ function createJewelryEmbed(item) {
   const embed = new EmbedBuilder()
   .setTitle("<:feather_outside_emoji:1355140550462017609> " + item.name)
   .setThumbnail(`https://cdn.discordapp.com/emojis/${item.emoji}.png`)
-  .setDescription(`-# > \` ${item.description} \``)
+  .setDescription(`-# > *\`${item.description}\`*`)
   .addFields(
     {
-      name: 'ITEM ID', value: item.id, inline: true
+      name: 'ITEM ID', value: "-# " + item.id, inline: true
     },
     {
-      name: 'PRICE', value: `<:kasiko_coin:1300141236841086977> ${item.price.toLocaleString()}`, inline: true
+      name: 'PRICE', value: `-# <:kasiko_coin:1300141236841086977> ${item.price.toLocaleString()}`, inline: true
     },
     {
-      name: 'RARITY', value: `${iconRarity} ${item.rarity}` || 'common', inline: true
+      name: 'RARITY', value: `-# ${iconRarity} ${item.rarity}` || 'common', inline: true
     }
   )
-  .setColor('#64a0e7');
 
   // For "strips", also show the URL
   if (item.type === 'strip' && item.url) {

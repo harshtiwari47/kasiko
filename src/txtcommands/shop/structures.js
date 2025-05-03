@@ -73,7 +73,7 @@ function createStructureEmbed(structure, username = null) {
     .setColor(structure?.hexcolor ?? "Random"),
 
     new EmbedBuilder()
-    .setDescription(`-# **ᯓ★ Details**\n**ID:** ${structure.id}\n**Category:** ${structure.category}\n**Rarity:** ${iconRarity} **Floors:** ${structure.floors}\n**Color:** ${structure.color}\n**Location:** ${structure.location}\n-# \`\`\`*${structure.description}*\`\`\``)
+    .setDescription(`-# **ᯓ★ Details**\n<:reply:1368224908307468408> **ID:** ${structure.id}\n**Category:** ${structure.category}\n**Rarity:** ${iconRarity} **Floors:** ${structure.floors}\n**Color:** ${structure.color}\n**Location:** ${structure.location}\n\n*\`${structure.description}\`*`)
     .addFields({
       name: `ᯓ★ Amenities`,
       value: structure.amenities?.join(", ") || "None listed",
@@ -242,7 +242,7 @@ export async function userstructures(context, targetUserId) {
       return chunk.map((structure, structureIndex) => {
         const propertyDetails = structureItems.find(item => item.id === structure.id);
         const embed = new EmbedBuilder()
-        .setColor(structure?.hexcolor ?? "Random")
+        .setColor(propertyDetails?.hexcolor ?? "Random")
         .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${propertyDetails.image}.png`);
 
         let description = '';

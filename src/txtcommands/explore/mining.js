@@ -294,7 +294,7 @@ async function viewMiningStatus(userId, context, username) {
           }
 
           if (response.content) {
-            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n-# ${response.content}`);
+            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n-# <:reply:1368224908307468408> ${response.content}`);
           }
 
           return await interaction.editReply({
@@ -311,7 +311,7 @@ async function viewMiningStatus(userId, context, username) {
           }
 
           if (response.content) {
-            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n-# ${response.content}`);
+            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n-# <:reply:1368224908307468408> ${response.content}`);
           }
 
           return await interaction.editReply({
@@ -328,7 +328,7 @@ async function viewMiningStatus(userId, context, username) {
           }
 
           if (response.content) {
-            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n-# ${response.content}`);
+            mineHeader.setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n-# <:reply:1368224908307468408> ${response.content}`);
           }
 
           return await interaction.editReply({
