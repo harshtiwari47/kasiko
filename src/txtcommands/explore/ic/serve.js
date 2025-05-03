@@ -81,6 +81,7 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
       ? customerDislikesIceCream
       ? `😬 The customer tried **${customerPreference.icecream}**, but they didn't enjoy it. \n\n⭐ **Reputation:** ${playerShop.reputation}`: `<:celebration:1368113208023318558> Great job! You served a customer their favorite flavor: **${customerPreference.icecream}**. \n\n💰 **Earned:** <:creamcash:1309495440030302282> ${Math.floor(1.3 * customerPreference.cost)} cash\n✪ **Loyalty Points:** +10\n⭐ **Reputation:** ${playerShop.reputation}`: `😅 Oops! The customer wanted **${customerPreference.icecream}**, but you couldn't serve it. \n\n⭐ **Reputation:** ${playerShop.reputation}`
     )
+    .setImage(customerDislikesIceCream ? "https://harshtiwari47.github.io/kasiko-public/images/icecream-served.png" : "https://harshtiwari47.github.io/kasiko-public/images/icecream-served-happily.png")
     .setFooter({
       text: servedSuccessfully
       ? customerDislikesIceCream

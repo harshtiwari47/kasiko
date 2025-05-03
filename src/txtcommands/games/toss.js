@@ -66,9 +66,9 @@ export async function toss(id, amount, channel, choice = "head") {
 
     // Edit the initial "thinking" message to the final result
     if (random === 1 && choice === "head") {
-      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username.toUpperCase()}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵...!\n✦ The **ᑕOIＮ** ${stillCoin} landed on _heads_!\n### 𓂃 You *won* <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
+      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username.toUpperCase()}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵...!\nThe **ᑕOIＮ** ${stillCoin} landed on _heads_!\n### 𓂃 You *won* <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
     } else if (random === 0 && choice === "tail") {
-      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username.toUpperCase()}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵...!\n✦ The **ᑕOIＮ** ${stillCoinTails} landed on _tails_!\n### 𓂃 You *won* <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
+      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username.toUpperCase()}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵...!\nThe **ᑕOIＮ** ${stillCoinTails} landed on _tails_!\n### 𓂃 You *won* <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
     } else {
       await suspenseMessage.edit(`𝘖𝘰𝘱𝘴, **${guild.user.nickname || guild.user.username.toLowerCase()}**, the **ᑕOIＮ** ${choice === "tail" ? stillCoin: stillCoinTails} landed on _*${choice === "tail" ? "heads": "tails"}*_...\n### You *lost* <:kasiko_coin:1300141236841086977> **${(-1* Number(winamount)).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
     }

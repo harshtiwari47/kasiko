@@ -788,7 +788,7 @@ async function viewUserWeaponCollection(playerInfo, message) {
     // Function to generate the embed for the current page
     const generateEmbed = () => {
       const embed = new EmbedBuilder()
-      .setTitle(`<:lily:1318792945343791214> **${message.author.username}**'s Weapon Collection`)
+      .setTitle(`<:lily:1318792945343791214> **${message.author.username.toUpperCase()}**'s 𝙒𝙀𝘼𝙋𝙊𝙉 𝘾𝙊𝙇𝙇𝙀𝘾𝙏𝙄𝙊𝙉`)
       .setDescription('-# 𝘏𝘦𝘳𝘦 𝘢𝘳𝘦 𝘺𝘰𝘶𝘳 𝘸𝘦𝘢𝘱𝘰𝘯𝘴 𝘢𝘯𝘥 𝘵𝘩𝘦𝘪𝘳 𝘴𝘵𝘢𝘵𝘴:');
 
       const start = currentPage * itemsPerPage;
@@ -798,8 +798,8 @@ async function viewUserWeaponCollection(playerInfo, message) {
       playerInfo.weapons.slice(start, end).forEach((weapon, index) => {
         let weaponData = weaponsStats.find(weaponDetails => weaponDetails.name.toLowerCase() === weapon.name.toLowerCase());
         embed.addFields({
-          name: `<:spark:1355139233559351326> 𝗪𝗘𝗔𝗣𝗢𝗡 ${start + index + 1}: ${weapon.weapon} ${weapon.name}`,
-          value: `- **𝘔𝘐𝘕. 𝘏𝘜𝘕𝘛**: ${weapon.minHunt}\n- **𝘔𝘈𝘟. 𝘏𝘜𝘕𝘛**: ${weapon.maxHunt}\n- **𝘓𝘌𝘝𝘌𝘓**: ${weapon.level}\n- **𝘊𝘖𝘚𝘛**: ${emojiList.metal} ${weaponData.cost}`,
+          name: `<:spark:1355139233559351326> WEAPON **${start + index + 1}** ◎ ${weapon.weapon} ${weapon.name}`,
+          value: `\`\`\`𝘔𝘐𝘕. 𝘏𝘜𝘕𝘛: ${weapon.minHunt}\n𝘔𝘈𝘟. 𝘏𝘜𝘕𝘛: ${weapon.maxHunt}\n𝘓𝘌𝘝𝘌𝘓: ${weapon.level}\n𝘊𝘖𝘚𝘛: ${weaponData.cost} metals\`\`\``,
           inline: true,
         });
       });

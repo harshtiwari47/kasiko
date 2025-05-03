@@ -207,11 +207,10 @@ function generateMiningMessage(userMining) {
   ? "MAX": `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`;
 
   return (
-    `**<:pickaxe:1355034263141093540> 𝙇𝙚𝙫𝙚𝙡:** ${userMining.level}\n` +
-    `**<:coal_storage:1355034178470809661> 𝙎𝙩𝙤𝙧𝙖𝙜𝙚 𝘾𝙖𝙥𝙖𝙘𝙞𝙩𝙮:** ${storageCapacity} ${COAL_EMOJI}\n` +
-    `**<:dump_truck:1355034404036018309> 𝘾𝙤𝙡𝙡𝙚𝙘𝙩𝙚𝙙:** ${userMining.collected} ${COAL_EMOJI}\n` +
-    `**<:excavator:1355034334033084577> 𝘼𝙫𝙖𝙞𝙡𝙖𝙗𝙡𝙚 𝙩𝙤 𝘾𝙤𝙡𝙡𝙚𝙘𝙩:** ${userMining.availableCoal} ${COAL_EMOJI}\n` +
-    `**<:aliens_hammer:1336344266242527294> 𝙐𝙥𝙜𝙧𝙖𝙙𝙚 𝘾𝙤𝙨𝙩:** ${upgradeCost}`
+    `𝙇𝙚𝙫𝙚𝙡:** ${userMining.level}** <:aliens_hammer:1336344266242527294> 𝙐𝙥𝙜𝙧𝙖𝙙𝙚:** ${upgradeCost}**\n\n` +
+    `<:coal_storage:1355034178470809661> 𝘾𝙖𝙥𝙖𝙘𝙞𝙩𝙮:** ${storageCapacity} ${COAL_EMOJI}**\n` +
+    `<:dump_truck:1355034404036018309> 𝘾𝙤𝙡𝙡𝙚𝙘𝙩𝙚𝙙:** ${userMining.collected} ${COAL_EMOJI}**\n` +
+    `<:excavator:1355034334033084577> 𝘼𝙫𝙖𝙞𝙡𝙖𝙗𝙡𝙚 𝙩𝙤 𝘾𝙤𝙡𝙡𝙚𝙘𝙩:** ${userMining.availableCoal} ${COAL_EMOJI}**\n`
   );
 }
 
@@ -231,7 +230,7 @@ async function viewMiningStatus(userId, context, username) {
     userMining.availableCoal = availableCoal;
 
     const mineHeader = new EmbedBuilder()
-    .setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n-# ${miningStatus.content}`)
+    .setDescription(`## <:mine:1323958606814515202> 𝐌𝐢𝐧𝐢𝐧𝐠 𝐒𝐭𝐚𝐭𝐮𝐬\n\n-# ${miningStatus.content}`)
 
     const embed = new EmbedBuilder()
     .setColor(`#ab6c38`)

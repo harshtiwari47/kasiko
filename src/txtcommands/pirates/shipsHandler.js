@@ -249,32 +249,22 @@ async function activeShip(userId, message) {
 
     let shipDetails = shipsData.find(ship => ship.id === activeShip.id);
     const embed = new EmbedBuilder()
-    .setColor(0x1d4ed8) // You can customize the color
-    .setTitle(`${message.author.username}'s 𝕮𝖚𝖗𝖗𝖊𝖓𝖙 𝕾𝖍𝖎𝖕 ⚓`)
-    .setDescription(`**${message.author.username}**, Commanding the Seas with <:${shipDetails.id}:${shipDetails.emoji}> **${activeShip.name}**`)
+    .setTitle(`${message.author.username.toUpperCase()}'s 𝘾𝙐𝙍𝙍𝙀𝙉𝙏 𝙎𝙃𝙄𝙋 ⚓`)
+    .setDescription(`Commanding the Seas with <:${shipDetails.id}:${shipDetails.emoji}> **${activeShip.name}**`)
     .addFields(
       {
-        name: "𝐷𝑎𝑚𝑎𝑔𝑒", value: `${activeShip.level * shipDetails.dmg} ✧`, inline: true
+        name: "STATS", value: `\`\`\`𝘋𝘈𝘔𝘈𝘎𝘌: ${activeShip.level * shipDetails.dmg} 𝘏𝘌𝘈𝘓𝘛𝘏: ${activeShip.level * shipDetails.health}\n𝘋𝘜𝘙𝘈𝘉𝘐𝘓𝘐𝘛𝘠: ${activeShip.durability} 𝘓𝘌𝘝𝘌𝘓: ${activeShip.level}\`\`\``, inline: false
       },
       {
-        name: "𝐻𝑒𝑎𝑙𝑡ℎ", value: `${activeShip.level * shipDetails.health}`, inline: true
+        name: "*NEXT LEVEL COST*", value: `<:coin:1304675604171460728> ${(activeShip.level + 1) * shipDetails.levelUpCost}`, inline: true
       },
       {
-        name: "𝐷𝑢𝑟𝑎𝑏𝑖𝑙𝑖𝑡𝑦", value: `${activeShip.durability}`, inline: true
-      },
-      {
-        name: "𝐿𝑒𝑣𝑒𝑙", value: `${activeShip.level}`, inline: true
-      },
-      {
-        name: "𝑵𝒆𝒙𝒕 𝑳𝒆𝒗𝒆𝒍 𝑪𝒐𝒔𝒕", value: `<:coin:1304675604171460728> ${(activeShip.level + 1) * shipDetails.levelUpCost}`, inline: true
-      },
-      {
-        name: "𝑹𝒆𝒑𝒂𝒊𝒓 𝑪𝒐𝒔𝒕", value: `<:coin:1304675604171460728> ${shipDetails.repairCost}  (*+25 Durability*)`, inline: true
+        name: "*REPAIR COST*", value: `<:coin:1304675604171460728> ${shipDetails.repairCost}  (*+25 Durability*)`, inline: true
       },
     )
-    .setThumbnail(`https://cdn.discordapp.com/emojis/${shipDetails.id}.png`) // Optional: Add the ship's image
+    .setThumbnail(`https://cdn.discordapp.com/emojis/${shipDetails.emoji}.png`) // Optional: Add the ship's image
     .setFooter({
-      text: "Use `kas active repair` for repair or `kas active up` for level up. 🌊"
+      text: "ᴜꜱᴇ `ᴋᴀꜱ ᴀᴄᴛɪᴠᴇ ʀᴇᴘᴀɪʀ` ꜰᴏʀ ʀᴇᴘᴀɪʀ ᴏʀ `ᴋᴀꜱ ᴀᴄᴛɪᴠᴇ ᴜᴘ` ꜰᴏʀ ʟᴇᴠᴇʟ ᴜᴘ. 🌊"
     });
 
     return message.channel.send({
