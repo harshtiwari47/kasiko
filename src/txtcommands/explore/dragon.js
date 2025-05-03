@@ -1149,7 +1149,7 @@ export default {
 
     try {
       await saveUserData(userId, userData);
-      return message.channel.send(`## DAILY DRAGON REWARD 🐉🍃\n> ${gemIcon} **${message.author.username}**, you claimed **${reward}** daily gems!\n\nCome back tomorrow to claim your next daily reward.`);
+      return message.channel.send(`## <:dragon:1368113270443216926> 𝘿𝘼𝙄𝙇𝙔 𝘿𝙍𝘼𝙂𝙊𝙉 𝙍𝙀𝙒𝘼𝙍𝘿\n## ${gemIcon} **\` ${message.author.username}\`**\`, you claimed \`**\`${reward}\`**\` daily gems!\`\n\n<:kasiko_stopwatch:1355056680387481620> 𝑪𝒐𝒎𝒆 𝒃𝒂𝒄𝒌 𝒕𝒐𝒎𝒐𝒓𝒓𝒐𝒘 𝒕𝒐 𝒄𝒍𝒂𝒊𝒎 𝒚𝒐𝒖𝒓 𝒏𝒆𝒙𝒕 𝒅𝒂𝒊𝒍𝒚 𝒓𝒆𝒘𝒂𝒓𝒅.`);
     } catch (error) {
       console.error("Failed to save user data:", error);
       return message.channel.send("An error occurred while saving your reward. Please try again later.");

@@ -799,8 +799,8 @@ async function viewUserWeaponCollection(playerInfo, message) {
       playerInfo.weapons.slice(start, end).forEach((weapon, index) => {
         let weaponData = weaponsStats.find(weaponDetails => weaponDetails.name.toLowerCase() === weapon.name.toLowerCase());
         embed.addFields({
-          name: `<:spark:1355139233559351326> 𝗪𝗘𝗔𝗣𝗢𝗡 ${start + index + 1}: ${weapon.name} ${weapon.weapon}`,
-          value: `- **Min Hunt**: ${weapon.minHunt}\n- **Max Hunt**: ${weapon.maxHunt}\n- **Level**: ${weapon.level}\n- **Cost**: ${emojiList.metal} ${weaponData.cost}`,
+          name: `<:spark:1355139233559351326> 𝗪𝗘𝗔𝗣𝗢𝗡 ${start + index + 1}: ${weapon.weapon} ${weapon.name}`,
+          value: `- **𝘔𝘐𝘕. 𝘏𝘜𝘕𝘛**: ${weapon.minHunt}\n- **𝘔𝘈𝘟. 𝘏𝘜𝘕𝘛**: ${weapon.maxHunt}\n- **𝘓𝘌𝘝𝘌𝘓**: ${weapon.level}\n- **𝘊𝘖𝘚𝘛**: ${emojiList.metal} ${weaponData.cost}`,
           inline: true,
         });
       });
@@ -934,7 +934,7 @@ export default {
 
         await playerInfo.save();
 
-        return message.channel.send(`${emojiList.zombie}${emojiList.shovel} **${message.author.username}**, from now on you are using **${playerInfo.activeWeapon.weapon} ${playerInfo.activeWeapon.name}** during your zombie hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send(`${emojiList.shovel} **${message.author.username}**, from now on you are using **${playerInfo.activeWeapon.weapon} ${playerInfo.activeWeapon.name}** during your zombie hunt!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (subCommand === "modify") {
@@ -1013,7 +1013,7 @@ export default {
           }
 
           await playerInfo.save();
-          return message.channel.send(`🏠 **${message.author.username}**, you have successfully upgraded your shelter to Level **${playerInfo.level}** using ${emojiList.wood} **${woodReq}** wood!\n${newWeaponMessage}`).catch(err => ![50001,
+          return message.channel.send(`${emojiList.shelter} **${message.author.username}**, you have successfully upgraded your shelter to Level **${playerInfo.level}** using ${emojiList.wood} **${woodReq}** wood!\n${newWeaponMessage}`).catch(err => ![50001,
             50013,
             10008].includes(err.code) && console.error(err));
         } else if (numberOfTimesLevelUp === 0 || numberOfTimesLevelUp < 0) {

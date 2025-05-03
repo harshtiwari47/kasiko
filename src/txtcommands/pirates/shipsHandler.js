@@ -227,8 +227,10 @@ async function showUserShips(userId, message) {
   } catch (e) {
     console.error(e);
     message.channel.send({
-      content: "⚠️ Something went wrong while fetching user's ships."
-    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      content: "<:warning:1366050875243757699> Something went wrong while fetching user's ships."
+    }).catch(err => ![50001,
+      50013,
+      10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -240,7 +242,7 @@ async function activeShip(userId, message) {
 
     if (!activeShip) {
       return message.channel.send({
-        content: `⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\``,
+        content: `<:warning:1366050875243757699> No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\``,
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
@@ -263,13 +265,13 @@ async function activeShip(userId, message) {
         name: "𝐿𝑒𝑣𝑒𝑙", value: `${activeShip.level}`, inline: true
       },
       {
-        name: "𝑵𝒆𝒙𝒕 𝑳𝒆𝒗𝒆𝒍 𝑪𝒐𝒔𝒕", value: `<:coin:1304675604171460728>${(activeShip.level + 1) * shipDetails.levelUpCost}`, inline: true
+        name: "𝑵𝒆𝒙𝒕 𝑳𝒆𝒗𝒆𝒍 𝑪𝒐𝒔𝒕", value: `<:coin:1304675604171460728> ${(activeShip.level + 1) * shipDetails.levelUpCost}`, inline: true
       },
       {
-        name: "𝑹𝒆𝒑𝒂𝒊𝒓 𝑪𝒐𝒔𝒕 (+25 Durability)", value: `<:coin:1304675604171460728>${shipDetails.repairCost}`, inline: true
+        name: "𝑹𝒆𝒑𝒂𝒊𝒓 𝑪𝒐𝒔𝒕", value: `<:coin:1304675604171460728> ${shipDetails.repairCost}  (*+25 Durability*)`, inline: true
       },
     )
-    .setImage(shipDetails.imageURL || null) // Optional: Add the ship's image
+    .setThumbnail(`https://cdn.discordapp.com/emojis/${shipDetails.id}.png`) // Optional: Add the ship's image
     .setFooter({
       text: "Use `kas active repair` for repair or `kas active up` for level up. 🌊"
     });
@@ -280,7 +282,7 @@ async function activeShip(userId, message) {
   } catch (e) {
     console.error(e);
     return message.channel.send({
-      content: "⚠️ Something went wrong while fetching user's active ship.",
+      content: "<:warning:1366050875243757699> Something went wrong while fetching user's active ship.",
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
@@ -291,11 +293,11 @@ async function setActiveShip(shipId, userId, message) {
 
     if (!shipId) return message.channel.send(`**${message.author.username}**, please provide a valid ship ID.`);
 
-    if (!userShips.ships.some(ship => ship.id && ship.id === shipId.toLowerCase())) return message.channel.send("⚠️ No ship found with this id.");
+    if (!userShips.ships.some(ship => ship.id && ship.id === shipId.toLowerCase())) return message.channel.send("<:warning:1366050875243757699> No ship found with this id.");
 
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
-    if (activeShip && userShips.ships[activeShip] && userShips.ships[activeShip].id === shipId) return message.channel.send("⚠️ Your ship is already active for battle & defence.");
+    if (activeShip && userShips.ships[activeShip] && userShips.ships[activeShip].id === shipId) return message.channel.send("<:warning:1366050875243757699> Your ship is already active for battle & defence.");
 
     let toActiveShip = userShips.ships.findIndex(ship => ship.id === shipId.toLowerCase());
 
@@ -306,11 +308,11 @@ async function setActiveShip(shipId, userId, message) {
 
     await modifyUserShips(userId, userShips);
 
-    return message.channel.send(`**${message.author.username}**, your current active ship is set to **${userShips.ships[toActiveShip].name}**\n⭑𓂃\n\`Kas ships active\` for more details, \`kas active repair\` for repair & \`kas active up\` for level up. ˙✧˖° 🌊⋆｡˚꩜`);
+    return message.channel.send(`**${message.author.username}**, your current active ship is set to **${userShips.ships[toActiveShip].name}**\n⭑𓂃\n\`Kas ships active\` for more details, \`kas active repair\` for repair & \`kas active up\` for level up. ˙✧˖° 🌊⋆｡˚꩜`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while setting ship active.");
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while setting ship active.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -320,13 +322,13 @@ async function levelUp(userId, message) {
     let userShips = await getUserShipsData(userId);
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
-    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\`");
+    if (!userShips.ships[activeShip]) return message.channel.send("<:warning:1366050875243757699> No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     let shipDetails = shipsData.find(ship => ship.id === userShips.ships[activeShip].id);
 
     let cost = userShips.ships[activeShip].level * shipDetails.levelUpCost;
 
     if (userData.cash < cost) {
-      return message.channel.send(`⚠️ You don't have enough cash to level up the ship. Required cash: <:coin:1304675604171460728>${cost}`);
+      return message.channel.send(`<:warning:1366050875243757699> You don't have enough cash to level up the ship. Required cash: <:coin:1304675604171460728>${cost}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     userData.cash -= cost;
@@ -335,11 +337,11 @@ async function levelUp(userId, message) {
     await updateUser(userId, userData);
     await modifyUserShips(userId, userShips);
 
-    return message.channel.send(`🎉 𝐂𝐨𝐧𝐠𝐫𝐚𝐭𝐮𝐥𝐚𝐭𝐢𝐨𝐧𝐬 ! You've successfully leveled up your ship, <:${shipDetails.id}:${shipDetails.emoji}> **${shipDetails.name}**, to Level **${userShips.ships[activeShip].level}** costing <:coin:1304675604171460728>${cost}. Keep going, captain!🏴‍☠️⚓`);
+    return message.channel.send(`<:celebration:1368113208023318558> 𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀, ${message.author.username.toUpperCase()}!\n𝘠𝘰𝘶𝘳 𝘴𝘩𝘪𝘱, <:${shipDetails.id}:${shipDetails.emoji}> **${shipDetails.name}**, 𝘩𝘢𝘴 𝘭𝘦𝘷𝘦𝘭𝘦𝘥 𝘶𝘱!\n\n**𝘕𝘦𝘸 𝘓𝘦𝘷𝘦𝘭**: **${userShips.ships[activeShip].level}**\n**𝘊𝘰𝘴𝘵**: <:coin:1304675604171460728>${cost}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while leveling up the ship.");
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while leveling up the ship.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -350,13 +352,13 @@ async function repair(times = 1, userId, message) {
 
     let activeShip = userShips.ships.findIndex(ship => ship.active);
 
-    if (!userShips.ships[activeShip]) return message.channel.send("⚠️ No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\`");
+    if (!userShips.ships[activeShip]) return message.channel.send("<:warning:1366050875243757699> No active ship found for battle! Try to set one from your collection (\`kas ships\`) using \`ships active <shipId>\`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     let shipDetails = shipsData.find(ship => ship.id === userShips.ships[activeShip].id);
 
     let cost = shipDetails.repairCost * times;
 
     if (userData.cash < cost) {
-      return message.channel.send(`⚠️ You don't have enough cash to repair the ship. Required cash: <:coin:1304675604171460728>${cost}`);
+      return message.channel.send(`<:warning:1366050875243757699> You don't have enough cash to repair the ship. Required cash: <:coin:1304675604171460728>${cost}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     userData.cash -= cost;
@@ -365,11 +367,11 @@ async function repair(times = 1, userId, message) {
     await updateUser(userId, userData);
     await modifyUserShips(userId, userShips);
 
-    return message.channel.send(`🎉 𝐂𝐨𝐧𝐠𝐫𝐚𝐭𝐮𝐥𝐚𝐭𝐢𝐨𝐧𝐬 ! You've successfully repaired your ship, <:${shipDetails.id}:${shipDetails.emoji}> **${shipDetails.name}**, to durability **${userShips.ships[activeShip].durability}** (+${25 * times}) costing <:coin:1304675604171460728>${cost}.⚓🏴‍☠️`);
+    return message.channel.send(`<:celebration:1368113208023318558> 𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀, ${message.author.username.toUpperCase()}!\n𝘠𝘰𝘶𝘳 𝘴𝘩𝘪𝘱, <:${shipDetails.id}:${shipDetails.emoji}> **${shipDetails.name}**, 𝘩𝘢𝘴 𝘣𝘦𝘦𝘯 𝘴𝘶𝘤𝘤𝘦𝘴𝘴𝘧𝘶𝘭𝘭𝘺 𝘳𝘦𝘱𝘢𝘪𝘳𝘦𝘥.\n\n**𝘋𝘶𝘳𝘢𝘣𝘪𝘭𝘪𝘵𝘺**: **${userShips.ships[activeShip].durability}** (*+${25 * times}*)\n**𝘊𝘰𝘴𝘵**: <:coin:1304675604171460728> ${cost}️`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while repairing ship.");
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while repairing ship.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -394,9 +396,10 @@ export default {
   args: "<action> [target]",
   example: [
     "ships",
-    "ships active <shipId (optional: specify to set as active)>",
+    "ships active <shipId>",
     "active",
-    "active <option> (option: use 'up' to level up or 'repair <count>' for number of repairs; count is optional)",
+    "active up",
+    "active repair 10"
   ],
   related: ["battle",
     "stat",
@@ -437,7 +440,7 @@ export default {
       }
       break;
     default:
-      return message.channel.send("⚔️ **Invalid Command**\nUse `ship/ships` to view all ships' stats, `active` to see stats of your current active ship, `ships active <shipId>` to set an active ship, `active up` to level up, or `active repair`/`active repair <times>` to increase durability in a pirate battle.");
+      return message.channel.send("<:warning:1366050875243757699> **Invalid Command**\nUse `ship/ships` to view all ships' stats, `active` to see stats of your current active ship, `ships active <shipId>` to set an active ship, `active up` to level up, or `active repair`/`active repair <times>` to increase durability in a pirate battle.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 }

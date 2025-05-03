@@ -69,7 +69,7 @@ export async function toss(id, amount, channel, choice = "head") {
     } else if (random === 0 && choice === "tail") {
       await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username.toUpperCase()}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵...!\n✦ The **ᑕOIＮ** ${stillCoinTails} landed on _tails_!\n### 𓂃 You *won* <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
     } else {
-      await suspenseMessage.edit(`𝘖𝘰𝘱𝘴, **${guild.user.nickname || guild.user.username.toLowerCase()}**, the **ᑕOIＮ** ${choice === "tail" ? stillCoin: stillCoinTails} landed on _*${choice === "tail" ? "heads": "tails"}*_...\n### You *lost* <:kasiko_coin:1300141236841086977> **${Number(winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\n-# **ᴛ~ᴛ ꜱᴏ ᴜɴꜰᴀɪʀ... ꜱᴛᴜᴘɪᴅ ᴄᴏɪɴ!!**`);
+      await suspenseMessage.edit(`𝘖𝘰𝘱𝘴, **${guild.user.nickname || guild.user.username.toLowerCase()}**, the **ᑕOIＮ** ${choice === "tail" ? stillCoin: stillCoinTails} landed on _*${choice === "tail" ? "heads": "tails"}*_...\n### You *lost* <:kasiko_coin:1300141236841086977> **${(-1* Number(winamount)).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
     }
 
   } catch (e) {
@@ -104,7 +104,7 @@ export default {
   execute: async (args, message) => {
     try {
       // Check if a valid amount argument is provided
-      if ((args[1] && Helper.isNumber(args[1])) || args[1] === "all") {
+      if ((args[1] && Helper.isNumber(args[1])) || String(args[1]).toLowerCase() === "all") {
 
         let amount;
 
@@ -115,12 +115,12 @@ export default {
         }
 
         // Ensure amount is within valid range
-        if (amount !== "all" && amount < 1) {
+        if (String(amount).toLowerCase() !== "all" && amount < 1) {
           await message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
           return;
         }
 
-        if (amount !== "all" && amount > 300000) {
+        if (String(amount).toLowerCase() !== "all" && amount > 300000) {
           await message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
           return;
         }

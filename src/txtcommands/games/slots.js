@@ -142,23 +142,23 @@ export default {
   execute: async (args, message) => {
     try {
       // Check if a valid amount argument is provided
-      if ((args[1] && Helper.isNumber(args[1])) || args[1] === "all") {
+      if ((args[1] && Helper.isNumber(args[1])) || String(args[1]).toLowerCase() === "all") {
 
         let amount;
 
-        if (args[1] === "all") {
+        if (String(args[1]).toLowerCase() === "all") {
           amount = "all";
         } else {
           amount = parseInt(args[1]);
         }
 
         // Ensure amount is within valid range
-        if (amount !== "all" && amount < 1) {
+        if (String(amount).toLowerCase() !== "all" && amount < 1) {
           await message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
           return;
         }
 
-        if (amount !== "all" && amount > 300000) {
+        if (String(amount !== "all").toLowerCase() && amount > 300000) {
           await message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
           return;
         }

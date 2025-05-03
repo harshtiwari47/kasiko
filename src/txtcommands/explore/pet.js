@@ -54,8 +54,8 @@ async function petHelp(context) {
   .setTitle("🐱 𝗣𝗘𝗧 𝗖𝗢𝗠𝗠𝗔𝗡𝗗𝗦 𝗛𝗘𝗟𝗣")
   .addFields(
     {
-      name: "pet rename <old> <new>",
-      value: "Rename your pet (max 14 characters)."
+      name: "pet rename <newName>",
+      value: "Rename your active pet (max 14 characters)."
     },
     {
       name: "pet switch <name>",
@@ -123,22 +123,22 @@ async function petFeed(userPetData, petId) {
 
 // Handler: Rename a pet by specifying old and new names
 async function petRename(context, userPetData, args) {
-  const oldName = args[2];
-  const newName = args[3];
+  const newName = args[2];
+  const username = context.user ? context.user.username: context.author.username;
 
-  if (!oldName || !newName) {
+  if (!newName) {
     return handleMessage(context, {
-      content: "⚠️ Usage: pet rename <old_name> <new_name> (max 14 chars)."
+      content: "⚠️ Usage: pet rename <new_name> (max 14 chars)."
     });
   }
 
-  const pet = userPetData.pets.find(
-    p => p.name.toLowerCase() === oldName.toLowerCase()
-  );
+  const activeId = parseInt(userPetData.active) || 0;
+
+  const pet = userPetData.pets[activeId];
 
   if (!pet) {
     return handleMessage(context, {
-      content: "⚠️ No pet found with that name."
+      content: "⚠️ No active pet found."
     });
   }
 
@@ -146,7 +146,7 @@ async function petRename(context, userPetData, args) {
   await userPetData.save();
 
   await handleMessage(context, {
-    content: `✏️ Pet **${oldName}** has been renamed to **${pet.name}**.`
+    content: `✏️ **${(username?.toUpperCase() || "Owner")}**, your active pet has been renamed to **${pet.name}**.`
   });
 }
 
@@ -282,7 +282,7 @@ async function petList(context, userPetData) {
   .setDescription("- " + list)
   .setColor("#630872")
   .setAuthor({
-    name: `${context.user ? context.user.username : context.author.username}`,
+    name: `${context.user ? context.user.username: context.author.username}`,
     iconURL: profile
   });
 

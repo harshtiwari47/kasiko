@@ -270,7 +270,7 @@ export default {
         amount = 1;
       }
 
-      if (args[0] !== "all") {
+      if (String(args[0]).toLowerCase() !== "all") {
         amount = parseInt(args[0] ? args[0]: amount);
         if (isNaN(amount)) {
           return message.channel.send("Please provide a valid number.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));

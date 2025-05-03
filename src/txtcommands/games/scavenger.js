@@ -76,16 +76,16 @@ export async function scavengerHunt(id, location, channel) {
       if (Math.random() < 0.1) {
         const rareBonus = Math.floor(reward * 2);
         reward += rareBonus;
-        message = `💎 WOW! You found a rare treasure worth an extra <:kasiko_coin:1300141236841086977> **${rareBonus.toLocaleString()}**!`;
+        message = `💎 𝗪𝗢𝗪! You found a rare treasure worth an extra <:kasiko_coin:1300141236841086977> **${rareBonus.toLocaleString()}**!`;
       }
 
       // Add reward to user data
       userData.cash += reward;
-      message = `${message}\n🎉 Congratulations, **${guild.user.username}**! You found <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}** in the **${location}**!`;
+      message = `${message}\n<:celebration:1368113208023318558> 𝘾𝙤𝙣𝙜𝙧𝙖𝙩𝙪𝙡𝙖𝙩𝙞𝙤𝙣𝙨, **${guild.user.username}**! 𝘠𝘰𝘶 𝘧𝘰𝘶𝘯𝘥 <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}** 𝘪𝘯 𝘵𝘩𝘦 🗺️ **${location}**!`;
     } else {
       // Trap message
       const trap = locations[location].trap;
-      message = `<:alert:1366050815089053808> Oh no, **${guild.user.username}**! You stumbled upon ${trap} in the **${location}**. You barely escaped with your life! No rewards this time.`;
+      message = `<:alert:1366050815089053808> Oh no, **${guild.user.username}**! You stumbled upon ${trap} in the **${location}**.\n𝘠𝘰𝘶 𝘣𝘢𝘳𝘦𝘭𝘺 𝘦𝘴𝘤𝘢𝘱𝘦𝘥 𝘸𝘪𝘵𝘩 𝘺𝘰𝘶𝘳 𝘭𝘪𝘧𝘦! 𝘕𝘰 𝘳𝘦𝘸𝘢𝘳𝘥𝘴 𝘵𝘩𝘪𝘴 𝘵𝘪𝘮𝘦.`;
     }
 
     // Save updated user data
@@ -121,7 +121,7 @@ export async function scavengerHunt(id, location, channel) {
           await updateUser(id, {
             cash: userData.cash
           });
-          await gambleMessage.edit(`🎉 Luck is on your side! You doubled your reward to <:kasiko_coin:1300141236841086977> **${doubledReward.toLocaleString()}**!`);
+          await gambleMessage.edit(`<:celebration:1368113208023318558> Luck is on your side! You doubled your reward to <:kasiko_coin:1300141236841086977> **${doubledReward.toLocaleString()}**!`);
         } else {
           userData.cash -= reward; // Remove initial reward
           await updateUser(id, {

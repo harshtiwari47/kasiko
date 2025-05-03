@@ -318,7 +318,7 @@ export default {
           )
           .addFields(
             {
-              name: "🎉 Reward for Sharing", value: "<:creamcash:1309495440030302282> +10 cash, +1 reputation, ✪⁠ +15 Loyalty Points, +5 friendly points!"
+              name: "<:celebration:1368113208023318558> Reward for Sharing", value: "<:creamcash:1309495440030302282> +10 cash, +1 reputation, ✪⁠ +15 Loyalty Points, +5 friendly points!"
             }
           )
           .setColor(0x00ff00)
@@ -512,13 +512,13 @@ export default {
 
           const bonusEmbed = new EmbedBuilder()
           .setTitle("🍧 𝐃𝐚𝐢𝐥𝐲 𝐁𝐨𝐧𝐮𝐬 𝐂𝐥𝐚𝐢𝐦𝐞𝐝!")
-          .setDescription(`**${message.author.username}** received today's reward, including +1 reputation points!\nYou can claim 20 loyalty points, plus 20 for every 150 reputation!`)
+          .setDescription(`**${message.author.username}** 𝗋𝖾𝖼𝖾𝗂𝗏𝖾𝖽 𝗍𝗈𝖽𝖺𝗒'𝗌 𝗋𝖾𝗐𝖺𝗋𝖽, 𝗂𝗇𝖼𝗅𝗎𝖽𝗂𝗇𝗀 **+1 reputation** 𝗉𝗈𝗂𝗇𝗍𝗌! <:celebration:1368113208023318558>\n\n-# 𝘠𝘰𝘶 𝘤𝘢𝘯 𝘤𝘭𝘢𝘪𝘮 ✪ **20 loyalty** 𝘱𝘰𝘪𝘯𝘵𝘴, 𝘱𝘭𝘶𝘴 ***20*** 𝘧𝘰𝘳 𝘦𝘷𝘦𝘳𝘺 ***150*** 𝘳𝘦𝘱𝘶𝘵𝘢𝘵𝘪𝘰𝘯!`)
           .addFields(
             {
-              name: "<:creamcash:1309495440030302282> cash", value: `+${reward} ${passInfo.isValid && passInfo.passType !== "titan" ? "(**+25** bonus) " : ""}cash`
+              name: "<:creamcash:1309495440030302282> cash", value: `**+${reward}** ${passInfo.isValid && passInfo.passType !== "titan" ? "*(+25 bonus)* " : ""}cash`
             },
             {
-              name: "✪⁠ Loyalty Points", value: `+${loyaltyPointsGained} Points`
+              name: "✪⁠ Loyalty Points", value: `**+${loyaltyPointsGained}** Points`
             }
           )
           .setColor(0xefb7b7)

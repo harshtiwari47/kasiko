@@ -122,7 +122,7 @@ async function collectResources(userId, context, username) {
     }
 
     return {
-      content: `**${username}**, you collected **${coalToAdd} ${COAL_EMOJI}**\nCurrent storage: **${userMining.collected} ${COAL_EMOJI}**\n${metalFound ? "Wait, you’ve found something while mining:" + metalFound: ""}`,
+      content: `**${username}**, you collected **${coalToAdd} ${COAL_EMOJI}**\nCurrent storage: **${userMining.collected} ${COAL_EMOJI}**\n${metalFound ? "𝘞𝘢𝘪𝘵, 𝘺𝘰𝘶’𝘷𝘦 𝘧𝘰𝘶𝘯𝘥 𝘴𝘰𝘮𝘦𝘵𝘩𝘪𝘯𝘨 𝘸𝘩𝘪𝘭𝘦 𝘮𝘪𝘯𝘪𝘯𝘨:" + metalFound: ""}`,
       collected: `${userMining.collected}`
     }
   } catch (e) {
@@ -167,7 +167,7 @@ async function exchangeCoal(userId, context, username) {
     await userMining.save();
 
     return {
-      content: `**${username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()}** ${passInfo.isValid ? `(**+${additionalReward}** bonus) `: ""}𝒄𝒂𝒔𝒉.`,
+      content: `**${username}**, you exchanged **${coalExchanged} ${COAL_EMOJI}** for <:kasiko_coin:1300141236841086977> **${cashEarned.toLocaleString()}** 𝒄𝒂𝒔𝒉.\n${passInfo.isValid ? `-# ◎ **+${additionalReward}** pass bonus `: ""}`,
       collected: true
     };
   } catch (e) {
