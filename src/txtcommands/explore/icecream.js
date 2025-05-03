@@ -30,6 +30,7 @@ import {
   checkPassValidity
 } from "../explore/pass.js";
 
+
 const flavors = [{
   level: 1,
   name: "Kulfi",

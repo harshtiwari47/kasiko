@@ -3,7 +3,6 @@ import {
   getUserBankDetails,
   openBankAccount
 } from "./bankHanlder.js";
-
 import {
   EmbedBuilder
 } from "discord.js";

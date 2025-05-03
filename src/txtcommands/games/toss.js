@@ -7,6 +7,7 @@ import {
   Helper
 } from '../../../helper.js';
 
+
 export async function toss(id, amount, channel, choice = "head") {
   try {
     const guild = await channel.guild.members.fetch(id);

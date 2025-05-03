@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
   ComponentType,
 } from 'discord.js';
+
 import {
   Mining
 } from '../../../models/Mining.js';

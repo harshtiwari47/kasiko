@@ -5,11 +5,9 @@ import {
   EmbedBuilder,
   ComponentType
 } from 'discord.js';
-
 import {
   client
 } from "../../../bot.js";
-
 import {
   getUserData,
   updateUser

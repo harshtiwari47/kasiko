@@ -2,7 +2,6 @@ import {
   getUserData,
   updateUser
 } from "../../../database.js";
-
 import fs from 'fs';
 import path from 'path';
 
