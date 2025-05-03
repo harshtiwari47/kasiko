@@ -70,10 +70,10 @@ function createStructureEmbed(structure, username = null) {
     .setFooter({
       text: `${username? "@" + username + " ◌ ": ""}structure ${structure.id}`
     })
-    .setColor("#0b4ee2"),
+    .setColor(structure?.hexcolor ?? "Random"),
 
     new EmbedBuilder()
-    .setDescription(`-# **ᯓ★ Details**\n**ID:** ${structure.id}\n**Category:** ${structure.category}\n**Rarity:** ${iconRarity} **Floors:** ${structure.floors}\n**Color:** ${structure.color}\n**Location:** ${structure.location}\n-# <:spark:1355139233559351326> *${structure.description}*`)
+    .setDescription(`-# **ᯓ★ Details**\n**ID:** ${structure.id}\n**Category:** ${structure.category}\n**Rarity:** ${iconRarity} **Floors:** ${structure.floors}\n**Color:** ${structure.color}\n**Location:** ${structure.location}\n-# \`\`\`*${structure.description}*\`\`\``)
     .addFields({
       name: `ᯓ★ Amenities`,
       value: structure.amenities?.join(", ") || "None listed",
@@ -242,14 +242,14 @@ export async function userstructures(context, targetUserId) {
       return chunk.map((structure, structureIndex) => {
         const propertyDetails = structureItems.find(item => item.id === structure.id);
         const embed = new EmbedBuilder()
-        .setColor('#6835fe')
+        .setColor(structure?.hexcolor ?? "Random")
         .setThumbnail(`https://cdn.discordapp.com/app-assets/${APPTOKEN}/${propertyDetails.image}.png`);
 
         let description = '';
         description += `ᯓ★ 𝑵𝑨𝑴𝑬: **${propertyDetails.name}**\n`;
-        description += `↪ **𝑶𝑾𝑵𝑺**: ${structure.items}\n`;
-        description += `↪ **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice.toLocaleString()}\n`;
-        description += `↪ **𝑰𝑫**: ${structure.id}\n`;
+        description += `<:follow_reply:1368224897003946004> **𝘖𝘸𝘯𝘴**: ${structure.items}\n`;
+        description += `<:reply:1368224908307468408> **𝘗𝘶𝘳𝘤𝘩𝘢𝘴𝘦𝘥 𝘊𝘰𝘴𝘵**: <:kasiko_coin:1300141236841086977> ${structure.purchasedPrice.toLocaleString()}\n`;
+        description += `\`\`\`ID: ${structure.id}\`\`\`\n`;
 
         embed.setDescription(description.trim());
 

@@ -12,7 +12,8 @@
     "maintenance": 1200,
     "color": "Yellow",
     "emoji": "1300487925879799951",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#e5cc39"
   },
   "vanguard": {
     "name": "Vanguard",
@@ -27,7 +28,8 @@
     "maintenance": 2800,
     "color": "Ivory White",
     "emoji": "1300489672174342246",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#e9e9e7"
   },
   "jetstream": {
     "name": "Jet Stream",
@@ -42,7 +44,8 @@
     "maintenance": 5000,
     "color": "Jet Black",
     "emoji": "1300490388573782116",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#000000"
   },
   "turtle": {
     "name": "Turtle",
@@ -57,7 +60,8 @@
     "maintenance": 8000,
     "color": "Black",
     "emoji": "1300491323236679743",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#5c5c5c"
   },
   "duststorm": {
     "name": "Duststorm",
@@ -72,7 +76,8 @@
     "maintenance": 10000,
     "color": "Silver",
     "emoji": "1300488669643280405",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#4f5a65"
   },
   "solarian": {
     "name": "Solarian",
@@ -87,7 +92,8 @@
     "maintenance": 15000,
     "color": "Yellow-Black",
     "emoji": "1300487311758196837",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#e1bd00"
   },
   "skyblade": {
     "name": "Skyblade",
@@ -102,7 +108,8 @@
     "maintenance": 20000,
     "color": "Silver Blue",
     "emoji": "1313412006287507486",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#c9cedb"
   },
   "neoblaze": {
     "name": "NeoBlaze",
@@ -117,7 +124,8 @@
     "maintenance": 25000,
     "color": "Gold",
     "emoji": "1313411983273627668",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#eae56d"
   },
   "starlight": {
     "name": "Starlight",
@@ -132,7 +140,8 @@
     "maintenance": 30000,
     "color": "Silver",
     "emoji": "1313411994883461171",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#cecdba"
   },
   "venom_gt": {
     "name": "Venom GT",
@@ -147,7 +156,8 @@
     "maintenance": 45000,
     "color": "White with Red Stripes",
     "emoji": "1337479859332448314",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#ede6e6"
   },
   "terra_rover": {
     "name": "Terra Rover",
@@ -162,7 +172,8 @@
     "maintenance": 70000,
     "color": "Black",
     "emoji": "1337479899191054377",
-    "type": "car"
+    "type": "car",
+    "hexcolor": "#050506"
   },
   "lumino": {
     "name": "Lumino",
@@ -178,7 +189,8 @@
     "color": "Blue",
     "emoji": "1324601046290530375",
     "type": "car",
-    "banner": "https://harshtiwari47.github.io/kasiko-public/images/shop/cars/lumino-banner.jpg"
+    "banner": "https://harshtiwari47.github.io/kasiko-public/images/shop/cars/lumino-banner.jpg",
+    "hexcolor": "#61bde8"
   },
   "spector": {
     "name": "spector",
@@ -194,7 +206,8 @@
     "color": "Silver",
     "emoji": "1324601268421005342",
     "type": "car",
-    "banner": "https://harshtiwari47.github.io/kasiko-public/images/shop/cars/spector-banner.jpg"
+    "banner": "https://harshtiwari47.github.io/kasiko-public/images/shop/cars/spector-banner.jpg",
+    "hexcolor": "#e1f3fb"
   },
   "vortex_gtr": {
     "name": "Vortex GTR",
@@ -210,7 +223,8 @@
     "color": "Blue",
     "emoji": "1347467255524622396",
     "type": "car",
-    "banner": "https://harshtiwari47.github.io/kasiko-public/images/shop/cars/vortex_gtr-banner.jpg"
+    "banner": "https://harshtiwari47.github.io/kasiko-public/images/shop/cars/vortex_gtr-banner.jpg",
+    "hexcolor": "#63d6ef"
   },
   "nebula_rs": {
     "name": "Nebula Rs",
@@ -226,7 +240,8 @@
     "color": "White",
     "emoji": "1347467277846450208",
     "type": "car",
-    "exclusive": true
+    "exclusive": true,
+    "hexcolor": "#e4ecee"
   },
   "eclipse_x1": {
     "name": "Eclipse X1",
@@ -243,7 +258,8 @@
     "emoji": "1347467243524591616",
     "type": "car",
     "banner": "https://harshtiwari47.github.io/kasiko-public/images/shop/cars/eclipse_x1-banner.jpg",
-    "exclusive": true
+    "exclusive": true,
+    "hexcolor": "#b26ff6"
   },
   "house1": {
     "name": "Beachside Retreat",
@@ -264,7 +280,8 @@
       "ocean view",
       "porch"
     ],
-    "location": "Sandy Shores"
+    "location": "Sandy Shores",
+    "hexcolor": "#efe691"
   },
   "house2": {
     "name": "Victorian Farmhouse",
@@ -285,7 +302,8 @@
       "wraparound porch",
       "large yard"
     ],
-    "location": "Rural Countryside"
+    "location": "Rural Countryside",
+    "hexcolor": "#b8ef91"
   },
   "house3": {
     "name": "Cozy Suburban Home",
@@ -306,7 +324,8 @@
       "front porch",
       "yard"
     ],
-    "location": "Suburban Neighborhood"
+    "location": "Suburban Neighborhood",
+    "hexcolor": "#f1915a"
   },
   "house4": {
     "name": "Grand Victorian Mansion",
@@ -328,7 +347,8 @@
       "swimming pool",
       "gardens"
     ],
-    "location": "Upscale Neighborhood"
+    "location": "Upscale Neighborhood",
+    "hexcolor": "#f0cd88"
   },
   "building1": {
     "name": "Modern Office Complex",
@@ -349,7 +369,8 @@
       "conference rooms",
       "rooftop garden"
     ],
-    "location": "Urban Business District"
+    "location": "Urban Business District",
+    "hexcolor": "#a2b1cc"
   },
   "building2": {
     "name": "Urban Skyscraper",
@@ -370,7 +391,8 @@
       "lounge area",
       "business center"
     ],
-    "location": "City Center"
+    "location": "City Center",
+    "hexcolor": "#a2c1cc"
   },
   "building3": {
     "name": "Modern Urban Apartment",
@@ -391,7 +413,8 @@
       "private balconies",
       "concierge"
     ],
-    "location": "City Center"
+    "location": "City Center",
+    "hexcolor": "#a2b3cc"
   },
   "building4": {
     "name": "Modern Mixed-Use Building",
@@ -412,6 +435,7 @@
       "shopping area",
       "community space"
     ],
-    "location": "Downtown"
+    "location": "Downtown",
+    "hexcolor": "#cacca2"
   }
 }

@@ -59,10 +59,10 @@ function createCarEmbed(car, username = null) {
   const mainEmbed = new EmbedBuilder()
   .setThumbnail(car.image && car.image.startsWith(`https`) ? car.image: `https://cdn.discordapp.com/app-assets/${APPTOKEN}/${car.image}.png`) // Use image
   .setDescription(`## ${car.name}\n-# ***ᯓ★ Price***\n**Price:** <:kasiko_coin:1300141236841086977>${car.price.toLocaleString()}\n**Maintenance Cost:** <:kasiko_coin:1300141236841086977>${car.maintenance.toLocaleString()}`)
-  .setColor("#0b4ee2");
+  .setColor(car?.hexcolor ?? "Random")
 
   const middleEmbed = new EmbedBuilder()
-  .setDescription(`-# ***ᯓ★ Car Details***\n**𝙄𝘿** ${car.id}\n**𝘾𝘼𝙏𝙀𝙂𝙊𝙍𝙔** ${car.category} **𝙏𝙔𝙋𝙀** ${iconRarity}\n**𝘾𝙊𝙇𝙊𝙍** ${car.color} **𝙀𝙈𝙊𝙅𝙄** <:${car.id}:${car.emoji}>\n-# <:spark:1355139233559351326> *${car.description}*`)
+  .setDescription(`-# ***ᯓ★ Car Details***\n**Id** ${car.id}\n**Category** ${car.category} **Type** ${iconRarity}\n**Color** ${car.color} **Emoji** <:${car.id}:${car.emoji}>\n-# *\`\`\`${car.description}*\`\`\``)
   .setFooter({
     text: `${username? "@" + username + " ◌ ": ""}car ${car.id}`
   })
@@ -250,20 +250,20 @@ export async function usercars(context, targetUserId) {
       return chunk.map((car, carIndexInChunk) => {
         const carDetails = carItems.find(item => item.id === car.id);
         const embed = new EmbedBuilder()
-        .setColor('#6835fe')
+        .setColor(carDetails?.hexcolor ?? "Random")
         .setThumbnail(carDetails.image && carDetails.image.startsWith(`https`) ? carDetails.image: `https://cdn.discordapp.com/app-assets/${APPTOKEN}/${carDetails.image}.png`) // Use image
 
         let description = '';
         description += `ᯓ★ 𝑩𝒓𝒂𝒏𝒅 𝒏𝒂𝒎𝒆: **${carDetails.name}**\n`;
-        description += ` <:follow_reply:1368224897003946004> **𝑶𝒘𝒏𝒔**: ${car.items}\n`;
-        description += ` <:follow_reply:1368224897003946004> **𝑪𝒂𝒓**: <:${car.id}_car:${carDetails.emoji}> \n`;
-        description += ` <:follow_reply:1368224897003946004> **𝑷𝒖𝒓𝒄𝒉𝒂𝒔𝒆𝒅 𝑪𝒐𝒔𝒕**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
+        description += ` <:follow_reply:1368224897003946004> **𝘖𝘸𝘯𝘴**: ${car.items}\n`;
+        description += ` <:follow_reply:1368224897003946004> **𝘊𝘢𝘳**: <:${car.id}_car:${carDetails.emoji}> \n`;
+        description += ` <:reply:1368224908307468408> **𝘗𝘶𝘳𝘤𝘩𝘢𝘴𝘦𝘥 𝘊𝘰𝘴𝘵**: <:kasiko_coin:1300141236841086977> ${car.purchasedPrice.toLocaleString()}\n`;
         description += ` \`\`\`ID: ${carDetails.id}\`\`\`\n`;
 
         embed.setDescription(description.trim());
 
         if (carIndexInChunk === 0) {
-          embed.setTitle(`░ <@${userId}>'s GARRAGE ✩`);
+          embed.setTitle(`<@${userId}>'s GARRAGE ✩`);
         }
 
         // Add footer with page numbers
