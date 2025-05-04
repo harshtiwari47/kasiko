@@ -108,10 +108,10 @@ async function showAnimalDetail(context, user, animalName) {
   .setDescription(
     [
       `-# *\`\`\`${chosenAnimalData?.description}\`\`\`*`,
-      `<:follow_reply:1368224897003946004> **𝗟𝗘𝗩𝗘𝗟**: **${foundAnimal.level}**`,
+      `\n<:follow_reply:1368224897003946004> **𝗟𝗘𝗩𝗘𝗟**: **${foundAnimal.level}**`,
       `<:follow_reply:1368224897003946004> **𝗘𝗫𝗣**: **${foundAnimal.exp}**`,
       `<:follow_reply:1368224897003946004> **𝗧𝗢𝗧𝗔𝗟**: **${foundAnimal.totalAnimals}**`,
-      `<:reply:1368224908307468408> **𝗧𝗬𝗣𝗘**: *${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708> EXCLUSIVE": "NORMAL"}*`,
+      `<:reply:1368224908307468408> **𝗧𝗬𝗣𝗘**: *${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708> EX": "GEN"}*`,
       `-# Use \`sellanimal ${foundAnimal.name} all\`  to sell!`
     ].join('\n')
   )

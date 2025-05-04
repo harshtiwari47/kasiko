@@ -173,6 +173,10 @@ export default {
 
   // Interact function to handle Slash Command interaction
   interact: async (interaction) => {
+    if (!interaction.deferred) {
+      await interaction.deferReply();
+    }
+
     try {
       const userId = interaction.user.id;
       const user = interaction.user;

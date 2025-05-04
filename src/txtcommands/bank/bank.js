@@ -3,14 +3,24 @@ import {
   getUserBankDetails,
   openBankAccount
 } from "./bankHanlder.js";
+
 import {
-  EmbedBuilder
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  ComponentType
 } from "discord.js";
 
 import {
   getUserData,
   updateUser
 } from '../../../database.js';
+
+import {
+  handleMessage,
+  discordUser
+} from '../../../helper.js';
 
 import {
   checkPassValidity
@@ -24,8 +34,16 @@ const BankInfo = {
 }
 
 export const Bank = {
-  async deposit(userId, amount, message) {
+  async deposit(amount, context) {
     try {
+
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
+
       const userData = await getUserData(userId);
 
       if (!userData) return;
@@ -33,15 +51,15 @@ export const Bank = {
       if (amount && String(amount).toLowerCase() === "all") amount = Number(userData.cash || 0);
 
       if (userData.cash < Number(amount)) {
-        return message.channel.send(
-          `ⓘ **${message.author.username}**, you don't have enough cash to deposit that amount!`
+        return await handleMessage(context,
+          `ⓘ **${name}**, you don't have enough cash to deposit that amount!`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const account = userData.bankAccount;
       if (!account || !account?.open) {
-        return message.channel.send(
-          `ⓘ **${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        return await handleMessage(context,
+          `ⓘ **${name}**, you don't have a bank account yet. Open one first!\nOpen through **\`bank\`** or *USE*: **\`bank open\`**\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -62,37 +80,45 @@ export const Bank = {
           'bankAccount.deposit': Math.abs(newDeposit)
         });
 
-        return message.channel.send(
-          `## <:bank:1352897312606785576> **${message.author.username}** __deposited__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
+        return await handleMessage(context,
+          `## <:bank:1352897312606785576> **${name}** __deposited__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
           `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
           `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
           `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${Math.abs(userData.cash).toLocaleString()}**`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       } catch (err) {
-        console.error(`❌ Error updating bank details for ${message.author.username}:`, err);
+        console.error(`❌ Error updating bank details for ${username}:`, err);
 
         // Rollback: If updating the bank fails, refund the cash amount back to the user
         await updateUser(userId, {
           cash: userData.cash
         });
 
-        return message.channel.send(`⚠️ **${message.author.username}**, an error occurred while processing your deposit. Your cash balance has been restored.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return await handleMessage(context, `⚠️ **${name}**, an error occurred while processing your deposit. Your cash balance has been restored.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (err) {
-      return message.channel.send(`Error depositing funds: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `Error depositing funds: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 
-  async withdraw(userId, amount, message) {
+  async withdraw(amount, context) {
     try {
+
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
+
       const userData = await getUserData(userId);
       if (!userData) return;
       const account = userData.bankAccount;
 
       if (!account || !account?.open) {
-        return message.channel.send(
-          `ⓘ **${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        return await handleMessage(context,
+          `ⓘ **${name}**, you don't have a bank account yet. Open one first!\nOpen through **\`bank\`** or *USE*: **\`bank open\`**\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -103,8 +129,8 @@ export const Bank = {
       const totalWithdrawal = amount;
 
       if (totalWithdrawal > account.deposit) {
-        return message.channel.send(
-          `ⓘ **${message.author.username}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit).toLocaleString()}**`
+        return await handleMessage(context,
+          `ⓘ **${name}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit).toLocaleString()}**`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -119,8 +145,8 @@ export const Bank = {
           'bankAccount.deposit': newDeposit
         });
 
-        return message.channel.send(
-          `## <:bank:1352897312606785576> **${message.author.username}** __withdrew__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
+        return await handleMessage(context,
+          `## <:bank:1352897312606785576> **${name}** __withdrew__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
           `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
           `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
           `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}**`
@@ -128,7 +154,7 @@ export const Bank = {
 
       } catch (err) {
         console.error(
-          `❌ Error updating bank details for ${message.author.username}:`,
+          `❌ Error updating bank details for ${username}:`,
           err
         );
 
@@ -139,25 +165,85 @@ export const Bank = {
           });
         } catch (rollbackError) {
           console.error(
-            `❌ Rollback failed for ${message.author.username}:`,
+            `❌ Rollback failed for ${username}:`,
             rollbackError
           );
         }
 
-        return message.channel.send(
-          `⚠️ **${message.author.username}**, an error occurred while processing your withdrawal. Your cash balance has been restored.`
+        return await handleMessage(context,
+          `⚠️ **${name}**, an error occurred while processing your withdrawal. Your cash balance has been restored.`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (err) {
       if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
         console.error(err);
       }
-      return message.channel.send(`Error withdrawing funds: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `Error withdrawing funds: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+  },
+  async openAccount(context) {
+    try {
+
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
+
+      const userData = await getUserData(userId);
+
+      if (!userData) return;
+
+      if (userData.cash < 1000) {
+        return await handleMessage(context,
+          `**${name}**, you need at least <:kasiko_coin:1300141236841086977> 1000 cash to open a bank account.`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+
+      if (userData.bankAccount && userData.bankAccount.open) {
+        return await handleMessage(context, `**${name}**, you already have a bank account.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+
+      let isOpened;
+
+      if (userData.bankAccount && !userData?.bankAccount?.open) {
+        if (userData.cash > 1000) {
+          userData.cash -= 1000;
+          userData.bankAccount.open = true;
+
+          try {
+            await updateUser(userId, {
+              cash: userData.cash,
+              'bankAccount.open': true
+            });
+            isOpened = true;
+          } catch (error) {
+            return await handleMessage(context, `Error opening bank account: ${err.message}\nⓘ Please try again!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
+        }
+      }
+
+      if (isOpened) {
+        return await handleMessage(context,
+          `<:bank:1352897312606785576> 𝐁𝐀𝐍𝐊\n**${name}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+    } catch (err) {
+      return await handleMessage(context, `Error opening bank account: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 
-  async showStatus(userId, message) {
+  async showStatus(context) {
     try {
+
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
+
       const userData = await getUserData(userId);
 
       if (!userData) return;
@@ -165,8 +251,8 @@ export const Bank = {
       const account = userData.bankAccount;
 
       if (!account) {
-        return message.channel.send(
-          `ⓘ **${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        return await handleMessage(context,
+          `ⓘ **${name}**, you don't have a bank account yet. Open one first!\nOpen through **\`bank\`** or *USE*: **\`bank open\`**\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -181,6 +267,14 @@ export const Bank = {
           }
         }
       }
+
+      const rowComp = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+        .setCustomId('open_bank')
+        .setLabel('𝗢𝗣𝗘𝗡 𝗕𝗔𝗡𝗞 𝗔𝗖𝗖𝗢𝗨𝗡𝗧')
+        .setEmoji(`1300141236841086977`)
+        .setStyle(ButtonStyle.Secondary)
+      );
 
       const emebedHeader = new EmbedBuilder()
       .setColor("#a4bef2")
@@ -202,26 +296,76 @@ export const Bank = {
         }
       )
       .setAuthor({
-        name: `${message.author.username}`,
-        iconURL: message.author.displayAvatarURL({
-          dynamic: true
-        })
+        name: `${name}`,
+        iconURL: avatar
       })
 
-      return message.channel.send({
-        embeds: [emebedHeader, embed]
+      const resMsg = await handleMessage(context, {
+        embeds: [emebedHeader, embed],
+        components: !account?.open ? [rowComp]: []
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
+      if (!account?.open) {
+        const collector = resMsg.createMessageComponentCollector({
+          time: 60000,
+        });
+
+        collector.on('collect', async (interaction) => {
+          if (interaction.replied || interaction.deferred) return; // Do not reply again
+          await interaction.deferUpdate();
+
+          try {
+            if (interaction.user.id !== userId) {
+              return interaction.reply({
+                content: 'You are not allowed to interact!',
+                ephemeral: true,
+              }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            }
+
+            if (interaction.customId === 'open_bank') {
+              await Bank.openAccount(interaction);
+            }
+
+            await resMsg.edit({
+              components: []
+            }).catch(() => {});
+            return;
+          } catch (err) {
+            console.log(err)
+          }
+        });
+
+        collector.on('end',
+          async () => {
+            await resMsg.edit({
+              components: []
+            }).catch(() => {});
+          });
+      }
+
     } catch (err) {
-      return message.channel.send(`Error fetching bank status: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context,
+        `Error fetching bank status: ${err.message}`).catch(err => ![50001,
+          50013,
+          10008].includes(err.code) && console.error(err));
     }
   },
 
-  async upgrade(userId, message, times = 1) {
+  async upgrade(context,
+    times = 1) {
     try {
+
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
+
       const account = await getUserBankDetails(userId);
       if (!account) {
-        return message.channel.send(
-          `**${message.author.username}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+        return await handleMessage(context,
+          `**${name}**, you don't have a bank account yet. Open one first!\n**USE**: \`bank open\`\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -244,8 +388,8 @@ export const Bank = {
       const upgradeCost = (BankInfo.levelUpCost - additionalReward) * times;
 
       if (account.deposit < upgradeCost) {
-        return message.channel.send(
-          `<:warning:1366050875243757699> **${message.author.username}**, you need <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** cash in Bank to upgrade to the next level.`
+        return await handleMessage(context,
+          `<:warning:1366050875243757699> **${name}**, you need <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** cash in Bank to upgrade to the next level.`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -256,56 +400,11 @@ export const Bank = {
         level: newLevel, deposit: newDeposit
       });
 
-      return message.channel.send(
-        `<:bank:1352897312606785576> **${message.author.username}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n**COST**: <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()}\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
+      return await handleMessage(context,
+        `<:bank:1352897312606785576> **${name}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n**COST**: <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()}\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (err) {
-      return message.channel.send(`Error upgrading bank: ${err.message}`).catch(console.error);
-    }
-  },
-
-  async openAccount(userId, message) {
-    try {
-      const userData = await getUserData(userId);
-
-      if (!userData) return;
-
-      if (userData.cash < 1000) {
-        return message.channel.send(
-          `**${message.author.username}**, you need at least <:kasiko_coin:1300141236841086977> 1000 cash to open a bank account.`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      if (userData.bankAccount && userData.bankAccount.open) {
-        return message.channel.send(`**${message.author.username}**, you already have a bank account.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      let isOpened;
-
-      if (userData.bankAccount && !userData?.bankAccount?.open) {
-        if (userData.cash > 1000) {
-          userData.cash -= 1000;
-          userData.bankAccount.open = true;
-
-          try {
-            await updateUser(userId, {
-              cash: userData.cash,
-              'bankAccount.open': true
-            });
-            isOpened = true;
-          } catch (error) {
-            return message.channel.send(`Error opening bank account: ${err.message}\nⓘ Please try again!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-        }
-      }
-
-      if (isOpened) {
-        return message.channel.send(
-          `<:bank:1352897312606785576> 𝐁𝐀𝐍𝐊\n**${message.author.username}** successfully opened a bank account! Remaining cash: <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-    } catch (err) {
-      return message.channel.send(`Error opening bank account: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `Error upgrading bank: ${err.message}`).catch(console.error);
     }
   }
 };
@@ -338,11 +437,16 @@ export default {
   category: "🏦 Economy",
 
   // Execute function based on the command alias
-  execute: async (args, message) => {
+  execute: async (args, context) => {
     try {
       const action = args[0] ? args[0].toLowerCase(): null;
-      const userId = message.author.id;
-      const username = message.author.username;
+
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
 
       switch (action) {
       case "deposit":
@@ -351,18 +455,18 @@ export default {
         if (String(args[1]).toLowerCase() !== "all") {
           depositAmount = parseInt(args[1], 10);
           if (isNaN(depositAmount) || depositAmount <= 0) {
-            return message.channel.send(`ⓘ **${username}**, please specify a valid amount to deposit.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, `ⓘ **${username}**, please specify a valid amount to deposit.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else {
           depositAmount = "all";
         }
 
         // Call a function to deposit the amount
-        return Bank.deposit(userId, depositAmount, message);
+        return Bank.deposit(depositAmount, context);
 
       case "bs":
       case "ba":
-        return Bank.showStatus(userId, message);
+        return Bank.showStatus(context);
 
       case "withdraw":
       case "with":
@@ -370,28 +474,28 @@ export default {
         if (String(args[1]).toLowerCase() !== "all") {
           withdrawAmount = parseInt(args[1], 10);
           if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
-            return message.channel.send(`ⓘ **${username}**, please specify a valid amount to withdraw.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, `ⓘ **${username}**, please specify a valid amount to withdraw.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else {
           withdrawAmount = "all";
         }
 
         // Call a function to withdraw the amount
-        return Bank.withdraw(userId, withdrawAmount, message);
+        return Bank.withdraw(withdrawAmount, context);
 
       case "bank":
         let subcommand = args[1] ? args[1].toLowerCase(): null;
         switch (subcommand) {
         case "status":
         case "account":
-          return Bank.showStatus(userId, message);
+          return Bank.showStatus(context);
 
         case "open":
-          return Bank.openAccount(userId, message);
+          return Bank.openAccount(context);
 
         case "upgrade":
           const times = args[2] ? Number(args[2]): 1;
-          return Bank.upgrade(userId, message, times);
+          return Bank.upgrade(context, times);
 
         case "help":
           const bankEmbed = new EmbedBuilder()
@@ -402,29 +506,29 @@ export default {
             '**`bank open`**\n- Open a bank account.\n' +
             '**`deposit <amount>`**\n- Deposit funds into your bank.\n' +
             '**`withdraw <amount>`**\n- Withdraw funds from your bank.\n' +
-            '**`bank status`**\n- Check your bank status (you can use **bs** or **ba**).\n' +
+            '**`bank`**\n- Check your bank status (you can use **bs** or **ba**).\n' +
             '**`bank upgrade <times (default 1)>`**\n- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
           )
           .setFooter({
             text: 'Use your bank wisely!'
           });
 
-          return message.channel.send({
+          return await handleMessage(context, {
             embeds: [bankEmbed]
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
         default:
-          return Bank.showStatus(userId, message);
+          return Bank.showStatus(context);
         }
 
       default:
-        return message.channel.send(`ⓘ **${username}**, please provide a valid bank action (e.g., \`deposit\`, \`withdraw\`, \`bank status\`).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return await handleMessage(context, `ⓘ **${username}**, please provide a valid bank action (e.g., \`deposit\`, \`withdraw\`, \`bank status\`).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (e) {
       if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
         console.error(e);
       }
-      return message.channel.send(`⚠️ **${message.author.username}**, an unexpected error occurred. Please try again later.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `⚠️ **${name}**, an unexpected error occurred. Please try again later.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 };

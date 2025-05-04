@@ -100,7 +100,7 @@ export async function viewCollection(interactionUserId, context, userDiscordData
         if (fish.rarity.substring(0, 1).toUpperCase() === "R") iconRarity = `<:rare:1323917826448166923>`
 
         description += `<:fishing_rod_virtual:1359384731329888368> **${fish.name}** (**${fish.animals}**) \n`;
-        description += `**Lvl**: ${fish.level} ${iconRarity} <:${fish.name}_aqua:${fish.emoji}>\n-# ◎ **CPF**: <:kasiko_coin:1300141236841086977>${fish.feedCost * fish.animals}\n-# ◎ **CPS** <:kasiko_coin:1300141236841086977>${fish.sellAmount * fish.level}\n\n`;
+        description += `**Lvl**: ${fish.level} ${iconRarity}\n-# <:follow_reply:1368224897003946004> **CPF**: <:kasiko_coin:1300141236841086977>${fish.feedCost * fish.animals}\n-# <:reply:1368224908307468408> **CPS** <:kasiko_coin:1300141236841086977>${(fish.sellAmount * fish.level).toLocaleString()}\n\n`;
         embed.setDescription(description.trim());
 
         if (fishIndex === 0) {

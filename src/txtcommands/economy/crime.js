@@ -140,11 +140,18 @@ export default {
 
   // Slash command interaction handler
   interact: async (interaction) => {
+    
+    if (!interaction.deferred) {
+        await interaction.deferReply({
+          ephemeral: false
+        });
+    }
+    
     try {
       const userId = interaction.user.id;
       const user = interaction.user;
       const channel = interaction.channel;
-
+      
       const crimeReply = await crime(userId, channel, user);
 
       const finalEmbed = new EmbedBuilder()

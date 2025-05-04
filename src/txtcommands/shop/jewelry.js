@@ -51,11 +51,8 @@ function createJewelryEmbed(item) {
   const embed = new EmbedBuilder()
   .setTitle(item.name)
   .setThumbnail(`https://cdn.discordapp.com/emojis/${item.emoji}.png`)
-  .setDescription(`-# > *\`${item.description}\`*`)
+  .setDescription(`-# > *\`${item.description}\`*\n\n\`\`\`ITEM ID: ${item.id}\`\`\``)
   .addFields(
-    {
-      name: '<:left_chevron:1368271720166850642> ITEM ID', value: "-# " + item.id, inline: true
-    },
     {
       name: '<:left_chevron:1368271720166850642> PRICE', value: `-# <:kasiko_coin:1300141236841086977> **${item.price.toLocaleString()}**`, inline: true
     },

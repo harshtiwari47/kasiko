@@ -62,7 +62,7 @@ function createCarEmbed(car, username = null) {
   .setColor(car?.hexcolor ?? "Random")
 
   const middleEmbed = new EmbedBuilder()
-  .setDescription(`-# ***ᯓ★ Car Details***\n<:reply:1368224908307468408> **ID:** ${car.id}\n**CATEGORY:** ${car.category} **TYPE:** ${iconRarity}\n**COLOR:** ${car.color} **EMOJI:** <:${car.id}:${car.emoji}>\n\n*\`${car.description}\`*`)
+  .setDescription(`-# ***ᯓ★ Car Details***\n<:reply:1368224908307468408> **ID:** ${car.id}\n**CATEGORY:** ${car.category}\n**TYPE:** ${iconRarity}\n**COLOR:** ${car.color} <:${car.id}:${car.emoji}>\n\n*\`${car.description}\`*`)
   .setFooter({
     text: `${username? "@" + username + " ◌ ": ""}car ${car.id}`
   })

@@ -49,7 +49,14 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
+import {
+  scheduleReminders
+} from "./scheduler.js";
+
 dotenv.config();
+
+// Run reminders
+scheduleReminders();
 
 // Bind to port
 const app = express();
