@@ -231,11 +231,11 @@ export default {
           `-# USE: **\`ice help\`** 𝘧𝘰𝘳 𝘮𝘰𝘳𝘦 𝘥𝘦𝘵𝘢𝘪𝘭𝘴!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      if (message.guild && message.guild.id) {
+      if (context.guild && context.guild.id) {
         await UserGuild.findOneAndUpdate(
           {
             userId: userId,
-            guildId: message.guild.id
+            guildId: context.guild.id
           },
           {
             $set: {
@@ -571,7 +571,7 @@ export default {
 
     } catch (e) {
       console.error(e);
-      return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, something went wrong while executing the ice cream shop command! 🍧🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `<:warning:1366050875243757699> Something went wrong while executing the ice cream shop command! 🍧🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };
