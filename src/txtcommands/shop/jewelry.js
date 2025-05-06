@@ -26,7 +26,7 @@ import {
 export async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
   if (isInteraction) {
-    if (!context.deferred) {
+    if (!context.replied && !context.deferred) {
       await context.deferReply();
     }
     return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));

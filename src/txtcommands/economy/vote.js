@@ -16,6 +16,9 @@ dotenv.config();
 import {
   VoteModel
 } from '../../../models/voteModel.js';
+import {
+  discordUser
+} from '../../../helper.js';
 
 const TOKENTG = process.env.TG_TOKEN;
 
@@ -47,6 +50,13 @@ async function handleMessage(context, data) {
 export async function voteReward(userId, user, context) {
   try {
     const voted = await dbl.hasVoted(userId);
+
+    const {
+      username,
+      id: authorUserId,
+      avatar,
+      name
+    } = discordUser(context);
 
     if (context.user) {
       await context.deferReply({
@@ -129,7 +139,7 @@ export async function voteReward(userId, user, context) {
           )
           .setColor('Green')
           .setAuthor({
-            name: user.username, iconURL: user.displayAvatarURL({
+            name: name, iconURL: user.displayAvatarURL({
               dynamic: true
             })
           })
@@ -150,7 +160,7 @@ export async function voteReward(userId, user, context) {
           new EmbedBuilder()
           .setDescription(`🗳️ **${user.username}**, you haven't voted yet! Please vote for the bot to claim your reward. Come back in a few minutes after voting to claim your reward.`)
           .setAuthor({
-            name: user.username, iconURL: user.displayAvatarURL({
+            name: name, iconURL: user.displayAvatarURL({
               dynamic: true
             })
           })],

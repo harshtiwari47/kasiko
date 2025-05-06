@@ -17,7 +17,8 @@ import {
   updateUser
 } from '../../../database.js';
 import {
-  Helper
+  Helper,
+  discordUser
 } from '../../../helper.js';
 
 import {
@@ -33,7 +34,7 @@ async function handleMessage(context, data) {
     if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -430,27 +431,20 @@ export default {
   emoji: "⛏️",
   category: "🍬 Explore",
   cooldown: 100000,
-  execute: async (args, message) => {
+  execute: async (args, context) => {
     try {
-      const action = args[1] ? args[1].toLowerCase(): null;
 
-      if (!args[1]) {
-        return await viewMiningStatus(message.author.id, message.channel, message.author.username);
-      }
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
 
-      switch (action) {
-      case "start":
-        return await startMining(message.author.id, message.author.username);
-        break;
-      case "help":
-        return await message.channel.send(mineHelp()).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        break;
-      default:
-        return await viewMiningStatus(message.author.id, message.channel, message.author.username);
-      }
+      return await viewMiningStatus(userId, context, name);
     } catch (e) {
       console.error(e);
-      return message.channel.send(`⚠️ Oops, something went wrong in mining!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `⚠️ Oops, something went wrong in mining!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

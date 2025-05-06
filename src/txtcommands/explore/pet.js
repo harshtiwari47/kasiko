@@ -10,7 +10,8 @@ import petImages from "./helpers/petImages.json" with {
   type: "json"
 };
 import {
-  Helper
+  Helper,
+  discordUser
 } from "../../../helper.js";
 
 // Universal message handler for both slash and text commands

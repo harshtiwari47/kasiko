@@ -286,10 +286,15 @@ async function showBenefits(context) {
 * Uses handleMessage to reply so that both slash commands and regular messages are supported.
 */
 export async function execute(args,
-  message,
-  client) {
-  const context = message;
-  const username = context.author ? context.author.username: context.user.username;
+  context) {
+
+  const {
+    username,
+    id: userId,
+    avatar,
+    name
+  } = discordUser(context);
+
   // For simplicity, we hardcode the owner ID here (replace with your own or use a config variable)
   const ownerId = '1318158188822138972';
   const subCommand = args[1]?.toLowerCase();
@@ -345,7 +350,7 @@ export async function execute(args,
             }
           );
           return await handleMessage(context, {
-            content: `${username}, Activated **${plan}** pass for **${targetUser.tag}**. Your pass will expire on ${expiryDate.toLocaleDateString()}.`
+            content: `**${name}**, activated **${plan}** pass for **${targetUser.tag}**. Your pass will expire on ${expiryDate.toLocaleDateString()}.`
           });
         } catch (error) {
           // If an error is thrown (for example, due to a unique constraint) then an active pass already exists.
@@ -368,17 +373,16 @@ export async function execute(args,
           });
           if (!promo) {
             return await handleMessage(context, {
-              content: `${username}, Invalid promo code.`
+              content: `${username}, invalid promo code.`
             });
           }
           if (promo.user) {
             return await handleMessage(context, {
-              content: `${username}, This promo code has already been redeemed.`
+              content: `${username}, this promo code has already been redeemed.`
             });
           }
           const now = new Date();
           const expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-          const userId = context.author ? context.author.id: context.user.id;
 
           try {
             await Pass.updateOne(
@@ -448,19 +452,17 @@ export async function execute(args,
         }
       case 'check': {
           // Check and show current pass validity for the user.
-          const userId = context.author ? context.author.id: context.user.id;
           const result = await checkPassValidity(userId);
           if (result.isValid) {
 
-            return await handleMessage(context, generatePassDetailsMessage(username, result));
+            return await handleMessage(context, generatePassDetailsMessage(name, result));
           } else {
             return await handleMessage(context, {
-              content: `**${username}**, you do not have an active pass.`
+              content: `**${name}**, you do not have an active pass.`
             });
           }
         }
       case 'pet': {
-          const userId = context.author ? context.author.id: context.user.id;
           const result = await checkPassValidity(userId);
           if (result.isValid && (result.passType === "etheral" || result.passType === "celestia")) {
             let message = await claimPet(userId);
@@ -469,7 +471,7 @@ export async function execute(args,
             });
           } else {
             return await handleMessage(context, {
-              content: `**${username}**, you do not have an active pass, or your pass must be etheral an etheral or Celestia pass.`
+              content: `**${name}**, you do not have an active pass, or your pass must be etheral an etheral or Celestia pass.`
             });
           }
         }

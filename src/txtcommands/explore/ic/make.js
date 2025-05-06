@@ -18,7 +18,7 @@ async function handleMessage(context, data) {
     if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    return context.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 

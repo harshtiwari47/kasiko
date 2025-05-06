@@ -4,17 +4,29 @@ import {
 } from '../../../database.js';
 
 import {
+  handleMessage,
+  discordUser
+} from '../../../helper.js';
+
+import {
   checkPassValidity
 } from "../explore/pass.js";
 
 import UserPet from "../../../models/Pet.js";
 
-export async function dailylogin(message) {
+export async function dailylogin(context) {
   try {
     const currentTime = Date.now();
     const nextClaim = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-    const userData = await getUserData(message.author.id);
+    const {
+      username,
+      id: userId,
+      avatar,
+      name
+    } = discordUser(context);
+
+    const userData = await getUserData(userId);
 
     if (!userData) return;
 
@@ -24,8 +36,8 @@ export async function dailylogin(message) {
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
 
-      return message.channel.send(
-        `💠  Sorry **${message.author.username}**, you have **already claimed** your daily reward for today! 🍹\n\n` +
+      return await handleMessage(context,
+        `💠  Sorry **${name}**, you have **already claimed** your daily reward for today! 🍹\n\n` +
         `🗯️ ***_Next reward_ in ⏳ ${hours} hours and ${minutes} minutes***. 🎁`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (userData) {
@@ -45,7 +57,7 @@ export async function dailylogin(message) {
       const currentMonth = new Date().getMonth();
       const currentYear = new Date().getFullYear();
 
-      const passInfo = await checkPassValidity(message.author.id);
+      const passInfo = await checkPassValidity(userId);
 
       let additionalReward;
       if (passInfo.isValid) {
@@ -60,12 +72,12 @@ export async function dailylogin(message) {
       userData.dailyReward = currentTime;
 
       let userPetData = await UserPet.findOne({
-        id: message.author.id
+        id: userId
       });
 
       if (!userPetData) {
         userPetData = await new UserPet( {
-          id: message.author.id,
+          id: userId,
         })
       }
 
@@ -74,15 +86,15 @@ export async function dailylogin(message) {
       try {
         await userPetData.save();
         // Save the updated user data
-        await updateUser(message.author.id, userData);
+        await updateUser(userId, userData);
       } catch (updateErr) {
-        await message.channel.send(`ⓘ **${message.author.username}**, an unexpected error occurred while claiming daily reward!\n-# **Error"": ${updateErr}`).catch(console.error);
+        await handleMessage(context, `ⓘ **${name}**, an unexpected error occurred while claiming daily reward!\n-# **Error"": ${updateErr}`).catch(console.error);
         return;
       }
 
-      return message.channel.send(
+      return await handleMessage(context,
         `## <:gift:1350355327018729517>  𝘿𝙖𝙞𝙡𝙮 𝙧𝙚𝙬𝙖𝙧𝙙 𝙘𝙡𝙖𝙞𝙢𝙚𝙙***!***\n` +
-        `**${message.author.username}** 𝘳𝘦𝘤𝘦𝘪𝘷𝘦𝘥 <:kasiko_coin:1300141236841086977> **\`${rewardAmount}\`**  𝑪𝒂𝒔𝒉` +
+        `**${name}** 𝘳𝘦𝘤𝘦𝘪𝘷𝘦𝘥 <:kasiko_coin:1300141236841086977> **\`${rewardAmount}\`**  𝑪𝒂𝒔𝒉` +
         `${passInfo.isValid ? ` **(+ <:kasiko_coin:1300141236841086977>${additionalReward})**`: ""}\n\n` +
         `<:left:1350355384111468576>   🍖 **2** 𝘱𝘦𝘵 𝘧𝘰𝘰𝘥.\n` +
         `<:left:1350355384111468576>  <:orange_fire:1335980766634709084> 𝙎𝙩𝙧𝙚𝙖𝙠  ~ **${userData.rewardStreak}** day(s).\n` +
@@ -93,7 +105,7 @@ export async function dailylogin(message) {
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("Something went wrong while **claiming daily login reward**!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return await handleMessage(context, "Something went wrong while **claiming daily login reward**!").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -114,7 +126,7 @@ export default {
   category: "🏦 Economy",
 
   // Main function to execute the daily login reward logic
-  execute: (args, message) => {
-    dailylogin(message);
+  execute: (args, context) => {
+    dailylogin(context);
   }
 };

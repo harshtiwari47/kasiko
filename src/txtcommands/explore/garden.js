@@ -9,6 +9,10 @@ import {
   EmbedBuilder
 } from 'discord.js';
 
+import {
+  handleMessage,
+  discordUser
+} from '../../../helper.js';
 
 // Each flower type has name, key, emoji, and cash value
 const flowersData = [{
@@ -474,50 +478,55 @@ export default {
   category: "🍬 Explore",
   cooldown: 10000,
   // seconds, if you want
-  async execute(args, message) {
+  async execute(args, context) {
     try {
       const sub = args[1]?.toLowerCase();
-      const userId = message.author.id;
-      const username = message.author.username;
+
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
 
       switch (sub) {
       case "c":
       case "collect":
         {
-          const response = await collectFlowers(userId, username);
-          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          const response = await collectFlowers(userId, name);
+          return await handleMessage(context, response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "e":
       case "exchange":
         {
-          const response = await exchangeFlowers(userId, username);
-          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          const response = await exchangeFlowers(userId, name);
+          return await handleMessage(context, response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "u":
       case "upgrade":
         {
-          const response = await upgradeGarden(userId, username);
-          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          const response = await upgradeGarden(userId, name);
+          return await handleMessage(context, response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "w":
       case "water":
         {
-          const response = await waterGarden(userId, username);
-          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          const response = await waterGarden(userId, name);
+          return await handleMessage(context, response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "s":
       case "share":
         {
           // Format: garden share @mention flowerType amount
-          const mention = message.mentions.users.first();
+          const mention = context.mentions.users.first();
           const flowerType = args[3];
           const amount = args[4];
-          const response = await shareFlowers(userId, username, mention, flowerType, amount);
-          return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          const response = await shareFlowers(userId, name, mention, flowerType, amount);
+          return await handleMessage(context, response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
       case "h":
@@ -561,20 +570,20 @@ export default {
           text: `Watch your garden bloom!`
         });
 
-        return message.channel.send({
+        return await handleMessage(context, {
           embeds: [helpEmbed]
         }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       default:
         // Show the garden status or start if none
-        const response = await viewGardenStatus(userId, username);
-        return message.channel.send(response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        const response = await viewGardenStatus(userId, name);
+        return await handleMessage(context, response).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (error) {
       if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
         console.error("Error in garden command:", error);
       }
-      return message.channel.send(`Oops! Something went wrong: \`${error.message}\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `Oops! Something went wrong: \`${error.message}\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

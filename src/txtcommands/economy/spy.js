@@ -138,6 +138,10 @@ export default {
 
   interact: async (interaction) => {
     try {
+      await interaction.deferReply({
+        ephemeral: false
+      });
+
       const userId = interaction.user.id;
       const user = interaction.user;
       const channel = interaction.channel;

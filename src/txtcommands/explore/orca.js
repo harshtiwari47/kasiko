@@ -8,6 +8,11 @@ import {
 } from '../../../bot.js';
 
 import {
+  handleMessage,
+  discordUser
+} from '../../../helper.js';
+
+import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -242,16 +247,23 @@ function buildOrcaButtons(orca) {
 
 // ====================== Main Command Execution ====================== //
 
-export async function execute(args, message) {
+export async function execute(args, context) {
+
+  const serverId = context?.guild?.id;
+  const guildName = context?.guild?.name;
+
   const {
-    channel,
-    guild,
-    author
-  } = message;
-  const serverId = guild.id;
-  const userId = author.id;
-  const username = author.username;
-  const guildName = guild.name;
+    username,
+    id: userId,
+    avatar,
+    name
+  } = discordUser(context);
+
+  if (!serverId) {
+    return await handleMessage(context,
+      `<:orca:1313094374921605172> **${name}**, this command can be used in a server!`
+    );
+  }
 
   // We'll create a single "Orca Control Panel" message and keep editing it.
   // 1) Figure out the current orca state
@@ -262,7 +274,7 @@ export async function execute(args, message) {
   let components = buildOrcaButtons(orca);
 
   // Send the control panel
-  const controlMessage = await channel.send({
+  const controlMessage = await handleMessage(context, {
     embeds: [embed],
     components,
   });
@@ -368,16 +380,15 @@ export async function execute(args, message) {
   collector.on('end',
     async () => {
       try {
-        const fetchedMsg = await channel.messages.fetch(controlMessage.id);
-        if (!fetchedMsg) return;
+        if (!controlMessage) return;
 
-        const oldComponents = fetchedMsg.components;
+        const oldComponents = controlMessage?.components;
         if (!oldComponents.length) return;
 
         const row = ActionRowBuilder.from(oldComponents[0]);
         row.components.forEach((btn) => btn.setDisabled(true));
 
-        await fetchedMsg.edit({
+        await controlMessage?.edit({
           components: [row],
         });
       } catch (err) {

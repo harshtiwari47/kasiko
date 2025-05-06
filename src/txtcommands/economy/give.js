@@ -10,23 +10,31 @@ import {
   updateUser
 } from '../../../database.js';
 import {
-  Helper
+  Helper,
+  handleMessage,
+  discordUser
 } from '../../../helper.js';
 
-export const sendConfirmation = async (message, userId, amount, recipient) => {
+export const sendConfirmation = async (context, amount, recipient) => {
+
+  const {
+    username,
+    id: userId,
+    avatar,
+    name
+  } = discordUser(context);
+
   // Create an embed for the confirmation message
   const embed = new EmbedBuilder()
   .setColor('#f83131')
   .setAuthor({
-    name: message.author.username, iconURL: message.author.displayAvatarURL({
-      dynamic: true
-    })
+    name: name, iconURL: avatar
   })
   .setTitle('🧾 𝗖𝗢𝗡𝗙𝗜𝗥𝗠 𝗧𝗥𝗔𝗡𝗦𝗔𝗖𝗧𝗜𝗢𝗡')
   .setDescription(`𝘈𝘳𝘦 𝘺𝘰𝘶 𝘴𝘶𝘳𝘦 𝘺𝘰𝘶 𝘸𝘢𝘯𝘵 𝘵𝘰 𝘴𝘦𝘯𝘥 <:kasiko_coin:1300141236841086977> **${Number(amount).toLocaleString()}** to <@${recipient}>?\n\n\`\`\`ᴄʟɪᴄᴋ 'ʏᴇꜱ' ᴛᴏ ᴄᴏɴꜰɪʀᴍ ᴛʜᴇ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ, ᴏʀ 'ɴᴏ' ᴛᴏ ᴅᴇᴄʟɪɴᴇ.\`\`\``)
   .addFields(
     {
-      name: '⚠️ 𝗪𝗮𝗿𝗻𝗶𝗻𝗴', value: '-# 𝑊𝑒 𝑑𝑜 𝑛𝑜𝑡 𝑎𝑙𝑙𝑜𝑤 𝑎𝑛𝑦 𝑓𝑜𝑟𝑚 𝑜𝑓 𝑚𝑜𝑛𝑒𝑡𝑎𝑟𝑦 𝑡𝑟𝑎𝑑𝑒 𝑜𝑟 𝑒𝑥𝑐ℎ𝑎𝑛𝑔𝑒.'
+      name: '<:warning:1366050875243757699> 𝗪𝗮𝗿𝗻𝗶𝗻𝗴', value: '-# 𝑊𝑒 𝑑𝑜 𝑛𝑜𝑡 𝑎𝑙𝑙𝑜𝑤 𝑎𝑛𝑦 𝑓𝑜𝑟𝑚 𝑜𝑓 𝑚𝑜𝑛𝑒𝑡𝑎𝑟𝑦 𝑡𝑟𝑎𝑑𝑒 𝑜𝑟 𝑒𝑥𝑐ℎ𝑎𝑛𝑔𝑒.'
     }
   )
   .setTimestamp();
@@ -34,12 +42,20 @@ export const sendConfirmation = async (message, userId, amount, recipient) => {
   return embed; // Return the message for use in `give`
 };
 
-export async function give(message, userId, amount, recipientId) {
+export async function give(context, amount, recipientId) {
   try {
+
+    const {
+      username,
+      id: userId,
+      avatar,
+      name
+    } = discordUser(context);
+
     if (userId === recipientId) {
-      return message.channel.send(
+      return await handleMessage(context,
         "¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯ Giving **yourself** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉?\nThat’s like trying to give your own reflection a high five—totally __unnecessary and a little weird__!"
-      )
+      );
     }
 
     let userData = await getUserData(userId);
@@ -48,14 +64,12 @@ export async function give(message, userId, amount, recipientId) {
     if (!userData) return;
 
     if (!recipientData) {
-      return message.channel.send(`ⓘ **${username}**, mentioned user is not found!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `ⓘ **${name}**, mentioned user is not found!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
-    const username = message.author.username;
-
     if (userData.cash < amount) {
-      return message.channel.send(
-        `ⓘ 🧾 **${username}**, you don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!`
+      return await handleMessage(context,
+        `ⓘ 🧾 **${name}**, you don't have **enough** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉!`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
@@ -73,7 +87,7 @@ export async function give(message, userId, amount, recipientId) {
 
     if (recipientData.amountReceivedDaily?.date === todayKey) {
       if (remainingLimit <= 0 || todayReceived >= dailyLimit) {
-        return message.channel.send(
+        return await handleMessage(context,
           `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
           `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
           `◎ They can't receive any more today. Try again tomorrow.`
@@ -81,7 +95,7 @@ export async function give(message, userId, amount, recipientId) {
       }
 
       if (Number(amount) > remainingLimit) {
-        return message.channel.send(
+        return await handleMessage(context,
           `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
           `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
           `ッ They can receive up to <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** more today.\n\n` +
@@ -89,7 +103,7 @@ export async function give(message, userId, amount, recipientId) {
         );
       }
     } else if (Number(amount) > dailyLimit) {
-      return message.channel.send(
+      return await handleMessage(context,
         `⚠ **<@${recipientId}>** has already received <:kasiko_coin:1300141236841086977> **${todayReceived.toLocaleString()}** today.\n` +
         `The daily limit is <:kasiko_coin:1300141236841086977> **${dailyLimit.toLocaleString()}**.\n` +
         `ッ They can receive up to <:kasiko_coin:1300141236841086977> **${remainingLimit.toLocaleString()}** more today.\n\n` +
@@ -97,7 +111,7 @@ export async function give(message, userId, amount, recipientId) {
       );
     }
 
-    const embed = await sendConfirmation(message, userId, amount, recipientId);
+    const embed = await sendConfirmation(context, amount, recipientId);
 
     if (!embed) return;
 
@@ -117,10 +131,10 @@ export async function give(message, userId, amount, recipientId) {
     );
 
     // Send the confirmation message and return it
-    const replyMessage = await message.channel.send({
+    const replyMessage = await handleMessage(context, {
       embeds: [embed],
       components: [row]
-    })
+    });
 
 
     // Create the collector
@@ -132,9 +146,9 @@ export async function give(message, userId, amount, recipientId) {
     // Handle button interactions
     collector.on("collect", async (interaction) => {
       try {
-        if (interaction.user.id !== message.author.id) {
+        if (interaction.user.id !== userId) {
           return await interaction.reply({
-            content: "⚠️ You cannot interact with this button.",
+            content: "<:warning:1366050875243757699> You cannot interact with this button.",
             ephemeral: true,
           });
         }
@@ -201,10 +215,10 @@ export async function give(message, userId, amount, recipientId) {
       } catch (err) {
         console.error("Error handling interaction:", err);
         if (interaction.replied || interaction.deferred) {
-          await message.channel.send(`⚠️ An error occurred during the transaction!`).catch(console.error);
+          return await handleMessage(context, `<:warning:1366050875243757699> An error occurred during the transaction!`).catch(console.error);
         } else {
           await interaction.update({
-            content: "⚠️ An error occurred. Please try again.",
+            content: "<:warning:1366050875243757699> An error occurred. Please try again.",
             ephemeral: true,
           }).catch(console.error);
         }
@@ -246,8 +260,8 @@ export async function give(message, userId, amount, recipientId) {
     if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
       console.error(e);
     }
-    return message.channel.send(
-      "⚠️ Something went wrong while processing the transaction. Please try again."
+    return await handleMessage(context,
+      "<:warning:1366050875243757699> Something went wrong while processing the transaction. Please try again."
     ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
@@ -264,22 +278,37 @@ export default {
   cooldown: 10000,
   emoji: "🤝🏻",
   category: "🏦 Economy",
-  execute: (args,
-    message) => {
+  execute: async (args,
+    context) => {
 
-    if (!message.mentions.users.size) {
-      return message.channel.send(
-        `ⓘ **${message.author.username}**, please mention a user to share cash with! The amount must be an integer.\n**Usage:** \`give <amount> @user\``
+    const {
+      username,
+      id: userId,
+      avatar,
+      name
+    } = discordUser(context);
+
+    if (!(!!context.isCommand) && !context.mentions.users.size) {
+      return await handleMessage(context,
+        `ⓘ **${name}**, please mention a user to share cash with! The amount must be an integer.\n**Usage:** \`give <amount> @user\``
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const amount = parseInt(args[1], 10);
+    let mentionedUserId;
+
+    if (!!context.isCommand) {
+      mentionedUserId = args[2];
+    } else {
+      mentionedUserId = context.mentions.users.first().id;
+    }
+
     if (!amount || !Helper.isNumber(amount) || amount <= 0) {
-      return message.channel.send(
-        `ⓘ **${message.author.username}**, the cash amount is invalid! It must be a positive whole number greater than zero.\n**Usage:** \`give <amount> @user\``
+      return await handleMessage(context,
+        `ⓘ **${name}**, the cash amount is invalid! It must be a positive whole number greater than zero.\n**Usage:** \`give <amount> @user\``
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
-    return give(message, message.author.id, args[1], message.mentions.users.first().id);
+    return give(context, args[1], mentionedUserId);
   }
 };

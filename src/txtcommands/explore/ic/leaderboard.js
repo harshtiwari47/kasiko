@@ -1,5 +1,3 @@
-// File: iceLeaderboard.js
-
 import {
   ChatInputCommandInteraction,
   SlashCommandBuilder,

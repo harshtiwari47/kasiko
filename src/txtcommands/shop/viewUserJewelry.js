@@ -6,7 +6,7 @@ import ShopItem from '../../../models/Shop.js';
 export async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
   if (isInteraction) {
-    if (!context.deferred) {
+    if (!context.replied && !context.deferred) {
       await context.deferReply();
     }
     return context.editReply(data);

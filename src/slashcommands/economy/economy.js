@@ -50,6 +50,10 @@ export default {
   .addSubcommand(sub =>
     sub .setName('work')
     .setDescription('Earn a random amount of cash by working.')
+  )
+  .addSubcommand(sub =>
+    sub .setName('spy')
+    .setDescription('Embark on a covert spy mission—risk it all to score top-secret rewards or face hefty penalties!')
   ),
 
   async execute(interaction) {
@@ -90,6 +94,14 @@ export default {
     case "work":
       if (txtcommands.get("work")) {
         return await txtcommands.get("work").interact(interaction);
+      } else {
+        return await interaction.editReply(`Failed to execute work command!`);
+      }
+      break;
+
+    case "spy":
+      if (txtcommands.get("spymission")) {
+        return await txtcommands.get("spy").interact(interaction);
       } else {
         return await interaction.editReply(`Failed to execute work command!`);
       }

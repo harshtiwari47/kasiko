@@ -32,7 +32,7 @@ async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
   if (isInteraction) {
     // If not already deferred, defer it.
-    if (!context.deferred) {
+    if (!context.replied && !context.deferred) {
       await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
     return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));

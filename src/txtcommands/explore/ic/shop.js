@@ -33,7 +33,7 @@ async function handleMessage(context, data) {
     if (!context.deferred) await context.deferReply();
     return await context.editReply(data);
   } else {
-    return context.send(data);
+    return context.channel.send(data);
   }
 }
 

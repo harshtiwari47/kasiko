@@ -30,6 +30,10 @@ import {
   checkPassValidity
 } from "../explore/pass.js";
 
+import {
+  handleMessage,
+  discordUser
+} from '../../../helper.js';
 
 const flavors = [{
   level: 1,
@@ -148,10 +152,15 @@ export default {
     "cash"],
   cooldown: 5000,
   category: "🍬 Explore",
-  async execute(args, message) {
+  async execute(args, context) {
     try {
-      const userId = message.author.id;
-      const username = message.author.username;
+      const {
+        username,
+        id: userId,
+        avatar,
+        name
+      } = discordUser(context);
+
       args.shift();
 
       const playerShop = await IceCreamShop.findOne({
@@ -166,11 +175,11 @@ export default {
 
       // Command: Create a new shop
       if (args[0] === "create") {
-        if (!args[1]) return message.channel.send("❌ Shop name not found! Please create your ice cream shop first using `icecream create <shopname>`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        if (!args[1]) return await handleMessage(context, "❌ Shop name not found! Please create your ice cream shop first using `icecream create <shopname>`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         const shopName = args[1].substring(0, 15);
 
         if (playerShop) {
-          return message.channel.send(`<:warning:1366050875243757699>🍧 **${message.author.username}**, you already have a shop!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(context, `<:warning:1366050875243757699>🍧 **${name}**, you already have a shop!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         const newShop = new IceCreamShop( {
@@ -203,18 +212,18 @@ export default {
             text: "Type `icecream help` to see what you can do!"
           });
 
-          return message.channel.send({
+          return await handleMessage(context, {
             embeds: [embed]
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (err) {
           console.error(err);
-          return message.channel.send("There was an issue creating your shop. Please try again.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(context, "There was an issue creating your shop. Please try again.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
       if (!playerShop) {
-        return message.channel.send(`
-          🍧 **${message.author.username}**, you need to create an ice cream shop first!\n` +
+        return await handleMessage(context, `
+          🍧 **${name}**, you need to create an ice cream shop first!\n` +
           `**Use the command:**\n` +
           `\`ice create <shopname>\`\n\n` +
 
@@ -225,7 +234,7 @@ export default {
       if (message.guild && message.guild.id) {
         await UserGuild.findOneAndUpdate(
           {
-            userId: message.author.id,
+            userId: userId,
             guildId: message.guild.id
           },
           {
@@ -243,7 +252,7 @@ export default {
 
       // Command: Serve a customer
       if (args[0] === "serve") {
-        return await serveIceCream(playerShop, flavors, message.author.id, message.author.username, message.channel);
+        return await serveIceCream(playerShop, flavors, userId, name, context);
       }
 
       // Other commands (share, createFlavor, upgrade, status, dailyBonus) follow a similar structure.
@@ -254,22 +263,22 @@ export default {
           let sharedIceCreamName;
 
           if (!args[2]) {
-            return message.channel.send(
-              `<:warning:1366050875243757699> **${message.author.username}**, please mention the ice cream 🍨 name you want to share with your friend!\n\`icecream share @username <icecream>\``
+            return await handleMessage(context,
+              `<:warning:1366050875243757699> **${name}**, please mention the ice cream 🍨 name you want to share with your friend!\n\`icecream share @username <icecream>\``
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           sharedIceCreamName = capitalizeFirstLetter(args[2].toLowerCase());
 
           if (!playerShop.flavors.some(flavour => flavour.name === sharedIceCreamName && flavour.items > 0)) {
-            return message.channel.send(
-              `<:warning:1366050875243757699> **${message.author.username}**, no ice cream 🍨 with this name was found in your collection, or you don't have any left. Please check your collection and try again!`
+            return await handleMessage(context,
+              `<:warning:1366050875243757699> **${name}**, no ice cream 🍨 with this name was found in your collection, or you don't have any left. Please check your collection and try again!`
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const targetUser = message.mentions.users.first();
           if (!targetUser) {
-            return message.channel.send("👥 Please mention a user to share your ice cream with.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, "👥 Please mention a user to share your ice cream with.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const targetShop = await IceCreamShop.findOne({
@@ -277,15 +286,15 @@ export default {
           });
 
           if (!playerShop || !targetShop) {
-            return message.channel.send("🍦 Both users must own an ice cream shop to share ice cream.\n**Use:** `icecream create <shop name>` to start your shop!\n\n*The shop name must be a single word (no spaces) and up to 15 characters long.*").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, "🍦 Both users must own an ice cream shop to share ice cream.\n**Use:** `icecream create <shop name>` to start your shop!\n\n*The shop name must be a single word (no spaces) and up to 15 characters long.*").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const sharedIceCream = flavors.find(flavour => flavour.name === sharedIceCreamName);
           const targetIceCream = targetShop.flavors.find(flavour => flavour.name === sharedIceCreamName);
 
           if (targetShop.shopLevel < sharedIceCream.level) {
-            return message.channel.send(
-              `<:warning:1366050875243757699> **${message.author.username}**, your friend's shop level is too low to receive this ice cream 🍨. Encourage them to level up their shop and try again!`
+            return await handleMessage(context,
+              `<:warning:1366050875243757699> **${name}**, your friend's shop level is too low to receive this ice cream 🍨. Encourage them to level up their shop and try again!`
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
@@ -299,7 +308,7 @@ export default {
             });
           }
 
-          const userData = await getUserData(message.author.id);
+          const userData = await getUserData(userId);
 
           playerShop.money += 10;
           playerShop.reputation += 1;
@@ -310,7 +319,7 @@ export default {
 
           await targetShop.save();
           await playerShop.save();
-          await updateUser(message.author.id, userData)
+          await updateUser(userId, userData)
 
           const shareEmbed = new EmbedBuilder()
           .setTitle("🎁 Ice Cream Shared!")
@@ -327,21 +336,21 @@ export default {
             text: "Sharing is caring!"
           });
 
-          return message.channel.send({
+          return await handleMessage(context, {
             embeds: [shareEmbed]
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } catch (e) {
           console.error(e);
-          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, something went wrong while sharing ice cream 🍯!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, something went wrong while sharing ice cream 🍯!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
       if ((args[0] === "flavours" || args[0] === "flavour") && args[1] && args[1] === "my") {
         const embed2 = new EmbedBuilder()
         .setColor('#f5bbaf')
-        .setDescription(`**${message.author.username} 𝑆𝐻𝑂𝑃 𝐹𝐿𝐴𝑉𝑂𝑈𝑅𝑆**\n${playerShop.flavors.map(flavour => `**${flavour.icecream}** (${flavour.items})`).join(", ")}`);
+        .setDescription(`**${name} 𝑆𝐻𝑂𝑃 𝐹𝐿𝐴𝑉𝑂𝑈𝑅𝑆**\n${playerShop.flavors.map(flavour => `**${flavour.icecream}** (${flavour.items})`).join(", ")}`);
 
-        return message.channel.send({
+        return await handleMessage(context, {
           embeds: [embed2]
         }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
@@ -351,14 +360,14 @@ export default {
         .setColor('#f5bbaf')
         .setDescription(`**AVAILABLE FLAVOURS**\n${flavors.map(flavour => `**${flavour.icecream}**・⁠ <:creamcash:1309495440030302282> ${flavour.cost}・⁠**Lvl:** ${flavour.level}`).join(",\n")}`);
 
-        return message.channel.send({
+        return await handleMessage(context, {
           embeds: [embed]
         }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Command: Create a new flavor for your shop
       if (args[0] === "make") {
-        return await makeIceCream(playerShop, flavors, message.author.id, message.author.username, message.channel);
+        return await makeIceCream(playerShop, flavors, userId, name, context);
       }
 
       // Command: Upgrade the ice cream shop
@@ -372,19 +381,19 @@ export default {
         if (upgradeType === "machine") {
           upgradeCost = 200 * playerShop.shopLevel;
           if (playerShop.money < upgradeCost) {
-            return message.channel.send(`💸 **${message.author.username}**, you don't have enough cash to upgrade your machine (Cost: <:creamcash:1309495440030302282> ${upgradeCost} cash).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, `💸 **${name}**, you don't have enough cash to upgrade your machine (Cost: <:creamcash:1309495440030302282> ${upgradeCost} cash).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
           playerShop.shopLevel += 1;
           upgradeMessage = "machine";
         } else if (upgradeType === "layout") {
           upgradeRoyaltyCost = 200 * playerShop.shopLayout * playerShop.shopLayout/2;
           if (playerShop.loyaltyPoints < upgradeRoyaltyCost) {
-            return message.channel.send(`💸 **${message.author.username}**, don't have enough ✪⁠ loyalty points to upgrade your layout (Cost: ✪⁠ 150 points).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, `💸 **${name}**, don't have enough ✪⁠ loyalty points to upgrade your layout (Cost: ✪⁠ 150 points).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
           playerShop.shopLayout += 1;
           upgradeMessage = "layout";
         } else {
-          return message.channel.send("❌ Invalid upgrade type! Use `ice upgrade machine` or `ice upgrade layout`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(context, "❌ Invalid upgrade type! Use `ice upgrade machine` or `ice upgrade layout`.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         playerShop.money -= upgradeCost;
@@ -393,7 +402,7 @@ export default {
 
         const upgradeEmbed = new EmbedBuilder()
         .setTitle("🍨🔧 Shop Upgraded!")
-        .setDescription(`**${message.author.username}**, your shop's **${upgradeMessage}** has been improved! 🚀`)
+        .setDescription(`**${name}**, your shop's **${upgradeMessage}** has been improved! 🚀`)
         .addFields(
           {
             name: `${upgradeType === "machine" ? "<:moneybag:1365976001179553792> Cash": "✪ Loyalty"} Spent`, value: `${upgradeType === "machine" ? "<:creamcash:1309495440030302282> -" + upgradeCost + "cash": "✪⁠" + upgradeRoyaltyCost + "loyalty"}`
@@ -407,7 +416,7 @@ export default {
           text: "Keep upgrading to become the top ice cream shop!"
         });
 
-        return message.channel.send({
+        return await handleMessage(context, {
           embeds: [upgradeEmbed]
         }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
@@ -420,7 +429,7 @@ export default {
           let level = parseInt(args[1]);
 
           if (level > 2 || level < 0) {
-            return message.channel.send(
+            return await handleMessage(context,
               `<:warning:1366050875243757699> Currently, only the up to \`level 2\` layout is available!`
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
@@ -433,12 +442,12 @@ export default {
           })
           .setImage(layout[level - 1].image);
 
-          return message.channel.send({
+          return await handleMessage(context, {
             embeds: [embed]
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(
-            `<:warning:1366050875243757699> **${message.author.username}**, please provide a valid level (1-2) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
+          return await handleMessage(context,
+            `<:warning:1366050875243757699> **${name}**, please provide a valid level (1-2) to view the shop's layout, including its image, color, and decoration.\nExample: \`icecream layout 3\``
           ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
@@ -449,7 +458,7 @@ export default {
           let amount = parseInt(args[1]);
 
           if (playerShop.loyaltyPoints < amount) {
-            return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, your shop doesn't have ✪⁠ ${amount} loyalty points.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, your shop doesn't have ✪⁠ ${amount} loyalty points.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           const user = await User.findOne({
@@ -457,7 +466,7 @@ export default {
           });
 
           if (!user) {
-            return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, your account doesn't exist in Kasiko.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, your account doesn't exist in Kasiko.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
           user.cash += amount * 750;
@@ -466,16 +475,16 @@ export default {
           await updateUser(userId, user);
           await playerShop.save();
 
-          return message.channel.send(`🍨🎊 **${message.author.username}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount *750).toLocaleString()} cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(context, `🍨🎊 **${name}**, you successfully exchanged ✪⁠ ${amount} loyalty points for <:kasiko_coin:1300141236841086977> ${(amount *750).toLocaleString()} cash!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         } else {
-          return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, please specify a valid integer for the loyalty points to exchange for Kasiko cash.\n\`icecream exchange 10\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
       }
 
       // command: leaderboard
       if (args[0] === "leaderboard" || args[0] === "lb") {
         const sortBy = args[1] || "money"; // e.g. "reputation" or "served" or fallback to "money"
-        await iceLeaderboard(message, sortBy);
+        await iceLeaderboard(context, sortBy);
       }
 
       // Command: Claim daily bonus
@@ -483,17 +492,17 @@ export default {
 
         const timeElapsed = Date.now() - playerShop.lastVisit;
         if (timeElapsed < 86400000 && playerShop.dailyBonusClaimed) {
-          return message.channel.send(`🕒 **${message.author.username}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(context, `🕒 **${name}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
-        const userData = await getUserData(message.author.id);
+        const userData = await getUserData(userId);
 
-        const suspenseMessage = await message.channel.send("🎁 Claiming your daily bonus... Please wait! 🎉");
+        const suspenseMessage = await handleMessage(context, "🎁 Claiming your daily bonus... Please wait! 🎉");
         setTimeout(async () => {
 
           let reward = 100;
 
-          const passInfo = await checkPassValidity(message.author.id);
+          const passInfo = await checkPassValidity(userId);
           let additionalReward;
           if (passInfo.isValid) {
             if (passInfo.passType !== "titan") {
@@ -513,10 +522,10 @@ export default {
 
           const bonusEmbed = new EmbedBuilder()
           .setTitle("🍧 𝐃𝐚𝐢𝐥𝐲 𝐁𝐨𝐧𝐮𝐬 𝐂𝐥𝐚𝐢𝐦𝐞𝐝!")
-          .setDescription(`**${message.author.username}** 𝗋𝖾𝖼𝖾𝗂𝗏𝖾𝖽 𝗍𝗈𝖽𝖺𝗒'𝗌 𝗋𝖾𝗐𝖺𝗋𝖽, 𝗂𝗇𝖼𝗅𝗎𝖽𝗂𝗇𝗀 **+1 reputation** 𝗉𝗈𝗂𝗇𝗍𝗌! <:celebration:1368113208023318558>\n\n-# 𝘠𝘰𝘶 𝘤𝘢𝘯 𝘤𝘭𝘢𝘪𝘮 ✪ **20 loyalty** 𝘱𝘰𝘪𝘯𝘵𝘴, 𝘱𝘭𝘶𝘴 ***20*** 𝘧𝘰𝘳 𝘦𝘷𝘦𝘳𝘺 ***150*** 𝘳𝘦𝘱𝘶𝘵𝘢𝘵𝘪𝘰𝘯!`)
+          .setDescription(`**${name}** 𝗋𝖾𝖼𝖾𝗂𝗏𝖾𝖽 𝗍𝗈𝖽𝖺𝗒'𝗌 𝗋𝖾𝗐𝖺𝗋𝖽, 𝗂𝗇𝖼𝗅𝗎𝖽𝗂𝗇𝗀 **+1 reputation** 𝗉𝗈𝗂𝗇𝗍𝗌! <:celebration:1368113208023318558>\n\n-# 𝘠𝘰𝘶 𝘤𝘢𝘯 𝘤𝘭𝘢𝘪𝘮 ✪ **20 loyalty** 𝘱𝘰𝘪𝘯𝘵𝘴, 𝘱𝘭𝘶𝘴 ***20*** 𝘧𝘰𝘳 𝘦𝘷𝘦𝘳𝘺 ***150*** 𝘳𝘦𝘱𝘶𝘵𝘢𝘵𝘪𝘰𝘯!`)
           .addFields(
             {
-              name: "<:creamcash:1309495440030302282> cash", value: `**+${reward}** ${passInfo.isValid && passInfo.passType !== "titan" ? "*(+25 bonus)* " : ""}cash`
+              name: "<:creamcash:1309495440030302282> cash", value: `**+${reward}** ${passInfo.isValid && passInfo.passType !== "titan" ? "*(+25 bonus)* ": ""}cash`
             },
             {
               name: "✪⁠ Loyalty Points", value: `**+${loyaltyPointsGained}** Points`
@@ -536,19 +545,19 @@ export default {
 
       // help
       if (args[0] === "help") {
-        return message.channel.send({
+        return await handleMessage(context, {
           embeds: [helpEmbed]
         }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (!args[0] || args[0] === "status" || args[0] === "shop") {
-        await playerShopInfo(playerShop, flavors, message.author.id, message.author.username, message.channel);
+        await playerShopInfo(playerShop, flavors, userId, name, context);
         return;
       }
 
     } catch (e) {
       console.error(e);
-      return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, something went wrong while executing the ice cream shop command! 🍧🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, something went wrong while executing the ice cream shop command! 🍧🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

@@ -8,6 +8,11 @@ import {
 } from '../../../bot.js';
 
 import {
+  handleMessage,
+  discordUser
+} from '../../../helper.js';
+
+import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -87,6 +92,13 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
     return {
       success: false,
       message: `❗Please mention **one** user to share your cookie with! 🍪`
+    };
+  }
+  
+  if (authorId === mentionedUserId) {
+    return {
+      success: false,
+      message: `❗ Sharing to yourself? 🤷🏻🍪`
     };
   }
 
@@ -240,20 +252,21 @@ function buildCookieButtons() {
 // ============ Main Command Execution ==============
 // ==================================================
 
-export async function execute(args, message) {
+export async function execute(args, context) {
   const {
-    channel,
-    author,
-    mentions
-  } = message;
-  const userId = author.id;
-  const ownerUsername = author.username;
+    username,
+    id: userId,
+    avatar,
+    name
+  } = discordUser(context);
+
+  const ownerUsername = name;
 
   // If user typed "!cookie @User" => share logic
-  if (mentions.users.size > 0) {
-    const mentionedUser = mentions.users.first();
+  if ((context?.mentions?.users.size > 0) || (!!context.isCommand && args[0])) {
+    const mentionedUser = context?.mentions?.users?.first() || args[0];
     const shareResult = await shareCookie(userId, mentionedUser.id, ownerUsername);
-    return channel.send({
+    return await handleMessage(context, {
       content: shareResult.message
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
@@ -266,7 +279,7 @@ export async function execute(args, message) {
   const components = buildCookieButtons();
 
   // Send the two-embed message
-  const controlMessage = await channel.send({
+  const controlMessage = await handleMessage(context, {
     embeds: [statsEmbed, helpEmbed],
     components
   });
@@ -312,17 +325,16 @@ export async function execute(args, message) {
   collector.on('end',
     async () => {
       try {
-        const fetchedMsg = await channel.messages.fetch(controlMessage.id);
-        if (!fetchedMsg) return;
+        if (!controlMessage) return;
 
         // Disable buttons after time expires
-        const oldComponents = fetchedMsg.components;
+        const oldComponents = controlMessage?.components;
         if (!oldComponents.length) return;
 
         const row = ActionRowBuilder.from(oldComponents[0]);
         row.components.forEach((btn) => btn.setDisabled(true));
 
-        await fetchedMsg.edit({
+        await controlMessage?.edit({
           components: [row],
         });
       } catch (err) {
