@@ -587,13 +587,15 @@ export async function sellAnimals(animal, amount, message) {
     if (!userFishData.fishes || !userFishData.fishes.some(fish => fish.name && fish.name === capitalizedName)) {
       return message.channel.send("⚠️ You do not have this animal in your collection to sell.");
     }
+    
+    if (userFishData.fishes[index].animals < amount) {
+      return message.channel.send(`⚠️ You do not have **${amount}** **${capitalizedName}** in your collection to sell.`);
+    }
 
     // Remove the animal from the aquarium
     if (userFishData.fishes.find(f => f.name.toLowerCase() === capitalizedName.toLowerCase()).animals === 1) {
       userFishData.fishes = userFishData.fishes.filter(f => f.name.toLowerCase() !== capitalizedName.toLowerCase());
       userFishData.aquarium = userFishData.aquarium.filter(fish => fish !== capitalizedName);
-    } else if (userFishData.fishes[index].animals < amount) {
-      return message.channel.send(`⚠️ You do not have **${amount}** **${capitalizedName}** in your collection to sell.`);
     } else {
       let index = userFishData.fishes.findIndex(f => f.name.toLowerCase() === capitalizedName.toLowerCase());
       userFishData.fishes[index].animals -= 1;
