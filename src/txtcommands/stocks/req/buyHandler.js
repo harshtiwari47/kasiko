@@ -33,9 +33,9 @@ async function handleNumberInput(interaction, stockName) {
   const number = interaction.fields.getTextInputValue('stockBuyingInput');
   const parsedNumber = parseInt(number, 10);
 
-  if (isNaN(parsedNumber) || parsedNumber < 1 || parsedNumber > 100) {
+  if (isNaN(parsedNumber) || parsedNumber < 1 || parsedNumber > 1000) {
     await interaction.reply({
-      content: 'Invalid input! Please enter a number between 1 and 100.', ephemeral: true
+      content: 'Invalid input! Please enter a number between 1 and 1000.', ephemeral: true
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
     await interaction.deferReply();
@@ -60,7 +60,7 @@ export async function handleBuyRequest(userId, username, stockName, context) {
   .setStyle(TextInputStyle.Short)
   .setMinLength(1)
   .setMaxLength(3)
-  .setPlaceholder('e.g., 42 (0-100)')
+  .setPlaceholder('e.g., 42 (0-1000)')
   .setRequired(true);
 
   const actionRow = new ActionRowBuilder().addComponents(numberInput);
