@@ -255,7 +255,21 @@ export default {
         return await serveIceCream(playerShop, flavors, userId, name, context);
       }
 
-      // Other commands (share, createFlavor, upgrade, status, dailyBonus) follow a similar structure.
+      // Other commands (rename, share, createFlavor, upgrade, status, dailyBonus) follow a similar structure.
+
+      if (args[0] === "shopname") {
+
+        if (!args[1]) return await handleMessage(context, "❌ Shop name not found! Please add your ice cream shop first using `icecream shopname <shopname>`\nPlease don't use spaces in name.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        const shopNameNew = args[1].substring(0, 15);
+
+        if (!playerShop) {
+          return await handleMessage(context, `<:warning:1366050875243757699>🍧 **${name}**, you don't have a shop!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+
+        playerShop.shopName = shopNameNew;
+        await playerShop.save();
+        return await handleMessage(context, `🍧 **${name}**, your shop renamed successfully.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
 
       // Command: Share ice cream with a friend
       if (args[0] === "share") {

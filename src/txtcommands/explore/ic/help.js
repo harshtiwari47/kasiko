@@ -16,7 +16,7 @@ const embed = new EmbedBuilder()
   },
   {
     name: "🍨 Shop Actions",
-    value: "`make` (create a new flavour), `upgrade machine/layout` (upgrade shop), `share @user <flavour>` (share ice cream)"
+    value: "`make` (create a new flavour), `upgrade machine/layout` (upgrade shop), `shopname`, share @user <flavour>` (share ice cream)"
   },
   {
     name: "💰 Economy",

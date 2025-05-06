@@ -588,7 +588,7 @@ export async function sellAnimals(animal, amount, message) {
       return message.channel.send("⚠️ You do not have this animal in your collection to sell.");
     }
     
-    if (userFishData.fishes[index].animals < amount) {
+    if (userFishData?.fishes[index]?.animals < amount) {
       return message.channel.send(`⚠️ You do not have **${amount}** **${capitalizedName}** in your collection to sell.`);
     }
 
