@@ -19,7 +19,7 @@ export default {
       const data = await response.json();
 
       const embed = new EmbedBuilder()
-      .setTitle("🧓🏻 Dad Joke")
+      .setTitle("🧓🏻 DAD JOKE")
       .setDescription(data.joke)
       .setColor("Random");
 
