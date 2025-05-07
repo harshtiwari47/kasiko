@@ -35,7 +35,7 @@ async function handleNumberInput(interaction, stockName) {
 
   if (isNaN(parsedNumber) || parsedNumber < 1 || parsedNumber > 1000) {
     await interaction.reply({
-      content: 'Invalid input! Please enter a number between 1 and 1000.', ephemeral: true
+      content: 'Invalid input! Please enter a number between 1 and 999.', ephemeral: true
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
     await interaction.deferReply();

@@ -46,7 +46,7 @@ export async function buySharesCommand(message, args) {
     // Check that the amount does not exceed 1000 shares per transaction
     if (numShares > 1000) {
       return handleMessage(message, {
-        content: `ⓘ **${username}**, you cannot buy more than 1000 shares in a single transaction.`
+        content: `ⓘ **${username}**, you cannot buy more than 999 shares in a single transaction.`
       });
     }
 

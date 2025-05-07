@@ -45,7 +45,7 @@ export async function playerShopInfo(playerShop, flavors, userId, username, cont
 
     let decoration = `𐙚⋆🍂⁺₊ 〰˖ ִֶָ 🍨 ˚˖𓍢ִ໋🦢💮`;
     const embed = new EmbedBuilder()
-    .setColor(layout[playerShop.shopLayout - 1].color)
+    .setColor((layout[playerShop.shopLayout - 1]?.color || "#eedd97"))
     .setTitle(`🍦 ${playerShop.shopName}'s 𝑆𝐻𝑂𝑃`)
     .setDescription(
       `**Customers Served:** ${playerShop.customersServed}\n**Money:** <:creamcash:1309495440030302282> ${playerShop.money} cash\n**Loyalty Points:** ✪ ${playerShop.loyaltyPoints}\n**Reputation:** ${playerShop.reputation}\n**Shop Level:** ${playerShop.shopLevel}\n**Shop Layout:** ${playerShop.shopLayout}\n${decoration}`
