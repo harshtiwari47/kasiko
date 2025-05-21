@@ -47,7 +47,7 @@ export async function mysteryDungeon(id, difficulty, channel) {
 
     if (!userData) {
       return channel.send(
-        `⚠️ **${guildMember?.user?.username || "User"}**, you need to register first to enter the dungeon!`
+        `<:warning:1366050875243757699> **${guildMember?.user?.username || "User"}**, you need to register first to enter the dungeon!`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
@@ -89,7 +89,10 @@ export async function mysteryDungeon(id, difficulty, channel) {
 
     if (!dungeons[difficulty]) {
       return channel.send(
-        `⚠️ Invalid difficulty! Choose one: ${Object.keys(dungeons).join(", ")}.`
+        "-# **❔Example:**\n" +
+        "- **dungeon `<difficulty>`**\n\n" +
+        "💀 **AVAILABLE DIFFICULTIES: **\n" +
+        "◎ *easy, medium, hard, legendary.*"
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
@@ -327,11 +330,10 @@ export default {
   execute: async (args, message) => {
     if (!args[1]) {
       return message.channel.send(
-        "♦️ 𝘠𝘰𝘶 𝘯𝘦𝘦𝘥 𝘵𝘰 𝘴𝘱𝘦𝘤𝘪𝘧𝘺 𝘢 𝘥𝘪𝘧𝘧𝘪𝘤𝘶𝘭𝘵𝘺!" +
-        "\n**❔Example: **`dungeon <difficulty>`" +
-        "\n\n💀 **Available difficulties: **" +
-        "\n𖤓 easy 𖤓 medium" +
-        "\n𖤓 hard 𖤓 legendary."
+        "-# **❔Example:**\n" +
+        "- **dungeon `<difficulty>`**\n\n" +
+        "💀 **AVAILABLE DIFFICULTIES: **\n" +
+        "◎ *easy, medium, hard, legendary.*"
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 

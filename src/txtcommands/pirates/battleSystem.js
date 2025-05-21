@@ -524,7 +524,7 @@ async function gatherDetails(username, userId, isPlayer, interaction) {
     if (activeShip.durability < 100 && isPlayer) {
       return {
         error: true,
-        message: "⚠️ Your ship is not ready for battle. Minimum durability required: **100**.\nUse: \`active repair x\` (x: Number of Times, e.g., 6)\`"
+        message: "⚠️ 𝘠𝘰𝘶𝘳 𝘤𝘶𝘳𝘳𝘦𝘯𝘵 𝘴𝘩𝘪𝘱 𝘪𝘴 𝘯𝘰𝘵 𝘳𝘦𝘢𝘥𝘺 𝘧𝘰𝘳 𝘣𝘢𝘵𝘵𝘭𝘦.\n*Minimum durability required: **100**.*\n\n:grey_question: **\` active repair <times> \`**"
       };
     }
 

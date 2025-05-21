@@ -47,7 +47,7 @@ export async function viewCollection(interactionUserId, context, userDiscordData
     if (userCollection.length === 0) {
       const embed = new EmbedBuilder()
       .setColor(0x0099FF)
-      .setDescription(`⚠️ You don't have any 🦦fish!\nTo catch some, you can fish from the ocean or use the following command to start fishing:\n\`kas catch\`\nEnjoy!`);
+      .setDescription(`<:warning:1366050875243757699> You don't have any 🦦fish!\nTo catch some, you can fish from the ocean or use the following command to start fishing:\n\`kas catch\`\nEnjoy!`);
 
       if (isInteraction) {
         if (!context.deferred) await context.deferReply();
@@ -237,10 +237,10 @@ export async function viewCollection(interactionUserId, context, userDiscordData
     if (isInteraction) {
       if (!context.deferred) await context.deferReply();
       return await context.editReply({
-        content: "⚠️ Something went wrong while visiting **User's Collection**"
+        content: "<:warning:1366050875243757699> Something went wrong while visiting **User's Collection**"
       });
     } else {
-      return context.send("⚠️ Something went wrong while visiting **User's Collection**");
+      return context.send("<:warning:1366050875243757699> Something went wrong while visiting **User's Collection**");
     }
   }
 }
@@ -333,7 +333,7 @@ export async function viewAquarium(userId,
       .setDisabled(false),
       new ButtonBuilder()
       .setCustomId('aquarium_help')
-      .setLabel(`⚠️`)
+      .setLabel(`<:warning:1366050875243757699>`)
       .setStyle(ButtonStyle.Primary)
       .setDisabled(false)
     );
@@ -420,7 +420,7 @@ export async function viewAquarium(userId,
         console.error(e);
         if (!interaction.deferred) await interaction.deferReply();
         await interaction.editReply({
-          content: '⚠️ Something went wrong while performing aquarium command button!'
+          content: '<:warning:1366050875243757699> Something went wrong while performing aquarium command button!'
         });
         return;
       }
@@ -449,10 +449,10 @@ export async function viewAquarium(userId,
     if (isInteraction) {
       if (!context.deferred) await context.deferReply();
       return await context.editReply({
-        content: "⚠️ Something went wrong while viewing your aquarium."
+        content: "<:warning:1366050875243757699> Something went wrong while viewing your aquarium."
       });
     } else {
-      return context.send("⚠️ Something went wrong while viewing your aquarium.");
+      return context.send("<:warning:1366050875243757699> Something went wrong while viewing your aquarium.");
     }
   }
 }
@@ -464,21 +464,21 @@ export async function addToAquarium(userId,
     const userFishData = await getUserFishData(userId);
 
     if (!aquaData.some(fish => fish.name.toLowerCase() === animal.toLowerCase())) {
-      return channel.send("⚠️ Fish not found.")
+      return channel.send("<:warning:1366050875243757699> Fish not found.")
     }
 
     if (!userFishData.aquarium && !Array.isArray(userFishData.aquarium)) userFishData.aquarium = [];
 
     if (userFishData.aquarium.length > 2) {
-      return channel.send(`\n⚠️ 🐚 <:aquarium:1301825002013851668> **Your Aquarium is Full!**\nMaximum limit: **3 fish**\nPlease **remove some fish** to make space.`);
+      return channel.send(`\n<:warning:1366050875243757699> 🐚 <:aquarium:1301825002013851668> **Your Aquarium is Full!**\nMaximum limit: **3 fish**\nPlease **remove some fish** to make space.`);
     }
 
     if (userFishData.aquarium.some(fish => fish.toLowerCase() === animal.toLowerCase())) {
-      return channel.send(`\n⚠️ 🎣 <:aquarium:1301825002013851668> **This fish is already in your Aquarium!**\nYou can only add unique fish. Please try adding a different one.`);
+      return channel.send(`\n<:warning:1366050875243757699> 🎣 <:aquarium:1301825002013851668> **This fish is already in your Aquarium!**\nYou can only add unique fish. Please try adding a different one.`);
     }
 
     if (!userFishData.fishes.some(fish => fish.name && fish.name.toLowerCase() === animal.toLowerCase())) {
-      return channel.send("⚠️ 🐠 This fish isn't in your collection. Try catching it first!");
+      return channel.send("<:warning:1366050875243757699> 🐠 This fish isn't in your collection. Try catching it first!");
     }
 
     const capitalizedName = animal.charAt(0).toUpperCase() + animal.slice(1).toLowerCase();
@@ -490,7 +490,7 @@ export async function addToAquarium(userId,
     return channel.send(`➕ ✅ Added **${capitalizedName}** to your <:aquarium:1301825002013851668> aquarium!`);
   } catch (e) {
     console.error(e);
-    return channel.send("⚠️ Something went wrong while adding fish to your collection.");
+    return channel.send("<:warning:1366050875243757699> Something went wrong while adding fish to your collection.");
   }
 }
 
@@ -500,11 +500,11 @@ export async function removeFromAquarium(userId, animal, channel) {
     let userFishData = await getUserFishData(userId);
 
     if (!Array.isArray(userFishData.aquarium) || userFishData.aquarium.length === 0) {
-      return channel.send("⚠️ 🎣 No animals to remove.");
+      return channel.send("<:warning:1366050875243757699> 🎣 No animals to remove.");
     }
 
     if (!userFishData.aquarium.some(fish => fish.toLowerCase() === animal.toLowerCase())) {
-      return channel.send(`⚠️ 🐠 Fish **${animal}** is not in your aquarium.`);
+      return channel.send(`<:warning:1366050875243757699> 🐠 Fish **${animal}** is not in your aquarium.`);
     }
 
     userFishData.aquarium = userFishData.aquarium.filter(fish => fish.toLowerCase() !== animal.toLowerCase());
@@ -514,7 +514,7 @@ export async function removeFromAquarium(userId, animal, channel) {
     return channel.send(`➖ Removed **${animal}** from your aquarium!`);
   } catch (e) {
     console.error(e);
-    return channel.send("⚠️ Something went wrong while removing fish from your collection.");
+    return channel.send("<:warning:1366050875243757699> Something went wrong while removing fish from your collection.");
   }
 }
 
@@ -528,11 +528,11 @@ export async function feedAnimals(animal, amount, message) {
     const aquaAnimal = aquaData.find(fish => fish.name.toLowerCase() === animal.toLowerCase());
 
     if (!aquaAnimal) {
-      return message.channel.send("⚠️ This animal is not recognized.");
+      return message.channel.send("<:warning:1366050875243757699> This animal is not recognized.");
     }
 
     if (!userAnimal) {
-      return message.channel.send("⚠️ 🐠 This animal is not found in your collection.");
+      return message.channel.send("<:warning:1366050875243757699> 🐠 This animal is not found in your collection.");
     }
 
     let index = userFishData.fishes.findIndex(f => f.name.toLowerCase() === capitalizedName.toLowerCase());
@@ -540,7 +540,7 @@ export async function feedAnimals(animal, amount, message) {
     const feedCost = aquaAnimal.feedCost * amount * userFishData.fishes[index].animals;
 
     if (userData.cash < feedCost) {
-      return message.channel.send(`⚠️ You do not have enough cash (<:kasiko_coin:1300141236841086977>${feedCost}) to feed your animals.`);
+      return message.channel.send(`<:warning:1366050875243757699> You do not have enough cash (<:kasiko_coin:1300141236841086977> **${feedCost}**) to feed your animals.`);
     }
 
     let foodReqToLvlUp = Number(aquaAnimal.foodReq);
@@ -550,7 +550,7 @@ export async function feedAnimals(animal, amount, message) {
 
     if (level > 100) {
       return message.channel.send(
-        `⚠️ **${message.author.username}**, fishes can reach a maximum level of 100. You can't feed them beyond this level. Please reduce the feed amount if your fish is not yet at level 100.`
+        `<:warning:1366050875243757699> **${message.author.username}**, fishes can reach a maximum level of **100**. You can't feed them beyond this level.\nPlease reduce the feed amount if your fish is not yet at level 100.`
       );
     }
 
@@ -561,10 +561,14 @@ export async function feedAnimals(animal, amount, message) {
     await updateUser(message.author.id, userData);
     await updateFishUser(message.author.id, userFishData);
 
-    return message.channel.send(`🍤 **${message.author.username}**, you fed your <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) ${amount} food for <:kasiko_coin:1300141236841086977> ${feedCost} 𝑪𝒂𝒔𝒉! They are happy and healthy. Your ${animal}(s) are ${level ? "**now**": "**still**"} at level ${userFishData.fishes[index].level}.`);
+    return message.channel.send(
+      `🍤 **${message.author.username}**, you fed your <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) **${amount}** food for <:kasiko_coin:1300141236841086977> **${feedCost} 𝑪𝒂𝒔𝒉**!\n\n` +
+      `𖥔 *Your **${animal}(s)** are __**${level ? "now": "still"}**__ at level **${userFishData.fishes[index].level}**.*`
+    ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+
   } catch (error) {
     console.error(error);
-    return message.channel.send("⚠️ Something went wrong while feeding the animals.");
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while feeding the animals.");
   }
 }
 
@@ -578,18 +582,18 @@ export async function sellAnimals(animal, amount, message) {
 
 
     if (!aquaAnimal) {
-      return message.channel.send("⚠️ This animal is not recognized.");
+      return message.channel.send("<:warning:1366050875243757699> This animal is not recognized.");
     }
 
     // Assuming each animal has a sell amount associated with it
     const sellAmount = aquaAnimal.sellAmount * amount * userFishData.fishes.find(f => f.name.toLowerCase() === capitalizedName.toLowerCase()).level;
 
     if (!userFishData.fishes || !userFishData.fishes.some(fish => fish.name && fish.name === capitalizedName)) {
-      return message.channel.send("⚠️ You do not have this animal in your collection to sell.");
+      return message.channel.send("<:warning:1366050875243757699> You do not have this animal in your collection to sell.");
     }
-    
+
     if (userFishData?.fishes[index]?.animals < amount) {
-      return message.channel.send(`⚠️ You do not have **${amount}** **${capitalizedName}** in your collection to sell.`);
+      return message.channel.send(`<:warning:1366050875243757699> You do not have **${amount}** **${capitalizedName}** in your collection to sell.`);
     }
 
     // Remove the animal from the aquarium
@@ -609,7 +613,7 @@ export async function sellAnimals(animal, amount, message) {
     return message.channel.send(`💰 **${message.author.username}**, you sold ${amount} <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) for <:kasiko_coin:1300141236841086977> ${sellAmount} 𝑪𝒂𝒔𝒉!`);
   } catch (error) {
     console.error(error);
-    return message.channel.send("⚠️ Something went wrong while selling the animals.");
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while selling the animals.");
   }
 }
 
@@ -644,10 +648,10 @@ export async function collectAquariumReward(context, author) {
       if (isInteraction) {
         if (!context.deferred) await context.deferReply();
         return await context.editReply({
-          content: `⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\``
+          content: `<:warning:1366050875243757699> Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\``
         });
       } else {
-        return context.send('⚠️ Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\`');
+        return context.send('<:warning:1366050875243757699> Your <:aquarium:1301825002013851668> **aquarium is empty**! Add some fish 🦈 to start earning.\n❔ Use: \`kas help aquarium\`');
       }
     }
 
@@ -720,10 +724,10 @@ export async function collectAquariumReward(context, author) {
     if (context.isCommand) {
       if (!context.deferred) await context.deferReply();
       return await context.editReply({
-        content: '⚠️ There was an error collecting your aquarium rewards. Please try again later.'
+        content: '<:warning:1366050875243757699> There was an error collecting your aquarium rewards. Please try again later.'
       });
     } else {
-      return context.send('⚠️ There was an error collecting your aquarium rewards. Please try again later.');
+      return context.send('<:warning:1366050875243757699> There was an error collecting your aquarium rewards. Please try again later.');
     }
   }
 }
@@ -765,7 +769,10 @@ export default {
       if (animal) {
         return addToAquarium(message.author.id, animal, message.channel);
       } else {
-        return message.channel.send("⚠️ Specify a fish to add to your aquarium. Use `kas aquarium add/a <fish>");
+        return message.channel.send(
+          "-# ❔**Example:**\n" +
+          "* **aquarium add** **` <fish> `**"
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
     case "remove":
@@ -773,7 +780,10 @@ export default {
       if (animal) {
         return removeFromAquarium(message.author.id, animal, message.channel);
       } else {
-        return message.channel.send("⚠️ Specify a fish to remove from your aquarium. Use `kas aquarium remove/r <fish>");
+        return message.channel.send(
+          "-# ❔**Example:**\n" +
+          "* **aquarium remove** **` <fish> `**"
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
     case "sell":
@@ -781,7 +791,10 @@ export default {
       if (animal && amount) {
         return sellAnimals(animal, amount, message);
       } else {
-        return message.channel.send("⚠️ Invalid request. Use `aquarium sell/s <fish> <amount>`.");
+        return message.channel.send(
+          "-# ❔**Example:**\n" +
+          "* **aquarium sell** **`<fish>`** **`<amount>`**"
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
     case "feed":
@@ -789,7 +802,10 @@ export default {
       if (animal && amount) {
         return feedAnimals(animal, amount, message);
       } else {
-        return message.channel.send("⚠️ Invalid request. Use `aquarium feed/f <fish> <amount>`.");
+        return message.channel.send(
+          "-# ❔**Example:**\n" +
+          "* **aquarium feed** **`<fish>`** **`<amount>`**"
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
     default:

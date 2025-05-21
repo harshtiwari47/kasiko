@@ -164,11 +164,11 @@ export default {
   execute: (args, message) => {
     if (!args[1]) {
       return message.channel.send(
-        "♦️ 𝘠𝘰𝘶 𝘯𝘦𝘦𝘥 𝘵𝘰 𝘴𝘱𝘦𝘤𝘪𝘧𝘺 𝘢 𝘭𝘰𝘤𝘢𝘵𝘪𝘰𝘯!" +
-        "\n❔**Example: ** `scavenger <location>`" +
-        "\n\n🔍 **Available locations: **" +
-        "\nforest, cave, beach, ruins, desert."
-      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err))
+        "-# ❔**Example:**\n" +
+        "- **scavenger `<location>`**\n\n" +
+        "🔍 **AVAILABLE LOCATIONS: **\n" +
+        "◎ *forest, cave, beach, ruins, desert.*"
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const location = args[1].toLowerCase();

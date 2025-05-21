@@ -7,6 +7,10 @@ import {
 } from 'discord.js';
 
 import {
+  handleMessage
+} from "../helper.js";
+
+import {
   client
 } from "../bot.js";
 
@@ -14,7 +18,7 @@ import {
   createUser
 } from "../database.js";
 
-export const termsAndcondition = async (message) => {
+export const termsAndcondition = async (context) => {
   try {
     // Create the embed for Terms and Conditions
     const embed = new EmbedBuilder()
@@ -46,7 +50,7 @@ export const termsAndcondition = async (message) => {
     const row = new ActionRowBuilder().addComponents(button);
 
     // Send the embed with the button
-    const sentMessage = await message.channel.send({
+    const sentMessage = await handleMessage(context, {
       embeds: [embed],
       components: [row]
     });
@@ -65,7 +69,8 @@ export const termsAndcondition = async (message) => {
           await interaction.deferReply({
             ephemeral: true
           });
-          let user = await createUser(message.author.id);
+
+          let user = await createUser(context.author ? context.author.id: context.user.id);
           if (user) {
             await interaction.editReply({
               content: "<:emoji_35:1332676884093337603> **Thank you** for accepting the __Terms and Conditions__! 💐\n\n" +
@@ -116,7 +121,7 @@ export const termsAndcondition = async (message) => {
   } catch (error) {
     console.error('Error in termsAndcondition:',
       error);
-    return message.channel.send(
+    return await handleMessage(context,
       'This channel might be missing the following permissions that the bot needs:\n' +
       '1. **Send Messages**\n' +
       '2. **Embed Links**\n' +

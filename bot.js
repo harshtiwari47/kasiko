@@ -15,6 +15,11 @@ import {
   updateExpPoints
 } from './utils/experience.js';
 
+import trackStats, {
+  sendBotStats,
+  sendTopServersEmbed
+} from './utils/stats.js';
+
 import {
   OwnerCommands
 } from './src/owner/main.js';
@@ -121,6 +126,8 @@ client.on('messageCreate', async (message) => {
     }
 
     if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
+    if (message.content.toLowerCase().startsWith("kasbstats")) return await sendBotStats(message, redisClient);
+    if (message.content.toLowerCase().startsWith("kastopsv")) return await sendTopServersEmbed(client, message, 10);
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
     if (message.content.toLowerCase().startsWith("kasow")) return OwnerCommands(message.content.slice("kasow".toLowerCase().length).trim().split(/ +/), message);
 
@@ -275,6 +282,8 @@ client.on('messageCreate', async (message) => {
       // Reset violation counter on successful command
       await redisClient.del(`violations:${userId}`);
 
+      await trackStats(message, redisClient, commandName);
+
       command.execute(args, message);
     } catch (error) {
       console.error(error);
@@ -320,6 +329,13 @@ client.on('interactionCreate', async (interaction) => {
   // Slash Command Handling
   if (interaction.isCommand()) {
     try {
+      await trackStats(interaction, redisClient, interaction.commandName);
+
+      let userExistence = await userExists(interaction.user.id);
+      if (!userExistence) {
+        return termsAndcondition(interaction);
+      }
+
       await handleSlashCommand(interaction);
     } catch (e) {
       console.error(e);

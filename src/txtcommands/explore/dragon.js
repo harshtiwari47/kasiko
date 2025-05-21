@@ -29,7 +29,7 @@ let sigilsIcon = `<:mystic_sigils:1320636356069687347>`
 
 export default {
   name: 'dragon',
-  description: 'Manage all Dragon-based actions (summon, hatch, feed, train, battle, etc.)',
+  description: 'Manage all Dragon-based actions (summon, hatch, , train, battle, etc.)',
   aliases: ['drg',
     'd'],
   cooldown: 10000,
@@ -373,7 +373,7 @@ export default {
 
       return {
         canAttempt: false,
-        message: `You are on cooldown. Please try summoning again after ${readableTime}! 🐉`,
+        message: `<:warning:1366050875243757699> You are on _cooldown_. Please try summoning again after **${readableTime}**! <:dragon:1368113270443216926>`,
       };
     }
 
@@ -393,13 +393,13 @@ export default {
     // Summon cost and gems deduction
     const summonCost = 10;
     if (userData.gems < summonCost) {
-      return message.reply(`⚠️ You need at least **${summonCost}** gems to summon a dragon egg.`);
+      return message.reply(`<:warning:1366050875243757699> You need at least **${summonCost}** gems to summon a dragon egg.`);
     }
 
     let atempt = await canAttemptAction(userId, redisClient);
 
     if (!atempt.canAttempt) {
-      return message.reply(`⚠️ ${atempt.message}`);
+      return message.reply(`<:warning:1366050875243757699> ${atempt.message}`);
     }
 
     if (userData.dragons.length === dragonTypes.length) {
@@ -416,8 +416,14 @@ export default {
     // Check if the user already has this type of dragon
     const hasDragon = userData.dragons.some(dragon => dragon.typeId === chosenType.id);
 
+
+    const attachment = new AttachmentBuilder('https://harshtiwari47.github.io/kasiko-public/images/dragons/dragon-hunt-failed.png');
+
     if (hasDragon) {
-      return message.channel.send(`🐉 ❌ **${message.author.username}**, you already have a 🥚 **${chosenType.name}** dragon egg. No luck this time!\n-# ${gemIcon} : **-${summonCost}**`);
+      return message.channel.send({
+        content: `<:dragon:1368113270443216926> **${message.author.username}**, *you already have a* 🥚 **${chosenType.name}** *dragon egg.* ❌\n\n**COST** ~ ${gemIcon} ${summonCost} GEMS\n-# 𝘕𝘰 𝘯𝘦𝘸 𝘦𝘨𝘨 𝘵𝘩𝘪𝘴 𝘵𝘪𝘮𝘦 — 𝘣𝘦𝘵𝘵𝘦𝘳 𝘭𝘶𝘤𝘬 𝘯𝘦𝘹𝘵 𝘵𝘪𝘮𝘦!`,
+        files: [attachment]
+      });
     }
 
     // Add a 30% chance of successfully summoning a new dragon egg
@@ -445,7 +451,7 @@ export default {
 
       const summonEmbed = new EmbedBuilder()
       .setColor(chosenType.color)
-      .setDescription(`🐉 **${message.author.username}** successfully summoned a **${chosenType.name}** egg! (Unhatched)\n\n🥚 **Egg Type**: ${chosenType.name}\n🔮 **Rarity**: ${rarity}\n-# **Description**: ${chosenType.description}`)
+      .setDescription(`<:dragon:1368113270443216926> **${message.author.username}** successfully summoned a **${chosenType.name}** egg! (Unhatched)\n\n🥚 **EGG TYPE**: ${chosenType.name}\n🔮 **RARITY**: ${rarity}\n-# ${chosenType.description}`)
       .setImage(chosenType.images[0])
       .setThumbnail(chosenType.images[1])
       .setAuthor({
@@ -458,7 +464,10 @@ export default {
         embeds: [summonEmbed]
       });
     } else {
-      return message.channel.send(`🐉 ❌ No luck this time, **${message.author.username}**! You couldn't summon a 🥚 **${chosenType.name}** egg.\n-# ${gemIcon} : **-${summonCost}**`);
+      return message.channel.send({
+        content: `<:dragon:1368113270443216926> *No luck this time*, **${message.author.username}**!\n*You couldn't summon a* 🥚 **${chosenType.name}** *egg*. ❌\n**COST** ~ ${gemIcon} ${summonCost} GEMS`,
+        files: [attachment]
+      });
     }
   }
 
@@ -578,7 +587,7 @@ export default {
     if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
       return {
         success: false,
-        message: `Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`,
+        message: `Invalid dragon index. You only have ${userData.dragons.length} dragon(s).\n-# ❔ **EXAMPLE**:\n**feed \` <index> \` \` <times> \``,
       };
     }
 
@@ -669,7 +678,7 @@ export default {
           message: `Despite ${targetDragon.typeId}'s keen senses, the gem-laden creature slipped past its grasp, leaving only glittering dust behind. 🏃‍♂️💨`,
         },
         {
-          message: `${targetDragon.typeId} ventured deep into a cave filled with traps, but it triggered one, narrowly escaping with no gems to show for it. ⚠️🕳️`,
+          message: `${targetDragon.typeId} ventured deep into a cave filled with traps, but it triggered one, narrowly escaping with no gems to show for it. <:warning:1366050875243757699>🕳️`,
         },
       ],
     };
@@ -979,7 +988,7 @@ export default {
     const userId = message.author.id;
 
     if (amount < 1) {
-      return message.channel.send(`⚠️ **${message.author.username}**, you must use at least 1 gem to feed your dragon.`);
+      return message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you must use at least 1 gem to feed your dragon.`);
     }
 
     let userData = await getUserDataDragon(userId);
@@ -1022,7 +1031,7 @@ export default {
       "Big hugs for the yummy gems! 🤗💎"
     ]
 
-    return message.channel.send(`🍗 You fed dragon <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** with ${gemIcon} **${amount}** gems.\nHunger is now **${targetDragon.hunger}**! 🍽️\n-# ${reactions[Math.floor(Math.random() * reactions.length)]}`);
+    return message.channel.send(`🍗 **${message.user.username}**, fed dragon <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** with ${gemIcon} **${amount}** gems.\n🍽️ Hunger is now **${targetDragon.hunger}**.\n-# ${reactions[Math.floor(Math.random() * reactions.length)]}`);
   }
 
   /**
@@ -1059,8 +1068,10 @@ export default {
 
     // Check hunger before training
     if (targetDragon.hunger >= 60) {
-      return message.channel.send(`🍽️ Your dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) is too hungry to train. Please feed it!\n-# ${randomHungerMessage()}`);
+      return message.channel.send(`🍽️ ***${message.author.username}***! Your dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, is too hungry to train. Please feed it!\n\n-# - ${randomHungerMessage()}`);
     }
+
+    const attachment = new AttachmentBuilder('https://harshtiwari47.github.io/kasiko-public/images/dragons/dragon-training.png');
 
     // Perform training
     const experienceGained = Helper.randomInt(5, 10);
@@ -1081,7 +1092,7 @@ export default {
       leveledUp = true;
 
       const levelUpEmbed = new EmbedBuilder()
-      .setDescription(`🏆 Your dragon (<:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) advanced to **Stage ${targetDragon.stage}**!\n-# 🍽️ **Hunger**: 100 | ${sigilsIcon} **Sigils**: +1`)
+      .setDescription(`🏆 Your dragon, <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, advanced to **Stage ${targetDragon.stage}**!\n\n🍽️ **Hunger**: 100 ~ ${sigilsIcon} **Sigils**: +1`)
       .setAuthor({
         name: message.author.username, iconURL: message.author.displayAvatarURL({
           dynamic: true
@@ -1095,22 +1106,25 @@ export default {
 
     } else {
       const messagesTrain = [
-        `💥 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) just earned **${experienceGained} XP**! Ready for the next challenge? 🐉`,
-        `🎉 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) is on fire! **${experienceGained} XP** gained! 🔥`,
-        `🚀 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) just crushed it and earned **${experienceGained} XP**! 💪`,
-        `🔥 Watch out! Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) gained **${experienceGained} XP** and is stronger than ever! 💥`,
-        `💎 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) collected **${experienceGained} XP**! The adventure continues! 🐉`,
-        `🎯 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) achieved greatness with **${experienceGained} XP**! Next level, here we come! 🏆`,
-        `⚡️ Boom! Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) earned **${experienceGained} XP**! Ready to train harder? 🐉💨`,
-        `🎊 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) is leveling up fast! **${experienceGained} XP** gained! Keep it up! 💪`,
-        `💥 Dragon (**${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) earned a massive **${experienceGained} XP**! Who’s next for a challenge? 🐉🔥`
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, just earned **${experienceGained} XP**! Ready for the next challenge? <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, is on fire! **${experienceGained} XP** gained! <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, just crushed it and earned **${experienceGained} XP**! <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) gained **${experienceGained} XP** and is stronger than ever! <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, collected **${experienceGained} XP**! The adventure continues! <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, achieved greatness with **${experienceGained} XP**! Next level, here we come! <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, earned **${experienceGained} XP**! Ready to train harder? <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, is leveling up fast! **${experienceGained} XP** gained! Keep it up! <:dragon:1368113270443216926>`,
+        `dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, earned a massive **${experienceGained} XP**! Who’s next for a challenge? <:dragon:1368113270443216926>`
       ];
 
       // Select a random message
       const randomMessage = messagesTrain[Math.floor(Math.random() * messagesTrain.length)];
 
       // Send the random message
-      await message.channel.send(`<:${chosenType.id}2:${chosenType.emoji}> ${randomMessage}\n-# 🍽️ **Hunger**: +${hunger} | ${sigilsIcon} **Sigils**: +1`);
+      await message.channel.send({
+        content: `<:${chosenType.id}2:${chosenType.emoji}> **${message.author.username}**! Your ${randomMessage}\n\n-# **◎🍽️ 𝗛𝗨𝗡𝗚𝗘𝗥: +${hunger}**\n-# ◎**${sigilsIcon} 𝗦𝗜𝗚𝗜𝗟𝗦: +1**`,
+        files: [attachment]
+      });
     }
 
     await saveUserData(userId, userData);
