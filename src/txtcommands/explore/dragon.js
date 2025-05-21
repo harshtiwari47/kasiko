@@ -1031,7 +1031,7 @@ export default {
       "Big hugs for the yummy gems! 🤗💎"
     ]
 
-    return message.channel.send(`🍗 **${message.user.username}**, fed dragon <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** with ${gemIcon} **${amount}** gems.\n🍽️ Hunger is now **${targetDragon.hunger}**.\n-# ${reactions[Math.floor(Math.random() * reactions.length)]}`);
+    return message.channel.send(`🍗 **${message.author.username}**, fed dragon <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** with ${gemIcon} **${amount}** gems.\n🍽️ Hunger is now **${targetDragon.hunger}**.\n-# ${reactions[Math.floor(Math.random() * reactions.length)]}`);
   }
 
   /**
