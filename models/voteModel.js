@@ -36,8 +36,6 @@ const voteSchema = new mongoose.Schema({
     // 24h in ms
     if (diff <= 24 * 60 * 60 * 1000) {
       doc.voteStreak += 1;
-    } else {
-      doc.voteStreak = 1;
     } doc.lastVoted = now;
     doc.lastVotes.unshift(now);
     if (doc.lastVotes.length > 7) doc.lastVotes.pop();

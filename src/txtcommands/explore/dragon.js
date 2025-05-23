@@ -1484,6 +1484,38 @@ export default {
     });
   }
 
+  async function changeActive(args, message) {
+    const userId = message.author.id;
+
+    let userData = await getUserDataDragon(userId);
+
+    if (userData.dragons.length === 0) {
+      return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
+    }
+
+    if (!args[1] || ! Number.isInteger(Number(args[1]))) {
+      let targetDragon = userData.dragons[userData.active || 0];
+
+      return message.channel.send(`❗Your active dragon is **${targetDragon.typeId.toUpperCase()}**! Use \`dragon active <index>\` to change it.`);
+    }
+
+    const index = parseInt(args[1]); // Dragon Index
+
+    const dragonIndex = Math.max(index - 1, 0);
+
+    if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
+      return message.channel.send(`❗ Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`);
+    }
+
+    let targetDragon = userData.dragons[dragonIndex];
+
+    userData.active = index;
+
+    await saveUserData(userId, userData);
+
+    return message.channel.send(`✅ **${message.author.username}**, you have successfully set your **${targetDragon.typeId.toUpperCase()}** dragon as active for the next battle. Your dragon is ready for adventure!`);
+  }
+
   async function changeNickname(args, message) {
     if (!args[2]) {
       return message.channel.send(`❗ Nickname is missing in arguments. Use Example: \`dragon rename 1 Puppy\`.`);
@@ -1525,36 +1557,4 @@ export default {
     await saveUserData(userId, userData);
 
     return message.channel.send(`✅ **${message.author.username}**, you have successfully given your **${targetDragon.typeId.toUpperCase()}** dragon the sweet nickname **${name}**. Your dragon is happy!`);
-  }
-
-  async function changeActive(args, message) {
-    const userId = message.author.id;
-
-    let userData = await getUserDataDragon(userId);
-
-    if (userData.dragons.length === 0) {
-      return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
-    }
-
-    if (!args[1] || ! Number.isInteger(Number(args[1]))) {
-      let targetDragon = userData.dragons[userData.active || 0];
-
-      return message.channel.send(`❗Your active dragon is **${targetDragon.typeId.toUpperCase()}**! Use \`dragon active <index>\` to change it.`);
-    }
-
-    const index = parseInt(args[1]); // Dragon Index
-
-    const dragonIndex = Math.max(index - 1, 0);
-
-    if (dragonIndex < 0 || dragonIndex >= userData.dragons.length) {
-      return message.channel.send(`❗ Invalid dragon index. You only have ${userData.dragons.length} dragon(s).`);
-    }
-
-    let targetDragon = userData.dragons[dragonIndex];
-
-    userData.active = index;
-
-    await saveUserData(userId, userData);
-
-    return message.channel.send(`✅ **${message.author.username}**, you have successfully set your **${targetDragon.typeId.toUpperCase()}** dragon as active for the next battle. Your dragon is ready for adventure!`);
   }

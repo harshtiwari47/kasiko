@@ -47,8 +47,6 @@ export async function dailylogin(context) {
       // Increment streak if the last claim was yesterday, otherwise reset
       if (currentTime - lastClaimDate < 2 * nextClaim && currentTime - lastClaimDate >= nextClaim) {
         userData.rewardStreak = (userData.rewardStreak || 0) + 1;
-      } else {
-        userData.rewardStreak = 1;
       }
 
       // Calculate reward amount

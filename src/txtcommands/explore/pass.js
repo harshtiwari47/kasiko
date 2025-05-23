@@ -9,6 +9,9 @@ import Pass from '../../../models/Pass.js';
 import PromoCode from '../../../models/Promo.js';
 import winston from 'winston';
 import UserPet from "../../../models/Pet.js";
+import {
+  discordUser
+} from '../../../helper.js';
 
 // Configure logger
 const logger = winston.createLogger({
