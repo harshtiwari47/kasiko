@@ -117,9 +117,9 @@ export async function voteReward(userId, user, context) {
       const day = today.getDay(); // 0 = Sunday, 6 = Saturday
       const reward = (day === 0 || day === 6) ? 50000: 30000;
 
+      const voteDoc = await VoteModel.recordVote(userId);
       userData.cash += Math.min(reward + ((voteDoc?.voteStreak || 1) * 1500), 75000);
       userData.lastVoteTime = now.toISOString();
-      const voteDoc = await VoteModel.recordVote(userId);
 
       await updateUser(userId, {
         cash: userData.cash,
