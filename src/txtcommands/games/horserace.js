@@ -302,8 +302,7 @@ export default {
       }
 
       if (amount > userData.cash) {
-        return message.channel.send(`⚠ **${message.author.username}**, you don't have sufficient cash.`);
-        .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send(`⚠ **${message.author.username}**, you don't have sufficient cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Get all mentioned opponents (up to 3), excluding the initiator.
