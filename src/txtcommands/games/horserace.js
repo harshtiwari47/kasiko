@@ -237,7 +237,7 @@ async function startRace(amount, participants, channel) {
             resultEmbed = new EmbedBuilder()
             .setColor(0xFF0000)
             .setTitle(`🏇🏻 𝙉𝙤 𝙬𝙞𝙣𝙣𝙚𝙧𝙨 𝙩𝙝𝙞𝙨 𝙩𝙞𝙢𝙚***!***`)
-            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}!**\n-# ⪩ BET: <:kasiko_coin:1300141236841086977> **${amount}**\n-# ⪩ PARTICIPANT${participants.length > 0 ? "S":""}: ${participantsInfoNames}`)
+            .setDescription(`🚫 The winning horse is **${winningHorse === "horse1" ? "Horse 1": winningHorse === "horse2" ? "Horse 2": "Horse 3"}!**\n-# ⪩ BET: <:kasiko_coin:1300141236841086977> **${amount}**\n-# ⪩ PARTICIPANT${participants.length > 0 ? "S": ""}: ${participantsInfoNames}`)
             .setImage(`https://harshtiwari47.github.io/kasiko-public/images/horserace.jpg`)
             .setFooter({
               text: `⨳ Better luck next time!`
@@ -299,6 +299,11 @@ export default {
           return message.channel.send("⚠ 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗮𝗺𝗼𝘂𝗻𝘁! The betting range is between <:kasiko_coin:1300141236841086977> **1,000** and <:kasiko_coin:1300141236841086977> **15,00,000**.")
           .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
+      }
+
+      if (amount > userData.cash) {
+        return message.channel.send(`⚠ **${message.author.username}**, you don't have sufficient cash.`);
+        .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Get all mentioned opponents (up to 3), excluding the initiator.
