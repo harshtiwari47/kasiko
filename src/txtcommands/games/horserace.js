@@ -40,6 +40,10 @@ export async function horseRace(initiatorId, amount, channel, chosenHorseInput, 
       chosenHorse,
       data: initiatorData
     }];
+    
+      if (amount > initiatorData.cash) {
+        return channel.send(`⚠ **${guildMember.user.username}**, you don't have sufficient cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
 
     // If opponents were pinged, allow them to join via a message collector.
     if (allowedOpponentIds.length > 0) {
@@ -299,10 +303,6 @@ export default {
           return message.channel.send("⚠ 𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗮𝗺𝗼𝘂𝗻𝘁! The betting range is between <:kasiko_coin:1300141236841086977> **1,000** and <:kasiko_coin:1300141236841086977> **15,00,000**.")
           .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
-      }
-
-      if (amount > userData.cash) {
-        return message.channel.send(`⚠ **${message.author.username}**, you don't have sufficient cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Get all mentioned opponents (up to 3), excluding the initiator.
