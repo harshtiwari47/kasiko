@@ -160,28 +160,34 @@ export default {
   execute: (args,
     message) => {
     try {
-      const opponentId = args[1]?.replace(/[<@!>]/g,
-        '');
 
-      if (!opponentId || !/^\d+$/.test(opponentId)) {
-        return message.channel.send("⚠️ Invalid opponent. Usage: `rps @user <amount>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      const opponent = message.mentions.users.first();
+
+      if (!opponent) {
+        return message.channel.send("⚠️ Invalid opponent. Usage: `rps @user <amount>`")
+        .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
+
+      const opponentId = opponent.id;
+
       if (message.author.id === opponentId) {
         return message.channel.send("⚠️ You can't play against yourself.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       let amount;
 
-      if (args[2] && args[2] !== "all") {
-        if (isNaN(amount)) {
-          return message.channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **rps**!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-        amount = parseInt(args[2]);
-        if (amount < 1 || amount > 200000) {
-          return message.channel.send("⚠️ Bet must be between 1 and 200,000 cash.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-      } else if (args[2] && args[2] === "all") {
+      if (args[2] === "all") {
         amount = "all";
+      } else if (args[2]) {
+        amount = parseInt(args[2]);
+        if (isNaN(amount)) {
+          return message.channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **rps**!`)
+          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+        if (amount < 1 || amount > 200000) {
+          return message.channel.send("⚠️ Bet must be between 1 and 200,000 cash.")
+          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
       } else {
         amount = 1;
       }
