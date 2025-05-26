@@ -89,7 +89,7 @@ export async function workCommand(message, args) {
       `-# 𝘕𝘌𝘞 𝘚𝘛𝘖𝘊𝘒 𝘗𝘙𝘐𝘊𝘌𝘚: <:kasiko_coin:1300141236841086977> ${company.currentPrice}`
     )
     .setColor("#d36134")
-    .setImage("https://harshtiwari47.github.io/kasiko-public/images/ceo-work.jpg")
+    .setImage("https://harshtiwari47.github.io/kasiko-public/images/office-work.png")
     .setFooter({
       text: `𝖸𝗈𝗎𝗋 𝗁𝖺𝗋𝖽 𝗐𝗈𝗋𝗄 𝗁𝖺𝗌 𝖻𝗈𝗈𝗌𝗍𝖾𝖽 𝗒𝗈𝗎𝗋 𝖼𝗈𝗆𝗉𝖺𝗇𝗒'𝗌 𝗀𝗋𝗈𝗐𝗍𝗁!`
     })

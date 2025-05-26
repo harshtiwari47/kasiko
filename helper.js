@@ -30,6 +30,10 @@ export function discordUser(context) {
     avatar: null,
     name: null
   }
+  
+  if (!context.user && !context.author && context.id && context.username) {
+    context.user = context;
+  }
 
   const avatarUrl = context.user
   ? context.user?.displayAvatarURL({

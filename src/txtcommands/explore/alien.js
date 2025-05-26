@@ -488,7 +488,7 @@ async function handleHarvest(ctx) {
     `\n<:aliens_ability:1336346125791137855> **ABILITY USED:** ${randomAbility.name}\n✧ ⋆^+₊☼.⋆｡‧₊˚ ⋅✧`;
 
     return replyOrSend(ctx, {
-      content: responseMessage
+      embeds: [new EmbedBuilder().setDescription(responseMessage).setImage(`https://harshtiwari47.github.io/kasiko-public/images/harvest.png`).setColor('#efde7f')]
     });
   } catch (error) {
     console.error(error);
@@ -1000,14 +1000,14 @@ async function handleManipulate(ctx) {
     const success = randomNumber > 0.25;
     if (!success) {
       return replyOrSend(ctx, {
-        content: randomResponse([
+        embeds: [new EmbedBuilder().setDescription(randomResponse([
           `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _attempt to manipulate the human economy_ has fizzled out.\n☄️ 🌌 The cosmic balance remains intact. 👾`,
           `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _manipulation_ failed!\n☄️ 🌌 The universe chuckles at your misfortune. 👾`,
           `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _economic meddling_ was thwarted!\n☄️ 🌌 Better luck next time. 👾`,
           `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _interference_ in the cosmic order has failed.\n☄️ 🌌 The universe sighs in amusement. 👾`,
           `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _plan_ has crumbled like stardust.\n☄️ 🌌 The cosmos watches in quiet amusement. 👾`,
           `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _devious plot_ has been undone.\n☄️ 🌌 The universe remains unshaken. 👾`
-        ])
+        ])).setImage(`https://harshtiwari47.github.io/kasiko-public/images/manipulate.png`).setColor('#ef7f7f')]
       });
     }
     const resourceGain = 25 + (randomAbility.resourcesCollection ? randomAbility.resourcesCollection: 0);
@@ -1034,13 +1034,13 @@ async function handleManipulate(ctx) {
 
     await alien.save();
     return replyOrSend(ctx, {
-      content: randomResponse([
+      embeds: [new EmbedBuilder().setDescription(randomResponse([
         `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, with masterful subtlety, you gained : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
         `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your cunning maneuver has earned you : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
         `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your precision and wit have rewarded you with : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
         `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your skillful planning has netted you : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
         `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, with perfect timing, you acquired : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`
-      ]) + `\n<:aliens_ability:1336346125791137855> ***ABILITY*** : **${randomAbility.name}**\n✧.⋆˚‧₊˚ ⋅ ‧₊˚⁺₊❅. 🌌\n${extraMessage}`
+      ]) + `\n<:aliens_ability:1336346125791137855> ***ABILITY*** : **${randomAbility.name}**\n✧.⋆˚‧₊˚ ⋅ ‧₊˚⁺₊❅. 🌌\n${extraMessage}`).setImage(`https://harshtiwari47.github.io/kasiko-public/images/manipulate.png`).setColor('#9b7fef')]
     });
   } catch (error) {
     console.error(error);

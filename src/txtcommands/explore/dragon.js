@@ -1122,7 +1122,7 @@ export default {
 
       // Send the random message
       await message.channel.send({
-        content: `<:${chosenType.id}2:${chosenType.emoji}> **${message.author.username}**! Your ${randomMessage}\n\n-# **◎🍽️ 𝗛𝗨𝗡𝗚𝗘𝗥: +${hunger}**\n-# ◎**${sigilsIcon} 𝗦𝗜𝗚𝗜𝗟𝗦: +1**`,
+        content: `<:${chosenType.id}2:${chosenType.emoji}> **${message.author.username}**! Your ${randomMessage}\n\n-# **🍽️ 𝗛𝗨𝗡𝗚𝗘𝗥: +${hunger}** **${sigilsIcon} 𝗦𝗜𝗚𝗜𝗟𝗦: +1**`,
         files: [attachment]
       });
     }

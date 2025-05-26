@@ -333,7 +333,7 @@ export async function viewAquarium(userId,
       .setDisabled(false),
       new ButtonBuilder()
       .setCustomId('aquarium_help')
-      .setLabel(`<:warning:1366050875243757699>`)
+      .setLabel(`❔`)
       .setStyle(ButtonStyle.Primary)
       .setDisabled(false)
     );
