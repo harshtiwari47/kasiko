@@ -4,13 +4,21 @@ import {
 } from '../../../database.js';
 
 import {
-  Helper
+  Helper,
+  discordUser
 } from '../../../helper.js';
 
+function capitalizeStrict(word) {
+  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+}
 
-export async function toss(id, amount, channel, choice = "head") {
+export async function toss(id, context, amount, channel, choice = "head") {
   try {
     const guild = await channel.guild.members.fetch(id);
+    const {
+      name
+    } = discordUser(context);
+
     let userData = await getUserData(id);
 
     if (!userData) return;
@@ -22,14 +30,18 @@ export async function toss(id, amount, channel, choice = "head") {
 
     // Check if the user has enough cash and if the amount is valid
     if (userData.cash < 1) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return channel.send(`⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (amount < 1) {
       return channel.send("⚠️ Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **1**.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (userData.cash < Number(amount)) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return channel.send(`⚠️ **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
+
+    userData = await updateUser(id, {
+      cash: (userData.cash - Number(amount))
+    });
 
     const spiningCoin = `<a:SpinningCoin:1326785405399597156>`;
     const stillCoin = `<:StillCoin:1326414822841253980>`;
@@ -37,9 +49,9 @@ export async function toss(id, amount, channel, choice = "head") {
 
     // Send a suspenseful message
     const suspenseMessage = await channel.send(
-      `**Betting <:kasiko_coin:1300141236841086977> ${amount} 𝒄𝒂𝒔𝒉 on ${choice}s!**\n` +
+      `**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\n` +
       `The ᑕOIＮ spins... ${spiningCoin}\n` +
-      `⚡︎ **${guild.user.username}'s** 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦!`);
+      `⚡︎ Your 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦!`);
 
     // Simulate a short delay to build suspense
     await new Promise(resolve => setTimeout(resolve, 2500)); // 2-second delay for better effect
@@ -49,13 +61,10 @@ export async function toss(id, amount, channel, choice = "head") {
     let winamount = 0;
 
     if (random === 1 && choice === "head") {
-      winamount = Number(amount * 1).toFixed(0) || 0;
+      winamount = Number(amount * 2).toFixed(0) || 0;
       userData.cash += Number(winamount);
     } else if (random === 0 && choice === "tail") {
-      winamount = Number(amount * 1).toFixed(0) || 0;
-      userData.cash += Number(winamount);
-    } else {
-      winamount = Number(-1 * amount) || 0;
+      winamount = Number(amount * 2).toFixed(0) || 0;
       userData.cash += Number(winamount);
     }
 
@@ -66,11 +75,11 @@ export async function toss(id, amount, channel, choice = "head") {
 
     // Edit the initial "thinking" message to the final result
     if (random === 1 && choice === "head") {
-      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username.toUpperCase()}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵...!\nThe **ᑕOIＮ** ${stillCoin} landed on _heads_!\n### 𓂃 You *won* <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
+      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoin} landed on **Heads**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(2* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
     } else if (random === 0 && choice === "tail") {
-      await suspenseMessage.edit(`**${guild.user.nickname || guild.user.username.toUpperCase()}**, 𝘺𝘰𝘶 𝘥𝘪𝘥 𝘪𝘵...!\nThe **ᑕOIＮ** ${stillCoinTails} landed on _tails_!\n### 𓂃 You *won* <:kasiko_coin:1300141236841086977>**${Number(2* winamount).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
+      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoinTails} landed on **Tails**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(2* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
     } else {
-      await suspenseMessage.edit(`𝘖𝘰𝘱𝘴, **${guild.user.nickname || guild.user.username.toLowerCase()}**, the **ᑕOIＮ** ${choice === "tail" ? stillCoin: stillCoinTails} landed on _*${choice === "tail" ? "heads": "tails"}*_...\n### You *lost* <:kasiko_coin:1300141236841086977> **${(-1* Number(winamount)).toLocaleString()}** 𝑪𝒂𝒔𝒉.`);
+      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${choice === "tail" ? stillCoin: stillCoinTails} landed on **${choice === "tail" ? "Heads": "Tails"}**...\n***⚠ You lost the bet.***`);
     }
 
   } catch (e) {
@@ -128,7 +137,7 @@ export default {
 
         let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail": "head";
         // Call the Gamble module's toss function
-        toss(message.author.id, amount, message.channel, choice);
+        toss(message.author.id, message, amount, message.channel, choice);
       } else {
         // Send usage error if the amount argument is invalid
         await message.channel.send("⨳ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘤𝘢𝘴𝘩 𝘢𝘮𝘰𝘶𝘯𝘵*!*\n\n"

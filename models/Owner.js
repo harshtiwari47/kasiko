@@ -32,6 +32,11 @@ const OwnerSchema = new mongoose.Schema({
     retired: {
       type: Boolean, default: false
     },
+    dailyDeducted: {
+      date: String,
+      amount: Number
+    },
+    totalCashDeducted: Number
   });
 
   const OwnerModel = mongoose.model("Owner", OwnerSchema);

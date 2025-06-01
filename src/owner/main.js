@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import mongoose from "mongoose";
 import Cash from "./cash.js";
+import Deduct from "./deduct.js";
 import Reward from "./reward.js";
 import Badge from "./badge.js";
 import Ship from "./ship.js";
@@ -59,6 +60,16 @@ export async function OwnerCommands(args, message) {
     case "with":
     case "withdraw":
     case "w":
+      if (ownerLevel === ownerHierarchy.superowner) {
+        await Cash.execute(args, message);
+      } else {
+        message.reply("You don't have permission to withdraw.");
+      }
+      return;
+      
+    case "deduct":
+    case "ded":
+    case "d":
       if (ownerLevel === ownerHierarchy.superowner) {
         await Cash.execute(args, message);
       } else {

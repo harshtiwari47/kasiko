@@ -79,8 +79,8 @@ export async function give(context, amount, recipientId) {
     // Retrieve the current amount received today; default to 0 if not set
     let todayReceived = (recipientData.amountReceivedDaily?.amount || 0);
 
-    // Calculate the daily limit: recipientData.level * 150000 capped at 6,000,000
-    const maxDailyLimit = recipientData.level * 150000;
+    // Calculate the daily limit: recipientData.level * 250000 capped at 6,000,000
+    const maxDailyLimit = recipientData.level * 250000;
     const dailyLimit = Math.min(maxDailyLimit, 6000000);
 
     let remainingLimit = dailyLimit - Number(todayReceived);
@@ -143,6 +143,11 @@ export async function give(context, amount, recipientId) {
       time: 60000, // 15 seconds
     });
 
+    userData = await updateUser(userId, {
+      cash: (userData.cash - Number(amount)),
+      charity: (userData?.charity || 0) + Number(amount)
+    });
+
     // Handle button interactions
     collector.on("collect", async (interaction) => {
       try {
@@ -171,8 +176,6 @@ export async function give(context, amount, recipientId) {
           await interaction.deferUpdate();
 
           // Perform logic for transferring cash
-          userData.cash -= Number(amount);
-          userData.charity += Number(amount);
           recipientData.cash += Number(amount);
 
           recipientData.amountReceivedDaily = {
@@ -181,10 +184,6 @@ export async function give(context, amount, recipientId) {
           };
 
           try {
-            await updateUser(userId, {
-              cash: userData.cash,
-              charity: userData.charity
-            });
             await updateUser(recipientId, {
               cash: recipientData.cash,
               amountReceivedDaily: recipientData.amountReceivedDaily
@@ -198,12 +197,12 @@ export async function give(context, amount, recipientId) {
 
           // Send confirmation
           await interaction.editReply({
-            content: `🧾✅ **<@${userId}>** successfully transferred <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** to **<@${recipientId}>**!\n-# **💸 Keep spreading the wealth!**`,
+            content: `✅ **<@${userId}>** 𝘴𝘶𝘤𝘤𝘦𝘴𝘴𝘧𝘶𝘭𝘭𝘺 𝘵𝘳𝘢𝘯𝘴𝘧𝘦𝘳𝘳𝘦𝘥 <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝘵𝘰 **<@${recipientId}>**! 🧾\n-# 𝘛𝘳𝘢𝘯𝘴𝘢𝘤𝘵𝘪𝘰𝘯 𝘤𝘰𝘮𝘱𝘭𝘦𝘵𝘦. 𝘌𝘯𝘫𝘰𝘺 𝘺𝘰𝘶𝘳 𝘒𝘢𝘴𝘪𝘬𝘰!`,
             embeds: [],
             components: [],
           })
 
-          collector.stop();
+          collector.stop('success_trans');
         } else if (interaction.customId === "cancelgiving") {
           await interaction.deferUpdate();
           await interaction.editReply({
@@ -227,7 +226,16 @@ export async function give(context, amount, recipientId) {
 
     // Handle collector end
     collector.on("end",
-      async collected => {
+      async (collected, reason) => {
+        try {
+          if (reason !== "success_trans") {
+            userData = await updateUser(userId, {
+              cash: (userData.cash + Number(amount)),
+              charity: (userData?.charity || 0) - Number(amount)
+            });
+          }
+        } catch (ee) {}
+
         if (collected.size === 0) {
           try {
             const rowDisabled = new ActionRowBuilder().addComponents(
@@ -248,7 +256,7 @@ export async function give(context, amount, recipientId) {
             await replyMessage.edit({
               content: `⏱️ Transaction timeout!`,
               embeds: [],
-              components: [rowDisabled],
+              components: [],
             })
             return;
           } catch (err) {

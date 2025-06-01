@@ -40,10 +40,10 @@ export async function horseRace(initiatorId, amount, channel, chosenHorseInput, 
       chosenHorse,
       data: initiatorData
     }];
-    
-      if (amount > initiatorData.cash) {
-        return channel.send(`⚠ **${guildMember.user.username}**, you don't have sufficient cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
+
+    if (amount > initiatorData.cash) {
+      return channel.send(`⚠ **${guildMember.user.username}**, you don't have sufficient cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
 
     // If opponents were pinged, allow them to join via a message collector.
     if (allowedOpponentIds.length > 0) {
@@ -296,6 +296,11 @@ export default {
         // If "all" is specified, use the initiator's full cash (after retrieving user data)
         const userData = await getUserData(message.author.id);
         if (!userData) return;
+
+        if (userData.cash < 1000) {
+          return message.channel.send("⚠ You need at least <kasiko_coin:1300141236841086977> **1,000** to place a bet.");
+        }
+
         amount = Math.min(userData.cash, 1500000);
       } else {
         amount = parseInt(args[1]);
