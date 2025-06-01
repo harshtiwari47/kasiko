@@ -71,7 +71,7 @@ export async function OwnerCommands(args, message) {
     case "ded":
     case "d":
       if (ownerLevel === ownerHierarchy.superowner) {
-        await Cash.execute(args, message);
+        await Deduct.execute(args, message);
       } else {
         message.reply("You don't have permission to withdraw.");
       }
