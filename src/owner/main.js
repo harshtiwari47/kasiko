@@ -5,6 +5,7 @@ import Cash from "./cash.js";
 import Deduct from "./deduct.js";
 import Reward from "./reward.js";
 import Badge from "./badge.js";
+import Bank from "./bank.js";
 import Ship from "./ship.js";
 import Bio from "./bio.js";
 import OwnerModel from "../../models/Owner.js";
@@ -66,14 +67,22 @@ export async function OwnerCommands(args, message) {
         message.reply("You don't have permission to withdraw.");
       }
       return;
-      
+
     case "deduct":
     case "ded":
     case "d":
       if (ownerLevel === ownerHierarchy.superowner) {
         await Deduct.execute(args, message);
       } else {
-        message.reply("You don't have permission to withdraw.");
+        message.reply("You don't have permission to deduct.");
+      }
+      return;
+
+    case "bank":
+      if (ownerLevel === ownerHierarchy.superowner) {
+        await Bank.execute(args, message);
+      } else {
+        message.reply("You don't have permission to perform bank cmd.");
       }
       return;
 

@@ -325,6 +325,7 @@ export default {
     dynamic: true
     })
     })
+    .setColor('Random')
     .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/crime.png`);
     
     
@@ -352,17 +353,21 @@ export default {
     const crimeReply = await crime(userId, channel, user);
     
     const finalEmbed = new EmbedBuilder()
-    .setDescription(crimeReply)
+    .setDescription(crimeReply);
+    
+    const finalEmbed2 = new EmbedBuilder()
+    .setDescription(`𝗖𝗥𝗜𝗠𝗘 𝗦𝗣𝗥𝗘𝗘\n-# 𝘙𝘪𝘴𝘬 𝘪𝘵 𝘢𝘭𝘭 𝘧𝘰𝘳 𝘳𝘪𝘤𝘩𝘦𝘴 𝘰𝘳 𝘳𝘶𝘪𝘯.`)
     .setAuthor({
     name: interaction.user.username,
     iconURL: interaction.user.displayAvatarURL({
     dynamic: true
     })
     })
-    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/crime.png`);
+    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/crime.png`)
+    .setColor('Random');
     
     await interaction.editReply({
-    embeds: [finalEmbed]
+    embeds: [finalEmbed2, finalEmbed]
     });
     return;
     } catch (e) {
