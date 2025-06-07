@@ -85,7 +85,7 @@ export default {
     }
 
     try {
-      userData.bankAccount.deposit -= amount;
+      userData.bankAccount.deposit = Math.max(userData?.bankAccount?.deposit - amount, 0);
       await updateUser(discordUser.id, {
         "bankAccount.deposit": userData.bankAccount.deposit
       });

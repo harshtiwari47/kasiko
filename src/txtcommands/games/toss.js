@@ -75,9 +75,9 @@ export async function toss(id, context, amount, channel, choice = "head") {
 
     // Edit the initial "thinking" message to the final result
     if (random === 1 && choice === "head") {
-      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoin} landed on **Heads**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(2* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
+      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoin} landed on **Heads**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(1* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
     } else if (random === 0 && choice === "tail") {
-      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoinTails} landed on **Tails**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(2* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
+      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoinTails} landed on **Tails**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(1* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
     } else {
       await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${choice === "tail" ? stillCoin: stillCoinTails} landed on **${choice === "tail" ? "Heads": "Tails"}**...\n***⚠ You lost the bet.***`);
     }
