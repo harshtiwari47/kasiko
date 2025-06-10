@@ -21,7 +21,7 @@ export async function horizonMe(context, userId) {
     return handleMessage(context, {
       embeds: [
         new EmbedBuilder()
-        .setTitle(`🐲 Horizon Profile`)
+        .setTitle(`<:dragon_3d:1381904937763475578> Horizon Profile`)
         .setDescription(`**${name}**, you haven't participated in any Horizon battles yet.`)
         .setColor("Red")
         .setFooter({
@@ -56,29 +56,29 @@ export async function horizonMe(context, userId) {
   } = lastBattle || {};
 
   const profileEmbed = new EmbedBuilder()
-  .setTitle(`🌅 Horizon Profile`)
+  .setTitle(`<:dragon_3d:1381904937763475578> 𝗛𝗢𝗥𝗜𝗭𝗢𝗡 𝗣𝗥𝗢𝗙𝗜𝗟𝗘`)
   .setColor("Blurple")
   .setAuthor({
     name, iconURL: avatar
   })
   .addFields(
     {
-      name: "🏆 Battles",
+      name: "<:flame_sword:1381904987554054154> Battles",
       value: `**Played:** ${totalBattlesPlayed}\n**Won:** ${totalBattlesWon}\n**Lost:** ${totalBattlesLost}`,
       inline: true
     },
     {
-      name: "🐉 Performance",
+      name: "<:lighting_icon_kasiko:1354393463931670568> Performance",
       value: `**Bosses Defeated:** ${totalBossesDefeated}\n**Damage Dealt:** ${totalDamageDealt}`,
       inline: true
     },
     {
-      name: "🔝 Best Stats",
+      name: "<:stats:1381905014884139058> Best Stats",
       value: `**Max Damage:** ${highestDamageInBattle}\n**Most Bosses:** ${mostBossesInBattle}`,
       inline: true
     },
     {
-      name: "📜 Last Battle",
+      name: "<:orange_fire:1336344438464839731> Last Battle",
       value: `**Code:** \`${code}\`\n**Status:** ${status}\n**Boss Level:** ${bossLevelReached}\n**Damage:** ${damageDealt}\n**Rewards:** ${totalRewards}\n**Activity:** ${finishedAt ? `<t:${Math.floor(new Date(finishedAt).getTime() / 1000)}:R>`: "—"}`
     }
   );

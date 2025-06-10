@@ -113,7 +113,7 @@ export async function handleHorizonAction(context, playerId, abilityId) {
 
   // Boss defeated
   if (boss.health <= 0) {
-    const myReward = await distributeBossRewards(battle);
+    const myReward = await distributeBossRewards(battle, playerId);
 
     battle.history.unshift({
       playerId,
@@ -144,8 +144,8 @@ export async function handleHorizonAction(context, playerId, abilityId) {
       handleMessage(context, {
         embeds: [
           new EmbedBuilder()
-          .setTitle("🗡️ Boss Defeated!")
-          .setDescription(`**${boss.name}** has been defeated!\n🎁 All players received rewards.\n💎 **Your reward:** <:kasiko_coin:1300141236841086977> ${myReward}`)
+          .setTitle("<:flame_sword:1381904987554054154> Boss Defeated!")
+          .setDescription(`**${boss.name}** has been defeated!\n<:reward_box:1366435558011965500> All players received rewards.\n💵 **Your reward:** <:kasiko_coin:1300141236841086977> ${myReward}`)
           .setColor("Green")
         ]
       });
@@ -191,7 +191,7 @@ export async function handleHorizonAction(context, playerId, abilityId) {
 
       await battle.deleteOne();
 
-      return handleMessage(context, `🎉 Final boss defeated!`);
+      return handleMessage(context, `<:blue_fire:1336344769982500964> Final boss defeated!`);
     }
   }
 
@@ -227,7 +227,7 @@ export async function handleHorizonAction(context, playerId, abilityId) {
   return handleMessage(context, {
     embeds: [
       new EmbedBuilder()
-      .setDescription (`**${name}**'s <:${dragon.id}:${dragon.emoji}> **${dragon.name}** used ${ability.emoji} **${ability.name}**!\n🩸 Boss HP: ${Math.max(0, boss.health)}\n💥 Damage: ${ability.dmg}\n💚 Heal: ${healing}`
+      .setDescription (`**${name}**'s <:${dragon.id}:${dragon.emoji}> **${dragon.name}** used ${ability.emoji} **${ability.name}**!\n🩸 Boss HP: ${Math.max(0, boss.health)}\n💥 Damage: ${ability.dmg}\n<:heal_heart:1381904903827361905> Heal: ${healing}`
       ).setColor('Random')
       .setAuthor({
         name: name, iconURL: avatar
@@ -237,9 +237,10 @@ export async function handleHorizonAction(context, playerId, abilityId) {
   });
 }
 
-async function distributeBossRewards(battle) {
+async function distributeBossRewards(battle, playerId) {
   const index = Math.min(battle.currentBossIndex, rewardStructure.length - 1);
   const rewards = rewardStructure[index];
+  let currentPlayerReward = 0;
 
   const sorted = [...battle.playerStats].sort((a, b) => b.totalDamage - a.totalDamage);
 
@@ -268,13 +269,14 @@ async function distributeBossRewards(battle) {
     userData.cash += player?.rewardsGiven || 0;
 
     if (userData) {
+      if (player.playerId === playerId) currentPlayerReward = player?.rewardsGiven || 0;
       await updateUser(player.playerId, {
         cash: userData.cash
       });
     }
   }
 
-  return player.rewardsGiven
+  return currentPlayerReward
 }
 
 export default {
@@ -328,9 +330,9 @@ export default {
       players: id
     });
     if (!battle) {
-      const helpEmbed = HelpEmbed(context);
-      return handleMessage(context, {
-        embeds: HelpEmbed.embeds
+      const helpEmbed = await HelpEmbed(context, name, avatar);
+      return await handleMessage(context, {
+        embeds: helpEmbed.embeds
       });
     }
 

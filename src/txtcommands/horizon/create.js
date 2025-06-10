@@ -189,7 +189,7 @@ export async function createHorizonBattle(context, playerId, bossTemplates) {
     const imageAttachment = await generateEditedImage(code);
 
     return await handleMessage(context, {
-      content: `### <@${playerId}> New Horizon battle created! Join code: **\` ${code} \`**`,
+      content: `### <@${playerId}> New Horizon battle created!\n<:code_paper:1381904963780739153> Join code: **\` ${code} \`**`,
       files: [imageAttachment]
     });
 

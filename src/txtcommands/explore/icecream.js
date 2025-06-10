@@ -402,7 +402,7 @@ export default {
         } else if (upgradeType === "layout") {
           upgradeRoyaltyCost = 200 * playerShop.shopLayout * playerShop.shopLayout/2;
           if (playerShop.loyaltyPoints < upgradeRoyaltyCost) {
-            return await handleMessage(context, `💸 **${name}**, don't have enough ✪⁠ loyalty points to upgrade your layout (Cost: ✪⁠ 150 points).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+            return await handleMessage(context, `💸 **${name}**, don't have enough ✪⁠ loyalty points to upgrade your layout (Cost: ✪ ${upgradeRoyaltyCost} points).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
           playerShop.shopLayout += 1;
           upgradeMessage = "layout";

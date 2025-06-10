@@ -3,6 +3,8 @@ import {
   updateUser
 } from '../database.js';
 
+import User from "../models/User.js";
+
 import {
   AttachmentBuilder
 } from 'discord.js'; // Import AttachmentBuilder from discord.js
@@ -96,17 +98,25 @@ export async function updateExpPoints(content, user, channel, guildId, prefix) {
     const expRequiredNextLvl = (Math.pow(lvl + 1, 2) * threshold) - Number(userData.exp);
 
     try {
-      let updateData = {
-        exp: userData.exp,
-        level: userData.level
-      }
+      const updateQuery = {
+        $set: {
+          exp: userData.exp,
+          level: userData.level
+        },
+        ...(lvlUp && {
+          $inc: {
+            cash: lvlUpReward
+          }
+        })
+      };
 
-      if (lvlUp) {
-        updateData.cash = userData.cash;
-      }
+      await User.findOneAndUpdate({
+        id: user.id
+      }, updateQuery);
 
-      await updateUser(user.id, updateData, guildId);
-    } catch (err) {}
+    } catch (err) {
+      console.error(err)
+    }
 
     if (lvlUp) {
       const attachment = await generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, user.displayAvatarURL({

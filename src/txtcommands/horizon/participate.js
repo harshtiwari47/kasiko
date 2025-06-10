@@ -11,6 +11,13 @@ import {
 import fs from 'fs';
 import path from 'path';
 
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  ComponentType
+} from 'discord.js';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const dragonTypesPath = path.join(__dirname, '../../../data/dragons.json');
@@ -33,7 +40,7 @@ export async function exitHorizonBattle(context, userId) {
     return handleMessage(context, {
       embeds: [
         new EmbedBuilder()
-        .setTitle("⚠️ Not in Battle")
+        .setTitle("<:warning:1366050875243757699> Not in Battle")
         .setDescription(`**${name}**, you’re not currently in any active Horizon battle.`)
         .setColor("Red")
         .setTimestamp()
@@ -82,6 +89,10 @@ export async function exitHorizonBattle(context, userId) {
   battle.players = battle.players.filter(p => p !== userId);
   battle.playerStats = battle.playerStats.filter(p => p.playerId !== userId);
 
+  if (battle.players.length === 1) {
+    await HorizonBattle.deleteOne();
+  }
+
   await HorizonBattle.updateOne(
     {
       _id: battle._id
@@ -97,7 +108,7 @@ export async function exitHorizonBattle(context, userId) {
   return handleMessage(context, {
     embeds: [
       new EmbedBuilder()
-      .setTitle("👋 Exited Battle")
+      .setTitle("<:exit:1381905040482111559> Exited Battle")
       .setDescription(`**${name}** has left the Horizon battle.`)
       .setColor("Orange")
       .setFooter({
@@ -231,14 +242,14 @@ export async function joinHorizonBattle(context, userId, code) {
   return handleMessage(context, {
     embeds: [
       new EmbedBuilder()
-      .setTitle(`🌀 Joined Horizon Battle`)
+      .setTitle(`<:dragon_3d:1381904937763475578> Joined Horizon Battle`)
       .setDescription(`✅ **${name}**, you’ve successfully joined the battle with code \`${code}\`!`)
       .addFields(
         {
-          name: '⚔️ How to Attack', value: 'Use `attack p1` or `attack p2` to launch your dragon\'s ability.'
+          name: '<:flame_sword:1381904987554054154> How to Attack', value: 'Use `attack p1` or `attack p2` to launch your dragon\'s ability.'
         },
         {
-          name: '📊 View Stats', value: 'Run `horizon` anytime to see your battle stats and progress.'
+          name: '<:stats:1381905014884139058> View Stats', value: 'Run `horizon` anytime to see your battle stats and progress.'
         }
       )
       .setColor('Random')

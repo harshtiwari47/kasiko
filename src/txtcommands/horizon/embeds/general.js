@@ -14,7 +14,7 @@ export const GeneralEmbed = (battle, name, avatar, currentBoss, playerStats) => 
   // Build the EmbedBuilder for “General”
   const battleEmbed = new EmbedBuilder()
   .setDescription(`### 𝗛𝗢𝗥𝗜𝗭𝗢𝗡 𝗕𝗔𝗧𝗧𝗟𝗘 • 𝗚𝗘𝗡𝗘𝗥𝗔𝗟\n` +
-    `🔥 𝘽𝙖𝙩𝙩𝙡𝙚 𝙄𝙣𝙛𝙤\n` +
+    `<:orange_fire:1336344438464839731> 𝘽𝙖𝙩𝙩𝙡𝙚 𝙄𝙣𝙛𝙤\n` +
     [
       `**Code:** ***\` ${battle.code} \`*** **Players:** ${battle.players.length}`,
       `**Boss Number:** ${battle.currentBossIndex + 1}`,
@@ -33,7 +33,7 @@ export const GeneralEmbed = (battle, name, avatar, currentBoss, playerStats) => 
 
   const bossEmbed = new EmbedBuilder()
   .setColor('Random')
-  .setDescription(`🐲 𝘾𝙪𝙧𝙧𝙚𝙣𝙩 𝘽𝙤𝙨𝙨\n` +
+  .setDescription(`<:dragon_3d:1381904937763475578> 𝘾𝙪𝙧𝙧𝙚𝙣𝙩 𝘽𝙤𝙨𝙨\n` +
     [
       `**Name:** ***${currentBoss.name}*** @${currentBoss.difficulty}`,
       `**HP:** ${currentBoss.health} / ${currentBoss.maxHealth}`,
@@ -258,7 +258,7 @@ export async function RewardsEmbed(interaction, battle, name, avatar) {
   const current = rewardStructure[maxIndex];
 
   const embed = new EmbedBuilder()
-  .setTitle("🎁 𝗛𝗢𝗥𝗜𝗭𝗢𝗡 𝗕𝗔𝗧𝗧𝗟𝗘 𝗥𝗘𝗪𝗔𝗥𝗗𝗦")
+  .setTitle("<:reward_box:1366435558011965500> 𝗛𝗢𝗥𝗜𝗭𝗢𝗡 𝗕𝗔𝗧𝗧𝗟𝗘 𝗥𝗘𝗪𝗔𝗥𝗗𝗦")
   .setDescription(`𝘙𝘦𝘸𝘢𝘳𝘥𝘴 𝘢𝘳𝘦 𝘥𝘪𝘴𝘵𝘳𝘪𝘣𝘶𝘵𝘦𝘥 𝘣𝘢𝘴𝘦𝘥 𝘰𝘯 𝘥𝘢𝘮𝘢𝘨𝘦 𝘥𝘦𝘢𝘭𝘵 𝘸𝘩𝘦𝘯 𝘢 𝘣𝘰𝘴𝘴 𝘪𝘴 𝘥𝘦𝘧𝘦𝘢𝘵𝘦𝘥.\n\n**Current Boss:** #${bossIndex + 1}\n-# *Rewards upon defeat:*`)
   .setColor('Random')
   .addFields(
@@ -322,7 +322,7 @@ export async function RewardsEmbed(interaction, battle, name, avatar) {
 
 export async function HelpEmbed(context, name, avatar) {
   const embed = new EmbedBuilder()
-  .setTitle("🐲 How to Play Horizon Battles")
+  .setTitle("<:dragon_3d:1381904937763475578> How to Play Horizon Battles")
   .setDescription(`Team up with others to battle 5 mighty bosses with your dragons!`)
   .setColor("#b3a1ea")
   .setAuthor({
@@ -337,19 +337,19 @@ export async function HelpEmbed(context, name, avatar) {
       value: "`horizon new` — Start a new Horizon battle\n`horizon join <code>` — Join a battle with a code"
     },
     {
-      name: "⚔️ Attack",
+      name: "<:flame_sword:1381904987554054154> Attack",
       value: "`attack p1` — Use your primary attack\n`attack p2` — Use your secondary attack\n\nEach attack deals damage and may heal your dragon!"
     },
     {
-      name: "📊 Battle Info",
+      name: "<:stats:1381905014884139058> Battle Info",
       value: "`horizon` — View current battle stats & actions\nClick the buttons to view players, history, or rewards."
     },
     {
-      name: "📤 Exit Battle",
+      name: "<:exit:1381905040482111559> Exit Battle",
       value: "`horizon exit` — Leave your current battle (only before a boss is defeated)"
     },
     {
-      name: "🧑‍💼 Your Stats",
+      name: "<:stats:1381905014884139058> Your Stats",
       value: "`horizon me` — View your Horizon profile and last battle summary"
     }
   );
