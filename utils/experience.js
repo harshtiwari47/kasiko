@@ -110,9 +110,16 @@ export async function updateExpPoints(content, user, channel, guildId, prefix) {
         })
       };
 
-      await User.findOneAndUpdate({
-        id: user.id
-      }, updateQuery);
+      await updateUser(user.id, {
+        exp: userData.exp,
+        level: userData.level
+      });
+
+      if (lvlUp) {
+        await User.findOneAndUpdate({
+          id: user.id
+        }, updateQuery);
+      }
 
     } catch (err) {
       console.error(err)
