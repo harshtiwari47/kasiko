@@ -19,6 +19,12 @@ const flowerSchema = new mongoose.Schema({
     daisy: {
       type: Number, default: 0
     },
+    lily: {
+      type: Number, default: 0
+    },
+    hyacinth: {
+      type: Number, default: 0
+    }
   });
 
   const gardenSchema = new mongoose.Schema({

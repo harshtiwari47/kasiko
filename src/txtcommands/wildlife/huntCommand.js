@@ -278,6 +278,7 @@ export async function huntCommand(context, {
     .setFooter({
       text: "Use 𝙘𝙖𝙜𝙚 for hunted animals"
     })
+    .setColor('Random')
 
     return handleMessage(context, {
       embeds: [embed, embed2]

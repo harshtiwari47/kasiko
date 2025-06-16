@@ -282,7 +282,7 @@ export default {
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
-          sharedIceCreamName = capitalizeFirstLetter(args[2].toLowerCase());
+          sharedIceCreamName = capitalizeFirstLetter(args[2]?.toLowerCase());
 
           if (!playerShop.flavors.some(flavour => flavour.name === sharedIceCreamName && flavour.items > 0)) {
             return await handleMessage(context,
@@ -290,7 +290,7 @@ export default {
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
-          const targetUser = message.mentions.users.first();
+          const targetUser = context.mentions.users.first();
           if (!targetUser) {
             return await handleMessage(context, "👥 Please mention a user to share your ice cream with.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }

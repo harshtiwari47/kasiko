@@ -1,0 +1,186 @@
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  AttachmentBuilder,
+  ComponentType
+} from 'discord.js';
+import {
+  getUserData,
+  updateUser
+} from '../../../database.js';
+import {
+  discordUser
+} from '../../../helper.js';
+import {
+  createCanvas,
+  loadImage
+} from '@napi-rs/canvas';
+
+// Constants
+const CARD_COST = 10000; // cost per scratch card
+const MAX_WIN = 100000; // max cash win
+const MIN_WIN = 10000; // min cash win when non-zero
+const ZERO_PROB = 0.5; // 50% chance to win nothing
+const MAX_PROB = 0.05; // 5% chance to win MAX_WIN
+
+async function handleMessage(context, data) {
+  const isInteraction = !!context.isCommand;
+  if (isInteraction) {
+    if (!context.deferred) {
+      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  } else {
+    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  }
+}
+
+// Generate scratch result: 0, MAX_WIN, or random between MIN_WIN and MAX_WIN
+function getScratchResult() {
+  const r = Math.random();
+  if (r < ZERO_PROB) {
+    return 0;
+  } else if (r < ZERO_PROB + MAX_PROB) {
+    return MAX_WIN;
+  } else {
+    // random between MIN_WIN and MAX_WIN, excluding MAX_WIN
+    return Math.floor(Math.random() * (MAX_WIN - MIN_WIN)) + MIN_WIN;
+  }
+}
+
+// Generate a canvas image showing the scratch result
+async function generateScratchImage(amount) {
+  const width = 400;
+  const height = 200;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+
+  // Background
+  ctx.fillStyle = '#444';
+  ctx.fillRect(0, 0, width, height);
+
+  // Draw a scratch card shape
+  ctx.fillStyle = '#888';
+  ctx.fillRect(20, 20, width - 40, height - 40);
+
+  // Overlay text
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 28px Sans';
+  const text = amount > 0 ? `You won ${amount.toLocaleString()}!`: 'No Win';
+  const textMetrics = ctx.measureText(text);
+  const textX = (width - textMetrics.width) / 2;
+  const textY = height / 2 + 10;
+  ctx.fillText(text, textX, textY);
+
+  // Return buffer
+  return canvas.encode('png');
+}
+
+export default {
+  name: 'scratch',
+  description: 'Buy or scratch cash-only scratch cards.',
+  emoji: '<:scratch_card:1382990344186105911>',
+  category: '🛍️ Shop',
+  cooldown: 10000,
+  execute: async (args, context) => {
+    args.shift();
+
+    try {
+      const {
+        id,
+        name
+      } = discordUser(context);
+      const userData = await getUserData(id);
+      if (!userData) {
+        return await handleMessage(context, {
+          content: `⚠️ ${name}, could not retrieve your data.`
+        });
+      }
+
+      // Initialize scratch count if missing
+      if (typeof userData.scratchs !== 'number') {
+        userData.scratchs = 0;
+      }
+
+      // Subcommand: scratch
+      if (args.length === 0) {
+        const embed = new EmbedBuilder()
+        .setTitle('<:scratch_card:1382990344186105911> Scratch Card Result')
+        .setDescription(`- To use a scratch card, command \`scratch card\``)
+        .addFields(
+          {
+            name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData.scratchs}`, inline: true
+          },
+          {
+            name: '<:kasiko_coin:1300141236841086977> Current Cash', value: `${userData.cash.toLocaleString()}`, inline: true
+          }
+        );
+      }
+
+      if (args[0] === "card") {
+        if (userData.scratchs <= 0) {
+          return await handleMessage(context, {
+            content: `**${name}**, you have no scratch cards.\n<:scratch_card:1382990344186105911> **Scratch Cards**: 0\n\n-# ❔ **Buy one with:**\n-# \`buy scratch <amount>\`\n\n-# ❔ **To use a card:**\n-# \`use scratch\``
+          });
+        }
+        // Use one card
+        userData.scratchs -= 1;
+        // Determine result
+        const result = getScratchResult();
+        if (result > 0) {
+          userData.cash += result;
+        }
+        await updateUser(id, userData);
+
+        // Generate image
+        let buffer;
+        try {
+          buffer = await generateScratchImage(result);
+        } catch (e) {
+          console.error('Canvas error:', e);
+        }
+
+        // Build embed
+        const embed = new EmbedBuilder()
+        .setTitle('<:scratch_card:1382990344186105911> Scratch Card Result')
+        .setDescription(result > 0
+          ? `Congratulations, ${name}! You won <:kasiko_coin:1300141236841086977> **${result.toLocaleString()}**.`: `Sorry, ${name}, no win this time.`)
+        .addFields(
+          {
+            name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData.scratchs}`, inline: true
+          },
+          {
+            name: '<:kasiko_coin:1300141236841086977> Current Cash', value: `${userData.cash.toLocaleString()}`, inline: true
+          }
+        );
+
+        const files = [];
+        if (buffer) {
+          const attachment = new AttachmentBuilder(buffer, {
+            name: 'scratch.png'
+          });
+          files.push(attachment);
+          embed.setImage('attachment://scratch.png');
+        }
+
+        return await handleMessage(context, {
+          embeds: [embed], files
+        });
+      }
+
+      // Unknown subcommand
+      return await handleMessage(context, {
+        content: `❓ ${name}, invalid usage. Use:
+        • \` buy scratch <number> \` to buy cards (cost <:kasiko_coin:1300141236841086977> ${CARD_COST} each).
+        • \`scratch card\` to scratch a card.`
+      });
+    } catch (e) {
+      console.error('Error in scratch command:', e);
+      return await handleMessage(context, {
+        content: `⚠️ Oops, something went wrong in scratch command.`
+      });
+    }
+  }
+};

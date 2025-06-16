@@ -5,6 +5,8 @@ import {
 
 import User from "../models/User.js";
 
+import redisClient from "../redis.js";
+
 import {
   AttachmentBuilder
 } from 'discord.js'; // Import AttachmentBuilder from discord.js
@@ -76,72 +78,116 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
 
 export async function updateExpPoints(content, user, channel, guildId, prefix) {
   try {
-    const userData = await getUserData(user.id);
-    if (!userData) return;
-
-    userData.exp += 10;
-    if (prefix && content.includes(prefix)) userData.exp += 10;
-
-    let threshold = 100;
-    let lvl = Math.floor(Math.sqrt(userData.exp / threshold)) || 0;
-    let lvlUpReward = 10;
-    let lvlUp = false;
-
-    if (lvl > userData.level) {
-      userData.level = lvl;
-      lvlUpReward = 2000 + userData.level * 1250;
-      userData.cash += lvlUpReward;
-      lvlUp = true;
+    const userId = user.id.toString();
+    const redisKey = `xp:${userId}`;
+    let dataRaw = await redisClient.get(redisKey);
+    let userData;
+    if (dataRaw) {
+      try {
+        userData = JSON.parse(dataRaw);
+      } catch (e) {
+        userData = null;
+      }
+    }
+    if (!userData) {
+      const dbData = await getUserData(userId);
+      if (dbData) {
+        userData = {
+          exp: Number(dbData.exp) || 0,
+          level: Number(dbData.level) || 0,
+          count: 0
+        };
+      } else {
+        userData = {
+          exp: 0,
+          level: 0,
+          count: 0
+        };
+      }
     }
 
-    // Calculate experience required for the next level
-    const expRequiredNextLvl = (Math.pow(lvl + 1, 2) * threshold) - Number(userData.exp);
+    let gain = 10;
+    if (prefix && content.includes(prefix)) gain += 10;
+    userData.exp += gain;
 
-    try {
-      const updateQuery = {
-        $set: {
+    //  Increment command count
+    userData.count = (userData.count || 0) + 1;
+
+    //  Check for level-up
+    const threshold = 100;
+    const newLevel = Math.floor(Math.sqrt(userData.exp / threshold)) || 0;
+    let lvlUp = false;
+    let lvlUpReward = 0;
+    if (newLevel > userData.level) {
+      lvlUp = true;
+      lvlUpReward = 2000 + newLevel * 1250;
+      userData.level = newLevel;
+    }
+
+    // Decide whether to flush to DB: every 10 commands or on level-up
+    if (lvlUp || userData.count >= 10) {
+      try {
+
+        // If level-up reward, increment cash in DB
+        if (lvlUp && lvlUpReward) {
+          await User.findOneAndUpdate(
+            {
+              id: userId
+            },
+            {
+              $inc: {
+                cash: lvlUpReward
+              }
+            }
+          );
+        }
+
+        // Update exp and level
+        await updateUser(userId, {
           exp: userData.exp,
           level: userData.level
-        },
-        ...(lvlUp && {
-          $inc: {
-            cash: lvlUpReward
-          }
-        })
-      };
-
-      await updateUser(user.id, {
-        exp: userData.exp,
-        level: userData.level
-      });
-
-      if (lvlUp) {
-        await User.findOneAndUpdate({
-          id: user.id
-        }, updateQuery);
-      }
-
-    } catch (err) {
-      console.error(err)
-    }
-
-    if (lvlUp) {
-      const attachment = await generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, user.displayAvatarURL({
-        dynamic: true
-      }));
-
-      // Send the image as an attachment
-      if (attachment) {
-        await channel.send({
-          content: `𓇼 **${user.username}**, congratulations! You've leveled up! 🎉`,
-          files: [attachment]
         });
-        return;
+      } catch (dbErr) {
+        console.error('Error flushing XP/level to DB:', dbErr);
       }
+      userData.count = 0;
     }
 
-    return;
-  } catch (e) {
-    console.error(e);
+    //  Save back to Redis with 6-hour TTL
+    // Store JSON including exp, level, count
+    // TTL: 6 hours = 6 * 3600 = 21600 seconds
+    try {
+      await redisClient.set(redisKey, JSON.stringify(userData), {
+        EX: 6 * 3600
+      });
+    } catch (rErr) {
+      console.error('Error saving to Redis:', rErr);
+    }
+
+    // If level-up, generate & send image
+    if (lvlUp) {
+      const expRequiredNextLvl = (Math.pow(newLevel + 1, 2) * threshold) - userData.exp;
+      try {
+        const attachment = await generateLevelUpImage(
+          user,
+          lvlUpReward,
+          newLevel,
+          expRequiredNextLvl,
+          user.displayAvatarURL({
+            dynamic: true
+          })
+        );
+        if (attachment) {
+          await channel.send({
+            content: `𓇼 **${user.username}**, congratulations! You've leveled up to **${newLevel}**! 🎉`,
+            files: [attachment]
+          });
+        }
+      } catch (imgErr) {
+        console.error('Error generating/sending level-up image:', imgErr);
+      }
+    }
+  } catch (err) {
+    console.error('Error in updateExpPoints:', err);
   }
 }

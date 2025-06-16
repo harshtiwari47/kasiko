@@ -152,7 +152,7 @@ export async function joinHorizonBattle(context, userId, code) {
     return handleMessage(context, `🤨 **${name}**, you're already part of this battle.`);
   }
 
-  const userData = await getUserDataDragon(playerId);
+  const userData = await getUserDataDragon(userId);
 
   if (!userData?.dragons) userData.dragons = []
 
@@ -192,7 +192,7 @@ export async function joinHorizonBattle(context, userId, code) {
   }
 
   const playerData = {
-    playerId,
+    playerId: userId,
     totalDamage: 0,
     totalHealing: 0,
     currentDragon: {

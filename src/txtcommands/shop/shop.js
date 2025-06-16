@@ -2,21 +2,20 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+  InteractionType
 } from 'discord.js';
 import {
   getUserData,
-  updateUser,
-  getShopData,
-  updateShop,
-  readShopData,
-  writeShopData
+  updateUser
 } from '../../../database.js';
-
 import {
-  Helper
+  discordUser,
+  handleMessage
 } from '../../../helper.js';
-
 import {
   Car
 } from './cars.js';
@@ -27,167 +26,170 @@ import {
   JEWELRY
 } from './jewelry.js';
 
-export async function buyRoses(amount, message) {
-  try {
-    const userId = message.author.id;
-    let userData = await getUserData(userId);
-    const rosesAmount = amount * 2500;
+import {
+  client
+} from '../../../bot.js';
 
+import {
+  ALLITEMS
+} from "./shopIDs.js";
 
-    if (userData.cash >= rosesAmount) {
+import {
+  sellCommand as SellAnimal
+} from "../wildlife/sellCommand.js";
 
-      userData.cash -= rosesAmount;
-      userData.roses += amount;
+async function viewShop(context) {
+  const {
+    id: discordId,
+    username,
+    name
+  } = discordUser(context);
 
-      await updateUser(message.author.id, userData);
-      return message.channel.send(`**${message.author.username}** bought **${amount}** <:rose:1343097565738172488> for <:kasiko_coin:1300141236841086977>**${rosesAmount}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } else {
-      return message.channel.send(`⚠️ **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to purchase a <:rose:1343097565738172488>. You need <:kasiko_coin:1300141236841086977> ${rosesAmount} 𝑪𝒂𝒔𝒉`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } catch(e) {
-    console.error(e);
-    message.channel.send("⚠️ Something went wrong while buying rose(s).").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  // Send initial embed with buttons
+  const embed = new EmbedBuilder()
+  .setTitle('<:cart:1355034533061460060> 𝗦𝗛𝗢𝗣 𝗠𝗘𝗡𝗨')
+  .setDescription('Select a category below to view or purchase items.')
+  .setImage('https://harshtiwari47.github.io/kasiko-public/images/shop-items.jpg')
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+    .setCustomId(`shop_cars_${discordId}`)
+    .setLabel('Cars')
+    .setEmoji('1300487311758196837')
+    .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+    .setCustomId(`shop_structures_${discordId}`)
+    .setLabel('Structures')
+    .setEmoji('1383712823443591308')
+    .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+    .setCustomId(`shop_jewelry_${discordId}`)
+    .setLabel('Jewelry')
+    .setEmoji('1324632393121796106')
+    .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+    .setCustomId(`shop_roses_${discordId}`)
+    .setLabel('Roses')
+    .setEmoji('1343097565738172488')
+    .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+    .setCustomId(`shop_scratch_${discordId}`)
+    .setLabel('Scratch')
+    .setEmoji('1382990344186105911')
+    .setStyle(ButtonStyle.Primary)
+  );
+
+  let messageSent;
+
+  if (!!context.isCommand) {
+    if (context.replied) return;
+    messageSent = await context.editReply({
+      embeds: [embed],
+      components: [row]
+    })
+    .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  } else {
+    messageSent = await handleMessage(context, {
+      embeds: [embed],
+      components: [row]
+    })
+    .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
+
+  const collector = messageSent.createMessageComponentCollector({
+    time: 180000
+  });
+
+  collector.on('collect', async (interaction) => {
+    if (interaction.isButton()) {
+      const [action,
+        category,
+        userId] = interaction.customId.split('_');
+      if (userId !== interaction.user.id) {
+        return interaction.reply({
+          content: "⚠️ You cannot interact with someone else's shop menu.", ephemeral: true
+        });
+      }
+      switch (category) {
+        case 'cars':
+          await interaction.deferReply({
+            ephemeral: false
+          });
+          // Show paginated cars; adapt sendPaginatedCars to accept interaction
+          return Car.sendPaginatedCars(interaction);
+        case 'structures':
+          await interaction.deferReply({
+            ephemeral: false
+          });
+          return Structure.sendPaginatedStructures(interaction);
+
+        case 'jewelry':
+          await interaction.deferReply({
+            ephemeral: false
+          });
+          return JEWELRY.sendPaginatedJewelry(interaction);
+
+        case 'roses':
+          // Show modal to input amount of roses
+          const modalRoses = new ModalBuilder()
+          .setCustomId(`shop_modal_roses_${interaction.user.id}`)
+          .setTitle('Buy Roses');
+          const inputRoses = new TextInputBuilder()
+          .setCustomId('roses_amount')
+          .setLabel('Quantity of Roses')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Enter number of roses')
+          .setRequired(true);
+          modalRoses.addComponents(
+            new ActionRowBuilder().addComponents(inputRoses)
+          );
+          return interaction.showModal(modalRoses);
+        case 'scratch':
+          // Show modal to input amount of scratch cards
+          const modalScratch = new ModalBuilder()
+          .setCustomId(`shop_modal_scratch_${interaction.user.id}`)
+          .setTitle('Buy Scratch Cards');
+          const inputScratch = new TextInputBuilder()
+          .setCustomId('scratch_amount')
+          .setLabel('Quantity of Scratch Cards')
+          .setStyle(TextInputStyle.Short)
+          .setPlaceholder('Enter number of scratch cards')
+          .setRequired(true);
+          modalScratch.addComponents(
+            new ActionRowBuilder().addComponents(inputScratch)
+          );
+          return interaction.showModal(modalScratch);
+        default:
+          return;
+      }
+    }
+  });
 }
 
 
 export default {
-  name: "shop",
-  description: "View and purchase items in the shop (cars, structures, roses, jewelry, etc.).",
-  aliases: ["store",
-    "market",
-    "buy",
-    "sell"],
-  args: "<category> [parameters]",
-  example: [
-    "shop car",
-    // Show available cars in the shop
-    "shop structure/house/building",
-    // Show available structures in the shop
-    "shop jewelry",
-    // Show available jewelry in the shop
-    "buy car <car_id>",
-    // Buy a specific car
-    "buy structure <structure_id>",
-    // Buy a specific structure
-    "buy jewelry <jewelry_id>",
-    // Buy a specific jewelry item
-    "buy roses <amount>",
-    // Buy roses
-    "sell car <car_id>",
-    // Sell a specific car
-    "sell structure <structure_id>",
-    // Sell a specific structure
-    "sell jewelry <jewelry_id>"
-    // Sell a specific jewelry item
-  ],
-  emoji: "🏬",
-  related: ["cars",
-    "structures",
-    "jewelry",
-    "roses", "rose",
-    "buy",
-    "sell"],
-  cooldown: 8000,
-  category: "🛍️ Shop",
+  name: 'shop',
+  description: 'View and purchase items in the shop via buttons or text commands.',
+  aliases: ['store',
+    'market'],
+  args: '[category]',
+  emoji: '🏬',
+  category: '🛍️ Shop',
+  cooldown: 10000,
 
-  execute: (args, message) => {
+  async execute(args,
+    context) {
+
     const category = args[1] ? args[1].toLowerCase(): null;
     const itemId = args[2] ? args[2].toLowerCase(): null;
-
-    // Handle "buy" and "sell" commands
-    if (args[0].toLowerCase() !== "shop" && (args[0].toLowerCase() === "buy" || args[0].toLowerCase() === "sell")) {
-      // BUY logic
-      if (args[0].toLowerCase() === "buy") {
-        if (args[1] && itemId) {
-          switch (args[1].toLowerCase()) {
-          case "car":
-            return Car.buycar(message, itemId);
-
-          case "structure":
-          case "building":
-          case "house":
-            return Structure.buystructure(message, itemId);
-
-          case "jewelry":
-          case "jewellery":
-          case "rings":
-          case "ring":
-          case "necklace":
-          case "watches":
-          case "watch":
-          case "strips":
-            return JEWELRY.buyJewelryItem(message, itemId);
-
-          case "roses":
-          case "rose":
-            // If no amount is provided, set a default of 1
-            if (!args[2]) args[2] = 1;
-            if (Helper.isNumber(args[2])) {
-              const amount = parseInt(args[2]);
-              if (amount > 0) {
-                return buyRoses(amount, message);
-              } else {
-                return message.channel.send("⚠️ Please specify a valid number of roses to buy.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-              }
-            } else {
-              return message.channel.send("⚠️ Please specify a valid amount of roses to buy.\nExample: `buy roses <amount>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-            }
-
-          default:
-            return message.channel.send("## ⚠️ Invalid category.\nPlease specify one of:\n`car`, `structure`, `jewelry`, or `roses`.\n**Example:** `buy car <id>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-        } else {
-          return message.channel.send("## ⚠ Invalid Purchase Request!\nExample: `buy car <id>` or `buy roses <amount>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-      }
-
-      // SELL logic
-      if (args[0].toLowerCase() === "sell") {
-        if (args[1] && itemId) {
-          switch (args[1].toLowerCase()) {
-          case "car":
-            return Car.sellcar(message, itemId);
-
-          case "structure":
-          case "building":
-          case "house":
-            return Structure.sellstructure(message, itemId);
-
-          case "jewelry":
-          case "jewellery":
-          case "rings":
-          case "ring":
-          case "necklace":
-          case "watches":
-          case "watch":
-          case "strips":
-            return JEWELRY.sellJewelryItem(message, itemId);
-
-          default:
-            return message.channel.send("## ⚠ 𝙄𝙣𝙫𝙖𝙡𝙞𝙙 𝘾𝙖𝙩𝙚𝙜𝙤𝙧𝙮!\nPlease specify one of:\n`car`, `structure`, or `jewelry`.\n**Example:** `sell car <id>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-        } else {
-          return message.channel.send({
-            content: "## ⚠ **Invalid Sell Request!**\n\n" +
-            "**Example Usage:**\n" +
-            "- `sell car <id>`\n" +
-            "- `sell jewelry <id>`\n\n" +
-            "-# ⓘ  Use `shop` for more details."
-          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-      }
-
-      // If command not recognized
-      return message.channel.send("⚠️ Please use a valid command!\n`kas buy/sell <category> <itemId/amount>`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
 
     // Handle "shop" categories (viewing items)
     switch (category) {
     case "cr":
     case "car":
     case "cars":
-      return Car.sendPaginatedCars(message);
+      return Car.sendPaginatedCars(context);
+      break;
 
     case "jewelry":
     case "jewellery":
@@ -197,54 +199,154 @@ export default {
     case "watches":
     case "watch":
     case "strips":
-      return JEWELRY.sendPaginatedJewelry(message);
+      return JEWELRY.sendPaginatedJewelry(context);
+      break;
 
     case "structure":
     case "building":
     case "house":
-      return Structure.sendPaginatedStructures(message);
-
-      // Default: Send an embed with instructions
-    default: {
-        const embed = new EmbedBuilder()
-        .setTitle("<:cart:1355034533061460060> SHOP COMMANDS")
-        .setDescription("-# Browse and trade various items.")
-        .addFields(
-          {
-            name: "❔ View Items",
-            value: `**\`\`\`xml` +
-            `\n<\n⪩ shop car` +
-            `\n⪩ shop structure` +
-            `\n⪩ shop jewelry` +
-            `\n>\`\`\`**`,
-            inline: false
-          },
-          {
-            name: "❔ How to Buy",
-            value: `**\`\`\`xml` +
-            `\n⪩ buy car <car_id>` +
-            `\n⪩ buy structure <structure_id>` +
-            `\n⪩ buy jewelry <jewelry_id>` +
-            `\n⪩ buy roses <amount>\`\`\`**`,
-            inline: false
-          },
-          {
-            name: "❔ How to Sell",
-            value: `**\`\`\`xml` +
-            `\n⪩ sell car <car_id>\n` +
-            `⪩ sell structure <structure_id>\n` +
-            `⪩ sell jewelry <jewelry_id>\`\`\`**`,
-            inline: false
-          }
-        )
-        .setFooter({
-          text: "𝖧𝖺𝗉𝗉𝗒 𝗌𝗁𝗈𝗉𝗉𝗂𝗇𝗀!"
-        });
-
-        return message.channel.send({
-          embeds: [embed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
+      return Structure.sendPaginatedStructures(context);
+      break;
     }
+
+    const shopGuideembed = new EmbedBuilder()
+    .setTitle("<:cart:1355034533061460060> SHOP COMMANDS")
+    .setDescription("-# Browse and trade various items.")
+    .addFields(
+      {
+        name: "❔ View Items",
+        value: `**\`\`\`xml` +
+        `\n<\n⪩ shop car` +
+        `\n⪩ shop structure` +
+        `\n⪩ shop jewelry` +
+        `\n>\`\`\`**`,
+        inline: false
+      },
+      {
+        name: "❔ How to Buy",
+        value: `**\`\`\`xml` +
+        `\n⪩ buy car <car_id>` +
+        `\n⪩ buy structure <structure_id>` +
+        `\n⪩ buy jewelry <jewelry_id>` +
+        `\n⪩ buy roses <amount>` +
+        `\n⪩ buy scratch <amount>\`\`\`**`,
+        inline: false
+      },
+      {
+        name: "❔ How to Sell",
+        value: `**\`\`\`xml` +
+        `\n⪩ sell car <car_id>\n` +
+        `⪩ sell structure <structure_id>\n` +
+        `⪩ sell jewelry <jewelry_id>\`\`\`**`,
+        inline: false
+      }
+    )
+    .setFooter({
+      text: "𝖧𝖺𝗉𝗉𝗒 𝗌𝗁𝗈𝗉𝗉𝗂𝗇𝗀!"
+    });
+
+    const rowGuide = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+      .setCustomId(`shop_view`)
+      .setLabel('VIEW SHOP')
+      .setEmoji('1355034533061460060')
+      .setStyle(ButtonStyle.Primary)
+    )
+
+    const shopGuideSent = await handleMessage(context,
+      {
+        embeds: [shopGuideembed],
+        components: [rowGuide]
+      }).catch(err => ![50001,
+        50013,
+        10008].includes(err.code) && console.error(err));
+
+    const collectorGuide = shopGuideSent.createMessageComponentCollector({
+      time: 180000
+    });
+
+    collectorGuide.on('collect',
+      async (interaction) => {
+        if (interaction.customId.includes('shop_view')) {
+          await interaction.deferUpdate();
+          return viewShop(interaction)
+        }
+      });
   }
 };
+
+client.on('interactionCreate', async (interaction) => {
+  if (interaction.type === InteractionType.ModalSubmit && interaction.customId.includes("shop_modal")) {
+    try {
+      const [_,
+        __,
+        type,
+        userId] = interaction.customId.split('_');
+      if (userId !== interaction.user.id) {
+        return await handleMessage(interaction, {
+          content: "⚠️ Invalid interaction.", ephemeral: true
+        });
+      }
+      const {
+        id: discordId,
+        username,
+        name
+      } = discordUser(interaction);
+
+      if (!interaction.deferred) {
+        await interaction.deferReply();
+      }
+
+      const userData = await getUserData(discordId);
+      if (type === 'roses') {
+        const amountStr = interaction.fields.getTextInputValue('roses_amount');
+        const amount = parseInt(amountStr, 10);
+        if (isNaN(amount) || amount <= 0) {
+          return await handleMessage(interaction, {
+            content: '⚠️ Please enter a valid positive number.', ephemeral: true
+          });
+        }
+        const cost = amount * 2500;
+        if (userData.cash < cost) {
+          return await handleMessage(interaction, {
+            content: `⚠️ You need ${cost} Cash to buy ${amount} rose(s).`, ephemeral: true
+          });
+        }
+        userData.cash -= cost;
+        userData.roses = (userData.roses || 0) + amount;
+        await updateUser(discordId, {
+          cash: userData.cash, roses: userData.roses
+        });
+        return await handleMessage(interaction, {
+          content: `**${name}** bought **${amount}** <:rose:1343097565738172488> for <:kasiko_coin:1300141236841086977>**${cost}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`, ephemeral: true
+        });
+      } else if (type === 'scratch') {
+        const amountStr = interaction.fields.getTextInputValue('scratch_amount');
+        const amount = parseInt(amountStr, 10);
+
+        if (isNaN(amount) || amount <= 0) {
+          return await handleMessage(interaction, {
+            content: '⚠️ Please enter a valid positive number.', ephemeral: true
+          });
+        }
+        const CARD_COST = 10000;
+        const totalCost = amount * CARD_COST;
+        if (userData.cash < totalCost) {
+          return await handleMessage(interaction, {
+            content: `⚠️ You need ${totalCost.toLocaleString()} Cash to buy ${amount} scratch card(s).`, ephemeral: true
+          });
+        }
+
+        userData.cash -= totalCost;
+        userData.scratchs = (userData.scratchs || 0) + amount;
+        await updateUser(discordId, {
+          cash: userData.cash, scratchs: userData.scratchs
+        });
+
+        return await handleMessage(interaction, {
+          embeds: [new EmbedBuilder().setDescription(`## <:scratch_card:1382990344186105911> 𝗦𝗖𝗥𝗔𝗧𝗖𝗛 𝗖𝗔𝗥𝗗𝗦 𝗣𝗨𝗥𝗖𝗛𝗔𝗦𝗘𝗗\n\n` + `> 🍾 **${name.toUpperCase()}**, you bought **${amount} scratch card${amount > 1 ? "s": ""}** for <:kasiko_coin:1300141236841086977> **${totalCost.toLocaleString()}**. You now have **${userData.scratchs}** scratch card${userData.scratchs > 1 ? "s": ""}.\n\n-# ❔ **HOW TO SCRATCH**\n-#  \` scratch card \`\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)]
+        });
+      }
+    } catch (err) {}
+  }
+});

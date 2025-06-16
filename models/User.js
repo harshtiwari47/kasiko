@@ -242,6 +242,10 @@ const userSchema = new mongoose.Schema({
     seasonalPasses: {
       type: Array,
     default: []
+    },
+    scratchs: {
+      type: Number,
+      default: 0
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

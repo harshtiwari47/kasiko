@@ -86,7 +86,7 @@ async function startGarden(userId, username) {
     if (days) timeString += `${days} day${days > 1 ? 's': ''} `;
     if (hours) timeString += `${hours} hour${hours > 1 ? 's': ''} `;
     if (minutes) timeString += `${minutes} minute${minutes > 1 ? 's': ''}`;
-    return `<:garden:1367918916067921930> **${username}**, 𝑦𝑜𝑢𝑟 𝑔𝑎𝑟𝑑𝑒𝑛 𝑖𝑠 𝑎𝑙𝑟𝑒𝑎𝑑𝑦 𝑎𝑐𝑡𝑖𝑣𝑒! (𝖲𝗍𝖺𝗋𝗍𝖾𝖽 ***${timeString}*** 𝖺𝗀𝗈)`;
+    return `<:garden:1367918916067921930> **${username}**, 𝑦𝑜𝑢𝑟 𝑔𝑎𝑟𝑑𝑒𝑛 𝑖𝑠 𝑎𝑙𝑟𝑒𝑎𝑑𝑦 𝑎𝑐𝑡𝑖𝑣𝑒! (𝖲𝗍𝖺𝗋𝗍𝖾𝖽 ***${timeString || "few seconds"}*** 𝖺𝗀𝗈)`;
   }
 
   // Create or reset the garden’s start time
@@ -199,7 +199,7 @@ async function collectFlowers(userId, username) {
 /**
 * Exchange all flowers in storage for cash.
 */
-async function exchangeFlowers(userId, username) {
+export async function exchangeFlowers(userId, username) {
   try {
     const userGarden = await Garden.findOne({
       userId
@@ -541,7 +541,7 @@ export default {
             value:
             `\`garden\` - View status/start\n` +
             `\`garden collect\` - Harvest flowers (10min cooldown)\n` +
-            `\`garden exchange\` - Sell flowers for 𝒄𝒂𝒔𝒉\n` +
+            `\`garden exchange\` || \` sell flowers \`- Sell flowers for 𝒄𝒂𝒔𝒉\n` +
             `\`garden upgrade\` - Increase capacity (Cost: <:kasiko_coin:1300141236841086977> 5000 × level)\n` +
             `\`garden water\` - +50% next harvest (6hr cooldown)\n` +
             `\`garden share @user flower amount\` - Gift flowers`

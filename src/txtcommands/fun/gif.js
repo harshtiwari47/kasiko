@@ -33,6 +33,10 @@ export default {
         embed.setImage(`https://media.discordapp.net/attachments/1346413292242866208/1346415094879228016/ezgif-3e203e0cace377.gif?ex=67c81a45&is=67c6c8c5&hm=5345d667c54c9cbff6d6656be138fe1ecc0f3bc6d4223c563d4f5219724b8f7f&`);
       }
 
+      if (keyword === "bye") {
+        embed.setImage(`https://cdn.discordapp.com/attachments/1346413292242866208/1384134036922044438/ezgif-88d428092355f8.gif?ex=685152c6&is=68500146&hm=e8bfaf534dc85e7346b0f9bdefeac5584a6fc33ac5a30c9574cf00aca9b93a56&`);
+      }
+
       await message.channel.send({
         embeds: [embed]
       })

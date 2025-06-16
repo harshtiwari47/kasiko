@@ -158,6 +158,7 @@ export async function sendPaginatedStructures(context) {
 
       // Re-edit the original message
       await messageSent.edit({
+        content: '',
         embeds: newStructureEmbed,
         components: [buttons]
       });
@@ -430,6 +431,7 @@ export async function buystructure(context, structureId) {
 
     return handleMessage(context,
       {
+        content: '',
         embeds: [embed]
       });
   } catch (e) {

@@ -14,7 +14,8 @@ import {
 } from '../../../database.js';
 
 import {
-  Helper
+  Helper,
+  handleMessage
 } from '../../../helper.js';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -24,23 +25,6 @@ import {
 } from "../explore/pass.js";
 
 const APPTOKEN = process.env.APP_ID;
-
-// A universal function for sending responses both to text commands and slash commands.
-// If it's an interaction (slash command), it will defer/edit reply.
-// If it's a text command, it will just channel.send().
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
-  if (isInteraction) {
-    // If not already deferred, defer it.
-    if (!context.replied && !context.deferred) {
-      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else {
-    // For normal text-based usage
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
 
 const items = readShopData();
 const carItems = Object.values(items).filter(item => item.type === "car");
@@ -158,9 +142,10 @@ export async function sendPaginatedCars(context) {
 
       // Re-render the embed with updated pagination
       await messageSent.edit({
+        content: '',
         embeds: newCarEmbed,
         components: [buttons],
-      });
+      })
     });
 
     collector.on("end",
@@ -432,6 +417,7 @@ export async function buycar(context, carId) {
 
     return handleMessage(context,
       {
+        content: '',
         embeds: [embed]
       });
   } catch (e) {

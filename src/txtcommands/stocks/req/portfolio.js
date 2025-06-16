@@ -280,8 +280,6 @@ client.on('interactionCreate', async (interaction) => {
       if (customData.action === 'companySell-modal') {
         await handleNumberInput(interaction, customData.name);
       }
-    } catch (e) {
-      console.error("Modal submission error:", e);
-    }
+    } catch (e) {}
   }
 });
