@@ -43,9 +43,6 @@ import {
   handleSlashCommand
 } from './src/slashCommandHandler.js';
 import {
-  handleButtonInteraction
-} from './interactions/buttonHandler.js';
-import {
   createUser,
   userExists
 } from './database.js';
@@ -362,7 +359,6 @@ client.on('interactionCreate', async (interaction) => {
   // Button Interaction Handling
   if (interaction.isButton()) {
     try {
-      await handleButtonInteraction(interaction, client);
     } catch (error) {
       console.error(error);
     }
