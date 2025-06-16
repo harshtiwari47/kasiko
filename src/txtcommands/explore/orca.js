@@ -402,7 +402,7 @@ export default {
   description: 'Hunt, Claim, and Pray for the Legendary Orca in quest.',
   aliases: ['orcahunt'],
   args: '',
-  emoji: "🐬",
+  emoji: "<:orca:1313094374921605172>",
   example: [],
   cooldown: 10000, // 10 seconds cooldown
   category: '🍬 Explore',

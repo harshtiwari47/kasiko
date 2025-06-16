@@ -225,4 +225,7 @@ export const ALLITEMS = [{
   {
     id: "flowers",
     category: "flowers"
+  }, {
+    id: "scratch",
+    category: "scratch"
   }];

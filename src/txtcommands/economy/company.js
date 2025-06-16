@@ -37,7 +37,7 @@ export default {
     "company ipo"
   ],
   related: ["stocks"],
-  emoji: "🏢",
+  emoji: "<:company:1363405037552009427>",
   cooldown: 10000,
   category: "🏦 Economy",
 

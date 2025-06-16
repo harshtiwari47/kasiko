@@ -24,18 +24,22 @@ async function handleMessage(context, data) {
 }
 
 /**
-* Show general cage info: display only the emojis of the user's animals.
+* Show general cage info: display only the emojis of the user's animals,
+* plus an embed field for exclusive species.
 */
 async function showCageOverview(context, user) {
   const username = context.user?.username || context.author?.username;
 
   if (!user.hunt.animals || (user.hunt.animals && user.hunt.animals.length === 0)) {
     return handleMessage(context, {
-      embeds: [new EmbedBuilder().setDescription(`🍃 **${username}**, your cage is currently empty! Try using the **hunt** command first.`)]
+      embeds: [
+        new EmbedBuilder()
+        .setDescription(`<:forest_tree:1354366758596776070> **${username}**, your cage is currently empty! Try using the **hunt** command first.`)
+      ]
     });
   }
 
-  // Just display the emojis of each animal
+  // Helper to convert a number to subscript digits
   const subscriptNumbers = {
     '0': '₀',
     '1': '₁',
@@ -48,19 +52,44 @@ async function showCageOverview(context, user) {
     '8': '₈',
     '9': '₉'
   };
+  const toSubscript = (num) =>
+  num.toString().split('').map(digit => subscriptNumbers[digit] || digit).join('');
 
-  const toSubscript = (num) => num.toString().split('').map(digit => subscriptNumbers[digit] || digit).join('');
-
+  // All animal emojis with counts
   const animalEmojis = user.hunt.animals
-  .map((animal) => `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
+  .map(animal => `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
   .join(' ');
+
+  // Filter for exclusive species
+  const exclusiveAnimals = user.hunt.animals.filter(animal => animal.type === 'exclusive');
+  let exclusiveEmojis = '';
+  if (exclusiveAnimals.length > 0) {
+    exclusiveEmojis = exclusiveAnimals
+    .map(animal => `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
+    .join(' ');
+  }
 
   const embed = new EmbedBuilder()
   .setTitle(`**${username.toUpperCase()}**'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 <:forest_tree:1354366758596776070>`)
-  .setDescription(`<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799> 𝘓𝘝𝘓: ${user.globalLevel}\n## ${animalEmojis}`)
+  .setDescription(
+    `<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799> 𝘓𝘝𝘓: ${user.globalLevel}\n## ${animalEmojis}`
+  )
   .setFooter({
-    text: `Tip: use "cage <name>" for details, "sellanimal <name>" to sell.`
+    text: `Tip: use "cage <name>" for details, "sell <name> <amount>" to sell.`
   });
+
+  // Add "EXCLUSIVE SPECIES" field if any exist, otherwise you can choose to omit or show 'None'
+  if (exclusiveAnimals.length > 0) {
+    embed.addFields({
+      name: '<:exclusive:1347533975840882708> EXCLUSIVE SPECIES',
+      value: exclusiveEmojis
+    });
+  } else {
+    embed.addFields({
+      name: '<:exclusive:1347533975840882708> EXCLUSIVE SPECIES',
+      value: 'ᴜɴʟᴏᴄᴋ ᴛʜᴇᴍ ᴛʜʀᴏᴜɢʜ ᴛʜᴇ ᴋᴀꜱɪᴋᴏ ᴘᴀꜱꜱ.'
+    });
+  }
 
   return handleMessage(context, {
     embeds: [embed]
@@ -178,7 +207,7 @@ export default {
   ],
   related: ["hunt",
     "profile"],
-  emoji: "🪶",
+  emoji: "<:Lion:1330380232095432835>",
   cooldown: 10000,
   // 10 seconds cooldown
   category: "🦌 Wildlife",

@@ -738,7 +738,7 @@ export default {
   aliases: ["aqua",
     "aq"],
   args: "<action> <animal> <amount>",
-  emoji: "🐚",
+  emoji: "<:Betta:1326125169571401758>",
   example: [
     "aquarium collect",
     "aquarium add <animal>",

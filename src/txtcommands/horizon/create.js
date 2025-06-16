@@ -42,9 +42,6 @@ async function generateEditedImage(code) {
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'left';
 
-  // JOIN CODE : position
-  ctx.fillText(code, 280, 265);
-
   // HORIZON JOIN position
   ctx.fillText(code, 305, 345);
 

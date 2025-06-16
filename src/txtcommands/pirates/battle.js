@@ -116,7 +116,7 @@ export default {
   ],
   related: ["ships", "active", "stat",
     "profile"],
-  emoji: "⚓",
+  emoji: "<:ship8:1316615694996996096>",
   cooldown: 600000,
   category: "⚓ Pirates",
 

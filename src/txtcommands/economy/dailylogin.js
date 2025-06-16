@@ -119,7 +119,7 @@ export default {
   related: ["give",
     "cash",
     "profile"],
-  emoji: "⏳",
+  emoji: "<:gift:1350355327018729517>",
   cooldown: 86400000,
   category: "🏦 Economy",
 

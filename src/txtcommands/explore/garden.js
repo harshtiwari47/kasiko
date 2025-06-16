@@ -474,7 +474,7 @@ export default {
   description: "Manage your flower garden.",
   aliases: ["g"],
   example: ["graden help"],
-  emoji: "🎍",
+  emoji: "<:sunflower:1367919045977964554>",
   category: "🍬 Explore",
   cooldown: 10000,
   // seconds, if you want

@@ -865,7 +865,7 @@ export default {
     "zombies",
     "z"],
   cooldown: 90000,
-  emoji: "🧟",
+  emoji: "<:zombie:1366632304054632528>",
   example: ["zombie",
     "z",
     "zombie help"],

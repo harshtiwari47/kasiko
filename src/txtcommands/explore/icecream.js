@@ -145,7 +145,7 @@ export default {
     // leaderboard
     "ice daily" // Claim your daily bonus
   ],
-  emoji: "🍧",
+  emoji: "<:raspberry:1308428101843292160>",
   related: ["stat",
     "profile",
     "help",

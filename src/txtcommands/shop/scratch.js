@@ -19,10 +19,10 @@ import {
 } from '@napi-rs/canvas';
 
 // Constants
-const CARD_COST = 10000; // cost per scratch card
+const CARD_COST = 15000; // cost per scratch card
 const MAX_WIN = 100000; // max cash win
 const MIN_WIN = 10000; // min cash win when non-zero
-const ZERO_PROB = 0.5; // 50% chance to win nothing
+const ZERO_PROB = 0.7; // 50% chance to win nothing
 const MAX_PROB = 0.05; // 5% chance to win MAX_WIN
 
 async function handleMessage(context, data) {
@@ -68,7 +68,7 @@ async function generateScratchImage(amount) {
   // Overlay text
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 28px Sans';
-  const text = amount > 0 ? `You won ${amount.toLocaleString()}!`: 'No Win';
+  const text = amount > 0 ? `You won $${amount.toLocaleString()}!`: 'No Luck';
   const textMetrics = ctx.measureText(text);
   const textX = (width - textMetrics.width) / 2;
   const textY = height / 2 + 10;
@@ -117,6 +117,10 @@ export default {
             name: '<:kasiko_coin:1300141236841086977> Current Cash', value: `${userData.cash.toLocaleString()}`, inline: true
           }
         );
+
+        return await handleMessage(context, {
+          embeds: [embed]
+        });
       }
 
       if (args[0] === "card") {
@@ -144,7 +148,7 @@ export default {
 
         // Build embed
         const embed = new EmbedBuilder()
-        .setTitle('<:scratch_card:1382990344186105911> Scratch Card Result')
+        .setTitle('𝗦𝗖𝗥𝗔𝗧𝗖𝗛 𝗖𝗔𝗥𝗗 𝗥𝗘𝗦𝗨𝗟𝗧')
         .setDescription(result > 0
           ? `Congratulations, ${name}! You won <:kasiko_coin:1300141236841086977> **${result.toLocaleString()}**.`: `Sorry, ${name}, no win this time.`)
         .addFields(
@@ -172,14 +176,14 @@ export default {
 
       // Unknown subcommand
       return await handleMessage(context, {
-        content: `❓ ${name}, invalid usage. Use:
-        • \` buy scratch <number> \` to buy cards (cost <:kasiko_coin:1300141236841086977> ${CARD_COST} each).
-        • \`scratch card\` to scratch a card.`
+        content: `❓ ${name}, invalid usage. Use:\n`+
+        `• \` buy scratch <number> \` to buy cards (cost <:kasiko_coin:1300141236841086977> ${CARD_COST} each).` +
+        `• \`scratch card\` to scratch a card.`
       });
     } catch (e) {
       console.error('Error in scratch command:', e);
       return await handleMessage(context, {
-        content: `⚠️ Oops, something went wrong in scratch command.`
+        content: `<:warning:1366050875243757699> Oops, something went wrong in scratch command.`
       });
     }
   }

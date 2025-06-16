@@ -18,6 +18,13 @@ import {
   createUser
 } from "../database.js";
 
+import txtcommands from '../src/textCommandHandler.js';
+
+import {
+  loadSlashCommands,
+  handleSlashCommand
+} from '../src/slashCommandHandler.js';
+
 export const termsAndcondition = async (context) => {
   try {
     // Create the embed for Terms and Conditions
@@ -63,7 +70,7 @@ export const termsAndcondition = async (context) => {
       time: 60000 // Timeout after 60 seconds
     });
 
-    collector.on('collect', async (interaction) => {
+    collector.on('collect', async (interaction, args = null) => {
       try {
         if (interaction.customId === 'accept_terms') {
           await interaction.deferReply({
@@ -73,9 +80,9 @@ export const termsAndcondition = async (context) => {
           let user = await createUser(context.author ? context.author.id: context.user.id);
           if (user) {
             await interaction.editReply({
-              content: "<:emoji_35:1332676884093337603> **Thank you** for accepting the __Terms and Conditions__! 💐\n\n" +
-              "➡️ You can start with `kas help` to see all commands.\n\n" +
-              "📌 **Usage:**  \n" +
+              content: "<:emoji_35:1332676884093337603> **Thank you** for accepting the __Terms and Conditions__! <:Bouquet:1356866221529628792>\n\n" +
+              "<:left:1350355384111468576> You can start with `kas help` to see all commands.\n\n" +
+              "<:help:1350379705689440358> **Usage:**  \n" +
               "- `kas help <cmd>` → Get details about a specific command.  \n" +
               "- `kas guide <cmd>` → View a guide (if available) for the command.\n\n" +
               "> -# Stack up wealth, outsmart the market, and rule the game economy! 🐦‍🔥",

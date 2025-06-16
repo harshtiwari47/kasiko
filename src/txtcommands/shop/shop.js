@@ -107,7 +107,7 @@ async function viewShop(context) {
         userId] = interaction.customId.split('_');
       if (userId !== interaction.user.id) {
         return interaction.reply({
-          content: "⚠️ You cannot interact with someone else's shop menu.", ephemeral: true
+          content: "<:warning:1366050875243757699> You cannot interact with someone else's shop menu.", ephemeral: true
         });
       }
       switch (category) {
@@ -173,7 +173,7 @@ export default {
   aliases: ['store',
     'market'],
   args: '[category]',
-  emoji: '🏬',
+  emoji: '<:cart:1355034533061460060>',
   category: '🛍️ Shop',
   cooldown: 10000,
 
@@ -284,7 +284,7 @@ client.on('interactionCreate', async (interaction) => {
         userId] = interaction.customId.split('_');
       if (userId !== interaction.user.id) {
         return await handleMessage(interaction, {
-          content: "⚠️ Invalid interaction.", ephemeral: true
+          content: "<:warning:1366050875243757699> Invalid interaction.", ephemeral: true
         });
       }
       const {
@@ -303,13 +303,13 @@ client.on('interactionCreate', async (interaction) => {
         const amount = parseInt(amountStr, 10);
         if (isNaN(amount) || amount <= 0) {
           return await handleMessage(interaction, {
-            content: '⚠️ Please enter a valid positive number.', ephemeral: true
+            content: '<:warning:1366050875243757699> Please enter a valid positive number.', ephemeral: true
           });
         }
         const cost = amount * 2500;
         if (userData.cash < cost) {
           return await handleMessage(interaction, {
-            content: `⚠️ You need ${cost} Cash to buy ${amount} rose(s).`, ephemeral: true
+            content: `<:warning:1366050875243757699> You need ${cost} Cash to buy ${amount} rose(s).`, ephemeral: true
           });
         }
         userData.cash -= cost;
@@ -326,14 +326,14 @@ client.on('interactionCreate', async (interaction) => {
 
         if (isNaN(amount) || amount <= 0) {
           return await handleMessage(interaction, {
-            content: '⚠️ Please enter a valid positive number.', ephemeral: true
+            content: '<:warning:1366050875243757699> Please enter a valid positive number.', ephemeral: true
           });
         }
         const CARD_COST = 10000;
         const totalCost = amount * CARD_COST;
         if (userData.cash < totalCost) {
           return await handleMessage(interaction, {
-            content: `⚠️ You need ${totalCost.toLocaleString()} Cash to buy ${amount} scratch card(s).`, ephemeral: true
+            content: `<:warning:1366050875243757699> You need ${totalCost.toLocaleString()} Cash to buy ${amount} scratch card(s).`, ephemeral: true
           });
         }
 

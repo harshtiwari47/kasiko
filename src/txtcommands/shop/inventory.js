@@ -69,15 +69,15 @@ export default {
     // Build embed
     const embed = new EmbedBuilder()
     .setTitle(`🎒 ${name}'s Inventory`)
-    .setColor(0x00AE86)
+    .setColor('Random')
 
     // For each item, add a field
     for (const item of inventoryItems) {
       // Format value with count and flags
       const lines = [];
-      lines.push(`**Sellable:** ${item.sellable ? 'Yes': 'No'} **Shareable:** ${item.shareable ? 'Yes': 'No'}`);
+      lines.push(`-# **Sellable:** ${item.sellable ? 'Yes': 'No'} **Shareable:** ${item.shareable ? 'Yes': 'No'}`);
       if (item.description) {
-        lines.push(`-# ${item.description}`);
+        lines.push(`-# <:reply:1368224908307468408> ${item.description}`);
       }
       embed.addFields({
         name: `${item.emoji} ${item.name} — ${item.count}`,

@@ -556,7 +556,7 @@ export default {
     "cars <car_id>",
     // View details of a specific car by ID
   ],
-  emoji: "🚗",
+  emoji: "<:nebula_rs:1347467277846450208>",
   related: ["shop",
     "structures",
     "buildings",

@@ -454,7 +454,7 @@ export default {
     "baby"],
   description: "Manage and interact with your children (if married).",
   example: ["children help"],
-  emoji: "👶🏻",
+  emoji: "<:girl_child:1335131494070489118>",
   category: "👤 User",
   async execute(args, message) {
     try {

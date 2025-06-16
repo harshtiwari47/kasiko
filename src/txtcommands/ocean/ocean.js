@@ -492,7 +492,7 @@ export default {
   ],
   related: ["aquarium",
     "catch"],
-  emoji: "🌊",
+  emoji: "<:fishing_rod_virtual:1359384731329888368>",
   cooldown: 10000,
   // Cooldown of 10 seconds
   category: "🌊 Ocean Life",

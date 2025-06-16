@@ -322,7 +322,7 @@ export default {
   related: ["scavenger",
     "explore",
     "mine"],
-  emoji: "👿",
+  emoji: "<:dungeon:1317142898902437940>",
   cooldown: 200000,
   // 120 seconds cooldown
   category: "🎲 Games",

@@ -432,7 +432,7 @@ export default {
     "withdraw",
     "rob",
     "deposit"],
-  emoji: "🏦",
+  emoji: "<:bank:1352897312606785576>",
   cooldown: 10000,
   category: "🏦 Economy",
 

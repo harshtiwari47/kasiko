@@ -374,7 +374,7 @@ export default {
   cooldown: 43200000,
   related: ["give",
     "bank"],
-  emoji: "🪤",
+  emoji: "<:moneybag:1365976001179553792>",
   category: "🏦 Economy",
   execute: async (args,
     message) => {

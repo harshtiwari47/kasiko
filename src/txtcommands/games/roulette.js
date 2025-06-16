@@ -483,13 +483,13 @@ export default {
     'shot'],
   args: '<amount> <opponent_mention_or_id>',
   example: ['roulette 10000  @Player'],
-  emoji: "🔫",
+  emoji: "<:roulette_gun1:1325709544357101660>",
   related: ['diceduel',
     'slots',
     'cash',
     'tosscoin',
     'guess'],
-  cooldown: 8000,
+  cooldown: 10000,
   // 8 seconds
   category: '🎲 Games',
 

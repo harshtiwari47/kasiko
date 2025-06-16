@@ -301,7 +301,7 @@ export default {
     'h'],
   related: ['cage',
     'sellanimal'],
-  emoji: "🎯",
+  emoji: "<:rubber_bullet:1325711925656686626>",
   cooldown: 10000,
   // 10 seconds, as an example
   category: '🦌 Wildlife',

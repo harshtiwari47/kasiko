@@ -417,7 +417,7 @@ export default {
     "stock news/newspaper",
   ],
   related: ["stocks", "portfolio", "buy", "sell"],
-  emoji: "📈",
+  emoji: "<:stocks_profit:1321342107574599691>",
   cooldown: 10000, // Cooldown of 10 seconds
   category: "🏦 Economy",
 

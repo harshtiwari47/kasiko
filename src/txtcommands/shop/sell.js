@@ -67,7 +67,7 @@ export default {
     if (!itemIdArg) {
       return handleMessage(context, {
         content:
-        "## ⚠️ 𝗜𝗧𝗘𝗠 𝗡𝗢𝗧 𝗙𝗢𝗨𝗡𝗗\n" +
+        "## <:warning:1366050875243757699> 𝗜𝗧𝗘𝗠 𝗡𝗢𝗧 𝗙𝗢𝗨𝗡𝗗\n" +
         "Please make sure you have provided the correct **item ID**.\n\n" +
         "**USAGE:** `sell <itemId> <?amount>`\n" +
         "❔ **HELP:** `help sell`"
@@ -116,7 +116,7 @@ export default {
 
     return await handleMessage(context, {
       content:
-      "## ⚠️ 𝗜𝗧𝗘𝗠 𝗡𝗢𝗧 𝗙𝗢𝗨𝗡𝗗\n" +
+      "## <:warning:1366050875243757699> 𝗜𝗧𝗘𝗠 𝗡𝗢𝗧 𝗙𝗢𝗨𝗡𝗗\n" +
       "Please make sure you have provided the correct **item ID**.\n\n" +
       "**USAGE:** ` sell `**`<itemId> <?amount> `**\n" +
       "❔ **HELP:** ` help sell `"

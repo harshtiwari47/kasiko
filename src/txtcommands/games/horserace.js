@@ -273,7 +273,7 @@ export default {
     "hr 500 2 @Opponent1 @Opponent2"
   ],
   category: "🎲 Games",
-  emoji: "🏇🏻",
+  emoji: "<:horse_brown:1314077268447985725>",
   cooldown: 20000,
 
   async execute(args,

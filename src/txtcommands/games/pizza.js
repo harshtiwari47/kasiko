@@ -155,7 +155,7 @@ export default {
   args: "",
   example: ["pizzatoss",
     "pizza"],
-  emoji: "🍕",
+  emoji: "<:pizza:1355034476081713343>",
   // 20 seconds cooldown
   cooldown: 10000,
   category: "🎲 Games",

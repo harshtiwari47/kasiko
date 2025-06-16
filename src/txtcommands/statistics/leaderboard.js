@@ -399,7 +399,7 @@ export default {
   "Displays the top 30 current global or server-specific leaderboard rankings according to users' net worth.",
   aliases: ["top", "ranking", "lb"],
   args: "",
-  emoji: "🏅",
+  emoji: "<:throne:1350387076834791486>",
   example: ["leaderboard"],
   related: ["leaderboard", "profile", "stat"],
   cooldown: 10000, // Cooldown of 10 seconds

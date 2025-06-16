@@ -190,7 +190,7 @@ export default {
     "claimvote"],
   args: "",
   example: ["vote"],
-  emoji: "🗳️",
+  emoji: "<:purple_fire:1336344667964571700>",
   cooldown: 10000,
   category: "🏦 Economy",
   execute: async (args, context) => {

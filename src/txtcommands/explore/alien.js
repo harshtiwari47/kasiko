@@ -1649,7 +1649,7 @@ example: [
 "alien battle @target",
 "alien help"
 ],
-emoji: "👽",
+emoji: "<:aliens_nano:1336345303212752979>",
 related: ["profile",
 "battle",
 "zombie"],

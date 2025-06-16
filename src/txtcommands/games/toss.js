@@ -105,7 +105,7 @@ export default {
     "cash",
     "dice",
     "guess"],
-  emoji: "🪙",
+  emoji: "<:StillCoin:1326414822841253980>",
   cooldown: 8000,
   // 8 seconds cooldown
   category: "🎲 Games",

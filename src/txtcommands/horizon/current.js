@@ -286,7 +286,7 @@ export default {
     'attack'],
   cooldown: 10000,
   category: "🐉 Horizon",
-  emoji: "🌅",
+  emoji: "<:DragonChampion_badge:1322049597517987860>",
   example: [
     "horizon",
     "horizon new",

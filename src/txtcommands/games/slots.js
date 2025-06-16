@@ -133,7 +133,7 @@ export default {
     "cash",
     "tosscoin",
     "guess"],
-  emoji: "🎰",
+  emoji: "<:sorange:1327950638616678440>",
   cooldown: 10000,
   // 10 seconds cooldown
   category: "🎲 Games",
