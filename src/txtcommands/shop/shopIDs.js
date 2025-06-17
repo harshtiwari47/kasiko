@@ -228,4 +228,8 @@ export const ALLITEMS = [{
   }, {
     id: "scratch",
     category: "scratch"
+  },
+  {
+    id: "roses",
+    category: "roses"
   }];

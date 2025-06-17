@@ -107,14 +107,11 @@ export default {
       // Subcommand: scratch
       if (args.length === 0) {
         const embed = new EmbedBuilder()
-        .setTitle('<:scratch_card:1382990344186105911> Scratch Card Result')
-        .setDescription(`- To use a scratch card, command \`scratch card\``)
+        .setTitle(`${name}'s <:scratch_card:1382990344186105911> Scratch Cards`)
+        .setDescription(`-# To use a scratch card, command \`scratch card\``)
         .addFields(
           {
             name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData.scratchs}`, inline: true
-          },
-          {
-            name: '<:kasiko_coin:1300141236841086977> Current Cash', value: `${userData.cash.toLocaleString()}`, inline: true
           }
         );
 

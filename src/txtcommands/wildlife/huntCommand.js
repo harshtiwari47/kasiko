@@ -215,6 +215,7 @@ export async function huntCommand(context, {
         totalAnimals: 1, // start at 1
         level: 1,
         exp: 0,
+        type: chosenAnimalData?.type,
         hp: chosenAnimalData?.baseHp,
         attack: chosenAnimalData?.baseAttack,
       });

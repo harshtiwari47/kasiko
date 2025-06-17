@@ -12,6 +12,9 @@ const animalSchema = new mongoose.Schema({
     exp: {
       type: Number, default: 0
     },
+    type: {
+      type: String, default: "common"
+    },
     hp: {
       type: Number, default: 100
     }, // optional advanced usage
