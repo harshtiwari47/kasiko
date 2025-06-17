@@ -151,11 +151,7 @@ export default {
         .addFields(
           {
             name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData.scratchs}`, inline: true
-          },
-          {
-            name: '<:kasiko_coin:1300141236841086977> Current Cash', value: `${userData.cash.toLocaleString()}`, inline: true
-          }
-        );
+          });
 
         const files = [];
         if (buffer) {

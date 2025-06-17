@@ -23,7 +23,7 @@ function capitalizeFirstLetter(word) {
 }
 
 function getLayout(lvl) {
-  if (lvl > 2) lvl = 2;
+  if (lvl > 3) lvl = 3;
   return layout[lvl - 1].image;
 }
 

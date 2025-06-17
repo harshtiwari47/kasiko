@@ -419,10 +419,10 @@ export default {
         .setDescription(`**${name}**, your shop's **${upgradeMessage}** has been improved! 🚀`)
         .addFields(
           {
-            name: `${upgradeType === "machine" ? "<:moneybag:1365976001179553792> Cash": "✪ Loyalty"} Spent`, value: `${upgradeType === "machine" ? "<:creamcash:1309495440030302282> -" + upgradeCost + "cash": "✪⁠" + upgradeRoyaltyCost + "loyalty"}`
+            name: `${upgradeType === "machine" ? "<:moneybag:1365976001179553792> Cash": "✪ Loyalty"} Spent`, value: `${upgradeType === "machine" ? "<:creamcash:1309495440030302282> -" + upgradeCost + "cash": "✪ ⁠" + upgradeRoyaltyCost + "loyalty"}`
           },
           {
-            name: `📈 Shop ${upgradeType === "machine" ? "Level": "Layout"}`, value: `${upgradeType === "machine" ? playerShop.shopLevel: playerShop.shopLayout}`
+            name: `<:stats:1381905014884139058> Shop ${upgradeType === "machine" ? "Level": "Layout"}`, value: `${upgradeType === "machine" ? playerShop.shopLevel: playerShop.shopLayout}`
           }
         )
         .setColor(0x00c8ff)
@@ -442,9 +442,9 @@ export default {
 
           let level = parseInt(args[1]);
 
-          if (level > 2 || level < 0) {
+          if (level > 3 || level < 0) {
             return await handleMessage(context,
-              `<:warning:1366050875243757699> Currently, only the up to \`level 2\` layout is available!`
+              `<:warning:1366050875243757699> Currently, only the up to \`level 3\` layout is available!`
             ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
 
