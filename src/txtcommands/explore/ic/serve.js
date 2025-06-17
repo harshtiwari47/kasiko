@@ -6,7 +6,6 @@ import {
 } from 'discord.js';
 
 import {
-  handleMessage,
   discordUser
 } from '../../../../helper.js';
 
