@@ -86,7 +86,7 @@ async function showCageOverview(context, user) {
     textDisplay => textDisplay.setContent(`<:exclusive:1347533975840882708> EXCLUSIVE SPECIES`)
   )
   .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`## ${exclusiveAnimals.length > 0 ? exclusiveEmojis : 'ᴜɴʟᴏᴄᴋ ᴛʜᴇᴍ ᴛʜʀᴏᴜɢʜ ᴛʜᴇ ᴋᴀꜱɪᴋᴏ ᴘᴀꜱꜱ.'}`)
+      textDisplay => textDisplay.setContent(`${exclusiveAnimals.length > 0 ? "## " + exclusiveEmojis : 'ᴜɴʟᴏᴄᴋ ᴛʜᴇᴍ ᴛʜʀᴏᴜɢʜ ᴛʜᴇ ᴋᴀꜱɪᴋᴏ ᴘᴀꜱꜱ.'}`)
   )
   .addTextDisplayComponents(
     textDisplay => textDisplay.setContent(`-# Tip: use \` cage \`**\`<name> \`** for details, \` sell \`**\`<name> <amount> \`** to sell.`)

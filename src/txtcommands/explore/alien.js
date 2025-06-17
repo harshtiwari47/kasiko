@@ -3,7 +3,9 @@ import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  ContainerBuilder,
+  MessageFlags
 } from "discord.js";
 
 import {
@@ -484,11 +486,33 @@ async function handleHarvest(ctx) {
       `🛸 **${alien.name}**, your daring cosmic harvest yielded <:aliens_resource:1335537435341226024> **${resourceGain} resources** and <:aliens_energy:1335542963450679397> **${energyGain} energy** (influence bonus: ${influenceBonus}).`,
       `🛸 **${alien.name}**, tapping into the cosmic grid, you secured <:aliens_resource:1335537435341226024> **${resourceGain} resources** and <:aliens_energy:1335542963450679397> **${energyGain} energy** — your influence played its part with an extra ${influenceBonus} energy!`,
       `🛸 **${alien.name}**, your interstellar extraction was a triumph! You amassed <:aliens_resource:1335537435341226024> **${resourceGain} resources** and <:aliens_energy:1335542963450679397> **${energyGain} energy** (including an influence bonus of ${influenceBonus}).`
-    ]) +
-    `\n<:aliens_ability:1336346125791137855> **ABILITY USED:** ${randomAbility.name}\n✧ ⋆^+₊☼.⋆｡‧₊˚ ⋅✧`;
+    ])
+
+    const Container = new ContainerBuilder()
+    .setAccentColor(0xeae687)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`𝗘𝗫𝗧𝗥𝗔𝗖𝗧𝗜𝗢𝗡 𝗟𝗢𝗚`)
+    )
+    .addSeparatorComponents(separate => separate)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(responseMessage)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# <:aliens_ability:1336346125791137855> **ABILITY USED:** ${randomAbility.name}`)
+    )
+    .addMediaGalleryComponents(
+      media =>
+      media.addItems(
+        item => item.setURL("https://harshtiwari47.github.io/kasiko-public/images/harvest.png")
+      )
+    )
+    .addTextDisplayComponents(
+      textDisplay.setContent(`-# To exchange energy for cash, use **\`alien exchange <amount>\`**.`)
+    )
 
     return replyOrSend(ctx, {
-      embeds: [new EmbedBuilder().setDescription(responseMessage).setImage(`https://harshtiwari47.github.io/kasiko-public/images/harvest.png`).setColor('#efde7f')]
+      components: [Container],
+      flags: MessageFlags.IsComponentsV2
     });
   } catch (error) {
     console.error(error);

@@ -1,12 +1,14 @@
 import {
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags,
+  TextDisplayBuilder
 } from 'discord.js';
 
-
-function capitalizeFirstLetter(word) {
-  if (!word) return ""; // Handle empty or undefined input
-  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-}
+import {
+  handleMessage,
+  discordUser
+} from '../../../../helper.js';
 
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
@@ -18,7 +20,16 @@ async function handleMessage(context, data) {
   }
 }
 
+function getUsername(ctx) {
+  return ctx.author ? ctx.author.username: ctx.user.username;
+}
+
 export async function serveIceCream(playerShop, flavors, userId, username, context) {
+
+  const {
+    name
+  } = discordUser(content);
+
   if (playerShop.loyaltyPoints < 20) {
     return await handleMessage(context, {
       content: `⚠️ **${username}**, your shop's ✪ loyalty points are below 20. You can earn more by using \`icecream daily\` or sharing ice cream with your friends!`
@@ -37,17 +48,39 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
     return selectedFlavours[Math.floor(Math.random() * selectedFlavours.length)];
   };
 
-  const customerNames = ["Amelia Frost",
+  const customerNames = [
+    "Amelia Frost",
     "Jonah Berry",
     "Chloe Caramel",
     "Max Sprinkle",
-    "Sophia Sundae"];
+    "Sophia Sundae",
+    "Liam Gray",
+    "Emma Rose",
+    "Noah Reed",
+    "Ava Lane",
+    "Lucas Dean",
+    "Mia Brooks",
+    "Ethan Cole",
+    "Lily James",
+    "Oliver Ray",
+    "Ella Scott",
+    "James Lee",
+    "Grace Kim",
+    "Henry Knox",
+    "Nora Blake",
+    "Jack West"
+  ];
 
   const randomName = customerNames[Math.floor(Math.random() * customerNames.length)];
 
   const customerPreference = getRandomFlavor();
+
+  const textDisplay = new TextDisplayBuilder()
+  .setContent(`🍨 A customer named **${randomName}** is approaching... Let's see what they want!`);
+
   const suspenseMessage = await await handleMessage(context, {
-    content: `🍨 A customer named **${randomName}** is approaching... Let's see what they want!`
+    components: [textDisplay],
+    flags: MessageFlags.IsComponentsV2
   });
 
   setTimeout(async () => {
@@ -73,25 +106,42 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
 
     await playerShop.save();
 
-    const embed = new EmbedBuilder()
-    .setColor(servedSuccessfully ? (customerDislikesIceCream ? "Yellow": "Green"): "Red")
-    .setTitle("🍧 𝘊𝘶𝘴𝘵𝘰𝘮𝘦𝘳 𝘚𝘦𝘳𝘷𝘦𝘥!")
-    .setDescription(
-      servedSuccessfully
-      ? customerDislikesIceCream
-      ? `😬 The customer tried **${customerPreference.icecream}**, but they didn't enjoy it. \n\n⭐ **Reputation:** ${playerShop.reputation}`: `<:celebration:1368113208023318558> Great job! You served a customer their favorite flavor: **${customerPreference.icecream}**. \n\n💰 **Earned:** <:creamcash:1309495440030302282> ${Math.floor(1.3 * customerPreference.cost)} cash\n✪ **Loyalty Points:** +10\n⭐ **Reputation:** ${playerShop.reputation}`: `😅 Oops! The customer wanted **${customerPreference.icecream}**, but you couldn't serve it. \n\n⭐ **Reputation:** ${playerShop.reputation}`
+    const Container = new ContainerBuilder()
+    .setAccentColor(servedSuccessfully ? (customerDislikesIceCream ? 0xe9e346: 0x00d900): 0xdb3939)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`## 🍧 ${name}, 𝘊𝘶𝘴𝘵𝘰𝘮𝘦𝘳 𝘚𝘦𝘳𝘷𝘦𝘥 *!*`)
     )
-    .setImage(customerDislikesIceCream ? "https://harshtiwari47.github.io/kasiko-public/images/icecream-served.png" : "https://harshtiwari47.github.io/kasiko-public/images/icecream-served-happily.png")
-    .setFooter({
-      text: servedSuccessfully
-      ? customerDislikesIceCream
-      ? "Not every customer loves the same flavor! Keep improving!": "Keep serving customers to grow your reputation!": "Try adding more flavors to meet customer preferences.",
-    });
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(
+          servedSuccessfully
+          ? customerDislikesIceCream
+          ? `😬 The customer tried **${customerPreference.icecream}**, but they didn't enjoy it.`: `<:celebration:1368113208023318558> Great job! You served a customer their favorite flavor: **${customerPreference.icecream}**.`: `😅 Oops! The customer wanted **${customerPreference.icecream}**, but you couldn't serve it.`
+        )
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Ice-cream served')
+        .setURL(customerDislikesIceCream ? "https://harshtiwari47.github.io/kasiko-public/images/icecream-served.png": "https://harshtiwari47.github.io/kasiko-public/images/icecream-served-happily.png"),
+      )
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(servedSuccessfully && !customerDislikesIceCream
+        ? `💰 **Earned:** <:creamcash:1309495440030302282> ${Math.floor(1.3 * customerPreference.cost)} cash\n✪ **Loyalty Points:** +10\n⭐ **Reputation:** ${playerShop.reputation}`: `⭐ **Reputation:** ${playerShop.reputation}`
+      )
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(servedSuccessfully
+        ? customerDislikesIceCream
+        ? "-# Not every customer loves the same flavor! Keep improving!": "-# Keep serving customers to grow your reputation!": "-# Try adding more flavors to meet customer preferences."
+      )
+    )
 
     try {
       suspenseMessage.edit({
-        content: null,
-        embeds: [embed],
+        components: [Container],
+        flags: MessageFlags.IsComponentsV2
       });
     } catch (err) {}
   },
