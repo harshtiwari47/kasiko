@@ -426,7 +426,7 @@ async function upgradeMine(userId, username) {
 
 export default {
   name: "mine",
-  description: "Start mining, collect resources, or exchange coal for cash. Type `mine help` for more info!",
+  description: "Start mining, collect resources, or exchange coal for cash. Command `mine` for more info!",
   aliases: [],
   emoji: "<:excavator:1355034334033084577>",
   category: "🍬 Explore",

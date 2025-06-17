@@ -358,8 +358,7 @@ client.on('interactionCreate', async (interaction) => {
 
   // Button Interaction Handling
   if (interaction.isButton()) {
-    try {
-    } catch (error) {
+    try {} catch (error) {
       console.error(error);
     }
     return; // Exit after handling button interactions

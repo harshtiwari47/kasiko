@@ -82,7 +82,7 @@ async function showCageOverview(context, user) {
   if (exclusiveAnimals.length > 0) {
     embed.addFields({
       name: '<:exclusive:1347533975840882708> EXCLUSIVE SPECIES',
-      value: `## ` + exclusiveEmojis
+      value: exclusiveEmojis
     });
   } else {
     embed.addFields({

@@ -34,7 +34,8 @@ export default {
     const {
       id: userId,
       username,
-      name
+      name,
+      avatar
     } = discordUser(context);
 
 
@@ -68,8 +69,8 @@ export default {
 
     // Build embed
     const embed = new EmbedBuilder()
-    .setTitle(`🎒 ${name}'s Inventory`)
-    .setColor("#f45119")
+    .setTitle(`🎒 𝗜𝗡𝗩𝗘𝗡𝗧𝗢𝗥𝗬`)
+    .setColor("#ad7b6a")
 
     // For each item, add a field
     for (const item of inventoryItems) {
@@ -85,6 +86,11 @@ export default {
         inline: false
       });
     }
+
+    embed.setAuthor({
+      name: name,
+      iconURL: avatar
+    });
 
     // Send embed
     return handleMessage(context, {

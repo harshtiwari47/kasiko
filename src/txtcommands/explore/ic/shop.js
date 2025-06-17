@@ -27,6 +27,11 @@ function getLayout(lvl) {
   return layout[lvl - 1].image;
 }
 
+function getDecoration(lvl) {
+  if (lvl > 3) lvl = 3;
+  return layout[lvl - 1].decoration;
+}
+
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
   if (isInteraction) {
@@ -43,7 +48,7 @@ export async function playerShopInfo(playerShop, flavors, userId, username, cont
       userId
     });
 
-    let decoration = `𐙚⋆🍂⁺₊ 〰˖ ִֶָ 🍨 ˚˖𓍢ִ໋🦢💮`;
+    let decoration = getDecoration(playerShop?.shopLayout) || `𐙚⋆🍂⁺₊ 〰˖ ִֶָ 🍨 ˚˖𓍢ִ໋🦢💮`;
     const embed = new EmbedBuilder()
     .setColor((layout[playerShop.shopLayout - 1]?.color || "#eedd97"))
     .setTitle(`🍦 ${playerShop.shopName}'s 𝑆𝐻𝑂𝑃`)
