@@ -1,6 +1,8 @@
 import User from '../../../models/Hunt.js';
 import {
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
@@ -57,7 +59,7 @@ async function showCageOverview(context, user) {
 
   // All animal emojis with counts
   const animalEmojis = user.hunt.animals
-  .map(animal => `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
+  .map(animal => animal.type === 'exclusive' ? '' : `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
   .join(' ');
 
   // Filter for exclusive species
@@ -69,30 +71,30 @@ async function showCageOverview(context, user) {
     .join(' ');
   }
 
-  const embed = new EmbedBuilder()
-  .setTitle(`**${username.toUpperCase()}**'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 <:forest_tree:1354366758596776070>`)
-  .setDescription(
-    `<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799> 𝘓𝘝𝘓: ${user.globalLevel}\n## ${animalEmojis}`
+  const Container = new ContainerBuilder()
+  .addTextDisplayComponents(
+    textDisplay => textDisplay.setContent(`### **${username.toUpperCase()}**'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 <:forest_tree:1354366758596776070>`)
   )
-  .setFooter({
-    text: `Tip: use "cage <name>" for details, "sell <name> <amount>" to sell.`
-  });
-
-  // Add "EXCLUSIVE SPECIES" field if any exist, otherwise you can choose to omit or show 'None'
-  if (exclusiveAnimals.length > 0) {
-    embed.addFields({
-      name: '<:exclusive:1347533975840882708> EXCLUSIVE SPECIES',
-      value: exclusiveEmojis
-    });
-  } else {
-    embed.addFields({
-      name: '<:exclusive:1347533975840882708> EXCLUSIVE SPECIES',
-      value: 'ᴜɴʟᴏᴄᴋ ᴛʜᴇᴍ ᴛʜʀᴏᴜɢʜ ᴛʜᴇ ᴋᴀꜱɪᴋᴏ ᴘᴀꜱꜱ.'
-    });
-  }
+  .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: ${user.globalExp} <:rifle1:1352119137421234187><:rifle2:1352119217687625799> 𝘓𝘝𝘓: ${user.globalLevel}`)
+  )
+  .addSeparatorComponents(separate => separate)
+  .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`## ${animalEmojis}`)
+  )
+  .addTextDisplayComponents(
+    textDisplay => textDisplay.setContent(`<:exclusive:1347533975840882708> EXCLUSIVE SPECIES`)
+  )
+  .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`## ${exclusiveAnimals.length > 0 ? exclusiveEmojis : 'ᴜɴʟᴏᴄᴋ ᴛʜᴇᴍ ᴛʜʀᴏᴜɢʜ ᴛʜᴇ ᴋᴀꜱɪᴋᴏ ᴘᴀꜱꜱ.'}`)
+  )
+  .addTextDisplayComponents(
+    textDisplay => textDisplay.setContent(`-# Tip: use \` cage \`**\`<name> \`** for details, \` sell \`**\`<name> <amount> \`** to sell.`)
+  )
 
   return handleMessage(context, {
-    embeds: [embed]
+    components: [Container],
+    flags: MessageFlags.IsComponentsV2
   });
 }
 
