@@ -27,7 +27,7 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
 
   const {
     name
-  } = discordUser(content);
+  } = discordUser(context);
 
   if (playerShop.loyaltyPoints < 20) {
     return await handleMessage(context, {
@@ -108,7 +108,7 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
     const Container = new ContainerBuilder()
     .setAccentColor(servedSuccessfully ? (customerDislikesIceCream ? 0xe9e346: 0x00d900): 0xdb3939)
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`## 🍧 ${name}, 𝘊𝘶𝘴𝘵𝘰𝘮𝘦𝘳 𝘚𝘦𝘳𝘷𝘦𝘥 *!*`)
+      textDisplay => textDisplay.setContent(`### 🍧 ${name}, 𝘊𝘶𝘴𝘵𝘰𝘮𝘦𝘳 𝘚𝘦𝘳𝘷𝘦𝘥 *!*`)
     )
     .addSectionComponents(
       section => section
