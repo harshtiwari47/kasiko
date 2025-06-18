@@ -507,7 +507,7 @@ async function handleHarvest(ctx) {
       )
     )
     .addTextDisplayComponents(
-      textDisplay.setContent(`-# To exchange energy for cash, use **\`alien exchange <amount>\`**.`)
+      textDisplay => textDisplay.setContent(`-# To exchange energy for cash, use **\`alien exchange <amount>\`**.`)
     )
 
     return replyOrSend(ctx, {
