@@ -77,13 +77,13 @@ function getChildEmoji(gender, customEmojis = {}) {
 // create an embed card based on user data
 async function createUserEmbed(userId, username, userData, avatar, badges, passInfo) {
   try {
-    const joinDate = new Date(userData.joined);
-    const isToday = joinDate.toDateString() === new Date().toDateString();
+    const joinDate = new Date(userData?.joined);
+    const isToday = joinDate?.toDateString() === new Date().toDateString();
 
     const currentTime = Date.now();
     let dailyRewardsDetail = "Not claimed";
     const nextClaim = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    if (userData.dailyReward && (currentTime - userData.dailyReward) < nextClaim) {
+    if (userData?.dailyReward && (currentTime - userData?.dailyReward) < nextClaim) {
       dailyRewardsDetail = "Claimed";
     }
 
@@ -92,52 +92,52 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     };
 
     let totalCars = userData.cars.reduce((sum, car) => {
-      sum += car.items;
+      sum += car?.items || 0;
       return sum;
     }, 0);
 
     let totalStructures = userData.structures.reduce((sum, structure) => {
-      sum += structure.items;
+      sum += structure?.items || 0;
       return sum;
     }, 0);
 
     if (userData.family.spouse) {
-      partner = await client.users.fetch(userData.family.spouse) || {
+      partner = await client?.users?.fetch(userData?.family?.spouse) || {
         username: "Failed to Fetch"
       };
     }
 
     const childrenNames = userData.family.children.map((child) => {
-      return `${getChildEmoji(child.gender, userData.family.customChildEmojis)} ${child.name}`;
+      return `${getChildEmoji(child?.gender, userData?.family?.customChildEmojis)} ${child?.name}`;
     })
 
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
     let EmbedColor = "#f6e59a";
 
-    if (passInfo.isValid) {
-      if (passInfo.passType === "titan") EmbedColor = "#328e66";
-      if (passInfo.passType === "pheonix") EmbedColor = "#af3d35";
-      if (passInfo.passType === "ethereal") EmbedColor = "#6c35b8";
-      if (passInfo.passType === "celestia") EmbedColor = "#090a0d";
-      if (passInfo.passType === "celestia" && userData.color !== "#f6e59a") EmbedColor = userData.color;
+    if (passInfo?.isValid) {
+      if (passInfo?.passType === "titan") EmbedColor = "#328e66";
+      if (passInfo?.passType === "pheonix") EmbedColor = "#af3d35";
+      if (passInfo?.passType === "ethereal") EmbedColor = "#6c35b8";
+      if (passInfo?.passType === "celestia") EmbedColor = "#090a0d";
+      if (passInfo?.passType === "celestia" && userData.color !== "#f6e59a") EmbedColor = userData?.color;
     }
 
     // Embed 1: Personal Info & Wealth Stats
     const embed1 = new EmbedBuilder()
     .setColor(EmbedColor || "#f6e59a")
-    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝ "} <@${userId.toString()}> 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦ <:popularity:1359565087341543435> ${userData.popularity}\n${ badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`+ (passInfo.isValid ? `\n**🜲 𝗣𝗔𝗦𝗦**: ${passInfo.isValid ? `${passInfo.emoji} **${passInfo.passType.toUpperCase()}**`: "404"}`: ''))
+    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝ "} <@${userId?.toString()}> 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦ <:popularity:1359565087341543435> ${userData?.popularity}\n${ badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`+ (passInfo?.isValid ? `\n**🜲 𝗣𝗔𝗦𝗦**: ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: "404"}`: ''))
     .addFields(
       // Financial Information
       {
         name: '💵 𝘍𝘪𝘯𝘢𝘯𝘤𝘪𝘢𝘭 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
-        value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData.cash.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}\n**Charity:** <:kasiko_coin:1300141236841086977> ${userData.charity.toLocaleString()}`,
+        value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData?.cash?.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}`,
         inline: true
       },
       // Personal Information
       {
         name: '👪 𝘍𝘢𝘮𝘪𝘭𝘺 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
-        value: `**Spouse:** **${partner.username}**\n**Children:** **${userData.family.children.length === 0 ? "0": childrenNames.join(", ")}**\n**Friendly:** ${userData.friendly}`,
+        value: `**Spouse:** **${partner?.username}**\n**Children:** **${userData?.family?.children?.length === 0 ? "0": childrenNames?.join(", ")}**\n**Friendly:** ${userData?.friendly}`,
         inline: true
       }
     );
@@ -158,10 +158,10 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     .setDescription(
       `**⤿🚘 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
       `**⤿🏡 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
-      `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo.isValid && passInfo.passType === "celestia" ? `1`: "0"}**\n`
+      `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**\n`
     )
     .setFooter({
-      text: `${userData.profileBio ? userData.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`
+      text: `${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`
     })
 
     let embedList;

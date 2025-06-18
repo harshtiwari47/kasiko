@@ -144,8 +144,7 @@ export async function give(context, amount, recipientId) {
     });
 
     userData = await updateUser(userId, {
-      cash: (userData.cash - Number(amount)),
-      charity: (userData?.charity || 0) + Number(amount)
+      cash: (userData.cash - Number(amount))
     });
 
     // Handle button interactions
@@ -230,8 +229,7 @@ export async function give(context, amount, recipientId) {
         try {
           if (reason !== "success_trans") {
             userData = await updateUser(userId, {
-              cash: (userData.cash + Number(amount)),
-              charity: (userData?.charity || 0) - Number(amount)
+              cash: (userData.cash + Number(amount))
             });
           }
         } catch (ee) {}
