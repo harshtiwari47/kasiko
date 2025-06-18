@@ -7,7 +7,10 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  MessageFlags,
+  AttachmentBuilder,
+  ContainerBuilder
 } from 'discord.js';
 
 import {
@@ -15,7 +18,8 @@ import {
 } from "../../../bot.js";
 
 import {
-  Helper
+  Helper,
+  handleMessage
 } from '../../../helper.js';
 
 import {
@@ -26,19 +30,9 @@ import {
   getOrCreateShopDoc
 } from '../shop/viewUserJewelry.js';
 
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
-  if (isInteraction) {
-    // If not already deferred, defer it.
-    if (!context.deferred) {
-      await context.deferReply();
-    }
-    return context.editReply(data);
-  } else {
-    // For normal text-based usage
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
+import {
+  ITEM_DEFINITIONS
+} from "../../inventory.js";
 
 export const sendConfirmation = async (title, description, color, message, id) => {
   // Create an embed for the confirmation message
@@ -551,10 +545,21 @@ export async function roses(message) {
     let userData = await getUserData(message.author.id);
 
     // Check if roses data exists
-    if (userData && typeof userData.roses === 'number') {
-      return message.channel.send(`# ✦ **${message.author.username}**, you have **${userData.roses}** roses! <:rose:1343097565738172488>\n➺ Share roses: \`roses <amount> <@user>\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    if (userData && userData.inventory['rose'] > 0) {
+
+      const Container = new ContainerBuilder()
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`## ♡ **${message.author.username}**, you have **${userData.inventory['rose'] || 0}** roses! <:rose:1343097565738172488>`),
+        textDisplay => textDisplay.setContent(`-# ➺ Share roses: \`roses <amount> <@user>\`\n-# ✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
+      )
+
+      return await handleMessage(message, {
+        components: [Container],
+        flags: MessageFlags.IsComponentsV2
+      });
+
     } else {
-      return message.channel.send(`😢 | **${message.author.username}**, you don't have any roses yet. Start buying some! \`Kas shop roses <amount>\` <:rose:1343097565738172488>`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`🚫 | **${message.author.username}**, you don't have any roses yet. Start buying some! **\` buy roses <amount> \`** <:rose:1343097565738172488>`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
@@ -563,45 +568,12 @@ export async function roses(message) {
 }
 
 export async function sendRoses(toUser, amount, message) {
-  try {
+  const args = [];
 
-    if (message.author.id === toUser) {
-      return message.channel.send(`**${message.author.username}**, you can't send roses to yourself! 🙍🏻 <:rose:1343097565738172488>`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    let senderData = await getUserData(message.author.id);
-
-    let recipientData = await getUserData(toUser);
-
-    // Check if the sender has enough roses
-    if (senderData.roses >= amount) {
-      // Deduct roses from the sender
-      senderData.roses -= amount;
-
-      // Add roses to the recipient
-      if (senderData.family.spouse && senderData.family.spouse === toUser) {
-        senderData.family.bondXP += 10 * amount;
-        recipientData.family.bondXP += 10 * amount;
-        await updateUser(toUser, recipientData);
-        await updateUser(message.author.id, senderData);
-
-        return message.channel.send(`💖 | **${message.author.username}** has sent **${amount}** roses to their spouse <@${toUser}>! Your bond has grown stronger, increasing 💞 bondXP by ${amount * 10}! <:rose:1343097565738172488>`);
-      } else {
-        recipientData.roses = (recipientData.roses || 0) + amount;
-        await updateUser(toUser, recipientData);
-        await updateUser(message.author.id, senderData);
-
-        return message.channel.send(`<:rose:1343097565738172488> | **${message.author.username}** has sent **${amount}** roses to <@${toUser}>! <:rose:1343097565738172488>`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-    } else {
-      // Notify the sender they don't have enough roses
-      return message.channel.send(`🚫 | **${message.author.username}**, you don’t have enough roses to send.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } catch (e) {
-    console.error(e);
-    return message.channel.send("⚠️ An error occurred while sending roses. Please try again later.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
+  args[0] = 'rose';
+  args[1] = message.mentions.users.first();
+  args[2] = Number(amount);
+  return await ITEM_DEFINITIONS['rose']?.shareHandler(args, message);
 }
 
 export async function dailyRewards(userId, username, context) {
@@ -652,7 +624,7 @@ export async function dailyRewards(userId, username, context) {
 
       userData.family.bondXP += bondExpInc;
       userData.cash += cashExt;
-      userData.roses += rosesClaimed;
+      userData.inventory['rose'] = (userData.inventory['rose'] || 0) + rosesClaimed;
       userData.family.dailyReward = currentTime;
 
       await updateUser(userId, userData);

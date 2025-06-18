@@ -36,6 +36,14 @@ export default {
       if (keyword === "bye") {
         embed.setImage(`https://cdn.discordapp.com/attachments/1346413292242866208/1384134036922044438/ezgif-88d428092355f8.gif?ex=685152c6&is=68500146&hm=e8bfaf534dc85e7346b0f9bdefeac5584a6fc33ac5a30c9574cf00aca9b93a56&`);
       }
+      
+      if (keyword === "madara") {
+        embed.setImage(`https://cdn.discordapp.com/attachments/1346413292242866208/1384750262383808562/image1.gif?ex=685390ad&is=68523f2d&hm=a56a189472c10a4f99c4d3b70e1b1ac23be3d6de54a0c81e7370828dbf50f8b0&`);
+      }
+      
+      if (keyword === "maura") {
+        embed.setImage(`https://cdn.discordapp.com/attachments/1346413292242866208/1384750262064906351/ezgif-18a8b32eae7d7.gif?ex=685390ad&is=68523f2d&hm=bdee116bc6d77e33b610e09cea1245eacbc0e3a1818f0b8cd26330a5d879d35c&`);
+      }
 
       await message.channel.send({
         embeds: [embed]

@@ -6,7 +6,9 @@ import {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  InteractionType
+  InteractionType,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
   getUserData,
@@ -37,6 +39,10 @@ import {
 import {
   sellCommand as SellAnimal
 } from "../wildlife/sellCommand.js";
+
+import {
+  ITEM_DEFINITIONS
+} from '../../inventory.js';
 
 async function viewShop(context) {
   const {
@@ -297,7 +303,6 @@ client.on('interactionCreate', async (interaction) => {
         await interaction.deferReply();
       }
 
-      const userData = await getUserData(discordId);
       if (type === 'roses') {
         const amountStr = interaction.fields.getTextInputValue('roses_amount');
         const amount = parseInt(amountStr, 10);
@@ -306,21 +311,10 @@ client.on('interactionCreate', async (interaction) => {
             content: '<:warning:1366050875243757699> Please enter a valid positive number.', ephemeral: true
           });
         }
-        const cost = amount * 2500;
-        if (userData.cash < cost) {
-          return await handleMessage(interaction, {
-            content: `<:warning:1366050875243757699> You need ${cost} Cash to buy ${amount} rose(s).`, ephemeral: true
-          });
-        }
-        userData.cash -= cost;
-        userData.roses = (userData.roses || 0) + amount;
-        await updateUser(discordId, {
-          cash: userData.cash, roses: userData.roses
-        });
-        return await handleMessage(interaction, {
-          content: `**${name}** bought **${amount}** <:rose:1343097565738172488> for <:kasiko_coin:1300141236841086977>**${cost}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`, ephemeral: true
-        });
+        return await ITEM_DEFINITIONS['rose'].buyHandler([amount], interaction);
       } else if (type === 'scratch') {
+        const userData = await getUserData(discordId);
+
         const amountStr = interaction.fields.getTextInputValue('scratch_amount');
         const amount = parseInt(amountStr, 10);
 
@@ -329,23 +323,8 @@ client.on('interactionCreate', async (interaction) => {
             content: '<:warning:1366050875243757699> Please enter a valid positive number.', ephemeral: true
           });
         }
-        const CARD_COST = 10000;
-        const totalCost = amount * CARD_COST;
-        if (userData.cash < totalCost) {
-          return await handleMessage(interaction, {
-            content: `<:warning:1366050875243757699> You need ${totalCost.toLocaleString()} Cash to buy ${amount} scratch card(s).`, ephemeral: true
-          });
-        }
 
-        userData.cash -= totalCost;
-        userData.scratchs = (userData.scratchs || 0) + amount;
-        await updateUser(discordId, {
-          cash: userData.cash, scratchs: userData.scratchs
-        });
-
-        return await handleMessage(interaction, {
-          embeds: [new EmbedBuilder().setDescription(`## <:scratch_card:1382990344186105911> 𝗦𝗖𝗥𝗔𝗧𝗖𝗛 𝗖𝗔𝗥𝗗𝗦 𝗣𝗨𝗥𝗖𝗛𝗔𝗦𝗘𝗗\n\n` + `> 🍾 **${name.toUpperCase()}**, you bought **${amount} scratch card${amount > 1 ? "s": ""}** for <:kasiko_coin:1300141236841086977> **${totalCost.toLocaleString()}**. You now have **${userData.scratchs}** scratch card${userData.scratchs > 1 ? "s": ""}.\n\n-# ❔ **HOW TO SCRATCH**\n-#  \` scratch card \`\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)]
-        });
+        return await ITEM_DEFINITIONS['scratch_card'].buyHandler([amount], interaction);
       }
     } catch (err) {}
   }

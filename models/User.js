@@ -33,12 +33,6 @@ const userSchema = new mongoose.Schema({
       min: 0,
       set: (value) => (value < 0 ? 0: value)
     },
-    roses: {
-      type: Number,
-    default: 0,
-      min: 0,
-      set: (value) => (value < 0 ? 0: value)
-    },
     popularity: {
       type: Number,
     default: 0,
@@ -53,12 +47,6 @@ const userSchema = new mongoose.Schema({
       type: String,
     default: null
     },
-    charity: {
-      type: Number,
-      required: true,
-      min: 0,
-      set: (value) => (value < 0 ? 0: value)
-    },
     amountReceivedDaily: {
       date: {
         type: String,
@@ -68,12 +56,6 @@ const userSchema = new mongoose.Schema({
         type: Number,
       default: 0
       }
-    },
-    trust: {
-      type: Number,
-      required: true,
-      min: 0,
-      set: (value) => (value < 0 ? 0: value)
     },
     exp: {
       type: Number,
@@ -94,9 +76,6 @@ const userSchema = new mongoose.Schema({
     acceptedTerms: {
       type: Boolean,
     default: false
-    },
-    lastBattle: {
-      type: Number
     },
     shipBattle: {
       lastBattle: {
@@ -239,13 +218,24 @@ const userSchema = new mongoose.Schema({
       type: String,
     default: "#f6e59a"
     },
+    settings: {
+      dm: {
+        type: Boolean,
+      default: true
+      }
+    },
     seasonalPasses: {
       type: Array,
     default: []
     },
-    scratchs: {
-      type: Number,
-      default: 0
+    inventory: {
+      type: Object,
+    default: {}
+    },
+    activeBoosts: {
+      type: Map,
+      of: Object,
+    default: {}
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

@@ -330,7 +330,7 @@ const ShipCmd = {
           .setColor(0xff69b4)
 
           const likeEmbed2 = new EmbedBuilder()
-          .setDescription(`𝗥𝗢𝗦𝗘𝗦 𝗬𝗢𝗨 𝗛𝗔𝗩𝗘: <:rose:1343097565738172488> ${user1Data.roses}\n` +
+          .setDescription(`𝗥𝗢𝗦𝗘𝗦 𝗬𝗢𝗨 𝗛𝗔𝗩𝗘: <:rose:1343097565738172488> ${user1Data.inventory['rose'] || 0}\n` +
             `-# ᥫ᭡ You can buy roses using **\`buy roses <amount>\`**\n` +
             `-# ᥫ᭡ When you send someone roses, if their DMs are open, they will receive a notification\n` +
             `-# ᥫ᭡ Roses also contribute to someone's popularity (+25)\n` +
@@ -340,7 +340,7 @@ const ShipCmd = {
 
           const rosesButton = new ButtonBuilder()
           .setCustomId("send_roses")
-          .setDisabled((!user2Data || user1Data.roses < 5) ? true: false)
+          .setDisabled((!user2Data || (user1Data.inventory['rose'] || 0) < 5) ? true: false)
           .setLabel("𝙎𝙀𝙉𝘿 𝙋𝙍𝙄𝙑𝘼𝙏𝙀 𝙍𝙊𝙎𝙀𝙎 (𝟓)")
           .setEmoji(`1343097565738172488`)
           .setStyle(ButtonStyle.Primary);
@@ -372,7 +372,7 @@ const ShipCmd = {
                   popularity: (user2Data?.popularity || 0) + 25
                 });
                 await updateUser(user1?.id, {
-                  roses: Math.max((user1Data?.roses || 0) - 25, 0)
+                  'inventory.rose': Math.max((user1Data?.inventory['rose'] || 0) - 25, 0)
                 })
               }
 

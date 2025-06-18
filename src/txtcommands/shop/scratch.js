@@ -18,6 +18,10 @@ import {
   loadImage
 } from '@napi-rs/canvas';
 
+import {
+  ALLITEMS
+} from "./shopIDs.js";
+
 // Constants
 const CARD_COST = 15000; // cost per scratch card
 const MAX_WIN = 100000; // max cash win
@@ -38,7 +42,7 @@ async function handleMessage(context, data) {
 }
 
 // Generate scratch result: 0, MAX_WIN, or random between MIN_WIN and MAX_WIN
-function getScratchResult() {
+export function getScratchResult() {
   const r = Math.random();
   if (r < ZERO_PROB) {
     return 0;
@@ -51,7 +55,7 @@ function getScratchResult() {
 }
 
 // Generate a canvas image showing the scratch result
-async function generateScratchImage(amount) {
+export async function generateScratchImage(amount) {
   const width = 400;
   const height = 200;
   const canvas = createCanvas(width, height);
@@ -108,7 +112,7 @@ export default {
       if (args.length === 0) {
         const embed = new EmbedBuilder()
         .setTitle(`${name}'s <:scratch_card:1382990344186105911> Scratch Cards`)
-        .setDescription(`-# To use a scratch card, command \`scratch card\``)
+        .setDescription(`-# To use a scratch card, command \`use scratch\``)
         .addFields(
           {
             name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData.scratchs}`, inline: true
@@ -120,58 +124,11 @@ export default {
         });
       }
 
-      if (args[0] === "card") {
-        if (userData.scratchs <= 0) {
-          return await handleMessage(context, {
-            content: `**${name}**, you have no scratch cards.\n<:scratch_card:1382990344186105911> **Scratch Cards**: 0\n\n-# ❔ **Buy one with:**\n-# \`buy scratch <amount>\`\n\n-# ❔ **To use a card:**\n-# \`use scratch\``
-          });
-        }
-        // Use one card
-        userData.scratchs -= 1;
-        // Determine result
-        const result = getScratchResult();
-        if (result > 0) {
-          userData.cash += result;
-        }
-        await updateUser(id, userData);
-
-        // Generate image
-        let buffer;
-        try {
-          buffer = await generateScratchImage(result);
-        } catch (e) {
-          console.error('Canvas error:', e);
-        }
-
-        // Build embed
-        const embed = new EmbedBuilder()
-        .setTitle('𝗦𝗖𝗥𝗔𝗧𝗖𝗛 𝗖𝗔𝗥𝗗 𝗥𝗘𝗦𝗨𝗟𝗧')
-        .setDescription(result > 0
-          ? `Congratulations, ${name}! You won <:kasiko_coin:1300141236841086977> **${result.toLocaleString()}**.`: `Sorry, ${name}, no win this time.`)
-        .addFields(
-          {
-            name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData.scratchs}`, inline: true
-          });
-
-        const files = [];
-        if (buffer) {
-          const attachment = new AttachmentBuilder(buffer, {
-            name: 'scratch.png'
-          });
-          files.push(attachment);
-          embed.setImage('attachment://scratch.png');
-        }
-
-        return await handleMessage(context, {
-          embeds: [embed], files
-        });
-      }
-
       // Unknown subcommand
       return await handleMessage(context, {
         content: `❓ ${name}, invalid usage. Use:\n`+
         `• \` buy scratch <number> \` to buy cards (cost <:kasiko_coin:1300141236841086977> ${CARD_COST} each).` +
-        `• \`scratch card\` to scratch a card.`
+        `• \` use scratch \` to scratch a card.`
       });
     } catch (e) {
       console.error('Error in scratch command:', e);

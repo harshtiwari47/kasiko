@@ -6,13 +6,16 @@ import {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  InteractionType
+  InteractionType,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
   getUserData,
   updateUser
 } from '../../../database.js';
 import {
+  Helper,
   discordUser,
   handleMessage
 } from '../../../helper.js';
@@ -38,27 +41,9 @@ import {
   sellCommand as SellAnimal
 } from "../wildlife/sellCommand.js";
 
-export async function buyRoses(amount, context) {
-  try {
-    const userId = message.author.id;
-    let userData = await getUserData(userId);
-    const rosesAmount = amount * 2500;
-
-    if (userData.cash >= rosesAmount) {
-
-      userData.cash -= rosesAmount;
-      userData.roses += amount;
-
-      await updateUser(message.author.id, userData);
-      return await handleMessage(context, `**${message.author.username}** bought **${amount}** <:rose:1343097565738172488> for <:kasiko_coin:1300141236841086977>**${rosesAmount}** 𝑪𝒂𝒔𝒉.\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } else {
-      return await handleMessage(context, `<:warning:1366050875243757699> **${message.author.username}**, you don't have sufficient <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉 to purchase a <:rose:1343097565738172488>. You need <:kasiko_coin:1300141236841086977> ${rosesAmount} 𝑪𝒂𝒔𝒉`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-  } catch(e) {
-    console.error(e);
-    return await handleMessage(context, "<:warning:1366050875243757699> Something went wrong while buying rose(s).").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
+import {
+  ITEM_DEFINITIONS
+} from '../../inventory.js';
 
 
 export default {
@@ -111,12 +96,12 @@ export default {
     case "roses":
       if (!amountArg) {
         // default to 1 if not provided
-        return buyRoses(1, context);
+        return await ITEM_DEFINITIONS['rose'].buyHandler([num], context);
       }
       if (Helper.isNumber(amountArg)) {
         const num = parseInt(amountArg, 10);
         if (num > 0) {
-          return buyRoses(num, context);
+          return await ITEM_DEFINITIONS['rose'].buyHandler([num], context);
         } else {
           return handleMessage(context, "<:warning:1366050875243757699> Please specify a valid number of roses to buy.");
         }
@@ -128,28 +113,14 @@ export default {
       // buy scratch cards
       {
         if (!amountArg) {
-          return handleMessage(context, `❌ ${username}, please specify how many scratch cards to buy, e.g., \`buy scratch 2\`.`);
+          amountArg = 1;
         }
         const amt = parseInt(amountArg, 10);
         if (isNaN(amt) || amt <= 0) {
           return handleMessage(context, `❌ ${username}, please specify a valid number of scratch cards to buy.`);
         }
-        const userData = await getUserData(userId);
-        const CARD_COST = 15000;
-        const totalCost = amt * CARD_COST;
-        if (userData.cash < totalCost) {
-          return handleMessage(context, `💸 ${username}, you need ${totalCost.toLocaleString()} to buy ${amt} scratch card(s).`);
-        }
-        // Deduct cash and add scratch cards
-        userData.cash -= totalCost;
-        userData.scratchs = (userData.scratchs || 0) + amt;
-        await updateUser(userId, {
-          cash: userData.cash,
-          scratchs: userData.scratchs
-        });
-        return handleMessage(context, {
-          content: `🍾 **${username.toUpperCase()}**, you bought <:scratch_card:1382990344186105911> **${amt} scratch card(s)** for <:kasiko_coin:1300141236841086977>**${totalCost.toLocaleString()}**. You now have **${userData.scratchs}** scratch card(s).\n\n-# ❔ **HOW TO SCRATCH**\n-#  \` scratch card \``
-        });
+
+        return await ITEM_DEFINITIONS['scratch_card'].buyHandler([amt], context);
       }
 
     default:

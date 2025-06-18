@@ -96,7 +96,8 @@ export const createUser = async (userId) => {
       structures: [],
       shipBattle: {
         battleLog: []
-      }
+      },
+      inventory: {}
     });
 
     const savedUser = await newUser.save();

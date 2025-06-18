@@ -13,11 +13,17 @@ import {
 } from '../../../helper.js';
 
 import {
+  ITEM_DEFINITIONS
+} from "../../inventory.js";
+
+import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  InteractionType
+  InteractionType,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 
 export default {
@@ -46,8 +52,8 @@ export default {
       return handleMessage(context, '❌ Unable to fetch your inventory right now. Please try again later.');
     }
 
-    const scratchCount = userData.scratchs ?? 0;
-    const roseCount = userData.roses ?? 0;
+    const scratchCount = userData.inventory['scratch_card'] || 0;
+    const roseCount = userData.inventory['rose'] || 0;
 
     // inventory items and their metadata
     const inventoryItems = [{
@@ -67,10 +73,11 @@ export default {
         description: 'Can be used for gifting or increasing your marriage BondXP.',
       }];
 
-    // Build embed
-    const embed = new EmbedBuilder()
-    .setTitle(`🎒 𝗜𝗡𝗩𝗘𝗡𝗧𝗢𝗥𝗬`)
-    .setColor("#ad7b6a")
+    const Container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`### 🎒 𝗜𝗡𝗩𝗘𝗡𝗧𝗢𝗥𝗬`),
+      textDisplay => textDisplay.setContent(`-# ${name} ◎ \`info \`**\`<item>\`**`)
+    );
 
     // For each item, add a field
     for (const item of inventoryItems) {
@@ -80,21 +87,36 @@ export default {
       if (item.description) {
         lines.push(`-# <:reply:1368224908307468408> ${item.description}`);
       }
-      embed.addFields({
-        name: `${item.emoji} ${item.name} — ${item.count}`,
-        value: lines.join('\n'),
-        inline: false
-      });
-    }
+      Container.addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`${item.emoji} **${item.name}** — ${item.count}`)
+      );
 
-    embed.setAuthor({
-      name: name,
-      iconURL: avatar
-    });
+      Container.addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(lines.join('\n'))
+      );
+    }
+    
+    Container.addSeparatorComponents(separate => separate);
+  
+    Container.addActionRowComponents(
+      ActionRow => ActionRow
+      .addComponents([
+        new ButtonBuilder()
+        .setCustomId("leftinv")
+        .setLabel("◀")
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
+        new ButtonBuilder()
+        .setCustomId("rightinv")
+        .setLabel("▶")
+        .setStyle(ButtonStyle.Primary)
+      ])
+    )
 
     // Send embed
     return handleMessage(context, {
-      embeds: [embed]
+      components: [Container],
+      flags: MessageFlags.IsComponentsV2
     });
   }
 };
