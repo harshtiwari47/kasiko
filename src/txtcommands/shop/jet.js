@@ -10,7 +10,7 @@ export default {
   description: "Check out the private jet gifted by Kasiko!",
   aliases: ["privatejet",
     "kasikojet"],
-  emoji: "✈️",
+  emoji: "<:aeroplane:1385131687020855367>",
   cooldown: 10000,
   category: "🛍️ Shop",
   execute: async (args, message) => {

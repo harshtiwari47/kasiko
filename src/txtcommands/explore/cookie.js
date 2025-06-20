@@ -50,7 +50,7 @@ async function bakeCookie(userId) {
     if (userData.cookie.dailyBakes >= 3) {
       return {
         success: false,
-        message: `❗ **Oh no!** You've already baked 🍪 **3 cookies** today! Come back tomorrow for more 🍭 delicious treats.`
+        message: `❗ **Oh no!** You've already baked <:cookie:1385131636613709905> **3 cookies** today! Come back tomorrow for more 🍭 delicious treats.`
       };
     }
 
@@ -62,7 +62,7 @@ async function bakeCookie(userId) {
       await updateUser(userId, userData);
       return {
         success: false,
-        message: `😞 Oh dear! 𝑻𝒉𝒆 𝒄𝒐𝒐𝒌𝒊𝒆 🍪 dough **𝑏𝑢𝑟𝑛𝑒𝑑** to a crisp! 💥\n𝙱𝚎𝚝𝚝𝚎𝚛 𝚕𝚞𝚌𝚔 𝚗𝚎𝚡𝚝 𝚝𝚒𝚖𝚎!`
+        message: `😞 Oh dear! 𝑻𝒉𝒆 𝒄𝒐𝒐𝒌𝒊𝒆 <:cookie:1385131636613709905> dough **𝑏𝑢𝑟𝑛𝑒𝑑** to a crisp! 💥\n𝙱𝚎𝚝𝚝𝚎𝚛 𝚕𝚞𝚌𝚔 𝚗𝚎𝚡𝚝 𝚝𝚒𝚖𝚎!`
       };
     }
 
@@ -74,7 +74,7 @@ async function bakeCookie(userId) {
 
     return {
       success: true,
-      message: `${burningFire} **Yay!** You ***successfully*** baked a 𝓬𝓸𝓸𝓴𝓲𝓮 . You now have 🍪 **${userData.cookie.cookies}** cookies!`
+      message: `${burningFire} **Yay!** You ***successfully*** baked a 𝓬𝓸𝓸𝓴𝓲𝓮 . You now have <:cookie:1385131636613709905> **${userData.cookie.cookies}** cookies!`
     };
   } catch (err) {
     return {
@@ -91,14 +91,14 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   if (!mentionedUserId) {
     return {
       success: false,
-      message: `❗Please mention **one** user to share your cookie with! 🍪`
+      message: `❗Please mention **one** user to share your cookie with! <:cookie:1385131636613709905>`
     };
   }
   
   if (authorId === mentionedUserId) {
     return {
       success: false,
-      message: `❗ Sharing to yourself? 🤷🏻🍪`
+      message: `❗ Sharing to yourself? 🤷🏻<:cookie:1385131636613709905>`
     };
   }
 
@@ -109,7 +109,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   if (!mentionedData) {
     return {
       success: false,
-      message: `⚠ Mentioned user not found! 🍪`
+      message: `⚠ Mentioned user not found! <:cookie:1385131636613709905>`
     }
   }
 
@@ -125,7 +125,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   if ((authorData.cookie?.cookies || 0) < 1) {
     return {
       success: false,
-      message: `❗**${authorUsername}**, you don't have any 🍪 cookies to share!`
+      message: `❗**${authorUsername}**, you don't have any <:cookie:1385131636613709905> cookies to share!`
     };
   }
 
@@ -158,7 +158,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   } catch (e) {
     return {
       success: false,
-      message: `⚠ Something went wrong while sharing the cookie! 🍪\n-# **Error**: ${e.message}`
+      message: `⚠ Something went wrong while sharing the cookie! <:cookie:1385131636613709905>\n-# **Error**: ${e.message}`
     }
   }
 
@@ -166,7 +166,7 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   return {
     success: true,
     message: `## 🍬 So swᥱᥱt !\n` +
-    `       ᥫ᭡. **${authorUsername}** shared 🍪 **1 cookie** with <@${mentionedUserId}>.\n` +
+    `       ᥫ᭡. **${authorUsername}** shared <:cookie:1385131636613709905> **1 cookie** with <@${mentionedUserId}>.\n` +
     `-# 𓂃۶ৎ 𝑇ℎ𝑒 𝑎𝑟𝑜𝑚𝑎 𝑖𝑠 𝑑𝑒𝑙𝑖𝑔ℎ𝑡𝑓𝑢𝑙, 𝑎𝑛𝑑 𝑦𝑜𝑢𝑟 𝑓𝑟𝑖𝑒𝑛𝑑𝑠ℎ𝑖𝑝 𝑔𝑟𝑜𝑤𝑠 𝑠𝑡𝑟𝑜𝑛𝑔𝑒𝑟! 💖\n` +
     `ꜰʀɪᴇɴᴅʟʏ ꜱᴄᴏʀᴇ: +5   ♥︎`
   };
@@ -200,7 +200,7 @@ async function buildCookieStatsEmbed(userId) {
   .setColor('#ffca8b')
   .setTitle(`◈✦ 𝒞𝑜𝑜𝓀𝒾𝑒 𝓙𝓪𝓻`)
   .setDescription(
-    `**🍪 𝑪𝒐𝒐𝒌𝒊𝒆𝒔**: **\`${cookies}\`**\n` +
+    `**<:cookie:1385131636613709905> 𝑪𝒐𝒐𝒌𝒊𝒆𝒔**: **\`${cookies}\`**\n` +
     `**${burningFire} 𝑩𝒂𝒌𝒆𝒔 𝑻𝒐𝒅𝒂𝒚**:\n  **\`${dailyBakes} / 3\`**\n` +
     `**💗 𝑺𝒉𝒂𝒓𝒆𝒅 𝑪𝒐𝒖𝒏𝒕**: **\`${sharedCount}\`**`
   )
@@ -221,7 +221,7 @@ function buildCookieHelpEmbed(message = null) {
   if (message) {
     description = message;
   } else {
-    description = `### 🍪 Cookie Baking Guide\n` +
+    description = `### <:cookie:1385131636613709905> Cookie Baking Guide\n` +
     `\`\`\`Bake up to 3 cookies/day, but there's a 50% burn chance!\`\`\`` +
     `**ᴛɪᴘ**: ꜱʜᴀʀᴇ ꜰᴏʀ ᴇxᴛʀᴀ ꜱᴡᴇᴇᴛɴᴇꜱꜱ ᴀɴᴅ ɢʀᴀᴛɪᴛᴜᴅᴇ.\n` +
     `𝑆𝑡𝑎𝑦 𝑐𝑜𝑧𝑦 & 𝑘𝑒𝑒𝑝 𝑏𝑎𝑘𝑖𝑛𝑔!`;
@@ -349,7 +349,7 @@ export default {
   aliases: ['cookies'],
   args: '[mention user to share or none]',
   cooldown: 10000,
-  emoji: "🍪",
+  emoji: "<:cookie:1385131636613709905>",
   category: '🍬 Explore',
   execute,
 };

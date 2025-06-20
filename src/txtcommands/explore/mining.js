@@ -11,7 +11,7 @@ import {
 } from '../../../models/Mining.js';
 import {
   randomMetalsReward
-} from "./dragon/powers.js";
+} from "../horizon/dragon/powers.js";
 import {
   getUserData,
   updateUser

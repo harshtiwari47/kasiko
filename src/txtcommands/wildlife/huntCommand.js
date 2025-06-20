@@ -297,11 +297,11 @@ export default {
   description: 'Embark on a hunt to catch animals and gain rewards.',
   aliases: ['h',
     'animalhunt'],
-  args: '[location]',
+  args: '',
   example: ['hunt',
     'h'],
   related: ['cage',
-    'sellanimal'],
+    'sell'],
   emoji: "<:rubber_bullet:1325711925656686626>",
   cooldown: 10000,
   // 10 seconds, as an example

@@ -1,4 +1,4 @@
-import Powers from "../explore/dragon/powers.js"
+import Powers from "./dragon/powers.js"
 import Dragon from '../../../models/Dragon.js';
 import HorizonBattle from '../../../models/Horizon.js';
 import HorizonUser from '../../../models/HorizonUser.js';

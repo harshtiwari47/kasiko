@@ -7,7 +7,7 @@ import {
 import {
   getUserDataDragon,
   saveUserData
-} from '../explore/dragon.js';
+} from './dragon.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,7 +24,7 @@ const dragonTypesPath = path.join(__dirname, '../../../data/dragons.json');
 const dragonTypes = JSON.parse(fs.readFileSync(dragonTypesPath, 'utf-8'));
 
 // powers
-const powerspath = path.join(__dirname, '../explore/dragon/powers.json');
+const powerspath = path.join(__dirname, './dragon/powers.json');
 const powerTypes = JSON.parse(fs.readFileSync(powerspath, 'utf-8'));
 
 export async function exitHorizonBattle(context, userId) {

@@ -17,7 +17,11 @@ import Powers from "./dragon/powers.js"
 
 import Dragon from '../../../models/Dragon.js';
 import redisClient from '../../../redis.js';
-import Helper from '../../../helper.js';
+import {
+  Helper,
+  discordUser
+}
+from '../../../helper.js';
 
 // Load all dragon types from JSON
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -33,7 +37,7 @@ export default {
   aliases: ['drg',
     'd'],
   cooldown: 10000,
-  category: "🍬 Explore",
+  category: "🐉 Horizon",
   emoji: "<:Dragon:1348528112043823145>",
   example: [
     "dragon"
@@ -334,8 +338,9 @@ export default {
       }
     );
 
+
     await redisClient.set(cacheKey, JSON.stringify(userData), {
-      EX: 3600
+      EX: 360
     });
   }
 
@@ -1326,7 +1331,6 @@ export default {
         const user = await client.users.fetch(topUsers[i].userId);
         leaderboard += `**${i + 1}. ${user.username}** — **${topUsers[i].sigils}** ${sigilsIcon} | ${topUsers[i].gems} ${gemIcon} | ${topUsers[i].dragons.length} Dragons\n`;
       } catch (err) {
-        console.log(err)
         leaderboard += `**${i + 1}. Unknown User** — **${topUsers[i].sigils}** ${sigilsIcon} | ${topUsers[i].gems} ${gemIcon} | ${topUsers[i].dragons.length} Dragons\n`;
       }
     }
@@ -1487,16 +1491,20 @@ export default {
   async function changeActive(args, message) {
     const userId = message.author.id;
 
+    const {
+      name
+    } = discordUser(message);
+
     let userData = await getUserDataDragon(userId);
 
     if (userData.dragons.length === 0) {
       return message.channel.send(`❗ You have no dragons to ${action}! Summon one with \`dragon summon\`.`);
     }
 
-    if (!args[1] || ! Number.isInteger(Number(args[1]))) {
-      let targetDragon = userData.dragons[userData.active || 0];
+    if (!args[1] || !Number.isInteger(Number(args[1]))) {
+      let targetDragon = userData.dragons[typeof userData.active === "number" && userData.active < userData.dragons.length && userData.active >= 0 ? userData.active: 0];
 
-      return message.channel.send(`❗Your active dragon is **${targetDragon.typeId.toUpperCase()}**! Use \`dragon active <index>\` to change it.`);
+      return message.channel.send(`<:dragon_3d:1381904937763475578> **${name}**, your active dragon is **${targetDragon.typeId.toUpperCase()}**!\nUse \`dragon active <index>\` to change it.`);
     }
 
     const index = parseInt(args[1]); // Dragon Index
@@ -1509,11 +1517,11 @@ export default {
 
     let targetDragon = userData.dragons[dragonIndex];
 
-    userData.active = index;
+    userData.active = dragonIndex;
 
     await saveUserData(userId, userData);
 
-    return message.channel.send(`✅ **${message.author.username}**, you have successfully set your **${targetDragon.typeId.toUpperCase()}** dragon as active for the next battle. Your dragon is ready for adventure!`);
+    return message.channel.send(`✅ **${name}**, you have successfully set your **${targetDragon.typeId.toUpperCase()}** dragon as active for the next battle. Your dragon is ready for adventure!`);
   }
 
   async function changeNickname(args, message) {

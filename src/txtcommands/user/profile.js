@@ -156,9 +156,9 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     .setTitle(`⌞ ⌝ Assets ✦`)
     .setThumbnail(avatar)
     .setDescription(
-      `**⤿🚘 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
-      `**⤿🏡 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
-      `**⤿✈️ 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**\n`
+      `**⤿<:spector:1324601268421005342> 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
+      `**⤿<:house:1385131710479597639> 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
+      `**⤿<:aeroplane:1385131687020855367> 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**\n`
     )
     .setFooter({
       text: `${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`
@@ -244,7 +244,7 @@ export default {
     "stat",
     "cash",
     "bank"],
-  emoji: "😎",
+  emoji: "<:user:1385131666011590709>",
   cooldown: 10000,
   // Cooldown of 10 seconds
   category: "👤 User",

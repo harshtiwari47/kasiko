@@ -156,7 +156,7 @@ export default {
   related: ["tosscoin",
     "mine",
     "tosscoin"],
-  emoji: "🔦",
+  emoji: "<:torch:1385131605235863672>",
   cooldown: 10000,
   // 15 seconds cooldown
   category: "🎲 Games",

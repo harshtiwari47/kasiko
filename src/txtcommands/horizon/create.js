@@ -6,7 +6,7 @@ import {
 import {
   getUserDataDragon,
   saveUserData
-} from '../explore/dragon.js';
+} from './dragon.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -19,7 +19,7 @@ const dragonTypesPath = path.join(__dirname, '../../../data/dragons.json');
 const dragonTypes = JSON.parse(fs.readFileSync(dragonTypesPath, 'utf-8'));
 
 // powers
-const powerspath = path.join(__dirname, '../explore/dragon/powers.json');
+const powerspath = path.join(__dirname, './dragon/powers.json');
 const powerTypes = JSON.parse(fs.readFileSync(powerspath, 'utf-8'));
 import {
   createCanvas,
@@ -110,9 +110,9 @@ export async function createHorizonBattle(context, playerId, bossTemplates) {
       });
     }
 
-    let targetDragon = userData.dragons[userData?.active || 0];
+    let targetDragon = userData.dragons[typeof userData.active === "number" && userData.active < userData.dragons.length && userData.active >= 0 ? userData.active: 0];
 
-    if (!targetDragon.isHatched) {
+    if (!targetDragon || !targetDragon.isHatched) {
       return await handleMessage(context, {
         content: `❗ **${name}**, your active dragon is still an egg! Hatch it first using \`dragon hatch <index>\`.`
       });

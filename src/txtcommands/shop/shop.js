@@ -278,6 +278,9 @@ export default {
           return viewShop(interaction)
         }
       });
+
+    collectorGuide.on('end',
+      async () => {});
   }
 };
 

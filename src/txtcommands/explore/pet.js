@@ -440,6 +440,7 @@ aliases: ["pets",
 args: "<action> [parameters]",
 example: ["pet help"],
 cooldown: 10000,
+emoji: '<:panda_pet:1385131508028670044>',
 category: "🍬 Explore",
 async execute(args, context) {
 const userId = context.user?.id || context.author.id;

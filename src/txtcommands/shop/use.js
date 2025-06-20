@@ -18,19 +18,9 @@ import {
   handleMessage
 } from '../../../helper.js';
 import {
-  ITEM_DEFINITIONS
+  ITEM_DEFINITIONS,
+  findItemByIdOrAlias
 } from '../../inventory.js';
-
-/**
-* Helper: find item definition by ID or alias.
-*/
-function findItemByIdOrAlias(input) {
-  const lower = input.toLowerCase();
-  return Object.values(ITEM_DEFINITIONS).find(item =>
-    item.id.toLowerCase() === lower ||
-    (item.aliases && item.aliases.map(a => a.toLowerCase()).includes(lower))
-  );
-}
 
 export default {
   name: 'use',

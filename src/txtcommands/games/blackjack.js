@@ -233,8 +233,8 @@ export async function blackjack(id, amount, channel) {
     collector.on('end',
       async (collected, reason) => {
         // Handle timeout if the game ends with no interaction
-        if (gameMessage && !gameMessage.deleted && reason === "time") {
-          await gameMessage.edit({
+        if (gameMessage && reason === "time") {
+          await gameMessage?.edit({
             embeds: [embedTitle, embed.setFooter({
               text: "⏱️ Timeout"
             }).setColor("#f43d3d")],
