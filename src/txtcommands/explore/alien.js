@@ -1677,7 +1677,7 @@ emoji: "<:aliens_nano:1336345303212752979>",
 related: ["profile",
 "battle",
 "zombie"],
-cooldown: 3000,
+cooldown: 10000,
 category: "🍬 Explore",
 // Execute receives either a message (text command) or an interaction.
 execute: (args, ctx) => handleAlienCommands(ctx, args)

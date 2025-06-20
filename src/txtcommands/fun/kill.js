@@ -7,7 +7,7 @@ export default {
   description: "Playfully 'eliminate' another user.",
   aliases: ["slay",
     "destroy"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {

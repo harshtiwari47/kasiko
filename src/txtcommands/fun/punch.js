@@ -7,7 +7,7 @@ export default {
   description: "Punch another user with style.",
   aliases: ["hit",
     "smack"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🧩 Fun",
   execute: async (args, message) => {
     try {

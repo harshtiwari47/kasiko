@@ -430,7 +430,7 @@ export default {
   aliases: [],
   emoji: "<:excavator:1355034334033084577>",
   category: "🍬 Explore",
-  cooldown: 100000,
+  cooldown: 10000,
   execute: async (args, context) => {
     try {
 

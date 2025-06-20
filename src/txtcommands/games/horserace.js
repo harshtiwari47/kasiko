@@ -274,7 +274,7 @@ export default {
   ],
   category: "🎲 Games",
   emoji: "<:horse_brown:1314077268447985725>",
-  cooldown: 20000,
+  cooldown: 10000,
 
   async execute(args,
     message) {

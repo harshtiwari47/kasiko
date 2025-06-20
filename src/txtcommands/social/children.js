@@ -455,6 +455,7 @@ export default {
   description: "Manage and interact with your children (if married).",
   example: ["children help"],
   emoji: "<:girl_child:1335131494070489118>",
+  cooldown: 10000,
   category: "👤 User",
   async execute(args, message) {
     try {

@@ -35,7 +35,7 @@ export default {
   aliases: ['iteminfo'],
   args: '<itemName>',
   category: '🛍️ Shop',
-  cooldown: 2000,
+  cooldown: 10000,
 
   async execute(args, context) {
     try {

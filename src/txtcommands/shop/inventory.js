@@ -35,7 +35,7 @@ export default {
   args: '',
   emoji: '🎒',
   category: '🛍️ Shop',
-  cooldown: 5000,
+  cooldown: 10000,
 
   async execute(args, context) {
     try {

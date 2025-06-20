@@ -8,7 +8,7 @@ export default {
   description: "Displays the bot's permissions in the server.",
   aliases: ["perms",
     "botperms"],
-  cooldown: 6000,
+  cooldown: 10000,
   category: "🔧 Utility",
 
   execute: async (args, message) => {

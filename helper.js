@@ -143,6 +143,60 @@ export function determineRPSWinner(a, b) {
   return wins[a] === b ? 'challenger': 'opponent';
 }
 
+// Other helpers
+
+/**
+ * Read command.cooldown (expected in milliseconds).
+ * If missing or not a positive number, default to MIN_MS.
+ * Clamp to [MIN_MS, MAX_MS].
+ */
+export function normalizeCooldownMs(command) {
+  const MIN_MS = 5 * 1000;            // 5 seconds
+  const MAX_MS = 2 * 24 * 60 * 60 * 1000; // 2 days = 172,800,000 ms
+
+  let cdMs = command.cooldown;
+  if (typeof cdMs !== 'number' || isNaN(cdMs) || cdMs < MIN_MS) {
+    return MIN_MS;
+  }
+  if (cdMs > MAX_MS) {
+    return MAX_MS;
+  }
+  return cdMs;
+}
+
+export function formatMs(ms) {
+  let remaining = ms;
+  const units = [];
+  const dayMs = 24 * 60 * 60 * 1000;
+  const hourMs = 60 * 60 * 1000;
+  const minuteMs = 60 * 1000;
+  const secondMs = 1000;
+
+  const days = Math.floor(remaining / dayMs);
+  if (days > 0) {
+    units.push(`${days}d`);
+    remaining -= days * dayMs;
+  }
+  const hours = Math.floor(remaining / hourMs);
+  if (hours > 0) {
+    units.push(`${hours}h`);
+    remaining -= hours * hourMs;
+  }
+  const minutes = Math.floor(remaining / minuteMs);
+  if (minutes > 0) {
+    units.push(`${minutes}m`);
+    remaining -= minutes * minuteMs;
+  }
+  const seconds = Math.ceil(remaining / secondMs);
+  if (seconds > 0) {
+    units.push(`${seconds}s`);
+  }
+  if (units.length === 0) {
+    return '1s';
+  }
+  return units.join(' ');
+}
+
 
 export const Helper = {
   isUserMention,

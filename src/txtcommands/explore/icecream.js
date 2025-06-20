@@ -150,7 +150,7 @@ export default {
     "profile",
     "help",
     "cash"],
-  cooldown: 5000,
+  cooldown: 10000,
   category: "🍬 Explore",
   async execute(args, context) {
     try {
@@ -503,58 +503,99 @@ export default {
 
       // Command: Claim daily bonus
       if (args[0] === "daily") {
-
-        const timeElapsed = Date.now() - playerShop.lastVisit;
-        if (timeElapsed < 86400000 && playerShop.dailyBonusClaimed) {
-          return await handleMessage(context, `🕒 **${name}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-
-        const userData = await getUserData(userId);
+        const now = Date.now();
+        const oneDayAgo = now - 86400000;
 
         const suspenseMessage = await handleMessage(context, "🎁 Claiming your daily bonus... Please wait! 🎉");
-        setTimeout(async () => {
 
-          let reward = 100;
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Add suspense delay
 
-          const passInfo = await checkPassValidity(userId);
-          let additionalReward;
-          if (passInfo.isValid) {
-            if (passInfo.passType !== "titan") {
-              additionalReward = 25;
+        // Fetch playerShop to get current reputation
+        const userData = await getUserData(userId);
+        const playerShop = userData.shop;
 
-              reward += additionalReward;
-            }
+        let reward = 100;
+        let additionalReward = 0;
+        let passInfo = {
+          isValid: false,
+          passType: null
+        };
+
+        try {
+          passInfo = await checkPassValidity(userId);
+          if (passInfo.isValid && passInfo.passType !== "titan") {
+            additionalReward = 25;
+            reward += additionalReward;
           }
+        } catch (err) {
+          console.error("Error checking pass validity:", err);
+        }
 
-          playerShop.dailyBonusClaimed = true;
-          playerShop.money += reward;
-          let loyaltyPointsGained = playerShop.reputation > 150 ? 20 * Math.floor(playerShop.reputation/150): 20;
-          playerShop.loyaltyPoints += loyaltyPointsGained;
-          playerShop.reputation += 1;
-          playerShop.lastVisit = Date.now();
-          await playerShop.save();
+        const currentReputation = playerShop.reputation || 0;
+        const loyaltyPointsGained = currentReputation > 150
+        ? 20 * Math.floor(currentReputation / 150): 20;
 
-          const bonusEmbed = new EmbedBuilder()
-          .setTitle("🍧 𝐃𝐚𝐢𝐥𝐲 𝐁𝐨𝐧𝐮𝐬 𝐂𝐥𝐚𝐢𝐦𝐞𝐝!")
-          .setDescription(`**${name}** 𝗋𝖾𝖼𝖾𝗂𝗏𝖾𝖽 𝗍𝗈𝖽𝖺𝗒'𝗌 𝗋𝖾𝗐𝖺𝗋𝖽, 𝗂𝗇𝖼𝗅𝗎𝖽𝗂𝗇𝗀 **+1 reputation** 𝗉𝗈𝗂𝗇𝗍𝗌! <:celebration:1368113208023318558>\n\n-# 𝘠𝘰𝘶 𝘤𝘢𝘯 𝘤𝘭𝘢𝘪𝘮 ✪ **20 loyalty** 𝘱𝘰𝘪𝘯𝘵𝘴, 𝘱𝘭𝘶𝘴 ***20*** 𝘧𝘰𝘳 𝘦𝘷𝘦𝘳𝘺 ***150*** 𝘳𝘦𝘱𝘶𝘵𝘢𝘵𝘪𝘰𝘯!`)
-          .addFields(
-            {
-              name: "<:creamcash:1309495440030302282> cash", value: `**+${reward}** ${passInfo.isValid && passInfo.passType !== "titan" ? "*(+25 bonus)* ": ""}cash`
+        // Try atomic update only if lastVisit is older than 1 day
+        const updatedShop = await PlayerShopModel.findOneAndUpdate(
+          {
+            userId,
+            $or: [{
+              lastVisit: {
+                $lt: oneDayAgo
+              }
             },
-            {
-              name: "✪⁠ Loyalty Points", value: `**+${loyaltyPointsGained}** Points`
+              {
+                lastVisit: {
+                  $exists: false
+                }
+              }]
+          },
+          {
+            $inc: {
+              money: reward,
+              loyaltyPoints: loyaltyPointsGained,
+              reputation: 1
+            },
+            $set: {
+              lastVisit: now,
+              dailyBonusClaimed: true
             }
-          )
-          .setColor(0xefb7b7)
-          .setFooter({
-            text: "Come back tomorrow for more rewards!"
-          });
+          },
+          {
+            new: true
+          }
+        );
 
+        if (!updatedShop) {
           return suspenseMessage.edit({
-            embeds: [bonusEmbed], content: null
+            content: `🕒 **${name}**, you've already claimed your ice cream shop daily bonus today. Come back tomorrow! 🍯`,
+            embeds: []
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        },
-          2000); // Adding suspense with a 2-second delay
+        }
+
+        // Build and send reward embed
+        const bonusEmbed = new EmbedBuilder()
+        .setTitle("🍧 𝐃𝐚𝐢𝐥𝐲 𝐁𝐨𝐧𝐮𝐬 𝐂𝐥𝐚𝐢𝐦𝐞𝐝!")
+        .setDescription(`**${name}** 𝗋𝖾𝖼𝖾𝗂𝗏𝖾𝖽 𝗍𝗈𝖽𝖺𝗒'𝗌 𝗋𝖾𝗐𝖺𝗋𝖽, 𝗂𝗇𝖼𝗅𝗎𝖽𝗂𝗇𝗀 **+1 reputation** 𝗉𝗈𝗂𝗇𝗍𝗌! <:celebration:1368113208023318558>\n\n-# 𝘠𝘰𝘶 𝘤𝘢𝘯 𝘤𝘭𝘢𝘪𝘮 ✪ **20 loyalty** 𝘱𝘰𝘪𝘯𝘵𝘴, 𝘱𝘭𝘶𝘴 ***20*** 𝘧𝘰𝘳 𝘦𝘷𝘦𝘳𝘺 ***150*** 𝘳𝘦𝘱𝘶𝘵𝘢𝘵𝘪𝘰𝘯!`)
+        .addFields(
+          {
+            name: "<:creamcash:1309495440030302282> cash",
+            value: `**+${reward}** ${additionalReward ? "*(+25 bonus)* ": ""}cash`
+          },
+          {
+            name: "✪⁠ Loyalty Points",
+            value: `**+${loyaltyPointsGained}** Points`
+          }
+        )
+        .setColor(0xefb7b7)
+        .setFooter({
+          text: "Come back tomorrow for more rewards!"
+        });
+
+        return suspenseMessage.edit({
+          embeds: [bonusEmbed],
+          content: null
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // help

@@ -117,7 +117,7 @@ export default {
   related: ["ships", "active", "stat",
     "profile"],
   emoji: "<:ship8:1316615694996996096>",
-  cooldown: 600000,
+  cooldown: 10000,
   category: "⚓ Pirates",
 
   // Execute function based on the command alias

@@ -28,7 +28,11 @@ export default {
         "toni",
         "spirited",
         "tokyo",
-        "rubi"
+        "rubi",
+        "jin",
+        "solo",
+        "chai",
+        "coffee"
       ];
 
       const Container = new ContainerBuilder()
@@ -128,6 +132,40 @@ export default {
           media =>
           media.addItems(
             item => item.setURL(`https://cdn.discordapp.com/attachments/1346413292242866208/1384924789336051815/image0-21.gif?ex=68543338&is=6852e1b8&hm=ab5a3ac49668a7af41a9ad2875805df9259a68d679638a7aa9915bf39d15a34c&`)
+          ))
+      }
+
+      if (keyword === "solo") {
+        Container.addMediaGalleryComponents(
+          media =>
+          media.addItems(
+            item => item.setURL(`https://cdn.discordapp.com/attachments/1346413292242866208/1385624183601500201/solo-leveling-gourajgs.gif?ex=6856be95&is=68556d15&hm=153af384a032d5856fd4f3cac6e11b4082b4fc95a36337e84d4a6318ddb1b34d&`)
+          ))
+      }
+
+
+      if (keyword === "jin") {
+        Container.addMediaGalleryComponents(
+          media =>
+          media.addItems(
+            item => item.setURL(`https://cdn.discordapp.com/attachments/1346413292242866208/1385624182842195978/solo-leveling-solo-leveling-season-2_1.gif?ex=6856be94&is=68556d14&hm=6701166be4f3e0ac0419c90ac1edc03ea3338dd480dca43bc60651cd395d7d9b&`)
+          ))
+      }
+
+
+      if (keyword === "chai") {
+        Container.addMediaGalleryComponents(
+          media =>
+          media.addItems(
+            item => item.setURL(`https://cdn.discordapp.com/attachments/1346413292242866208/1385626070564343938/giphy.gif?ex=6856c056&is=68556ed6&hm=f9cee48e8e03f5921668527848371f3e7050863d88fceb2e232a73e1b237dc2b&`)
+          ))
+      }
+
+      if (keyword === "coffee") {
+        Container.addMediaGalleryComponents(
+          media =>
+          media.addItems(
+            item => item.setURL(`https://cdn.discordapp.com/attachments/1346413292242866208/1385626071415914638/100.webp?ex=6856c057&is=68556ed7&hm=97cfe39909faffa59d77cd0a95734ecfc2a120e27092aef12c93020fd7587463&`)
           ))
       }
 

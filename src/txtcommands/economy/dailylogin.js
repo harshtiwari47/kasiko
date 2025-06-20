@@ -9,6 +9,12 @@ import {
 } from '../../../helper.js';
 
 import {
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
+} from 'discord.js';
+
+import {
   checkPassValidity
 } from "../explore/pass.js";
 
@@ -35,11 +41,6 @@ export async function dailylogin(context) {
       const timeLeft = nextClaim - (currentTime - Number(userData.dailyReward));
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-
-      return await handleMessage(context,
-        `💠  Sorry **${name}**, you have **already claimed** your daily reward for today! 🍹\n\n` +
-        `🗯️ ***_Next reward_ in ⏳ ${hours} hours and ${minutes} minutes***. 🎁`
-      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (userData) {
       // Calculate the last claim date
       const lastClaimDate = userData.dailyReward ? Number(userData.dailyReward): 0;
@@ -121,6 +122,33 @@ export default {
     "profile"],
   emoji: "<:gift:1350355327018729517>",
   cooldown: 86400000,
+  cooldownMessage(ttl, name) {
+    const hours = Math.floor(ttl / 3600);
+    const minutes = Math.floor((ttl % 3600) / 60);
+    const seconds = ttl % 60;
+
+    let timeStr = "";
+    if (hours > 0) timeStr += `${hours} hour${hours !== 1 ? 's': ''}`;
+    if (hours > 0 && (minutes > 0 || seconds > 0)) timeStr += " ";
+
+    if (minutes > 0) timeStr += `${minutes} minute${minutes !== 1 ? 's': ''}`;
+    if (minutes > 0 && seconds > 0) timeStr += " ";
+
+    if (seconds > 0) timeStr += `${seconds} second${seconds !== 1 ? 's': ''}`;
+
+    const container = new ContainerBuilder()
+    .addTextDisplayComponents(td =>
+      td.setContent(`💠  Sorry **${name}**, you have **already claimed** your daily reward for today! 🍹`)
+    )
+    .addTextDisplayComponents(td =>
+      td.setContent(`🗯️ ***_Next reward_ in <:kasiko_stopwatch:1355056680387481620> ${timeStr}***. 🎁`)
+    );
+
+    return {
+      components: [container],
+      flags: MessageFlags.IsComponentsV2
+    };
+  },
   category: "🏦 Economy",
 
   // Main function to execute the daily login reward logic

@@ -5,7 +5,9 @@ import {
   InteractionType,
   PermissionsBitField,
   ActivityType,
-  ChannelType
+  ChannelType,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import dotenv from 'dotenv';
 
@@ -90,22 +92,6 @@ client.on('messageCreate', async (message) => {
 
     //return if author is bot
     if (message.author.bot || message.system || message.webhookId) return;
-
-    /*
-    * custom feature for server
-    */
-    // Check if the message comes from the specified server.
-    if (message.guild && (message.guild.id === "530977124195237918" || message.guild.id === "1306509956253487154" || message.guild.id === "1300075317448278060" || message.guild.id === "1337401490054316053")) {
-      const regex = /https?:\/\/(?:www\.)?instagram\.com\/reel\/([A-Za-z0-9_-]+)(?:\/\S*)?/;
-      const match = message.content.match(regex);
-      if (match) {
-        const reelId = match[1];
-        const ddInstagramLink = `<@${message.author.id}>\nhttps://www.instagramez.com/reel/${reelId}/`;
-        // Send the instagramez link as a response.
-        await message.channel.send(ddInstagramLink).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        await message.delete().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-    }
 
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 
@@ -243,8 +229,9 @@ client.on('messageCreate', async (message) => {
     }
 
     try {
-      const cooldownKey = `cooldown:${commandName}:${userId}`;
-      const cooldownDuration = 10; // seconds
+      const canonical = command.name;
+      const cooldownKey = `cooldown:${canonical}:${userId}`;
+      const cooldownDuration = Math.ceil(command.cooldown/1000); // seconds
 
       // Atomic cooldown set
       const cooldownSet = await redisClient.set(cooldownKey, '1', {
@@ -257,10 +244,14 @@ client.on('messageCreate', async (message) => {
         const violations = await redisClient.incr(violationsKey);
 
         // Set violation window on first offense
-        if (violations === 1) await redisClient.expire(violationsKey, 60);
+        if (violations === 1) await redisClient.expire(violationsKey, 45);
 
-        // Ban after 4 violations in 60 seconds
-        if (violations >= 5) {
+        if (violations === 8) {
+          message.channel.send(`⛔ Please avoid excessive spamming while on cooldown!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+
+        // Ban after 10 violations in 60 seconds
+        if (violations >= ((command?.cooldown || 10000) > 60000 ? 20: 10)) {
           await redisClient.setEx(banKey, 600, '1'); // 10-minute ban
           await redisClient.del(violationsKey);
           return message.channel.send(`⛔ Command access revoked for 10 minutes due to spamming`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -268,10 +259,15 @@ client.on('messageCreate', async (message) => {
 
         const ttl = await redisClient.ttl(cooldownKey);
         try {
-          const warning = await message.channel.send(
-            `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for this command! ***Wait \` ${ttl} seconds \`***.`
-          );
-          setTimeout(() => warning.delete().catch(() => {}), 5000);
+          let warning;
+          if (command?.cooldownMessage && typeof command.cooldownMessage === "function") {
+            warning = await message?.channel?.send(command?.cooldownMessage(ttl, message.author.username.toUpperCase()));
+          } else {
+            warning = await message?.channel?.send({
+              content: `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for **\` ${commandName} \`** command! ***Wait \` ${ttl} seconds \`***.`
+            });
+          }
+          setTimeout(() => warning?.delete().catch(() => {}), 5000);
           return;
         } catch (errMsg) {}
       }

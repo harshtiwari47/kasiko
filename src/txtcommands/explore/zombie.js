@@ -864,7 +864,7 @@ export default {
   aliases: ["survive",
     "zombies",
     "z"],
-  cooldown: 90000,
+  cooldown: 10000,
   emoji: "<:zombie:1366632304054632528>",
   example: ["zombie",
     "z",

@@ -13,7 +13,7 @@ export default {
   related: ["aquarium"],
   emoji: "💵",
   cooldown: 43200000,
-  // 10 seconds cooldown
+  // seconds cooldown
   category: "🌊 Ocean Life",
 
   // Main function to execute the collect command

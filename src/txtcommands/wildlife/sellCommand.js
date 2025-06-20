@@ -205,7 +205,7 @@ export default {
   emoji: "🦊",
   related: ["hunt",
     "cage"],
-  cooldown: 5000,
+  cooldown: 10000,
   category: "🦌 Wildlife",
 
   execute: async (args, context) => {

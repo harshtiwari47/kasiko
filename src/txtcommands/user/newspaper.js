@@ -80,7 +80,7 @@ export default {
   example: ["news list"],
   emoji: "🗞️",
   category: "📰 Information",
-  cooldown: 5000,
+  cooldown: 10000,
   // 5 seconds cooldown
 
   execute: async (args, message) => {

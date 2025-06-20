@@ -561,7 +561,7 @@ export default {
     "structures",
     "buildings",
     "houses"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🛍️ Shop",
 
   // Execute function when the command is called

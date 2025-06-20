@@ -308,8 +308,7 @@ export default {
     args: "",
     example: ["cr"],
     emoji: "🚨",
-    cooldown: 15000,
-    // 15 seconds cooldown
+    cooldown: 10000,
     category: "🏦 Economy",
     execute: async (args, message) => {
     let crimeReply = await crime(message.author.id, message.channel, message.author);

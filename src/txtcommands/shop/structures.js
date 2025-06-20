@@ -571,7 +571,7 @@ export default {
   related: ["shop",
     "properties",
     "market"],
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🛍️ Shop",
 
   // Execute function when command is called

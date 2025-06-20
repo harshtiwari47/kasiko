@@ -112,8 +112,8 @@ export default {
     "spy",
     "mission"],
   emoji: "🕵️‍♂️",
-  cooldown: 15000,
-  // 15 seconds cooldown
+  cooldown: 10000,
+  // 10 seconds cooldown
   category: "🏦 Economy",
   execute: async (args, message) => {
     let missionReply = await spyMission(message.author.id, message.channel, message.author);

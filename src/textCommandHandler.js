@@ -1,6 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-
+import {
+  formatMs,
+  normalizeCooldownMs
+} from '../helper.js';
 const __dirname = path.dirname(new URL(import.meta.url).pathname); // Get the directory of the current file
 
 const txtcommands = new Map();
@@ -16,6 +19,15 @@ const loadCommands = async (directory) => {
       if (file.endsWith('.js')) {
         const command = await import(`./txtcommands/${category}/${file}`);
         if (command.default && command.default.name) {
+          const normalized = normalizeCooldownMs(command.default);
+          if (normalized !== command.default.cooldown) {
+            console.warn(
+              `Command "${command.default.name}": cooldown metadata adjusted from ${command.default.cooldown} to ${normalized} ms.`
+            );
+          }
+          
+          command.default.cooldown = normalized;
+
           txtcommands.set(command.default.name, command.default);
 
           // Add aliases if they exist

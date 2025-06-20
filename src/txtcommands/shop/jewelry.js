@@ -406,7 +406,7 @@ export default {
     "strips"],
   emoji: "<:ring3:1324632393121796106>",
   args: "[buy|sell] <item_id>",
-  cooldown: 4000,
+  cooldown: 10000,
   category: "🛍️ Shop",
   execute: (args, context) => handleJewelryCommands(context, args)
 };

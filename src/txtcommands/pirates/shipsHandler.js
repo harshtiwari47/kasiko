@@ -395,7 +395,7 @@ export default {
   related: ["battle",
     "stat",
     "profile"],
-  cooldown: 8000,
+  cooldown: 10000,
   emoji: "⛵",
   category: "⚓ Pirates",
 

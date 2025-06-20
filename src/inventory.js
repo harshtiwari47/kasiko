@@ -117,7 +117,8 @@ async function generalShare(args, context, item, customHandler = null) {
 
     const Container = new ContainerBuilder()
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`<a:ext_heart_pump:1359578512893149246> **${name}** has sent **${amount}** ${item.emoji} **${item.name}** to <@${targetUser.id}>!`)
+      textDisplay => textDisplay.setContent(`<a:ext_heart_pump:1359578512893149246> **${name}** has sent **${amount}** ${item.emoji} **${item.name}** to <@${targetUser.id}>!`),
+      textDisplay => textDisplay.setContent(`-#  ✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
     );
 
     return await handleMessage(context, {
@@ -261,7 +262,10 @@ export const ITEM_DEFINITIONS = {
             'family.bondXP': recipientData.family.bondXP
           });
 
-          return handleMessage(context, `💖 | **${name}** sent **${amount}** roses to their spouse <@${toUser.id}>! 💞 BondXP increased by ${bondGain}!`);
+          return handleMessage(context, {
+            components: [new ContainerBuilder().addTextDisplayComponents(textDisplay => textDisplay.setContent(`💖 | **${name}** sent **${amount}** roses to their spouse <@${toUser.id}>! 💞 BondXP increased by ${bondGain}!`))],
+            flags: MessageFlags.IsComponentsV2
+          })
         } else {
           await updateUser(id, {
             [`inventory.${this.id}`]: senderInv - amount
@@ -271,7 +275,11 @@ export const ITEM_DEFINITIONS = {
             [`inventory.${this.id}`]: recipientInv + amount
           });
 
-          return handleMessage(context, `${this.emoji} | **${name}** has sent **${amount}** roses to <@${toUser.id}>!`);
+          return handleMessage(context, {
+            components: [new ContainerBuilder().addTextDisplayComponents(textDisplay => textDisplay.setContent(`<a:ext_heart_pump:1359578512893149246> **${name}** has sent ${this.emoji} **${amount}** roses to <@${toUser.id}>!`),
+              textDisplay => textDisplay.setContent(`-#  ✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`))],
+            flags: MessageFlags.IsComponentsV2
+          });
         }
       });
     }
@@ -412,7 +420,7 @@ export const ITEM_DEFINITIONS = {
     description: 'An alcoholic drink. Can increase your crime rewards by 100%, but the chances of losing remain the same. They can be found in ` beg `, ` loot `, and during Kasiko server events.',
     source: ["loot",
       "beg"],
-    emoji: '<:bear:1385131543948820520>',
+    emoji: '<:drink:1385131543948820520>',
     useable: false,
     activatable: true,
     sellable: false,

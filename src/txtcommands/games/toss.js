@@ -106,8 +106,8 @@ export default {
     "dice",
     "guess"],
   emoji: "<:StillCoin:1326414822841253980>",
-  cooldown: 8000,
-  // 8 seconds cooldown
+  cooldown: 10000,
+  // 10 seconds cooldown
   category: "🎲 Games",
 
   // Main function to execute the coin toss logic

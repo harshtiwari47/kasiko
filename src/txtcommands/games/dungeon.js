@@ -332,7 +332,7 @@ export default {
   aliases: [],
   args: "<subcommand> [options]",
   usage: "dungeon <explore|stats|inventory|army|help> [difficulty]",
-  cooldown: 15000,
+  cooldown: 10000,
   visible: false,
   category: "🎲 Games",
   async execute(args, message) {
