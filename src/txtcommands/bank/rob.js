@@ -374,7 +374,7 @@ export default {
   aliases: [],
   args: "<target>",
   example: ["rob @player"],
-  cooldown: 1800000,
+  cooldown: 18000000,
   related: ["give",
     "bank"],
   emoji: "<:moneybag:1365976001179553792>",
