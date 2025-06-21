@@ -275,7 +275,7 @@ export async function huntCommand(context, {
     .addSectionComponents(
       section => section
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`# **${chosenAnimalData.emoji} ${chosenAnimalData?.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**`)
+        textDisplay => textDisplay.setContent(`# **${chosenAnimalData.emoji} ${chosenAnimalData?.name} ${chosenAnimalData.type === "exclusive" ? "\n-# <:exclusive:1347533975840882708> 𝐄𝐗𝐂𝐋𝐔𝐒𝐈𝐕𝐄": ""}**`)
       )
       .setThumbnailAccessory(
         thumbnail => thumbnail
