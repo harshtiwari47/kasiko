@@ -270,12 +270,12 @@ export async function huntCommand(context, {
     const Container = new ContainerBuilder()
     .setAccentColor(Math.floor(Math.random() * 16777216))
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}** & caught:`)
+      textDisplay => textDisplay.setContent(`<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}** & caught: ${chosenAnimalData.type === "exclusive" ? "\n-# <:exclusive:1347533975840882708> 𝐸𝑋𝐶𝐿𝑈𝑆𝐼𝑉𝐸": ""}`)
     )
     .addSectionComponents(
       section => section
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`# **${chosenAnimalData.emoji} ${chosenAnimalData?.name} ${chosenAnimalData.type === "exclusive" ? "\n-# <:exclusive:1347533975840882708> 𝐄𝐗𝐂𝐋𝐔𝐒𝐈𝐕𝐄": ""}**`)
+        textDisplay => textDisplay.setContent(`# **${chosenAnimalData.emoji} ${chosenAnimalData?.name}**`)
       )
       .setThumbnailAccessory(
         thumbnail => thumbnail
