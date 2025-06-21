@@ -30,7 +30,7 @@ export function discordUser(context) {
     avatar: null,
     name: null
   }
-  
+
   if (!context.user && !context.author && context.id && context.username) {
     context.user = context;
   }
@@ -146,12 +146,12 @@ export function determineRPSWinner(a, b) {
 // Other helpers
 
 /**
- * Read command.cooldown (expected in milliseconds).
- * If missing or not a positive number, default to MIN_MS.
- * Clamp to [MIN_MS, MAX_MS].
- */
+* Read command.cooldown (expected in milliseconds).
+* If missing or not a positive number, default to MIN_MS.
+* Clamp to [MIN_MS, MAX_MS].
+*/
 export function normalizeCooldownMs(command) {
-  const MIN_MS = 5 * 1000;            // 5 seconds
+  const MIN_MS = 5 * 1000; // 5 seconds
   const MAX_MS = 2 * 24 * 60 * 60 * 1000; // 2 days = 172,800,000 ms
 
   let cdMs = command.cooldown;
@@ -195,6 +195,22 @@ export function formatMs(ms) {
     return '1s';
   }
   return units.join(' ');
+}
+
+export function formatTTL(ttl) {
+  const days = Math.floor(ttl / 86400);
+  const hours = Math.floor((ttl % 86400) / 3600);
+  const minutes = Math.floor((ttl % 3600) / 60);
+  const seconds = ttl % 60;
+
+  let parts = [];
+
+  if (days > 0) parts.push(`${days} day${days !== 1 ? 's': ''}`);
+  if (hours > 0) parts.push(`${hours} hour${hours !== 1 ? 's': ''}`);
+  if (minutes > 0) parts.push(`${minutes} minute${minutes !== 1 ? 's': ''}`);
+  if (seconds > 0 || parts.length === 0) parts.push(`${seconds} second${seconds !== 1 ? 's': ''}`);
+
+  return parts.join(" ");
 }
 
 

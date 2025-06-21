@@ -54,6 +54,10 @@ import {
 } from 'discord.js';
 
 import {
+  formatTTL
+} from "./helper.js";
+
+import {
   scheduleReminders
 } from "./scheduler.js";
 
@@ -263,8 +267,9 @@ client.on('messageCreate', async (message) => {
           if (command?.cooldownMessage && typeof command.cooldownMessage === "function") {
             warning = await message?.channel?.send(command?.cooldownMessage(ttl, message.author.username.toUpperCase()));
           } else {
+            const ttlFor = formatTTL(ttl);
             warning = await message?.channel?.send({
-              content: `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for **\` ${commandName} \`** command! ***Wait \` ${ttl} seconds \`***.`
+              content: `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for **\` ${commandName} \`** command! ***Wait \` ${ttlFor} \`***.`
             });
             setTimeout(() => warning?.delete().catch(() => {}), 5000);
           }

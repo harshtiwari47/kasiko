@@ -3,7 +3,9 @@ import fs from 'fs';
 import path from 'path';
 
 import {
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 
 import {
@@ -253,36 +255,43 @@ export async function huntCommand(context, {
     // Construct the success embed
     const lines = [];
     const lines2 = [];
-    lines.push(`## 🅷🆄🅽🆃\n<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}**...`);
     if (usedBoosters.length > 0) {
       lines.push(
         `> *Used Boosters:* \`${usedBoosters.join(', ')}\``
       );
     }
-    lines2.push(
-      `# **${chosenAnimalData.emoji} ${chosenAnimalData?.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**\n`
-    );
-    lines2.push(`-# 𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`);
+
     if (newlyAcquiredBooster) {
       lines.push(
         `\n**Lucky find!** You also acquired a new booster: \`${newlyAcquiredBooster}\``
       );
     }
-
-    const embed = new EmbedBuilder().setDescription(lines.join('\n'))
-    .setThumbnail(`https://cdn.discordapp.com/emojis/1363425460394135714.png`)
-
-    const embed2 = new EmbedBuilder().setDescription(lines2.join('\n'))
-    .setAuthor({
-      name: `You successfully caught:`, iconURL: profile
-    })
-    .setFooter({
-      text: "Use 𝙘𝙖𝙜𝙚 for hunted animals"
-    })
-    .setColor('Random')
+    
+    const Container = new ContainerBuilder()
+    .setAccentColor(Math.floor(Math.random() * 16777216))
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`<:forest_tree:1354366758596776070> **${username}** went hunting in **${location}** & caught:`)
+    )
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`# **${chosenAnimalData.emoji} ${chosenAnimalData?.name} ${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708>": ""}**`)
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Hunting Gun')
+        .setURL("https://cdn.discordapp.com/emojis/1363425460394135714.png")
+      )
+    )
+    .addSeparatorComponents(separate => separate)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# 𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`),
+      textDisplay => textDisplay.setContent(`-# Use 𝙘𝙖𝙜𝙚 for hunted animals`)
+    )
 
     return handleMessage(context, {
-      embeds: [embed, embed2]
+      components: [Container],
+      flags: MessageFlags.IsComponentsV2
     });
   } catch (error) {
     console.error(error);

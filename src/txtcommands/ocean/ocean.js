@@ -103,7 +103,7 @@ async function checkExtraReward(userId, message) {
 
       // Return an embed about the pet food
       const foodEmbed = new EmbedBuilder()
-      .setTitle("🍖 𝗙𝗼𝘂𝗻𝗱 𝗣𝗲𝘁 𝗙𝗼𝗼𝗱!")
+      .setTitle("<:pet_food:1385884583077351464> 𝗙𝗼𝘂𝗻𝗱 𝗣𝗲𝘁 𝗙𝗼𝗼𝗱!")
       .setDescription(`**${message.author.username}** found **2 sea food** for their pets in the ocean! 🐱`)
 
       return foodEmbed;

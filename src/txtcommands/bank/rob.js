@@ -4,13 +4,16 @@ import {
 } from '../../../database.js';
 import {
   EmbedBuilder,
-  DiscordAPIError
+  DiscordAPIError,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
   logError
 } from '../../../logger.js'; // Custom logging function for errors
 import {
-  checkTimeGap
+  checkTimeGap,
+  formatTTL
 } from '../../../helper.js';
 
 import {
@@ -35,7 +38,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
     // The robber needs more than 5000 cash to attempt a robbery
     if (userCash < 5000) {
-      return message.channel.send(`ⓘ **${username}**, you need at least <:kasiko_coin:1300141236841086977> **5000** cash to attempt a robbery!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`🚫 **${username}**, 𝘪𝘵 𝘵𝘢𝘬𝘦𝘴 𝘢𝘵 𝘭𝘦𝘢𝘴𝘵 <:kasiko_coin:1300141236841086977> 5,000 𝘵𝘰 𝘱𝘶𝘭𝘭 𝘰𝘧𝘧 𝘢 𝘳𝘰𝘣𝘣𝘦𝘳𝘺. 𝘙𝘪𝘨𝘩𝘵 𝘯𝘰𝘸, 𝘺𝘰𝘶'𝘳𝘦 𝘳𝘶𝘯𝘯𝘪𝘯𝘨 𝘰𝘯 𝘩𝘰𝘱𝘦𝘴 𝘢𝘯𝘥 𝘶𝘯𝘱𝘢𝘪𝘥 𝘣𝘪𝘭𝘭𝘴.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (targetCash < 1000) {
@@ -43,7 +46,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
     }
 
     if (userData.lastRobbery && checkTimeGap(userData.lastRobbery, Date.now()) < 6) {
-      const remainingTime = 6 - checkTimeGap(userData.lastRobbery, Date.now(), {
+      const remainingTime = 5 - checkTimeGap(userData.lastRobbery, Date.now(), {
         format: 'hours'
       }).toFixed(2);
       return message.channel.send(`🎃 <@${userId}>, you cannot rob again for another ${remainingTime.toFixed(1)} hours.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -371,11 +374,26 @@ export default {
   aliases: [],
   args: "<target>",
   example: ["rob @player"],
-  cooldown: 43200000,
+  cooldown: 1800000,
   related: ["give",
     "bank"],
   emoji: "<:moneybag:1365976001179553792>",
   category: "🏦 Economy",
+  cooldownMessage(ttl, name) {
+    const timeStr = formatTTL(ttl);
+    const container = new ContainerBuilder()
+    .addTextDisplayComponents(td =>
+      td.setContent(`🎃 Sorry **${name}**, you cannot rob again for another  <:kasiko_stopwatch:1355056680387481620> **${timeStr}**`)
+    )
+    .addTextDisplayComponents(td =>
+      td.setContent(`-# 𝘠𝘰𝘶𝘳 𝘳𝘰𝘣𝘣𝘪𝘯𝘨 𝘤𝘢𝘳𝘦𝘦𝘳 𝘪𝘴 𝘤𝘶𝘳𝘳𝘦𝘯𝘵𝘭𝘺 𝘰𝘯 𝘢 𝘤𝘰𝘧𝘧𝘦𝘦 𝘣𝘳𝘦𝘢𝘬.`)
+    );
+
+    return {
+      components: [container],
+      flags: MessageFlags.IsComponentsV2
+    };
+  },
   execute: async (args,
     message) => {
     const action = args[0] ? args[0].toLowerCase(): null;

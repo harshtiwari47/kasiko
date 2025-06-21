@@ -3,7 +3,13 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ComponentType
+  ComponentType,
+  ContainerBuilder,
+  MessageFlags,
+  SeparatorSpacingSize,
+  StringSelectMenuOptionBuilder,
+  StringSelectMenuBuilder,
+  TextDisplayBuilder
 } from "discord.js";
 import UserPet from "../../../models/Pet.js";
 import petImages from "./helpers/petImages.json" with {
@@ -37,16 +43,20 @@ async function handleMessage(context, data) {
 }
 
 // Function to retrieve pet image based on type and level
-function getPetImage(petType, petLevel) {
+function getPetImage(petID, petLevel) {
   if (petLevel > 10) {
     petLevel = 10;
   }
 
-  if (petImages[petType] && petImages[petType][petLevel]) {
-    return petImages[petType][petLevel];
+  if (petImages[petID] && petImages[petID][petLevel]) {
+    return petImages[petID][petLevel];
   }
 
-  return null;
+  if (petImages[petID] && !petImages[petID][petLevel]) {
+    return petImages[petID][Object.keys(petImages[petID]).length - 1];
+  }
+
+  return "https://harshtiwari47.github.io/kasiko-public/images/pets/cat-lvl-1.jpg";
 }
 
 // Handler: Display help embed with all pet commands
@@ -117,7 +127,7 @@ async function petFeed(userPetData, petId) {
   await userPetData.save();
 
   return {
-    content: `**${pet.name}** has been fed and is happy! 🍖`,
+    content: `**${pet.name}** has been fed and is happy! <:pet_food:1385884583077351464>`,
     data: userPetData
   }
 }
@@ -259,7 +269,7 @@ async function petAction(userPetData, petId, action) {
 // Handler: Display available pet food
 async function petFood(context, userPetData) {
   await handleMessage(context, {
-    content: `🍖 You have ${userPetData.food} food remaining.`
+    content: `<:pet_food:1385884583077351464> You have ${userPetData.food} food remaining.`
   });
 }
 
@@ -294,8 +304,10 @@ async function petList(context, userPetData) {
 
 // Handler: View active pet with interactive buttons
 async function petView(context, userPetData, petId) {
+  const {
+    name: UserName
+  } = discordUser(context);
   let pet = userPetData.pets[petId];
-  const imgUrls = getPetImage(pet.petId, pet.level);
 
   const profile = context.user
   ? context.user.displayAvatarURL({
@@ -304,63 +316,101 @@ async function petView(context, userPetData, petId) {
     dynamic: true
   });
 
-  const buildMainEmbeds = (pet, updateMessage) => {
+  const buildMainEmbeds = (pet, updateMessage, userPetData) => {
+    const imgUrls = getPetImage(pet.petId, pet.level);
 
     const threshold = 100;
     const nextLevelExp = threshold * (pet.level + 1) * (pet.level + 1);
 
-    const returnEmbed1 = new EmbedBuilder()
-    .setTitle(`${pet.name} (Level ${pet.level})`)
-    .setDescription(
-      `-# **TYPE** ⨳ ${pet.type}\n` +
-      `- ***FEED COUNT*** ${pet.feed}\n` +
-      `- ***EXPERIENCE*** ${pet.exp} / ${nextLevelExp}`
+    const list = userPetData.pets
+    .map((pet, index) =>
+      new StringSelectMenuOptionBuilder()
+      .setLabel(pet.name)
+      .setValue(pet.petId)
+      .setDescription(`${pet.type} level ${pet.level}`)
+      .setEmoji(petImages[pet.petId].emoji)
+      .setDefault((userPetData?.active || 0) === index)
+    );
+
+
+    const Container = new ContainerBuilder()
+    .setAccentColor(Math.floor(Math.random() * 16777216))
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`-# **${UserName}** ✶ Pet: __${pet.type}__`),
+        textDisplay => textDisplay
+        .setContent(
+          `## ${pet.name}`
+        ),
+        textDisplay => textDisplay.setContent(
+          `**LEVEL** ${pet.level}\n` +
+          `**FEED COUNT** ${pet.feed}\n` +
+          `**EXPERIENCE** ${pet.exp} / ${nextLevelExp}`
+        )
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Pet Image')
+        .setURL(imgUrls ? imgUrls[0]: null)
+      )
     )
-    .setThumbnail(imgUrls ? imgUrls[0]: null)
-    .setColor("#FF00FF");
+    .addSeparatorComponents(separate => separate.setSpacing(SeparatorSpacingSize.Large))
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# > ${!updateMessage ? petTalk(): updateMessage}`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# \` 𝗉𝖾𝗍 𝗁𝖾𝗅𝗉 \` 𝘧𝘰𝘳 𝘤𝘮𝘥𝘴  ⨳ <:pet_food:1385884583077351464> ${userPetData.food}`)
+    )
+    .addSeparatorComponents(separate => separate.setSpacing(SeparatorSpacingSize.Large))
+    .addActionRowComponents([
+      new ActionRowBuilder()
+      .addComponents(
+        new ButtonBuilder()
+        .setCustomId("pet_feed")
+        .setLabel("FEED")
+        .setEmoji({
+          id: "1385884583077351464"
+        })
+        .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+        .setCustomId("pet_pat")
+        .setLabel("PAT")
+        .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+        .setCustomId("pet_walk")
+        .setLabel("WALK")
+        .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+        .setCustomId("pet_exercise")
+        .setLabel("EXCERCISE")
+        .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+        .setCustomId("pet_play")
+        .setLabel("PLAY")
+        .setStyle(ButtonStyle.Secondary)
+      )
+    ])
 
-    const returnEmbed2 = new EmbedBuilder()
-    .setDescription(!updateMessage ? petTalk(): updateMessage)
-    .setAuthor({
-      name: "`𝗉𝖾𝗍 𝗁𝖾𝗅𝗉` 𝘧𝘰𝘳 𝘤𝘮𝘥𝘴" + `  ⨳ 🍖 ${userPetData.food}`, iconURL: profile
-    });
+    const selectior = new ActionRowBuilder().addComponents(
+      new StringSelectMenuBuilder()
+      .setCustomId("user_pets_options")
+      .setPlaceholder("Select Your Pet")
+      .addOptions(...list)
+    )
 
-    return [returnEmbed1,
-      returnEmbed2];
+    return [Container,
+      selectior];
   }
 
-  const embeds = buildMainEmbeds(pet, "");
+  const embeds = buildMainEmbeds(pet, "", userPetData);
 
   // Action row with buttons for interactive pet actions
-  const actionRow = new ActionRowBuilder()
-  .addComponents(
-    new ButtonBuilder()
-    .setCustomId("pet_feed")
-    .setLabel("🍖 𝗙𝗘𝗘𝗗")
-    .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-    .setCustomId("pet_pat")
-    .setLabel("☺️ 𝗣𝗔𝗧")
-    .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-    .setCustomId("pet_walk")
-    .setLabel("🚶🏻‍♂️ 𝗪𝗔𝗟𝗞")
-    .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-    .setCustomId("pet_exercise")
-    .setLabel("🤸🏻‍♂️ 𝗘𝗫𝗘𝗥𝗖𝗜𝗦𝗘")
-    .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-    .setCustomId("pet_play")
-    .setLabel("⚾ 𝗣𝗟𝗔𝗬")
-    .setStyle(ButtonStyle.Secondary)
-  );
-
   let sentMessage;
 
   const response = await handleMessage(context, {
-    embeds: embeds,
-    components: [actionRow]
+    components: embeds,
+    flags: MessageFlags.IsComponentsV2
   });
 
   if (context.isCommand) {
@@ -376,13 +426,47 @@ async function petView(context, userPetData, petId) {
   // Create collector to handle button clicks for 60 seconds
   const collector = sentMessage.createMessageComponentCollector({
     filter,
-    componentType: ComponentType.Button,
-    time: 60000
+    time: 150000
   });
 
   collector.on("collect", async interaction => {
     const id = interaction.customId;
-    await interaction.deferUpdate();
+    if (interaction.replied && interaction.deferred) return;
+
+    if (interaction.isAnySelectMenu()) {
+      await interaction.deferUpdate();
+
+      if (interaction.customId === "user_pets_options") {
+        const selectedValue = interaction.values[0];
+
+        const petFind = userPetData.pets.find(
+          p => p.petId.toLowerCase() === selectedValue.toLowerCase()
+        );
+
+        if (!petFind) {
+          return await interaction.editReply({
+            content: "⚠️ No pet found with that name."
+          });
+        }
+
+        userPetData.active = userPetData.pets.indexOf(petFind);
+        userPetData = await userPetData.save();
+
+        pet = userPetData.pets[userPetData?.active];
+        
+        petId = userPetData?.active || 0;
+
+        const embeds = buildMainEmbeds(pet, "", userPetData);
+        return await interaction.editReply({
+          components: embeds,
+          flags: MessageFlags.IsComponentsV2
+        });
+      }
+    }
+
+    if (!interaction.deferred) {
+      await interaction.deferUpdate();
+    }
     let response;
 
     switch (id) {
@@ -406,28 +490,28 @@ async function petView(context, userPetData, petId) {
         break;
     }
 
-    userPetData = response.data;
-    pet = userPetData.pets[petId];
+    userPetData = response?.data;
+    pet = userPetData?.pets[petId];
 
-    const embeds = buildMainEmbeds(pet, response.content);
+    const embeds = buildMainEmbeds(pet, response?.content, userPetData);
     await interaction.editReply({
-      embeds: embeds
+      components: embeds,
+      flags: MessageFlags.IsComponentsV2
+  });
   });
 
-    // Disable buttons after interaction
-  });
+collector.on("end",
+  async collected => {
+    try {
+      let newComp = sentMessage?.components?.[0]?.toJSON()?.components?.slice(0, 4);
+      newComp = new ContainerBuilder( {
+        components: newComp
+    });
 
-collector.on("end", async collected => {
-  try {
-    // Disable all buttons when collector ends
-    const disabledRow = new ActionRowBuilder().addComponents(
-      actionRow.components.map(button => button.setDisabled(true))
-    );
-
-    await sentMessage.edit({
-      components: [disabledRow]
-  });
-} catch (err) {}
+    await sentMessage?.edit({
+      components: [newComp]
+    });
+  } catch (err) {}
 });
 }
 
@@ -442,7 +526,8 @@ example: ["pet help"],
 cooldown: 10000,
 emoji: '<:panda_pet:1385131508028670044>',
 category: "🍬 Explore",
-async execute(args, context) {
+async execute(args,
+context) {
 const userId = context.user?.id || context.author.id;
 let userPetData = await UserPet.findOne({
 id: userId

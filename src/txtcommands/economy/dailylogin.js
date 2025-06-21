@@ -95,7 +95,7 @@ export async function dailylogin(context) {
         `## <:gift:1350355327018729517>  𝘿𝙖𝙞𝙡𝙮 𝙧𝙚𝙬𝙖𝙧𝙙 𝙘𝙡𝙖𝙞𝙢𝙚𝙙***!***\n` +
         `**${name}** 𝘳𝘦𝘤𝘦𝘪𝘷𝘦𝘥 <:kasiko_coin:1300141236841086977> **\`${rewardAmount}\`**  𝑪𝒂𝒔𝒉` +
         `${passInfo.isValid ? ` **(+ <:kasiko_coin:1300141236841086977>${additionalReward})**`: ""}\n\n` +
-        `<:left:1350355384111468576>   🍖 **2** 𝘱𝘦𝘵 𝘧𝘰𝘰𝘥.\n` +
+        `<:left:1350355384111468576>   <:pet_food:1385884583077351464> **2** 𝘱𝘦𝘵 𝘧𝘰𝘰𝘥.\n` +
         `<:left:1350355384111468576>  <:orange_fire:1335980766634709084> 𝙎𝙩𝙧𝙚𝙖𝙠  ~ **${userData.rewardStreak}** day(s).\n` +
         `-# ***ⴵ  Next reward can be claimed tomorrow.***`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
