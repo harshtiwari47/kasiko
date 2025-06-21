@@ -266,8 +266,8 @@ client.on('messageCreate', async (message) => {
             warning = await message?.channel?.send({
               content: `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for **\` ${commandName} \`** command! ***Wait \` ${ttl} seconds \`***.`
             });
+            setTimeout(() => warning?.delete().catch(() => {}), 5000);
           }
-          setTimeout(() => warning?.delete().catch(() => {}), 5000);
           return;
         } catch (errMsg) {}
       }

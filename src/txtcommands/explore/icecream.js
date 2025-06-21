@@ -510,10 +510,6 @@ export default {
 
         await new Promise(resolve => setTimeout(resolve, 2000)); // Add suspense delay
 
-        // Fetch playerShop to get current reputation
-        const userData = await getUserData(userId);
-        const playerShop = userData.shop;
-
         let reward = 100;
         let additionalReward = 0;
         let passInfo = {
@@ -531,12 +527,12 @@ export default {
           console.error("Error checking pass validity:", err);
         }
 
-        const currentReputation = playerShop.reputation || 0;
+        const currentReputation = playerShop?.reputation || 0;
         const loyaltyPointsGained = currentReputation > 150
         ? 20 * Math.floor(currentReputation / 150): 20;
 
         // Try atomic update only if lastVisit is older than 1 day
-        const updatedShop = await PlayerShopModel.findOneAndUpdate(
+        const updatedShop = await IceCreamShop.findOneAndUpdate(
           {
             userId,
             $or: [{
