@@ -5,7 +5,10 @@ import {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  ComponentType
+  ComponentType,
+  ContainerBuilder,
+  MessageFlags,
+  SeparatorSpacingSize
 } from 'discord.js';
 import path from 'path';
 import fs from 'fs';
@@ -14,20 +17,14 @@ import {
 } from 'url';
 
 import {
-  categoriesArray
-} from "../../categories.js";
+  handleMessage as replyOrSend
+} from "../../../helper.js";
 
-async function replyOrSend(ctx, options) {
-  try {
-    if (ctx.author || typeof ctx.editReply !== 'function') {
-      return ctx.channel.send(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    if (ctx.deferred || ctx.replied) {
-      return ctx.editReply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    return ctx.reply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } catch (e) {}
-}
+import {
+  categoriesArray,
+  categoryMappings,
+  categoriesEmoji
+} from "../../categories.js";
 
 async function handleCategoryContext(ctx, options) {
   try {
@@ -67,16 +64,25 @@ async function handleCategory(authorId, ctx, chosenCategory, commandsByCategory,
 
     let currentPage = 0;
 
-    // Build the embed for the selected category.
-    const categoryEmbed = new EmbedBuilder()
-    .setTitle(`${chosenCategory} Commands`)
-    .setDescription(
-      `> Commands start with **\`kas\`**\n-# Example: kas profile\nUse **\`help <command>\`** for more details.\n\n` +
-      pages[currentPage]
+    const match = chosenCategory.match(/[a-zA-Z]+(?: [a-zA-Z]+)*/);
+    const plainText = match[0];
+
+    const Cemoji = categoriesEmoji[plainText?.trim()?.toLowerCase()];
+
+    const Container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`### ${Cemoji ? `<:${Cemoji.name}:${Cemoji.id}> ${plainText}` : chosenCategory} Commands`)
     )
-    .setFooter({
-      text: `Page ${currentPage + 1} of ${pages.length}`
-    });
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`> Commands start with **\`kas\`**\n-# Example: kas profile\nUse **\`help <command>\`** for more details.`)
+    )
+    .addSeparatorComponents(separate => separate)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(pages[currentPage])
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`**Page ${currentPage + 1} of ${pages.length}**`)
+    )
 
     // Create pagination buttons if needed.
     let buttonRow = null;
@@ -96,13 +102,13 @@ async function handleCategory(authorId, ctx, chosenCategory, commandsByCategory,
 
     if (!helpMessage) {
       helpMessage = await handleCategoryContext(ctx, {
-        embeds: [categoryEmbed],
-        components: selectRow ? (buttonRow ? [selectRow, buttonRow]: [selectRow]): (buttonRow ? [buttonRow]: [])
+        components: selectRow ? (buttonRow ? [Container, selectRow, buttonRow]: [Container, selectRow]): (buttonRow ? [Container, buttonRow]: []),
+        flags: MessageFlags.IsComponentsV2
       });
     } else {
       await handleCategoryContext(ctx, {
-        embeds: [categoryEmbed],
-        components: selectRow ? (buttonRow ? [selectRow, buttonRow]: [selectRow]): (buttonRow ? [buttonRow]: [])
+        components: selectRow ? (buttonRow ? [Container, selectRow, buttonRow]: [Container, selectRow]): (buttonRow ? [Container, buttonRow]: []),
+        flags: MessageFlags.IsComponentsV2
       });
     }
 
@@ -131,16 +137,13 @@ async function handleCategory(authorId, ctx, chosenCategory, commandsByCategory,
       buttonRow.components[1].setDisabled(currentPage === pages.length - 1);
 
       // Update the embed content.
-      categoryEmbed.setDescription(pages[currentPage])
-      .setFooter({
-        text: `Page ${currentPage + 1} of ${pages.length}`
-      });
+      Container.components[3].data.content = pages[currentPage]
+      Container.components[4].data.content = `-# **Page ${currentPage + 1} of ${pages.length}**`;
 
       try {
         if (!btnInteraction.replied || !btnInteraction.deferred) {
           await btnInteraction.update({
-            embeds: [categoryEmbed],
-            components: selectRow ? [selectRow, buttonRow]: [buttonRow]
+            components: selectRow ? [Container, selectRow, buttonRow]: [Container, buttonRow]
           });
         }
       } catch (err) {
@@ -278,11 +281,21 @@ export default {
       }
 
       // Build a select menu for all categories.
-      const selectOptions = Object.keys(commandsByCategory).map(category => ({
-        label: category,
-        value: category,
-        description: `Show commands in ${category}`
-      }));
+      const selectOptions = Object.keys(commandsByCategory).map(category => {
+        const match = category.match(/[a-zA-Z]+(?: [a-zA-Z]+)*/);
+        const plainText = match[0];
+
+        const res = ({
+          label: plainText || category,
+          value: category,
+          description: `Show commands in ${plainText || category}`,
+        });
+
+        if (categoriesEmoji[plainText?.trim()?.toLowerCase()]?.id) {
+          res.emoji = categoriesEmoji[plainText?.trim()?.toLowerCase()]
+        }
+        return res;
+      });
 
       const selectMenu = new StringSelectMenuBuilder()
       .setCustomId("help_select_category")
@@ -291,22 +304,57 @@ export default {
 
       const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-      const embed = new EmbedBuilder()
-      .setTitle("<:help:1350379705689440358> Help Menu")
-      .setDescription(
-        `<a:glowing_sat_outside_emoji:1355140019337170954>𝘚𝘦𝘭𝘦𝘤𝘵 𝘢 𝘤𝘢𝘵𝘦𝘨𝘰𝘳𝘺 𝘧𝘳𝘰𝘮 𝘵𝘩𝘦 𝘥𝘳𝘰𝘱‐𝘥𝘰𝘸𝘯 𝘣𝘦𝘭𝘰𝘸 𝘵𝘰 𝘷𝘪𝘦𝘸 𝘪𝘵𝘴 𝘤𝘰𝘮𝘮𝘢𝘯𝘥𝘴.\n\n` +
-        ` <:spark:1355139233559351326> Use **\`help <command>\`** for quick help on a command.\n` +
-        ` <:spark:1355139233559351326> Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
-        ` <:spark:1355139233559351326> All commands must be triggered with a prefix, e.g., **kas**.\n\n` +
-        `<:feather_outside_emoji:1355140550462017609> **[𝖲𝗎𝗉𝗉𝗈𝗋𝗍 𝖲𝖾𝗋𝗏𝖾𝗋](https://discord.gg/DVFwCqUZnc)**\n` +
-        `<:emoji_35:1332676884093337603> **[𝖨𝗇𝗏𝗂𝗍𝖾 𝖬𝖾](https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=139586816064&integration_type=0&scope=bot)**`
-      );
+      const ContainerEmbed = new ContainerBuilder()
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent("### <:help:1350379705689440358> Help Menu")
+      )
+      .addSectionComponents(
+        section => section
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(
+            `-# 𝘚𝘦𝘭𝘦𝘤𝘵 𝘢 𝘤𝘢𝘵𝘦𝘨𝘰𝘳𝘺 𝘧𝘳𝘰𝘮 𝘵𝘩𝘦 𝘥𝘳𝘰𝘱‐𝘥𝘰𝘸𝘯 𝘣𝘦𝘭𝘰𝘸 𝘵𝘰 𝘷𝘪𝘦𝘸 𝘪𝘵𝘴 𝘤𝘰𝘮𝘮𝘢𝘯𝘥𝘴.`
+          )
+        )
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+          .setDescription('Bot')
+          .setURL(message?.client?.user?.displayAvatarURL() ?? "https://cdn.discordapp.com/emojis/1363425460394135714.png")
+        )
+      )
+      .addTextDisplayComponents(
+        textDisplay =>
+        textDisplay.setContent(`<:spark:1355139233559351326> Use **\`help <command>\`** for quick help on a command.\n` +
+          ` <:spark:1355139233559351326> Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
+          ` <:spark:1355139233559351326> All commands must be triggered with a prefix, e.g., **kas**.`
+        )
+      )
+      .addSeparatorComponents(separate => separate.setSpacing(SeparatorSpacingSize.Large))
+      .addActionRowComponents([
+        new ActionRowBuilder()
+        .addComponents(
+          new ButtonBuilder()
+          .setLabel("𝖲𝗎𝗉𝗉𝗈𝗋𝗍 𝖲𝖾𝗋𝗏𝖾𝗋")
+          .setEmoji({
+            id: "1355140550462017609"
+          })
+          .setStyle(ButtonStyle.Link)
+          .setURL("https://discord.gg/DVFwCqUZnc"),
+          new ButtonBuilder()
+          .setLabel("𝖨𝗇𝗏𝗂𝗍𝖾 𝖬𝖾")
+          .setEmoji({
+            id: "1332676884093337603"
+          })
+          .setURL("https://discord.com/oauth2/authorize?client_id=1300081477358452756&permissions=139586816064&integration_type=0&scope=bot")
+          .setStyle(ButtonStyle.Link)
+        )
+      ])
 
       // Send the help menu.
       const helpMessage = await replyOrSend(message,
         {
-          embeds: [embed],
-          components: [selectRow]
+          components: [ContainerEmbed,
+            selectRow],
+          flags: MessageFlags.IsComponentsV2
         });
 
       // Global variable to keep track of the active pagination collector.
@@ -315,7 +363,7 @@ export default {
       // Listen for a category selection.
       const menuCollector = helpMessage.createMessageComponentCollector({
         componentType: ComponentType.StringSelect,
-        time: 180000
+        time: 240000
       });
 
       menuCollector.on('collect',
@@ -347,7 +395,7 @@ export default {
           try {
             selectMenu.setDisabled(true);
             await helpMessage.edit({
-              components: [new ActionRowBuilder().addComponents(selectMenu)]
+              components: [ContainerEmbed, new ActionRowBuilder().addComponents(selectMenu)]
             });
           } catch (err) {}
         });

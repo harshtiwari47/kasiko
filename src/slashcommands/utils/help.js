@@ -15,14 +15,16 @@ export default {
   ),
   async execute(interaction) {
     try {
-      await interaction.deferReply({
-        ephemeral: true
-      });
+      if (!interaction.deferred) {
+        await interaction.deferReply({
+          ephemeral: true
+        });
+      }
 
       const commandName = interaction.options.getString('command');
 
       if (txtcommands.get("help")) {
-        await txtcommands.get("help").execute(commandName ? ["help", commandName] : ["help"], interaction);
+        await txtcommands.get("help").execute(commandName ? ["help", commandName]: ["help"], interaction);
         return;
       } else {
         return await interaction.editReply(`Failed to execute profile command!`);
