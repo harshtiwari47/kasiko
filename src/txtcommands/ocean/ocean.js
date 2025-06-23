@@ -15,6 +15,10 @@ import {
 } from './data.js';
 
 import {
+  checkPassValidity
+} from "../explore/pass.js";
+
+import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -46,6 +50,7 @@ async function checkExtraReward(userId, message) {
     // ~30% chance (0-29): attempt to steal a ship
     if (randomProb < 30) {
       let randomChance = Math.floor(Math.random() * 100);
+      const passInfo = await checkPassValidity(userId);
 
       let ships = await Ship.shipsData.sort((a, b) => a.probability - b.probability);
       let userShips = await Ship.getUserShipsData(userId);
@@ -59,6 +64,13 @@ async function checkExtraReward(userId, message) {
 
           if (alreadyOwned) {
             return null; // user already has it, so no new reward
+          }
+
+          if (
+            ships[i].pass &&
+            (!passInfo.isValid || (passType !== "etheral" && passType !== "celestia"))
+          ) {
+            return null;
           }
 
           // Add the stolen ship to the user's data
@@ -238,10 +250,10 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
 
         await updateUser(message.author.id, userData);
         await updateFishUser(message.author.id, userFishData);
-        
+
         initialEmbed.setTitle(`🎣 𝐘𝐨𝐮 𝐥𝐚𝐧𝐝𝐞𝐝 𝐚 𝐟𝐢𝐬𝐡**!**`)
         initialEmbed.setDescription(`-# 𓊝 **${message.author.username}** 𝘫𝘶𝘴𝘵 𝘯𝘢𝘣𝘣𝘦𝘥 𝘢 **${fish.rarity}** fish! 𝘙𝘦𝘦𝘭 𝘭𝘶𝘤𝘬𝘺!`)
-        
+
         resultEmbed = new EmbedBuilder()
         .setTitle("🎣 𝐇𝐨𝐨𝐤𝐞𝐝 𝐚𝐧𝐝 𝐁𝐨𝐨𝐤𝐞𝐝")
         .setDescription(

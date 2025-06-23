@@ -565,7 +565,7 @@ export default {
       "Don’t make me beg... just one snack, and I’ll train harder! 🥺",
       "I’m a dragon of action... but only after a snack! 🍕",
       "My scales are getting grumpy, feed me to smooth them out! 🐉💥",
-      "A full belly makes me a happy dragon! Can you help me out? 🍽️💖",
+      "A full belly makes me a happy dragon! Can you help me out? <:empty_food_plate:1386601563614871642>️💖",
       "This dragon is too hangry to train! 😤🍗",
       "A little snack and I’m back to my best self! 🤩🍔",
       "Trust me, my fire burns better after food! 🔥🍖",
@@ -648,7 +648,7 @@ export default {
       return {
         error: true,
         reason: 'too_hungry',
-        errorMessage: `🍽️ Your dragon **${targetDragon.customName ?? targetDragon.typeId.toUpperCase()}** is too hungry to adventure. Please feed it first!\n-# ${randomHungerMessage().replace("train", "adventure")}`,
+        errorMessage: `<:empty_food_plate:1386601563614871642>️ Your dragon **${targetDragon.customName ?? targetDragon.typeId.toUpperCase()}** is too hungry to adventure. Please feed it first!\n\n-# ${randomHungerMessage().replace("train", "adventure")}`,
         feedAmountReq: targetDragon.hunger - 60
       };
     }
@@ -720,12 +720,12 @@ export default {
         metalWinMessage = `${bronzeIcon} **+${winningMetals}**`;
       }
 
-      resultText = `-# ***REWARDS***\n${gemIcon} **+${winningGems}** ${sigilsIcon} **+2**\n🍽️ **+${hunger}** ${metalWinMessage}`;
+      resultText = `-# ***REWARDS***\n${gemIcon} **+${winningGems}** ${sigilsIcon} **+2**\n<:empty_food_plate:1386601563614871642>️ **+${hunger}** ${metalWinMessage}`;
     } else {
       // fail
       userData.sigils = Math.max(0, userData.sigils - 1);
       type = 'fail';
-      resultText = `-# ***LOSS***\n${sigilsIcon} **-1** 🍽️ **+${hunger}**`;
+      resultText = `-# ***LOSS***\n${sigilsIcon} **-1** <:empty_food_plate:1386601563614871642>️ **+${hunger}**`;
     }
 
     const outcomeObj =
@@ -793,12 +793,18 @@ export default {
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
       .setCustomId('adventure_again')
-      .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+      .setLabel('AGAIN')
+      .setEmoji({
+        name: "➰"
+      })
       .setStyle(ButtonStyle.Primary)
       .setDisabled(true),
       new ButtonBuilder()
       .setCustomId('feed_dragon')
-      .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+      .setLabel(`FEED`)
+      .setEmoji({
+        id: "1304673964588662826"
+      })
       .setStyle(ButtonStyle.Success)
       .setDisabled(true)
     );
@@ -826,12 +832,18 @@ export default {
         const rowHungry = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
           .setCustomId('adventure_again')
-          .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+          .setLabel('AGAIN')
+          .setEmoji({
+            name: "➰"
+          })
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true),
           new ButtonBuilder()
           .setCustomId('feed_dragon')
-          .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+          .setLabel(`FEED`)
+          .setEmoji({
+            id: "1304673964588662826"
+          })
           .setStyle(ButtonStyle.Success)
           .setDisabled(false)
         );
@@ -855,12 +867,18 @@ export default {
       const rowFinal = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
         .setCustomId('adventure_again')
-        .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+        .setLabel('AGAIN')
+        .setEmoji({
+          name: "➰"
+        })
         .setStyle(ButtonStyle.Primary)
         .setDisabled(false),
         new ButtonBuilder()
         .setCustomId('feed_dragon')
-        .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+        .setLabel(`FEED`)
+        .setEmoji({
+          id: "1304673964588662826"
+        })
         .setStyle(ButtonStyle.Success)
         .setDisabled(false)
       );
@@ -874,12 +892,18 @@ export default {
       const rowFinalDisabled = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
         .setCustomId('adventure_again')
-        .setLabel('𝑨𝑮𝑨𝑰𝑵 🔁')
+        .setLabel('AGAIN')
+        .setEmoji({
+          name: "➰"
+        })
         .setStyle(ButtonStyle.Primary)
         .setDisabled(true),
         new ButtonBuilder()
         .setCustomId('feed_dragon')
-        .setLabel(`𝑭𝑬𝑬𝑫 💎`)
+        .setLabel(`FEED`)
+        .setEmoji({
+          id: "1304673964588662826"
+        })
         .setStyle(ButtonStyle.Success)
         .setDisabled(true)
       );
@@ -1036,7 +1060,7 @@ export default {
       "Big hugs for the yummy gems! 🤗💎"
     ]
 
-    return message.channel.send(`🍗 **${message.author.username}**, fed dragon <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** with ${gemIcon} **${amount}** gems.\n🍽️ Hunger is now **${targetDragon.hunger}**.\n-# ${reactions[Math.floor(Math.random() * reactions.length)]}`);
+    return message.channel.send(`🍗 **${message.author.username}**, fed dragon <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}** with ${gemIcon} **${amount}** gems.\n<:empty_food_plate:1386601563614871642>️ Hunger is now **${targetDragon.hunger}**.\n-# ${reactions[Math.floor(Math.random() * reactions.length)]}`);
   }
 
   /**
@@ -1073,7 +1097,7 @@ export default {
 
     // Check hunger before training
     if (targetDragon.hunger >= 60) {
-      return message.channel.send(`🍽️ ***${message.author.username}***! Your dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, is too hungry to train. Please feed it!\n\n-# - ${randomHungerMessage()}`);
+      return message.channel.send(`<:empty_food_plate:1386601563614871642>️ ***${message.author.username}***! Your dragon, **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, is too hungry to train. Please feed it!\n\n-# - ${randomHungerMessage()}`);
     }
 
     const attachment = new AttachmentBuilder('https://harshtiwari47.github.io/kasiko-public/images/dragons/dragon-training.png');
@@ -1097,7 +1121,7 @@ export default {
       leveledUp = true;
 
       const levelUpEmbed = new EmbedBuilder()
-      .setDescription(`🏆 Your dragon, <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, advanced to **Stage ${targetDragon.stage}**!\n\n🍽️ **Hunger**: 100 ~ ${sigilsIcon} **Sigils**: +1`)
+      .setDescription(`🏆 Your dragon, <:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**, advanced to **Stage ${targetDragon.stage}**!\n\n<:empty_food_plate:1386601563614871642>️ **Hunger**: 100 ~ ${sigilsIcon} **Sigils**: +1`)
       .setAuthor({
         name: message.author.username, iconURL: message.author.displayAvatarURL({
           dynamic: true
@@ -1127,7 +1151,7 @@ export default {
 
       // Send the random message
       await message.channel.send({
-        content: `<:${chosenType.id}2:${chosenType.emoji}> **${message.author.username}**! Your ${randomMessage}\n\n-# **🍽️ 𝗛𝗨𝗡𝗚𝗘𝗥: +${hunger}** **${sigilsIcon} 𝗦𝗜𝗚𝗜𝗟𝗦: +1**`,
+        content: `<:${chosenType.id}2:${chosenType.emoji}> **${message.author.username}**! Your ${randomMessage}\n\n-# **<:empty_food_plate:1386601563614871642>️ 𝗛𝗨𝗡𝗚𝗘𝗥: +${hunger}** **${sigilsIcon} 𝗦𝗜𝗚𝗜𝗟𝗦: +1**`,
         files: [attachment]
       });
     }
@@ -1468,7 +1492,7 @@ export default {
       leveledUp = true;
 
       const levelUpEmbed = new EmbedBuilder()
-      .setDescription(`🏆 Your dragon (<:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) advanced to **Stage ${targetDragon.stage}**!\n-# 🍽️ **Hunger**: 100 | ${sigilsIcon} **Sigils**: +1`)
+      .setDescription(`🏆 Your dragon (<:${chosenType.id}2:${chosenType.emoji}> **${targetDragon.customName ? targetDragon.customName: targetDragon.typeId.toUpperCase()}**) advanced to **Stage ${targetDragon.stage}**!\n-# <:empty_food_plate:1386601563614871642>️ **Hunger**: 100 | ${sigilsIcon} **Sigils**: +1`)
       .setAuthor({
         name: message.author.username, iconURL: message.author.displayAvatarURL({
           dynamic: true

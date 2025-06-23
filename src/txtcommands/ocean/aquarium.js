@@ -299,7 +299,7 @@ export async function viewAquarium(userId,
     `└─────────────────────┘`;
 
     const aquariumEmbedTitle = new EmbedBuilder()
-    .setDescription(`### <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎\n-# Min. Collection: <:kasiko_coin:1300141236841086977> **${totalReward}**\n${passInfo.isValid ? "-# ◎ **+" + additionalReward.toFixed(1) + "** pass bonus": ""}\n${!aquarium.length ? `Add some fish 🦈 to start earning.\n❔ **USE**: \`help aquarium\``: ""}`)
+    .setDescription(`### <:aquarium:1301825002013851668> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 <@${userId}> 𝑨𝒒𝒖𝒂𝒓𝒊𝒖𝒎\n-# Min. Collection: <:kasiko_coin:1300141236841086977> **${totalReward}**\n${passInfo.isValid ? "-# ◎ **+" + additionalReward.toFixed(1) + "** pass bonus": ""}\n${!aquarium.length ? `Add some fish 🦈 to start earning.\n❔ **USE**: \`help aquarium\``: "-# <:reply:1368224908307468408> Feed your fish for more rewards."}`)
     .setColor("#0a4c63")
 
     const aquariumEmbed = new EmbedBuilder()
@@ -323,7 +323,10 @@ export async function viewAquarium(userId,
     const rowComp = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
       .setCustomId('collect_aquarium_reward')
-      .setLabel('Collect 💰')
+      .setLabel('Collect')
+      .setEmoji({
+        id: "1365976001179553792"
+      })
       .setStyle(ButtonStyle.Success)
       .setDisabled(canCollect && aquarium.length ? false: true),
       new ButtonBuilder()
@@ -586,12 +589,14 @@ export async function sellAnimals(animal, amount, message) {
     }
 
     // Assuming each animal has a sell amount associated with it
-    const sellAmount = aquaAnimal.sellAmount * amount * userFishData.fishes.find(f => f.name.toLowerCase() === capitalizedName.toLowerCase()).level;
 
     if (!userFishData.fishes || !userFishData.fishes.some(fish => fish.name && fish.name === capitalizedName)) {
       return message.channel.send("<:warning:1366050875243757699> You do not have this animal in your collection to sell.");
     }
-
+    
+    let index = userFishData.fishes.findIndex(f => f.name.toLowerCase() === capitalizedName.toLowerCase());
+    const sellAmount = aquaAnimal?.sellAmount * amount * userFishData?.fishes?.find(f => f.name.toLowerCase() === capitalizedName.toLowerCase())?.level;
+      
     if (userFishData?.fishes[index]?.animals < amount) {
       return message.channel.send(`<:warning:1366050875243757699> You do not have **${amount}** **${capitalizedName}** in your collection to sell.`);
     }
@@ -601,7 +606,6 @@ export async function sellAnimals(animal, amount, message) {
       userFishData.fishes = userFishData.fishes.filter(f => f.name.toLowerCase() !== capitalizedName.toLowerCase());
       userFishData.aquarium = userFishData.aquarium.filter(fish => fish !== capitalizedName);
     } else {
-      let index = userFishData.fishes.findIndex(f => f.name.toLowerCase() === capitalizedName.toLowerCase());
       userFishData.fishes[index].animals -= 1;
     }
 
@@ -610,7 +614,7 @@ export async function sellAnimals(animal, amount, message) {
     await updateUser(message.author.id, userData);
     await updateFishUser(message.author.id, userFishData);
 
-    return message.channel.send(`💰 **${message.author.username}**, you sold ${amount} <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) for <:kasiko_coin:1300141236841086977> ${sellAmount} 𝑪𝒂𝒔𝒉!`);
+    return message.channel.send(`<:moneybag:1365976001179553792> **${message.author.username}**, you sold ${amount} <:${capitalizedName}_aqua:${aquaAnimal.emoji}> ${animal}(s) for <:kasiko_coin:1300141236841086977> ${sellAmount.toLocaleString()} 𝑪𝒂𝒔𝒉!`);
   } catch (error) {
     console.error(error);
     return message.channel.send("<:warning:1366050875243757699> Something went wrong while selling the animals.");

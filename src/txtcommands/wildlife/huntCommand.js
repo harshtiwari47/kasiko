@@ -266,7 +266,7 @@ export async function huntCommand(context, {
         `\n**Lucky find!** You also acquired a new booster: \`${newlyAcquiredBooster}\``
       );
     }
-    
+
     const Container = new ContainerBuilder()
     .setAccentColor(Math.floor(Math.random() * 16777216))
     .addTextDisplayComponents(

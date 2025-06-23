@@ -177,47 +177,48 @@ async function claimPet(userId) {
 const benefitsData = [{
   plan: 'titan',
   title: 'Titan Benefits',
-  description: "- Earn an extra 10% on daily rewards\n" +
-  "- Receive a Titan profile color and badge\n" +
-  "- Enjoy an extra 16% on your aquarium collection\n" +
-  "- Exchange coal at a rate of 400 per unit\n" +
-  "- Obtain 15 hunting bullets daily"
+  description: "<:follow_reply:1368224897003946004> Earn an extra 10% on daily rewards\n" +
+  "<:follow_reply:1368224897003946004> Receive a Titan profile color and badge\n" +
+  "<:follow_reply:1368224897003946004> Enjoy an extra 16% on your aquarium collection\n" +
+  "<:follow_reply:1368224897003946004> Exchange coal at a rate of 400 per unit\n" +
+  "<:reply:1368224908307468408> Obtain 15 hunting bullets daily"
 },
   {
     plan: 'pheonix',
     title: 'Pheonix Benefits',
-    description: "- Earn an extra 15% on daily rewards\n" +
-    "- Receive a 16% discount on bank upgrade\n" +
-    "- Earn an extra 25% on daily ice rewards\n" +
-    "- Receive an exclusive Phoenix profile color and badge\n" +
-    "- Enjoy an extra 26% on your aquarium collection\n" +
-    "- Obtain 20 hunting bullets\n" +
-    "- Exchange coal at a rate of 450 per unit\n" +
-    "- Hold stocks in up to 8 companies"
+    description: "<:follow_reply:1368224897003946004> Earn an extra 15% on daily rewards\n" +
+    "<:follow_reply:1368224897003946004> Receive a 16% discount on bank upgrade\n" +
+    "<:follow_reply:1368224897003946004> Earn an extra 25% on daily ice rewards\n" +
+    "<:follow_reply:1368224897003946004> Receive an exclusive Phoenix profile color and badge\n" +
+    "<:follow_reply:1368224897003946004> Enjoy an extra 26% on your aquarium collection\n" +
+    "<:follow_reply:1368224897003946004> Obtain 20 hunting bullets\n" +
+    "<:follow_reply:1368224897003946004> Exchange coal at a rate of 450 per unit\n" +
+    "<:reply:1368224908307468408> Hold stocks in up to 8 companies"
   },
   {
     plan: 'etheral',
     title: 'Etheral Benefits',
-    description: "- All Phoenix benefits\n" +
-    "- Receive a 33% discount on bank upgrade\n" +
-    "- Obtain an exclusive Etheral badge and profile color\n" +
-    "- Work up to 50 times per day\n" +
-    "- Access exclusive cars and houses\n" +
-    "- New exclusive animals available for hunting: Panda, Kangaroo, Bear\n" +
-    "- High security: Increases the chance of failed robbery attempts on you to 50%\n" +
-    "- Own an exclusive dog pet (Use: `pass pet`)"
+    description: "<:follow_reply:1368224897003946004> All Phoenix benefits\n" +
+    "<:follow_reply:1368224897003946004> Receive a 33% discount on bank upgrade\n" +
+    "<:follow_reply:1368224897003946004> Obtain an exclusive Etheral badge and profile color\n" +
+    "<:follow_reply:1368224897003946004> Work up to 50 times per day\n" +
+    "<:follow_reply:1368224897003946004> Access exclusive cars and houses\n" +
+    "<:follow_reply:1368224897003946004> New exclusive animals available for hunting: Panda, Kangaroo, Bear\n" +
+    "<:follow_reply:1368224897003946004> High security: Increases the chance of failed robbery attempts on you to 50%\n" +
+    "<:follow_reply:1368224897003946004> Chances of getting a legendary ship while fishing.\n" +
+    "<:reply:1368224908307468408> Own an exclusive dog pet (Use: `pass pet`)"
   },
   {
     plan: 'celestia',
     title: 'Celestia Benefits',
-    description: "- All Etheral benefits\n" +
-    "- Receive an exclusive Celestia profile color and badge\n" +
-    "- Can request a custom profile color\n" +
-    "- Receive a custom pet\n" +
-    "- Exclusive animals available for hunting: T-Rex, Saber-Tooth, Dragon, Unicorn\n" +
-    "- Showcase a private jet\n" +
-    "- Can request a custom description for your own company\n" +
-    "- Can request some special commands"
+    description: "<:follow_reply:1368224897003946004> All Etheral benefits\n" +
+    "<:follow_reply:1368224897003946004> Receive an exclusive Celestia profile color and badge\n" +
+    "<:follow_reply:1368224897003946004> Can request a custom profile color\n" +
+    "<:follow_reply:1368224897003946004> Receive a custom pet\n" +
+    "<:follow_reply:1368224897003946004> Exclusive animals available for hunting: T-Rex, Saber-Tooth, Dragon, Unicorn\n" +
+    "<:follow_reply:1368224897003946004> Showcase a private jet\n" +
+    "<:follow_reply:1368224897003946004> Can request a custom description for your own company\n" +
+    "<:reply:1368224908307468408> Can request some special commands"
   }];
 
 /**
@@ -232,7 +233,7 @@ async function showBenefits(context) {
   function generateEmbed(page) {
     const benefit = benefitsData[page];
     return new EmbedBuilder()
-    .setTitle(benefit.title)
+    .setTitle("<:lighting_icon_kasiko:1354393463931670568> " + benefit.title)
     .setDescription(benefit.description)
     .setFooter({
       text: `User: ${username} | Plan: ${benefit.plan.toUpperCase()} | Page ${page + 1} of ${totalPages}`
@@ -494,10 +495,10 @@ export async function execute(args,
           .setTitle("𝙀𝙡𝙞𝙩𝙚 𝙋𝙧𝗲𝗺𝗶𝘂𝗺 𝙋𝗹𝗮𝗻𝘀 ✧")
           .setDescription(
             `**Our Exclusive Plans:**\n` +
-            `## ${PassEmojis.titan} **Titan**\n` +
-            `## ${PassEmojis.pheonix} **Pheonix**\n` +
-            `## ${PassEmojis.etheral} **Etheral**\n` +
-            `## ${PassEmojis.celestia} **Celestia**`
+            `## ${PassEmojis.titan} **Titan** - $0.3/m\n` +
+            `## ${PassEmojis.pheonix} **Pheonix** - $0.45/m\n` +
+            `## ${PassEmojis.etheral} **Etheral** - $0.75/m\n` +
+            `## ${PassEmojis.celestia} **Celestia** - $1.4/m`
           )
           .setColor('#c8e2e9')
           .setThumbnail('https://example.com/plans-thumbnail.png');

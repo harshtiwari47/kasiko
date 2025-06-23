@@ -121,7 +121,7 @@ async function handleProfile(ctx) {
         const hours = Math.floor(remainingMs / (60 * 60 * 1000));
         const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
         const seconds = Math.floor((remainingMs % (60 * 1000)) / 1000);
-        footerMsg = `⏱ 𝘞𝘢𝘪𝘵   ${hours}h ${minutes}m ${seconds}s   𝘵𝘰 𝘩𝘢𝘳𝘷𝘦𝘴𝘵 𝘢𝘨𝘢𝘪𝘯.`;
+        footerMsg = `<:sand_timer:1386589414846631947> 𝘞𝘢𝘪𝘵   ${hours}h ${minutes}m ${seconds}s   𝘵𝘰 𝘩𝘢𝘳𝘷𝘦𝘴𝘵 𝘢𝘨𝘢𝘪𝘯.`;
         disableHarvest = true;
       }
     }
@@ -136,7 +136,7 @@ async function handleProfile(ctx) {
     )
     .addTextDisplayComponents(td =>
       td.setContent(`🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇`),
-      td => td.setContent(`<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo}\n**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}${upcomingShip ? "/ " + upcomingShip.tech: ""}`)
+      td => td.setContent(`<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"}\n${alienCrownEmo}**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}${upcomingShip ? "/ " + upcomingShip.tech: ""}`)
     )
     .addTextDisplayComponents(td =>
       td.setContent(`🗯️ 𝘾𝙊𝙈𝘽𝘼𝙏`),

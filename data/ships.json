@@ -99,7 +99,7 @@
     "levelUpCost": 2800,
     "rarity": "legendary",
     "health": 520,
-    "probability": -1,
+    "probability": 15,
     "emoji": "1316615694996996096",
     "type": "sailing ship",
     "pass": true
