@@ -113,7 +113,7 @@ async function handleProfile(ctx) {
     let footerMsg = ".𖥔 ݁ ˖ִ ࣪𖤐 𝘠𝘰𝘶 𝘤𝘢𝘯 𝘩𝘢𝘳𝘷𝘦𝘴𝘵 𝘯𝘰𝘸!";
     let disableHarvest = false;
     const now = new Date();
-    const cooldownDuration = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+    const cooldownDuration = 9 * 60 * 60 * 1000; // 9 hours in milliseconds
     if (alien.lastHarvest) {
       const nextAvailableTime = new Date(alien.lastHarvest.getTime() + cooldownDuration);
       if (now < nextAvailableTime) {
@@ -136,7 +136,7 @@ async function handleProfile(ctx) {
     )
     .addTextDisplayComponents(td =>
       td.setContent(`🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇`),
-      td => td.setContent(`<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"}\n${alienCrownEmo}**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}${upcomingShip ? "/ " + upcomingShip.tech: ""}`)
+      td => td.setContent(`<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo}**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}${upcomingShip ? "/ " + upcomingShip.tech: ""}`)
     )
     .addTextDisplayComponents(td =>
       td.setContent(`🗯️ 𝘾𝙊𝙈𝘽𝘼𝙏`),
@@ -281,7 +281,8 @@ async function handleProfile(ctx) {
 
               await interaction.editReply({
                 components: [Container,
-                  newRowsAb]
+                  newRowsAb],
+                flags: MessageFlags.IsComponentsV2
               });
 
               break;
@@ -297,7 +298,7 @@ async function handleProfile(ctx) {
           }
         } catch (e) {
           if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-            console.error(e);
+            console.error(e.message);
           }
         }
       });
