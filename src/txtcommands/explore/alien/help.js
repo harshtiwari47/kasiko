@@ -34,58 +34,64 @@ async function handleAlienHelp(ctx) {
   // Page 2: Getting Started
   pages.push(
     new EmbedBuilder()
-    .setTitle("🚀 Getting Started")
+    .setTitle("🚀 GETTING STARTED")
     .setDescription(
-      `**1. Join the Collective:**\n` +
-      `Begin your journey with the \`alien join\` command. This registers you into the cosmic collective and provides you with a unique profile, basic resources, and a starter set of abilities.\n\n` +
-      `**2. Craft Your Disguise:**\n` +
-      `Blend in with humanity by using the \`alien disguise\` command. Your disguise is your secret identity that helps you operate undercover on Earth.`
+      `<:aliens_nano:1336345303212752979> **Join the Collective:**\n` +
+      `<:reply:1368224908307468408> Use **\` alien join \`** to register yourself for this Cosmic Infiltration.\n\n` +
+      `<:conqueror:1336360322516123669> **Craft Your Disguise:**\n` +
+      `<:reply:1368224908307468408> Blend in with humanity by using the **\` alien disguise \`** command.\nYou will receive a random secret identity to help you operate undercover on Earth.`
     )
     .setColor(0x2f3136)
     .setFooter({
-      text: "Page 2/6 - Getting Started"
+      text: "Page 2/6"
     })
   );
 
   // Page 3: Core Commands Overview
   pages.push(
     new EmbedBuilder()
-    .setTitle("📜 Core Commands")
+    .setTitle("🛸 CORE COMMANDS")
     .setDescription(
       `Here are the essential commands that power your cosmic operations:\n\n` +
-      `• **\`alien profile\`**: View your status, resources, battle stats, and abilities.\n` +
-      `• **\`alien harvest\`**: Harvest human resources and energy (note the cooldown period).\n` +
-      `• **\`alien manipulate\`**: Influence the human economy to gain extra resources and increase your influence.\n` +
-      `• **\`alien upgrade\`**: Spend your resources to unlock or enhance powerful alien abilities and boost your tech.\n` +
-      `• **\`alien battle\`**: Engage in intergalactic duels—challenge other players or fight against random cosmic opponents.\n` +
-      `• **\`alien exchange <amount>\`**: Convert your energy into cash using advanced alien technology. Use \`all\` to exchange everything.`
+      `• **\` alien \`**: View your status, resources, battle stats, and abilities.\n` +
+      `• **\` alien harvest \`**: Harvest human resources and energy. You can exchange them for cash.\n` +
+      `• **\` alien manipulate \`**: Influence the human economy to gain extra resources.\n` +
+      `• **\` alien upgrade \`**: Spend your resources to unlock or enhance powerful alien abilities and boost your tech to build powerful spaceships.\n` +
+      `• **\` alien battle \`**: Engage in intergalactic duels—challenge other players or fight against random cosmic opponents.\n` +
+      `• **\` alien exchange <amount> \`**: Convert your energy into cash using advanced alien technology. Use \`all\` to exchange everything.\n` +
+      `• **\` alien inventory \`**: During manipulation, you will receive various human items that help you advance your abilities.\n` +
+      `• **\` alien abilities \`**: Your abilities make you powerful and can boost your chances of gaining extra resources, energy, and increased tech during upgrades.`
     )
     .setColor(0x2f3136)
     .setFooter({
-      text: "Page 3/6 - Core Commands"
+      text: "Page 3/6"
     })
   );
 
   // Page 4: Resource Management & Abilities
   pages.push(
     new EmbedBuilder()
-    .setTitle("💎 Resource Management & Abilities")
+    .setTitle("💎 RESOURCES")
     .setDescription(
       `Your progress hinges on managing resources and developing abilities:\n\n` +
-      `• **Resources & Energy:** Use \`alien harvest\` to collect resources and energy. These are vital for upgrades and abilities.\n` +
-      `• **Upgrades:** The \`alien upgrade\` command lets you invest in new abilities that enhance your resource collection, battle prowess, and tech capabilities.\n` +
-      `• **Inventory:** Keep track of special items and collectibles using \`alien inventory\`. They might give you an edge in battles and economic maneuvers.\n\n`
+      `• **<:conqueror:1336360322516123669> Disguise:** It's your human identity for the mission.\n` +
+      `• **<:aliens_crown:1336345903048560640> Influence:** The more battles you win, the more influence you gain in the universe.\nThis influence also helps you collect extra energy during harvests.\n` +
+      `• **<:aliens_resource:1335537435341226024> Resources:** Resources are gained during manipulation and are used to upgrade your tech.\n` +
+      `• **<:aliens_energy:1335542963450679397> Energy:** Energy is used in your spaceship to produce cash. You can harvest it from planets.\n` +
+      `• **<:aliens_tech:1336344914413359135> Tech:** Tech is the strength of your spaceship — the more tech you have, the more powerful your spaceship becomes.\nIt also increases the cash your machines can produce and gives you an edge in battles.\n` +
+      `• **<:aliens_ability:1336346125791137855> Abilities:** Improve your abilities to gain extra resources. \nNote: Your abilities are applied randomly during missions.\n` +
+      `• **<:aliens_manipulation:1335543139376566322> Manipulation:** It's a record of your successful manipulations carried out on humans.`
     )
     .setColor(0x2f3136)
     .setFooter({
-      text: "Page 4/6 - Resources & Abilities"
+      text: "Page 4/6"
     })
   );
 
   // Page 5: Battle Mechanics
   pages.push(
     new EmbedBuilder()
-    .setTitle("⚔️ Battle Mechanics")
+    .setTitle("⚔️ BATTLE MECHANICS")
     .setDescription(
       `Combat is a thrilling part of your cosmic journey:\n\n` +
       `• **Duels & Challenges:** Use \`alien battle\` to initiate a fight. You can challenge friends or face random opponents.\n` +
@@ -95,14 +101,14 @@ async function handleAlienHelp(ctx) {
     )
     .setColor(0x2f3136)
     .setFooter({
-      text: "Page 5/6 - Battle Mechanics"
+      text: "Page 5/6"
     })
   );
 
   // Page 6: Advanced Tips & Mastery
   pages.push(
     new EmbedBuilder()
-    .setTitle("🌌 Advanced Tips & Mastery")
+    .setTitle("🌌 ADVANCED TIPS & MASTERY")
     .setDescription(
       `Ready to ascend to cosmic mastery? Consider these advanced strategies:\n\n` +
       `• **Strategic Upgrades:** Plan your resource spending wisely. Focus on abilities that compliment your preferred style—be it direct confrontation or subtle manipulation.\n` +
@@ -113,7 +119,7 @@ async function handleAlienHelp(ctx) {
     )
     .setColor(0x2f3136)
     .setFooter({
-      text: "Page 6/6 - Advanced Tips & Mastery"
+      text: "Page 6/6"
     })
   );
 

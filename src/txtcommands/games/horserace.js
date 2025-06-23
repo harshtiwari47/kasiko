@@ -298,7 +298,7 @@ export default {
         if (!userData) return;
 
         if (userData.cash < 1000) {
-          return message.channel.send("⚠ You need at least <kasiko_coin:1300141236841086977> **1,000** to place a bet.");
+          return message.channel.send("⚠ You need at least <:kasiko_coin:1300141236841086977> **1,000** to place a bet.");
         }
 
         amount = Math.min(userData.cash, 1500000);

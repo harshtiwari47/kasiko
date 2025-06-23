@@ -116,7 +116,7 @@ export default {
       const statType = args[1].toLowerCase();
       return handleUserStat(statType, message);
     } else {
-      return message.channel.send("⚠️ Invalid Command\nUse `stat cash`, `stat networth`, `stat trust`, `stat charity`, `stat level`, `stat exp`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send("<:warning:1366050875243757699> Invalid Command\nUse `stat cash`, `stat networth`, `stat trust`, `stat charity`, `stat level`, `stat exp`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 };

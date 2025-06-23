@@ -120,7 +120,7 @@ export async function setMarriageRing(message, ringId) {
       const owned = subArrayRef.find(x => x.id.toLowerCase() === ringId.toLowerCase());
       if (!owned) {
         return message.channel.send({
-          content: `⚠️ ***${message.author.username}***, you don't own any **${item.name}**!`
+          content: `<:warning:1366050875243757699> ***${message.author.username}***, you don't own any **${item.name}**!`
         }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -150,7 +150,7 @@ export async function setMarriageRing(message, ringId) {
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send(`⚠️ ***${message.author.username}***, something went wrong while setting your wedding ring!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send(`<:warning:1366050875243757699> ***${message.author.username}***, something went wrong while setting your wedding ring!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -218,7 +218,7 @@ export async function marriage(message) {
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while performing `marriage` command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while performing `marriage` command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -229,15 +229,15 @@ export async function marry(user, message) {
     const guild = await message.channel.guild.members.fetch(user);
 
     if (message.author.id === user) {
-      return message.channel.send(`⚠️ You can not propose yourself!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`<:warning:1366050875243757699> You can not propose yourself!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (userData.family.spouse && userData.family.spouse !== user) {
-      return message.channel.send(`⚠️ You are already married! 🔫`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`<:warning:1366050875243757699> You are already married! 🔫`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (userData.family.spouse && userData.family.spouse === user) {
-      return message.channel.send(`⚠️ You are __already married__ to each other.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`<:warning:1366050875243757699> You are __already married__ to each other.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (invitedUserData.family.spouse) {
-      return message.channel.send(`⚠️ The user is __already married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`<:warning:1366050875243757699> The user is __already married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else {
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
       const description = `<a:lg_flower:1356865948501540914> <@${message.author.id}> has proposed <:Bouquet:1356866221529628792> to you! Do you accept **<@${guild.user.id}>**?`;
@@ -316,7 +316,7 @@ export async function marry(user, message) {
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while sending proposal.").catch(err => ![50001,
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while sending proposal.").catch(err => ![50001,
       50013,
       10008].includes(err.code) && console.error(err));
   }
@@ -329,9 +329,9 @@ export async function divorce(user, message) {
     const guild = await message.channel.guild.members.fetch(user);
 
     if (userData.family.spouse && userData.family.spouse !== user) {
-      message.channel.send(`⚠️ You are not married to **${guild.user.username}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      message.channel.send(`<:warning:1366050875243757699> You are not married to **${guild.user.username}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (!userData.family.spouse) {
-      message.channel.send(`⚠️ Find your partner first! 😸. You are __not married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      message.channel.send(`<:warning:1366050875243757699> Find your partner first! 😸. You are __not married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } else if (userData.family.spouse && userData.family.spouse === user) {
 
       const title = "💔🥀 𝑫𝒊𝒗𝒐𝒓𝒄𝒆 𝑪𝒐𝒏𝒇𝒊𝒓𝒎𝒂𝒕𝒊𝒐𝒏 ";
@@ -415,7 +415,7 @@ export async function divorce(user, message) {
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while sending proposal.").catch(err => ![50001,
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while sending proposal.").catch(err => ![50001,
       50013,
       10008].includes(err.code) && console.error(err));
   }
@@ -427,7 +427,7 @@ export async function forceDivorce(message) {
 
     // Check if the user is married.
     if (!userData.family.spouse) {
-      return message.channel.send(`⚠️ You are not married!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return message.channel.send(`<:warning:1366050875243757699> You are not married!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     const spouseId = userData.family.spouse;
@@ -439,7 +439,7 @@ export async function forceDivorce(message) {
 
     // Check if the divorcing user has enough funds.
     if (userData.cash < 2000000) {
-      return message.channel.send(`⚠️ You do not have enough funds to force divorce. You need **2,000,000**.`)
+      return message.channel.send(`<:warning:1366050875243757699> You do not have enough funds to force divorce. You need **2,000,000**.`)
       .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
@@ -534,7 +534,7 @@ export async function forceDivorce(message) {
 
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ Something went wrong while processing force divorce.").catch(err => ![50001,
+    return message.channel.send("<:warning:1366050875243757699> Something went wrong while processing force divorce.").catch(err => ![50001,
       50013,
       10008].includes(err.code) && console.error(err));
   }
@@ -563,7 +563,7 @@ export async function roses(message) {
     }
   } catch (e) {
     console.error(e);
-    return message.channel.send("⚠️ An error occurred while retrieving your roses. Please try again later.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send("<:warning:1366050875243757699> An error occurred while retrieving your roses. Please try again later.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -597,7 +597,7 @@ export async function dailyRewards(userId, username, context) {
 
       return await handleMessage(context, {
         content: `Sorry **${username}**, you have **already claimed** your daily ***💍 marriage reward*** for today.\n` +
-        `Next reward in ⏳ **${hours} hours & ${minutes} minutes**. 🎁\n`
+        `Next reward in <:sand_timer:1386589414846631947> **${hours} hours & ${minutes} minutes**. 🎁\n`
         + `🎀˚˖𓍢ִ໋🦢˚〰﹏ᥫ᭡.𐙚⋆⁺₊💞`
       });
     } else {
@@ -697,14 +697,14 @@ export default {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.marry(Helper.extractUserId(args[1]), message); // Marry a user
         }
-        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send("<:warning:1366050875243757699> Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (args[0] === "divorce") {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.divorce(Helper.extractUserId(args[1]), message); // Divorce a user
         }
-        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send("<:warning:1366050875243757699> Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       if (args[0] === "forcedivorce") {
@@ -727,13 +727,13 @@ export default {
         if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.marry(Helper.extractUserId(args[2]), message); // Marry a user
         }
-        return message.channel.send("⚠️ Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send("<:warning:1366050875243757699> Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       case "divorce":
         if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.divorce(Helper.extractUserId(args[2]), message); // Divorce a user
         }
-        return message.channel.send("⚠️ Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return message.channel.send("<:warning:1366050875243757699> Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       case "forcedivorce":
         return Marriage.forceDivorce(message); // Divorce a user
@@ -751,7 +751,7 @@ export default {
         const ringId = args[2];
 
         if (!ringId) {
-          return await message.channel.send(`⚠️ Please mention the 💍 ring ID you want to set on your marriage profile!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await message.channel.send(`<:warning:1366050875243757699> Please mention the 💍 ring ID you want to set on your marriage profile!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
 
         return setMarriageRing(message, ringId);

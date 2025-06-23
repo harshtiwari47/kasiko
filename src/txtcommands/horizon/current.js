@@ -81,7 +81,7 @@ export async function handleHorizonAction(context, playerId, abilityId) {
 
   const boss = battle.bosses[battle.currentBossIndex];
   if (!boss || boss.health <= 0)
-    return handleMessage(context, `⚠️ Boss already defeated. Waiting for next one.`);
+    return handleMessage(context, `<:warning:1366050875243757699> Boss already defeated. Waiting for next one.`);
 
   // Apply damage and heal
   boss.health -= ability.dmg;
@@ -313,7 +313,7 @@ export default {
 
     if (subcommand === 'join') {
       const code = args[2]?.toUpperCase();
-      if (!code) return handleMessage(context, "⚠️ Provide a valid battle code. Example: `horizon join ABC123`");
+      if (!code) return handleMessage(context, "<:warning:1366050875243757699> Provide a valid battle code. Example: `horizon join ABC123`");
       return await joinHorizonBattle(context, id, code);
     }
 

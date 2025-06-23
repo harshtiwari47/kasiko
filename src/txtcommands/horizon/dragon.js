@@ -781,7 +781,7 @@ export default {
     .setDescription(
       `Your dragon **${
       targetDragon.customName ?? targetDragon.typeId.toUpperCase()
-      }** is embarking on a mysterious adventure...\n⏳ *Please wait...*`
+      }** is embarking on a mysterious adventure...\n<:sand_timer:1386589414846631947> *Please wait...*`
     )
     .setColor(chosenType.color || '#ffffff')
     .setImage(
@@ -1052,7 +1052,7 @@ export default {
     const cooldownExpiry = await redisClient.get(cooldownKey);
     if (cooldownExpiry && Date.now() < parseInt(cooldownExpiry, 10)) {
       const secondsLeft = Math.ceil((parseInt(cooldownExpiry, 10) - Date.now()) / 1000);
-      return message.channel.send(`⏳ You must wait **${Math.ceil(secondsLeft/60)}** more minutes before training again.`);
+      return message.channel.send(`<:sand_timer:1386589414846631947> You must wait **${Math.ceil(secondsLeft/60)}** more minutes before training again.`);
     }
 
     let userData = await getUserDataDragon(userId);
@@ -1158,7 +1158,7 @@ export default {
       const timeLeft = nextClaim - now;
       const hoursLeft = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutesLeft = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
-      return message.channel.send(`⏳ You've already claimed your daily reward. Try again in **${hoursLeft}h ${minutesLeft}m**.`);
+      return message.channel.send(`<:sand_timer:1386589414846631947> You've already claimed your daily reward. Try again in **${hoursLeft}h ${minutesLeft}m**.`);
     }
 
     // Random daily reward

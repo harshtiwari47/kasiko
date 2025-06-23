@@ -99,7 +99,7 @@ export default {
       const userData = await getUserData(id);
       if (!userData) {
         return await handleMessage(context, {
-          content: `⚠️ ${name}, could not retrieve your data.`
+          content: `<:warning:1366050875243757699> ${name}, could not retrieve your data.`
         });
       }
 

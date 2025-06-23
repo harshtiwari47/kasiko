@@ -140,7 +140,7 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
       const noCashEmbed = new EmbedBuilder()
       .setColor('#FF0000')
       .setTitle('Insufficient Cash')
-      .setDescription(`⚠️ **${message.author.username}**, you don't have enough cash for fishing.\nMinimum Required: <:kasiko_coin:1300141236841086977> **1500** 𝑪𝒂𝒔𝒉.`);
+      .setDescription(`<:warning:1366050875243757699> **${message.author.username}**, you don't have enough cash for fishing.\nMinimum Required: <:kasiko_coin:1300141236841086977> **1500** 𝑪𝒂𝒔𝒉.`);
 
       return fishingMsg.edit({
         embeds: [noCashEmbed],
@@ -157,7 +157,7 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
       if (!filtered.length) {
         const notFound = new EmbedBuilder()
         .setColor('#FF0000')
-        .setDescription(`⚠️ No fish data found for **${fishName}**.`);
+        .setDescription(`<:warning:1366050875243757699> No fish data found for **${fishName}**.`);
         return fishingMsg.edit({
           embeds: [notFound],
           components: []
@@ -195,7 +195,7 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
     // 3) The initial embed: "suspense"
     const initialEmbed = new EmbedBuilder()
     .setTitle("🎣 𝑭𝒊𝒔𝒉𝒊𝒏𝒈 𝒊𝒏 𝑷𝒓𝒐𝒄𝒆𝒔𝒔!")
-    .setDescription(`-# 𓂁﹏𓊝 **${message.author.username}** 𝘤𝘢𝘴𝘵 𝘵𝘩𝘦𝘪𝘳 𝘭𝘪𝘯𝘦...\n𝘛𝘩𝘦𝘺'𝘳𝘦 𝘵𝘳𝘺𝘪𝘯𝘨 𝘵𝘰 𝘤𝘢𝘵𝘤𝘩 𝘢 **${fish.rarity}** fish! ⏳`)
+    .setDescription(`-# 𓂁﹏𓊝 **${message.author.username}** 𝘤𝘢𝘴𝘵 𝘵𝘩𝘦𝘪𝘳 𝘭𝘪𝘯𝘦...\n𝘛𝘩𝘦𝘺'𝘳𝘦 𝘵𝘳𝘺𝘪𝘯𝘨 𝘵𝘰 𝘤𝘢𝘵𝘤𝘩 𝘢 **${fish.rarity}** fish! <:sand_timer:1386589414846631947>`)
     .setColor('#0e2c42')
     .setImage(`https://harshtiwari47.github.io/kasiko-public/images/fishing${1 + Math.floor(Math.random() * 4)}.jpg`)
     .setFooter({
@@ -298,7 +298,7 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
     console.error(err);
     const errorEmbed = new EmbedBuilder()
     .setColor('#FF0000')
-    .setDescription(`⚠️ Something went wrong. The 🐟 fish escaped.`);
+    .setDescription(`<:warning:1366050875243757699> Something went wrong. The 🐟 fish escaped.`);
     return message.channel.send({
       embeds: [errorEmbed]
     });
@@ -418,11 +418,11 @@ export async function exploreZone(userId, zoneName, message) {
       const randomAnimal = zoneAnimals[Math.floor(Math.random() * zoneAnimals.length)];
       return addToCollection(userId, message, zoneName, randomAnimal);
     } else {
-      message.channel.send(`⚠️ Zone "${zoneName.toUpperCase()}" not found.`);
+      message.channel.send(`<:warning:1366050875243757699> Zone "${zoneName.toUpperCase()}" not found.`);
     }
   } catch (e) {
     console.error(e);
-    message.channel.send(`⚠️ Something went wrong while exploring **${zoneName.toUpperCase()}**.`);
+    message.channel.send(`<:warning:1366050875243757699> Something went wrong while exploring **${zoneName.toUpperCase()}**.`);
   }
 }
 
@@ -433,7 +433,7 @@ async function collect(userId, message) {
   const userData = await getUserData(userId);
   if (userData.cash < 1500) {
     return message.channel.send(
-      `⚠️ **${message.author.username}**, you have insufficient cash for fishing.\nMinimum Cash: <:kasiko_coin:1300141236841086977> 1500 𝑪𝒂𝒔𝒉.`
+      `<:warning:1366050875243757699> **${message.author.username}**, you have insufficient cash for fishing.\nMinimum Cash: <:kasiko_coin:1300141236841086977> 1500 𝑪𝒂𝒔𝒉.`
     );
   }
 
@@ -464,7 +464,7 @@ export async function collectAnimal(userId, message) {
     const randomAnimal = foundAnimals[Math.floor(Math.random() * foundAnimals.length)];
     return addToCollection(userId, message, null, randomAnimal);
   } catch (e) {
-    message.channel.send(`⚠️ Something went wrong while catching a fish.`);
+    message.channel.send(`<:warning:1366050875243757699> Something went wrong while catching a fish.`);
   }
 }
 
@@ -521,7 +521,7 @@ export default {
 
     case "explore":
       if (!zone) {
-        return message.channel.send("⚠️ Please specify a zone to explore. Example: `ocean explore <zone>` or `ocean explore general`");
+        return message.channel.send("<:warning:1366050875243757699> Please specify a zone to explore. Example: `ocean explore <zone>` or `ocean explore general`");
       }
       return exploreZone(message.author.id, zone, message);
 

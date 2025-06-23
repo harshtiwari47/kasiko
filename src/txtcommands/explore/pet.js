@@ -107,7 +107,7 @@ async function petFeed(userPetData, petId) {
     ).toFixed(1);
 
     return {
-      content: `⏳ Please wait ${remaining} hours before feeding again.`,
+      content: `<:sand_timer:1386589414846631947> Please wait ${remaining} hours before feeding again.`,
       data: userPetData
     }
   }
@@ -242,7 +242,7 @@ async function petAction(userPetData, petId, action) {
     ).toFixed(1);
 
     return {
-      content: `⏳ Please wait ${remaining} hours before ${action}.`,
+      content: `<:sand_timer:1386589414846631947> Please wait ${remaining} hours before ${action}.`,
       data: userPetData
     };
   }

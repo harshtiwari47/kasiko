@@ -82,7 +82,7 @@ async function startMining(userId, username) {
   } catch (error) {
     console.error("Error in startMining:", error);
     return {
-      content: `⚠️ Something went wrong while starting your mining session. Please try again later.`
+      content: `<:warning:1366050875243757699> Something went wrong while starting your mining session. Please try again later.`
     }
   }
 }
@@ -130,7 +130,7 @@ async function collectResources(userId, context, username) {
   } catch (e) {
     console.error(e);
     return {
-      content: "⚠️ Something went wrong while collecting your mine."
+      content: "<:warning:1366050875243757699> Something went wrong while collecting your mine."
     }
   }
 }
@@ -175,7 +175,7 @@ async function exchangeCoal(userId, context, username) {
   } catch (e) {
     console.error(e);
     return {
-      content: `⚠️ Something went wrong while exchanging your coals.\n-# **Error**: ${e.message}`
+      content: `<:warning:1366050875243757699> Something went wrong while exchanging your coals.\n-# **Error**: ${e.message}`
     };
   }
 }
@@ -258,7 +258,10 @@ async function viewMiningStatus(userId, context, username) {
       .setDisabled(false),
       new ButtonBuilder()
       .setCustomId('mine_help')
-      .setLabel(`⚠️`)
+      .setLabel(`Help`)
+      .setEmoji({
+        name: "❔"
+      })
       .setStyle(ButtonStyle.Primary)
       .setDisabled(false)
     );
@@ -348,7 +351,7 @@ async function viewMiningStatus(userId, context, username) {
         console.error(err)
         if (!interaction.deferred) await interaction.deferReply();
         await interaction.followUp({
-          content: '⚠️ Something went wrong while performing mine command button!'
+          content: '<:warning:1366050875243757699> Something went wrong while performing mine command button!'
         });
       }
     });
@@ -363,7 +366,7 @@ async function viewMiningStatus(userId, context, username) {
     console.error(e);
     await handleMessage(context,
       {
-        content: "⚠️ Something went wrong while viewing your mine."
+        content: "<:warning:1366050875243757699> Something went wrong while viewing your mine."
       });
     return;
   }
@@ -419,7 +422,7 @@ async function upgradeMine(userId, username) {
   } catch (error) {
     console.error("Error in upgradeMine:", error);
     return {
-      content: "⚠️ Something went wrong while upgrading your mine. Please try again later."
+      content: "<:warning:1366050875243757699> Something went wrong while upgrading your mine. Please try again later."
     }
   }
 }
@@ -444,7 +447,7 @@ export default {
       return await viewMiningStatus(userId, context, name);
     } catch (e) {
       console.error(e);
-      return await handleMessage(context, `⚠️ Oops, something went wrong in mining!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `<:warning:1366050875243757699> Oops, something went wrong in mining!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   },
 };

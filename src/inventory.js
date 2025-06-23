@@ -382,11 +382,11 @@ export const ITEM_DEFINITIONS = {
 
         let userData = await getUserData(userId);
 
-        const CARD_COST = 10000;
+        const CARD_COST = 15000;
         const totalCost = amount * CARD_COST;
         if (userData.cash < totalCost) {
           return await handleMessage(context, {
-            content: `<:warning:1366050875243757699> You need ${totalCost.toLocaleString()} Cash to buy ${amount} scratch card(s).`, ephemeral: true
+            content: `<:warning:1366050875243757699> You need ${totalCost.toLocaleString()} Cash to buy <:kasiko_coin:1300141236841086977> **${amount}** scratch card(s).`, ephemeral: true
           });
         }
 

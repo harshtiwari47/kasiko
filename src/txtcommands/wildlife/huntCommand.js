@@ -90,7 +90,7 @@ export async function huntCommand(context, {
     const dailyHuntLimit = 10 + extraBullet;
     if (user.hunt.huntsToday >= dailyHuntLimit) {
       return handleMessage(context, {
-        content: `<:left:1350355384111468576> **${username}, you've used all ${rubBulletEmoji} ${dailyHuntLimit} of your ammo! It's getting dark, and the wilds are growing dangerous.**\n-# Rest up and return tomorrow to continue the hunt! <:rifle1:1352119137421234187><:rifle2:1352119217687625799>`,
+        content: `<:sand_timer:1386589414846631947> **${username}, you've used all ${rubBulletEmoji} ${dailyHuntLimit} of your ammo! It's getting dark, and the wilds are growing dangerous.**\n-# Rest up and return tomorrow to continue the hunt! <:rifle1:1352119137421234187><:rifle2:1352119217687625799>`,
       });
     }
 

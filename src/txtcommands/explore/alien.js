@@ -17,11 +17,19 @@ import {
   abilities
 } from "./alien/abilities.js";
 
+import {
+  Spaceship
+} from "./alien/ships.js";
+
 import handleAlienHelp from "./alien/help.js";
 
 import {
   inventory
 } from "./alien/inventory.js";
+
+import {
+  discordUser
+} from "../../../helper.js";
 
 const alienResEmo = `<:aliens_resource:1335537435341226024>`;
 const alienEnEmo = `<:aliens_energy:1335542963450679397>`;
@@ -118,30 +126,43 @@ async function handleProfile(ctx) {
       }
     }
 
-    // Categorize the embed fields into sections.
-    const profileEmbed = new EmbedBuilder()
-    .setTitle(`🛸 𝔸𝕝𝕚𝕖𝕟 ℙ𝕣𝕠𝕗𝕚𝕝𝕖: ${alien.name}`)
-    .setColor(0x2f3136)
-    .addFields(
-      {
-        name: "🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇",
-        value: `<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo}\n**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}`,
-        inline: false
-      },
-      {
-        name: "🗯️ 𝘾𝙊𝙈𝘽𝘼𝙏",
-        value: `- **ꨄ︎ HP:** ${alien.battleStats.health} **✸ ATK:** ${alien.battleStats.attack}\n- **⛨ DEF:** ${alien.battleStats.defense} **𖥂 AGI:** ${alien.battleStats.agility}`,
-        inline: false
-      },
-      {
-        name: "🗯️ 𝙎𝙋𝙀𝘾𝙄𝘼𝙇",
-        value: `<:aliens_ability:1336346125791137855> **Abilities:** ${alien.abilities.length > 0 ? alien.abilities.map(a => a.name).join(", "): "None"}\n${alienManEmo} **Manipulations:** ${alien.manipulations}`,
-        inline: false
-      }
+    const currentShipIndex = Spaceship.findIndex(s => parseInt(alien.tech) > s.tech);
+    const currentShip = Spaceship[currentShipIndex];
+    const upcomingShip = Spaceship[currentShipIndex - 1] ?? null;
+
+    const Container = new ContainerBuilder()
+    .addTextDisplayComponents(td =>
+      td.setContent(`### 🛸 𝔸𝕝𝕚𝕖𝕟 ℙ𝕣𝕠𝕗𝕚𝕝𝕖: ${alien.name}`)
     )
-    .setFooter({
-      text: footerMsg
-    });
+    .addTextDisplayComponents(td =>
+      td.setContent(`🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇`),
+      td => td.setContent(`<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo}\n**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}${upcomingShip ? "/ " + upcomingShip.tech: ""}`)
+    )
+    .addTextDisplayComponents(td =>
+      td.setContent(`🗯️ 𝘾𝙊𝙈𝘽𝘼𝙏`),
+      td => td.setContent(`- **ꨄ︎ HP:** ${alien.battleStats.health} **✸ ATK:** ${alien.battleStats.attack}\n- **⛨ DEF:** ${alien.battleStats.defense} **𖥂 AGI:** ${alien.battleStats.agility}`)
+    )
+    .addTextDisplayComponents(td =>
+      td.setContent(`🗯️ 𝙎𝙋𝙀𝘾𝙄𝘼𝙇`)
+    )
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        td => td.setContent(`<:aliens_ability:1336346125791137855> **Abilities:** ${alien.abilities.length > 0 ? alien.abilities.length: "None"}\n${alienManEmo} **Manipulations:** ${alien.manipulations}\n${currentShip ? "-# **Spaceship**: " + currentShip.name: ""}`)
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Spaceship')
+        .setURL(currentShip ? currentShip.url: "https://cdn.discordapp.com/emojis/1386562130752438402.png")
+      )
+    )
+    .addTextDisplayComponents(td =>
+      td.setContent(`-# ${footerMsg}`)
+    )
+
+    /*  .addTextDisplayComponents(td =>
+      td.setContent(``)
+    ) */
 
     // Build quick-action buttons.
     const buttons = new ActionRowBuilder().addComponents(
@@ -175,8 +196,8 @@ async function handleProfile(ctx) {
 
     // Send the profile embed with buttons.
     const sentMessage = await replyOrSend(ctx, {
-      embeds: [profileEmbed],
-      components: [buttons]
+      components: [Container, buttons],
+      flags: MessageFlags.IsComponentsV2
     });
 
     // Only attach a collector if the sent message supports it.
@@ -226,7 +247,8 @@ async function handleProfile(ctx) {
               });
 
               await interaction.editReply({
-                components: newRows
+                components: [Container,
+                  newRows]
               });
               break;
             case "alien_help":
@@ -258,7 +280,8 @@ async function handleProfile(ctx) {
               });
 
               await interaction.editReply({
-                components: newRowsAb
+                components: [Container,
+                  newRowsAb]
               });
 
               break;
@@ -285,7 +308,7 @@ async function handleProfile(ctx) {
           try {
             if (sentMessage && sentMessage.edit) {
               await sentMessage.edit({
-                components: []
+                components: [Container]
               });
             }
           } catch (err) {}
@@ -443,9 +466,9 @@ async function handleHarvest(ctx) {
       });
     }
 
-    // Enforce a 3-hour cooldown between harvests
+    // Enforce a 9-hour cooldown between harvests
     const now = new Date();
-    const cooldownDuration = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+    const cooldownDuration = 9 * 60 * 60 * 1000; // 9 hours in milliseconds
     if (alien.lastHarvest) {
       const nextAvailableTime = new Date(alien.lastHarvest.getTime() + cooldownDuration);
       if (now < nextAvailableTime) {
@@ -469,7 +492,7 @@ async function handleHarvest(ctx) {
     const baseEnergyGain = 5;
     const abilityResourceBonus = randomAbility.resourcesCollection || 0;
     const abilityEnergyBonus = randomAbility.energyCollection || 0;
-    const influenceBonus = Math.floor(Math.random() * alien.influence); // Influence adds directly to energy gain
+    const influenceBonus = Math.min(Math.ceil(Math.random() * (alien.influence/4)), 30); // Influence adds directly to energy gain
 
     const resourceGain = baseResourceGain + abilityResourceBonus;
     const energyGain = baseEnergyGain + abilityEnergyBonus + influenceBonus;
@@ -559,11 +582,11 @@ async function handleAbilitiesList(ctx) {
         `## <:aliens_ability:1336346125791137855> ${alien.name}'𝙨 𝘼𝙗𝙞𝙡𝙞𝙩𝙞𝙚𝙨` +
         `\n𝘔𝘢𝘴𝘵𝘦𝘳 𝘢𝘯𝘥 𝘶𝘱𝘨𝘳𝘢𝘥𝘦 𝘤𝘰𝘴𝘮𝘪𝘤 𝘢𝘣𝘪𝘭𝘪𝘵𝘪𝘦𝘴 𝘧𝘰𝘳 𝘶𝘭𝘵𝘪𝘮𝘢𝘵𝘦 𝘱𝘰𝘸𝘦𝘳!` +
         `\n## **╰➤ ${ability.name}**` +
-        `\n⟡ **𝖫𝖾𝗏𝖾𝗅:** ${ability.level}` +
-        `\n⟡ **𝖱𝖾𝗌𝗈𝗎𝗋𝖼𝖾𝗌:** +${ability.resourcesCollection}` +
-        `\n⟡ **𝖬𝖺𝗇𝗂𝗉𝗎𝗅𝖺𝗍𝗂𝗈𝗇 %:** +${ability.manipulationRate ? ability.manipulationRate: 0}` +
-        `\n⟡ **𝖤𝗇𝖾𝗋𝗀𝗒:** +${ability.energyCollection}` +
-        `\n⟡ **𝖳𝖾𝖼𝗁 𝖨𝗇𝖼𝗋𝖾𝗆𝖾𝗇𝗍:** +${ability.techIncrement}`
+        `\n<:follow_reply:1368224897003946004> **𝖫𝖾𝗏𝖾𝗅:** ${ability.level}` +
+        `\n<:follow_reply:1368224897003946004> **𝖱𝖾𝗌𝗈𝗎𝗋𝖼𝖾𝗌:** +${ability.resourcesCollection}` +
+        `\n<:follow_reply:1368224897003946004> **𝖬𝖺𝗇𝗂𝗉𝗎𝗅𝖺𝗍𝗂𝗈𝗇 %:** +${ability.manipulationRate ? ability.manipulationRate: 0}` +
+        `\n<:follow_reply:1368224897003946004> **𝖤𝗇𝖾𝗋𝗀𝗒:** +${ability.energyCollection}` +
+        `\n<:reply:1368224908307468408> **𝖳𝖾𝖼𝗁 𝖨𝗇𝖼𝗋𝖾𝗆𝖾𝗇𝗍:** +${ability.techIncrement}`
       )
       .setFooter({
         text: `⤿ 𝘗𝘢𝘨𝘦 ${pageIndex + 1} 𝘖𝘧 ${totalPages} | 𝘙𝘌𝘘𝘜𝘐𝘙𝘌𝘔𝘌𝘕𝘛𝘚: alien inventory`
@@ -924,25 +947,17 @@ async function handleUpgrade(ctx) {
     alien.resources -= upgradeCost;
 
     // Determine which abilities the alien hasn't unlocked yet.
-    // (This assumes alien.abilities is an array of objects with a "name" property.
-    // If you're storing ability names only, use:
-    //   !alien.abilities.includes(ability.name))
     const availableAbilities = abilities.filter(
       (ability) => !alien.abilities.some((a) => a.name === ability.name)
     );
 
-    if (availableAbilities.length === 0) {
-      return replyOrSend(ctx, {
-        content: `🚀 **${alien.name}**, you've already unlocked all available cosmic abilities!`,
-      });
-    }
-
     // Pick a random ability from those not yet unlocked.
-    const randomIndex = Math.floor(Math.random() * availableAbilities.length);
-    const chosenAbility = availableAbilities[randomIndex];
-
-    // Add the new ability to the alien.
-    alien.abilities.push(chosenAbility);
+    if (availableAbilities.length !== 0) {
+      const randomIndex = Math.floor(Math.random() * availableAbilities.length);
+      const chosenAbility = availableAbilities[randomIndex];
+      // Add the new ability to the alien.
+      alien.abilities.push(chosenAbility);
+    }
 
     // Update additional stats.
     alien.battleStats.attack += 2;
@@ -1265,7 +1280,7 @@ async function simulateBattle(ctx, alien, opponent) {
       // The user lost
       const penalty = Math.floor(Math.random() * 30) + 30;
       alien.resources = Math.max(0, alien.resources - penalty);
-      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n⚠️ **${alien.name} lost ${alienResEmo} ***${penalty}*** resources.**`;
+      resultMessage = `💀 **Defeat...** ${opponent.name} proved too powerful.\n<:warning:1366050875243757699> **${alien.name} lost ${alienResEmo} ***${penalty}*** resources.**`;
 
       // If opponent is not AI, give them some reward
       if (opponent.userId !== "AI" && typeof opponent.save === "function") {
@@ -1311,7 +1326,7 @@ async function simulateBattle(ctx, alien, opponent) {
       } else {
         const penalty = Math.floor(Math.random() * 30) + 30;
         alien.resources = Math.max(0, alien.resources - penalty);
-        resultMessage = `💀 **Defeat...** __${opponent.name}__ overpowers __${alien.name}__ with higher endurance.\n⚠️ **${alien.name} lost ${alienResEmo} ${penalty} resources.**`;
+        resultMessage = `💀 **Defeat...** __${opponent.name}__ overpowers __${alien.name}__ with higher endurance.\n<:warning:1366050875243757699> **${alien.name} lost ${alienResEmo} ${penalty} resources.**`;
 
         if (opponent.userId !== "AI" && typeof opponent.save === "function") {
           opponent.resources += Math.floor(penalty / 2);

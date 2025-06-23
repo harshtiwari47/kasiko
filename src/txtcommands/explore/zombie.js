@@ -367,7 +367,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
         gameData.health -= dmg;
 
         zombiesEmbedShow = zombiesEmbed(
-          `⚠️ ${currentZombies} zombie${currentZombies > 1 ? "s": ""} attacked you for ${dmg} damage!`, true
+          `<:warning:1366050875243757699> ${currentZombies} zombie${currentZombies > 1 ? "s": ""} attacked you for ${dmg} damage!`, true
         );
 
         const currentEmbeds = gameMessage?.embeds?.map(e => EmbedBuilder.from(e));
@@ -751,7 +751,7 @@ async function viewUserLocationCollection(playerInfo, message) {
       });
 
   } catch (e) {
-    console.error(e); return message.reply('⚠️ Something went wrong while fetching locations.').catch(() => {});
+    console.error(e); return message.reply('<:warning:1366050875243757699> Something went wrong while fetching locations.').catch(() => {});
   }
 }
 

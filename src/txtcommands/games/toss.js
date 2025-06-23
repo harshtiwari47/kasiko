@@ -4,8 +4,15 @@ import {
 } from '../../../database.js';
 
 import {
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
+} from 'discord.js';
+
+import {
   Helper,
-  discordUser
+  discordUser,
+  handleMessage
 } from '../../../helper.js';
 
 function capitalizeStrict(word) {
@@ -30,13 +37,13 @@ export async function toss(id, context, amount, channel, choice = "head") {
 
     // Check if the user has enough cash and if the amount is valid
     if (userData.cash < 1) {
-      return channel.send(`⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
     } else if (amount < 1) {
-      return channel.send("⚠️ Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **1**.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, "<:warning:1366050875243757699> Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **1**.");
     }
 
     if (userData.cash < Number(amount)) {
-      return channel.send(`⚠️ **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     userData = await updateUser(id, {
@@ -47,11 +54,21 @@ export async function toss(id, context, amount, channel, choice = "head") {
     const stillCoin = `<:StillCoin:1326414822841253980>`;
     const stillCoinTails = `<:StillTails:1326786766438400113>`;
 
+    const Container = new ContainerBuilder()
+    .addTextDisplayComponents(text =>
+      text.setContent(`**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\n` +
+        `The *coin* spins... ${spiningCoin}\n` +
+        `⚡︎ Your 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦! `
+      )
+    )
+    .setAccentColor(Math.floor(Math.random() * 16777216))
+
     // Send a suspenseful message
-    const suspenseMessage = await channel.send(
-      `**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\n` +
-      `The ᑕOIＮ spins... ${spiningCoin}\n` +
-      `⚡︎ Your 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦!`);
+    const suspenseMessage = await handleMessage(context,
+      {
+        components: [Container],
+        flags: MessageFlags.IsComponentsV2
+      });
 
     // Simulate a short delay to build suspense
     await new Promise(resolve => setTimeout(resolve, 3000)); // 3-second delay for better effect
@@ -73,20 +90,32 @@ export async function toss(id, context, amount, channel, choice = "head") {
       cash: userData.cash
     });
 
+    let content = "";
+    let won = true;
+
     // Edit the initial "thinking" message to the final result
     if (random === 1 && choice === "head") {
-      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoin} landed on **Heads**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(1* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
+      content = (`**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\nThe *coin* ${stillCoin} landed on **heads**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(1* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
     } else if (random === 0 && choice === "tail") {
-      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${stillCoinTails} landed on **Tails**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(1* winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`);
+      content = (`**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\nThe *coin* ${stillCoinTails} landed on **tails**!\n***✦ You won <:kasiko_coin:1300141236841086977>*** **${Number(1* winamount).toLocaleString()}** ***𝑪𝒂𝒔𝒉***.`);
     } else {
-      await suspenseMessage.edit(`**${name}**, 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${capitalizeStrict(choice)}s**!\nThe **ᑕOIＮ** ${choice === "tail" ? stillCoin: stillCoinTails} landed on **${choice === "tail" ? "Heads": "Tails"}**...\n***⚠ You lost the bet.***`);
+      won = false;
+      content = (`**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\nThe *coin* ${choice === "tail" ? stillCoin: stillCoinTails} landed on **${choice === "tail" ? "heads": "tails"}**...\n***⚠ You lost the bet.***`);
     }
+
+    Container.components[0].data.content = content;
+    Container.setAccentColor(won ? 0x58d1ab : null)
+
+    suspenseMessage.edit({
+      components: [Container],
+      flags: MessageFlags.IsComponentsV2
+    })
 
   } catch (e) {
     if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
       console.error(e);
     }
-    return channel.send(`ⓘ Oops! Something went wrong while tossing the coin! 🪙\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return await handleMessage(context, `ⓘ Oops! Something went wrong while tossing the coin! 🪙\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -126,12 +155,12 @@ export default {
 
         // Ensure amount is within valid range
         if (String(amount).toLowerCase() !== "all" && amount < 1) {
-          await message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
+          await message.channel.send("<:warning:1366050875243757699> Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
           return;
         }
 
         if (String(amount).toLowerCase() !== "all" && amount > 300000) {
-          await message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+          await message.channel.send(`<:warning:1366050875243757699> **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
           return;
         }
 

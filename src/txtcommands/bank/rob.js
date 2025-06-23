@@ -68,7 +68,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
     .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/robber.png`)
     .addFields(
       {
-        name: '⏳ **Time is ticking**...',
+        name: '<:sand_timer:1386589414846631947> **Time is ticking**...',
         value: 'Answer within **25 seconds** or the law catches up with you!\n- No need to use a prefix.'
       },
       {
@@ -339,7 +339,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
         if (reason === 'time') {
           const timeoutEmbed = new EmbedBuilder()
           .setColor('#231c00') // Yellow for timeout
-          .setTitle('⏳ **𝐓𝐢𝐦𝐞 𝐢𝐬 𝐮𝐩!** ')
+          .setTitle('<:sand_timer:1386589414846631947> **𝐓𝐢𝐦𝐞 𝐢𝐬 𝐮𝐩!** ')
           .setDescription(
             `**${message.author.username}**, you ran out of time to solve the puzzle!\n` +
             `You missed your chance to rob **${message.mentions.users.first().username}**. 😞`

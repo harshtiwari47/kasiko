@@ -568,7 +568,7 @@ export default {
       }
     } catch (err) {
       console.error(err);
-      return message.channel.send("⚠️ Something went wrong with the children command.");
+      return message.channel.send("<:warning:1366050875243757699> Something went wrong with the children command.");
     }
   }
 };

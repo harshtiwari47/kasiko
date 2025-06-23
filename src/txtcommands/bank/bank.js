@@ -9,7 +9,9 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  ComponentType
+  ComponentType,
+  ContainerBuilder,
+  MessageFlags
 } from "discord.js";
 
 import {
@@ -80,12 +82,23 @@ export const Bank = {
           'bankAccount.deposit': Math.abs(newDeposit)
         });
 
-        return await handleMessage(context,
-          `## <:bank:1352897312606785576> **${name}** __deposited__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
-          `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
-          `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
-          `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${Math.abs(userData.cash).toLocaleString()}**`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        const Container = new ContainerBuilder()
+        .addTextDisplayComponents(td =>
+          td.setContent(`### <:bank:1352897312606785576> **${name}** __deposited__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`)
+        )
+        .addSeparatorComponents(sep => sep)
+        .addTextDisplayComponents(td =>
+          td.setContent(
+            `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
+            `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
+            `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${Math.abs(userData.cash).toLocaleString()}**`
+          )
+        )
+
+        return await handleMessage(context, {
+          components: [Container],
+          flags: MessageFlags.IsComponentsV2
+        })
 
       } catch (err) {
         console.error(`❌ Error updating bank details for ${username}:`, err);
@@ -95,7 +108,7 @@ export const Bank = {
           cash: userData.cash
         });
 
-        return await handleMessage(context, `⚠️ **${name}**, an error occurred while processing your deposit. Your cash balance has been restored.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, an error occurred while processing your deposit. Your cash balance has been restored.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (err) {
       return await handleMessage(context, `Error depositing funds: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -145,12 +158,23 @@ export const Bank = {
           'bankAccount.deposit': newDeposit
         });
 
-        return await handleMessage(context,
-          `## <:bank:1352897312606785576> **${name}** __withdrew__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.\n` +
-          `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
-          `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
-          `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}**`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        const Container = new ContainerBuilder()
+        .addTextDisplayComponents(td =>
+          td.setContent(`### <:bank:1352897312606785576> **${name}** __withdrew__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`)
+        )
+        .addSeparatorComponents(sep => sep)
+        .addTextDisplayComponents(td =>
+          td.setContent(
+            `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
+            `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
+            `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}**`
+          )
+        )
+
+        return await handleMessage(context, {
+          components: [Container],
+          flags: MessageFlags.IsComponentsV2
+        })
 
       } catch (err) {
         console.error(
@@ -171,7 +195,7 @@ export const Bank = {
         }
 
         return await handleMessage(context,
-          `⚠️ **${name}**, an error occurred while processing your withdrawal. Your cash balance has been restored.`
+          `<:warning:1366050875243757699> **${name}**, an error occurred while processing your withdrawal. Your cash balance has been restored.`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
     } catch (err) {
@@ -528,7 +552,7 @@ export default {
       if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
         console.error(e);
       }
-      return await handleMessage(context, `⚠️ **${name}**, an unexpected error occurred. Please try again later.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, an unexpected error occurred. Please try again later.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   }
 };
