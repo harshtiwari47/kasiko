@@ -136,7 +136,7 @@ async function handleProfile(ctx) {
     )
     .addTextDisplayComponents(td =>
       td.setContent(`🗯️ 𝙂𝙀𝙉𝙀𝙍𝘼𝙇`),
-      td => td.setContent(`<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo}**Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}${upcomingShip ? "/ " + upcomingShip.tech: ""}`)
+      td => td.setContent(`<:conqueror:1336360322516123669> **Disguise:** ${alien.disguise || "None"} ${alienCrownEmo} **Influence:** ${alien.influence}\n${alienResEmo} **Resources:** ${alien.resources}/${upgradeCost}\n${alienEnEmo} **Energy:** ${alien.energy} ${alienTechEmo} **Tech:** ${alien.tech}${upcomingShip ? "/ " + upcomingShip.tech: ""}`)
     )
     .addTextDisplayComponents(td =>
       td.setContent(`🗯️ 𝘾𝙊𝙈𝘽𝘼𝙏`),
@@ -951,11 +951,12 @@ async function handleUpgrade(ctx) {
     const availableAbilities = abilities.filter(
       (ability) => !alien.abilities.some((a) => a.name === ability.name)
     );
-
+     
+    let chosenAbility;
     // Pick a random ability from those not yet unlocked.
     if (availableAbilities.length !== 0) {
       const randomIndex = Math.floor(Math.random() * availableAbilities.length);
-      const chosenAbility = availableAbilities[randomIndex];
+      chosenAbility = availableAbilities[randomIndex];
       // Add the new ability to the alien.
       alien.abilities.push(chosenAbility);
     }
@@ -964,16 +965,21 @@ async function handleUpgrade(ctx) {
     alien.battleStats.attack += 2;
     alien.battleStats.defense += 2;
     // Use the techIncrement from the chosen ability.
-    alien.tech += 10 + chosenAbility.techIncrement;
+    alien.tech += 10 + (chosenAbility?.techIncrement || 0);
 
     // Save the updated alien document.
     await alien.save();
 
     // Prepare a set of improved random responses.
     const responses = [
-      `## <:aliens_hammer:1336344266242527294>  **${alien.name}, evolution complete!**\n<:orange_fire:1336344438464839731> 𝘠𝘰𝘶'𝘷𝘦 𝘶𝘯𝘭𝘰𝘤𝘬𝘦𝘥 <:aliens_ability:1336346125791137855>  **__${chosenAbility.name}__**, 𝘣𝘰𝘰𝘴𝘵𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝚌𝚘𝚜𝚖𝚒𝚌 𝚙𝚛𝚘𝚠𝚎𝚜𝚜  𝘢𝘯𝘥 𝚝𝚎𝚌𝚑 𝘣𝘺 <:aliens_tech:1336344914413359135> :  ***${chosenAbility.techIncrement} points***. <:aliens_crown:1336345903048560640>`,
-      `## <:aliens_hammer:1336344266242527294>  **${alien.name}, upgrade successful!**\n<:orange_fire:1336344438464839731> 𝘠𝘰𝘶 𝘯𝘰𝘸 𝘤𝘰𝘮𝘮𝘢𝘯𝘥 <:aliens_ability:1336346125791137855>  **__${chosenAbility.name}__**, 𝘦𝘯𝘩𝘢𝘯𝘤𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝚋𝚊𝚝𝚝𝚕𝚎 𝚛𝚎𝚊𝚍𝚒𝚗𝚎𝚜𝚜  𝘢𝘯𝘥 𝚝𝚎𝚌𝚑 𝘣𝘺 <:aliens_tech:1336344914413359135> :  ***${chosenAbility.techIncrement} points***. <:aliens_crown:1336345903048560640>`,
-      `## <:aliens_hammer:1336344266242527294>  **${alien.name}, the stars have aligned!**\n<:orange_fire:1336344438464839731> 𝘠𝘰𝘶'𝘷𝘦 𝘨𝘢𝘪𝘯𝘦𝘥 <:aliens_ability:1336346125791137855>  **__${chosenAbility.name}__**, 𝘢𝘮𝘱𝘭𝘪𝘧𝘺𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝚝𝚎𝚌𝚑  𝘣𝘺 <:aliens_tech:1336344914413359135> :  ***${chosenAbility.techIncrement} points***. <:aliens_crown:1336345903048560640>`
+      chosenAbility
+      ? `## <:aliens_hammer:1336344266242527294>  **${alien.name}, evolution complete!**\n<:orange_fire:1336344438464839731> 𝘠𝘰𝘶'𝘷𝘦 𝘶𝘯𝘭𝘰𝘤𝘬𝘦𝘥 <:aliens_ability:1336346125791137855>  **__${chosenAbility.name}__**, 𝘣𝘰𝘰𝘴𝘵𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝚌𝚘𝚜𝚖𝚒𝚌 𝚙𝚛𝚘𝚠𝚎𝚜𝚜  𝘢𝘯𝘥 𝚝𝚎𝚌𝚑 𝘣𝘺 <:aliens_tech:1336344914413359135>: ***${chosenAbility.techIncrement} points***. <:aliens_crown:1336345903048560640>`: `## <:aliens_hammer:1336344266242527294>  **${alien.name}, evolution complete!**\n<:orange_fire:1336344438464839731> 𝘠𝘰𝘶'𝘷𝘦 𝘨𝘢𝘪𝘯𝘦𝘥 𝘯𝘰 𝘯𝘦𝘸 𝘢𝘣𝘪𝘭𝘪𝘵𝘺 𝘵𝘩𝘪𝘴 𝘵𝘪𝘮𝘦, 𝘣𝘶𝘵 𝘺𝘰𝘶𝘳 𝚝𝚎𝚌𝚑 𝘴𝘵𝘪𝘭𝘭 𝘧𝘦𝘦𝘭𝘴 𝘮𝘰𝘳𝘦 𝘧𝘰𝘤𝘶𝘴𝘦𝘥. <:aliens_tech:1336344914413359135>`,
+
+      chosenAbility
+      ? `## <:aliens_hammer:1336344266242527294>  **${alien.name}, upgrade successful!**\n<:orange_fire:1336344438464839731> 𝘠𝘰𝘶 𝘯𝘰𝘸 𝘤𝘰𝘮𝘮𝘢𝘯𝘥 <:aliens_ability:1336346125791137855>  **__${chosenAbility.name}__**, 𝘦𝘯𝘩𝘢𝘯𝘤𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝚋𝚊𝚝𝚝𝚕𝚎 𝚛𝚎𝚊𝚍𝚒𝚗𝚎𝚜𝚜  𝘢𝘯𝘥 𝚝𝚎𝚌𝚑 𝘣𝘺 <:aliens_tech:1336344914413359135>: ***${chosenAbility.techIncrement} points***. <:aliens_crown:1336345903048560640>`: `## <:aliens_hammer:1336344266242527294>  **${alien.name}, upgrade successful!**\n<:orange_fire:1336344438464839731> 𝘕𝘰 𝘯𝘦𝘸 𝘢𝘣𝘪𝘭𝘪𝘵𝘺 𝘥𝘪𝘴𝘤𝘰𝘷𝘦𝘳𝘦𝘥, 𝘣𝘶𝘵 𝘺𝘰𝘶 𝘧𝘦𝘦𝘭 𝘺𝘰𝘶𝘳 𝚋𝚘𝚗𝚍 𝘸𝘪𝘵𝘩 𝘁𝘦𝘤𝘩 𝘨𝘳𝘰𝘸𝘪𝘯𝘨. <:aliens_tech:1336344914413359135>`,
+
+      chosenAbility
+      ? `## <:aliens_hammer:1336344266242527294>  **${alien.name}, the stars have aligned!**\n<:orange_fire:1336344438464839731> 𝘠𝘰𝘶'𝘷𝘦 𝘨𝘢𝘪𝘯𝘦𝘥 <:aliens_ability:1336346125791137855>  **__${chosenAbility.name}__**, 𝘢𝘮𝘱𝘭𝘪𝘧𝘺𝘪𝘯𝘨 𝘺𝘰𝘶𝘳 𝚝𝚎𝚌𝚑 𝘣𝘺 <:aliens_tech:1336344914413359135>: ***${chosenAbility.techIncrement} points***. <:aliens_crown:1336345903048560640>`: `## <:aliens_hammer:1336344266242527294>  **${alien.name}, the stars have aligned!**\n<:orange_fire:1336344438464839731> 𝘈 𝘯𝘦𝘸 𝘢𝘣𝘪𝘭𝘪𝘵𝘺 𝘥𝘪𝘥 𝘯𝘰𝘵 𝘦𝘮𝘦𝘳𝘨𝘦, 𝘺𝘦𝘵 𝘢 𝘮𝘺𝘴𝘵𝘪𝘤 𝘨𝘭𝘰𝘸 𝘦𝘯𝘷𝘦𝘭𝘰𝘱𝘴 𝘺𝘰𝘶𝘳 𝘵𝘦𝘤𝘩. <:aliens_tech:1336344914413359135>`
     ];
 
     return replyOrSend(ctx, {
