@@ -6,10 +6,14 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
-  Helper
+  Helper,
+  discordUser,
+  handleMessage
 } from '../../../helper.js';
 
 const cardDeck = [
@@ -48,8 +52,14 @@ function calculateHandValue(hand) {
   return totalValue;
 }
 
-export async function blackjack(id, amount, channel) {
+export async function blackjack(id, amount, channel, context) {
   try {
+
+    const {
+      name,
+      avatar: avatarUrl
+    } = discordUser(context);
+
     const guild = await channel.guild.members.fetch(id);
     let userData = await getUserData(id);
 
@@ -60,8 +70,7 @@ export async function blackjack(id, amount, channel) {
     if (amount > 300000) amount = 300000;
 
     if (userData.cash < amount) {
-      await channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Required: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`);
-      return;
+      return await handleMessage(context, `⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Required: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`);
     }
 
     // Deduct bet amount
@@ -86,41 +95,58 @@ export async function blackjack(id, amount, channel) {
     const playerHandValue = calculateHandValue(playerHand);
     const botHandValue = calculateHandValue([botHand[0], "X"]);
 
-    const avatarUrl = guild.user.displayAvatarURL({
-      dynamic: true, size: 1024
-    });
-
-    const embedTitle = new EmbedBuilder()
-    .setTitle(`🃏 𝘉𝘓𝘈𝘊𝘒𝘑𝘈𝘊𝘒 𝘎𝘈𝘔𝘌`)
-    .setAuthor({
-      name: `${guild.user.username}`, iconURL: avatarUrl
-    })
-    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/blackjack-icon.png`)
-
-    // Create embed for the game state
-    const embed = new EmbedBuilder()
-    .setDescription(`> ***\`${guild.user.username}, you are playing Blackjack!\`***\n\n` +
-      `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎** :\n` +
-      `## ${playerHand.join(" ")} (**${playerHandValue}**)\n` +
-      `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎** :\n` +
-      `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
-      `### Bet: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+    const Container = new ContainerBuilder()
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`### 🃏 **${name}**'s 𝘽𝙡𝙖𝙘𝙠 𝙅𝙖𝙘𝙠 𝙂𝙖𝙢𝙚`)
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Blackjack')
+        .setURL("https://harshtiwari47.github.io/kasiko-public/images/blackjack-icon.png")
+      )
+    )
+    .addSeparatorComponents(separate => separate)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(
+        `> ***\`${guild.user.username}, you are playing Blackjack!\`***`
+      )
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(
+        `** <:follow_reply:1368224897003946004>𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎** :\n` +
+        `## ${playerHand.join(" ")} (**${playerHandValue}**)\n` +
+        `** <:reply:1368224908307468408> 𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎** :\n` +
+        `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)`
+      )
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# **Bet: <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()}**`)
+    )
 
     // Create buttons for hit and stand
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
       .setCustomId('hit')
-      .setLabel('Hit')
-      .setStyle(ButtonStyle.Primary),
+      .setLabel('HIT')
+      .setEmoji({
+        name: "⚡"
+      })
+      .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
       .setCustomId('stand')
-      .setLabel('Stand')
-      .setStyle(ButtonStyle.Primary)
+      .setLabel('STAND')
+      .setEmoji({
+        name: "⭕"
+      })
+      .setStyle(ButtonStyle.Secondary)
     );
 
     // Send the embed with buttons
-    const gameMessage = await channel.send({
-      embeds: [embedTitle, embed], components: [row]
+    const gameMessage = await handleMessage(context, {
+      components: [Container, row],
+      flags: MessageFlags.IsComponentsV2
     });
 
     // Button interaction handler
@@ -143,32 +169,31 @@ export async function blackjack(id, amount, channel) {
               botHandFinalValue = calculateHandValue(botHand);
             }
 
-            const bustEmbed = new EmbedBuilder(embed)
-            .setColor("#ed8484")
-            .setDescription(`> 🚫 ***\`${guild.user.username}, you busted! Your hand value is over 21.\`***\n\n` +
-              `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎:**\n` +
-              `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-              `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-              `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
-              `### 𝘽𝙀𝙏: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+            Container.components[2].data.content = `> 🚫 ***\`${guild.user.username}, you busted! Your hand value is over 21.\`***`;
+
+            Container.components[3].data.content = `<:follow_reply:1368224897003946004> **𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎:**\n` +
+            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+            `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+            `## ${botHand.join(" ")} (**${botHandFinalValue}**)`;
 
             await interaction.update({
-              embeds: [embedTitle, bustEmbed], components: []
+              components: [Container],
+              flags: MessageFlags.IsComponentsV2
             });
             collector.stop("busted");
             return;
           } else {
             // Update the embed with new player hand
-            const newEmbed = new EmbedBuilder(embed)
-            .setDescription(`> ***\`${guild.user.username}, you hit!\`***\n\n` +
-              `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-              `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-              `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-              `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)\n\n` +
-              `### 𝘽𝙀𝙏: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+            Container.components[2].data.content = `> ***\`${guild.user.username}, you hit!\`***`;
+
+            Container.components[3].data.content = `<:follow_reply:1368224897003946004> **𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+            `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+            `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)`;
 
             await interaction.update({
-              embeds: [embedTitle, newEmbed], components: [row]
+              components: [Container, row],
+              flags: MessageFlags.IsComponentsV2
             });
           }
         } else if (interaction.customId === 'stand') {
@@ -185,11 +210,11 @@ export async function blackjack(id, amount, channel) {
           let resultMessage = '';
           let color = "#ed8484";
           if (botHandFinalValue > 21) {
-            resultMessage = `💸 ***\`${guild.user.username}, the bot busted! You win!\`***`;
+            resultMessage = `<:wine:1356880010866069562> ***\`${guild.user.username}, the bot busted! You win!\`***`;
             color = "#94edc2";
             userData.cash += amount * 2; // Player wins double the bet
           } else if (finalPlayerHandValue > botHandFinalValue) {
-            resultMessage = `💸 ***\`${guild.user.username}, you win!\`***`;
+            resultMessage = `<:wine:1356880010866069562> ***\`${guild.user.username}, you win!\`***`;
             userData.cash += amount * 2; // Player wins double the bet
             color = "#94edc2";
           } else if (finalPlayerHandValue < botHandFinalValue) {
@@ -206,17 +231,16 @@ export async function blackjack(id, amount, channel) {
           });
 
           // Final update to the embed
-          const finalEmbed = new EmbedBuilder(embed)
-          .setColor(color)
-          .setDescription(`> ${resultMessage}\n\n` +
-            `**𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-            `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
-            `**𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-            `## ${botHand.join(" ")} (**${botHandFinalValue}**)\n\n` +
-            `### 𝘽𝙀𝙏: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**`);
+          Container.components[2].data.content = `> ${resultMessage}`;
+          Container.setAccentColor(Number(`0x${color.replace("#", "")}`));
 
+          Container.components[3].data.content = `<:follow_reply:1368224897003946004> **𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+          `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
+          `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+          `## ${botHand.join(" ")} (**${botHandFinalValue}**)`;
           await interaction.update({
-            embeds: [embedTitle, finalEmbed], components: []
+            components: [Container],
+            flags: MessageFlags.IsComponentsV2
           });
 
           collector.stop("result")
@@ -234,11 +258,10 @@ export async function blackjack(id, amount, channel) {
       async (collected, reason) => {
         // Handle timeout if the game ends with no interaction
         if (gameMessage && reason === "time") {
+          Container.components[2].data.content = "<:sand_timer:1386589414846631947> Time Out";
           await gameMessage?.edit({
-            embeds: [embedTitle, embed.setFooter({
-              text: "⏱️ Timeout"
-            }).setColor("#f43d3d")],
-            components: []
+            components: [Container],
+            flags: MessageFlags.IsComponentsV2
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           return;
         }
@@ -284,7 +307,7 @@ export default {
       }
 
       try {
-        await blackjack(message.author.id, amount, message.channel);
+        await blackjack(message.author.id, amount, message.channel, message);
         return;
       } catch (e) {
         console.error(e);

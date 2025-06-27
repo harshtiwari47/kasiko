@@ -39,7 +39,7 @@ export default {
     try {
       userData = await getUserData(userId);
     } catch (err) {
-      return handleMessage(context, {
+      return await handleMessage(context, {
         content: '<:alert:1366050815089053808> An error occurred fetching your data. Please try again later.'
       });
     }
@@ -47,7 +47,7 @@ export default {
       userData.inventory = {};
     }
 
-    let tickets = userData.inventory.ticket ?? 1;
+    let tickets = userData?.inventory?.ticket ?? 0;
     if (tickets < 1) {
       return handleMessage(context, {
         components: [new ContainerBuilder().addTextDisplayComponents(
