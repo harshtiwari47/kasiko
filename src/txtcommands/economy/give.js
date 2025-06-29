@@ -79,9 +79,9 @@ export async function give(context, amount, recipientId) {
     // Retrieve the current amount received today; default to 0 if not set
     let todayReceived = (recipientData.amountReceivedDaily?.amount || 0);
 
-    // Calculate the daily limit: recipientData.level * 250000 capped at 6,000,000
-    const maxDailyLimit = recipientData.level * 250000;
-    const dailyLimit = Math.min(maxDailyLimit, 6000000);
+    // Calculate the daily limit
+    const maxDailyLimit = (recipientData.level * 250000 * (recipientData.level >= 10 ? 2 : 1))
+    const dailyLimit = Math.min(maxDailyLimit, 40000000);
 
     let remainingLimit = dailyLimit - Number(todayReceived);
 

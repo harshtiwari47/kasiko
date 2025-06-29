@@ -233,9 +233,12 @@ const userSchema = new mongoose.Schema({
     default: {}
     },
     activeBoosts: {
-      type: Map,
-      of: Object,
+      type: Object,
     default: {}
+    },
+    tasks: {
+      type: Object,
+    default {}
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields
