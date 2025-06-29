@@ -238,7 +238,7 @@ const userSchema = new mongoose.Schema({
     },
     tasks: {
       type: Object,
-    default {}
+    default: {}
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields
