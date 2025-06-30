@@ -48,15 +48,12 @@ async function sendUserStat(stat, message) {
     const expRequiredNextLvl = (Math.pow(userData["level"] + 1, 2) * 100) - Number(userData["exp"]);
 
     return message.channel.send(
-      `亗 **${name}**, your level is 🏆 **${userData["level"]}**.\n` +
-      `You need ✴️ **${expRequiredNextLvl}** more experience points to reach the next level!`
+      `亗 **${name}**, your level is <:level:1389092923525824552> **${userData["level"]}**.\n` +
+      `You need <:exp:1389092623477637190> **${expRequiredNextLvl}** more experience points to reach the next level!`
     ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "exp") {
-    return message.channel.send(`**${name}**'s current experience points are ✴️ **${userData[stat].toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-  if (stat === "charity") {
-    return message.channel.send(`**${name}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** charity.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send(`**${name}**'s current experience points are <:exp:1389092623477637190> **${userData[stat].toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
@@ -97,7 +94,6 @@ export default {
     "cash",
     "stat cash",
     "networth",
-    "charity",
     "trust",
     "level",
     "exp"

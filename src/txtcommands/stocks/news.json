@@ -1,20 +1,20 @@
 [
   {
-    "headline": "VATA Announces Record-Breaking Revenue in Latest Quarter",
-    "description": "With strong performance in Automotive, VATA reports record-breaking revenue, supported by robust product demand and innovation.",
+    "headline": "Uncertain Market Trends Affect KASIKO Stock Performance",
+    "description": "Fluctuating market trends have led to a decline in KASIKO’s stock, which now trades at <:kasiko_coin:1300141236841086977> 33.6 after previously reaching a high of 38.1.",
+    "stat": "down",
+    "date": ""
+  },
+  {
+    "headline": "COFFEE Stock Surges Following Positive Forecast",
+    "description": "After a positive forecast from analysts, COFFEE stock has surged to <:kasiko_coin:1300141236841086977> 132.4, with future growth anticipated.",
     "stat": "up",
     "date": ""
   },
   {
-    "headline": "DARKSTAR_INDUSTRIES Experiences Decline Amid Sector-Wide Challenges",
-    "description": "Shares of DARKSTAR_INDUSTRIES fell to <:kasiko_coin:1300141236841086977> 571.9, with recent lows approaching 559.4. As volatility in Energy rises, the company faces increased scrutiny.",
-    "stat": "down",
-    "date": ""
-  },
-  {
-    "headline": "Rising Competition Puts Pressure on THEOG's Market Position",
-    "description": "Intensified competition in the Education market has led to a dip in THEOG's stock price, now at <:kasiko_coin:1300141236841086977> 98.1.",
-    "stat": "down",
+    "headline": "Analysts Project Growth for MANGOES in the Next Quarter",
+    "description": "Market analysts expect MANGOES's performance to improve in the next quarter, with stock potentially moving up from <:kasiko_coin:1300141236841086977> 76.",
+    "stat": "up",
     "date": ""
   }
 ]

@@ -178,9 +178,9 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     )
     Container.addTextDisplayComponents(
       textDisplay => textDisplay.setContent(
-        `**<:spector:1324601268421005342> **: **${totalCars}**  ` +
-        `**<:house:1385131710479597639> **: **${totalStructures}**  `+
-        `**<:aeroplane:1385131687020855367> **: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
+        `**<:spector:1324601268421005342> ** **${totalCars}**  ` +
+        `**<:house:1385131710479597639> ** **${totalStructures}**  `+
+        `**<:aeroplane:1385131687020855367> ** **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
       )
     )
 

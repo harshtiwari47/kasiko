@@ -53,8 +53,8 @@ export const categoriesEmoji = {
     id: "1366621543177912442"
   },
   pirates: {
-    name: "ship8",
-    id: "1316615694996996096"
+    name: "ship3",
+    id: "1389093527912185967"
   },
   explore: {
     name: "raspberry",
