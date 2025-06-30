@@ -1,7 +1,8 @@
 import {
   EmbedBuilder,
   ContainerBuilder,
-  MessageFlags
+  MessageFlags,
+  SeparatorSpacingSize
 } from 'discord.js';
 import {
   getUserData
@@ -133,16 +134,16 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "<:user:1385131666011590709> "} <@${userId?.toString()}> 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 `)
     )
-    .addSeparatorComponents(separate => separate.setDivider(false))
+    .addSeparatorComponents(separate => separate.setDivider(false).setSpacing(SeparatorSpacingSize.Large))
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`<:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}**  ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
     )
     .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`**CASH:** <:kasiko_coin:1300141236841086977> ${Number(userData?.cash?.toFixed(1)).toLocaleString()}\n**NETWORTH:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}`)
+      textDisplay => textDisplay.setContent(`**CASH:** <:kasiko_coin:1300141236841086977> **${Number(userData?.cash?.toFixed(1)).toLocaleString()}**\n**NETWORTH:** <:kasiko_coin:1300141236841086977>**${userData.networth.toLocaleString()}**`)
     )
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`**${partner?.username && partner?.username !== "Unmarried" ? `Spouse: ${partner?.username}`: `Unmarried`}**${userData?.family?.children?.length === 0 ? "": `\n**Children:** ` + childrenNames?.join(", ")}${userData?.family?.children?.length === 0 ? ` ◎ **Friendly: ` + userData?.friendly + "**": `\n**Friendly: ` + userData?.friendly + "**"}`)
+      textDisplay => textDisplay.setContent(`**${partner?.username && partner?.username !== "Unmarried" ? `Spouse: ${partner?.username}`: `Unmarried`}**${userData?.family?.children?.length === 0 ? "": `\n**Children:** ` + childrenNames?.join(", ")}${userData?.family?.children?.length === 0 ? ` ◌ **Friendly: ` + userData?.friendly + "**": `\n**Friendly: ` + userData?.friendly + "**"}`)
     )
 
     if (ownerDetail) {
@@ -178,9 +179,9 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     )
     Container.addTextDisplayComponents(
       textDisplay => textDisplay.setContent(
-        `**<:spector:1324601268421005342> ** **${totalCars}**  ` +
-        `**<:house:1385131710479597639> ** **${totalStructures}**  `+
-        `**<:aeroplane:1385131687020855367> ** **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
+        `**<:spector:1324601268421005342> 𝖢𝖺𝗋𝗌** **${totalCars}**  ` +
+        `**<:house:1385131710479597639> 𝖧𝗈𝗎𝗌𝖾𝗌** **${totalStructures}**  `+
+        `**<:aeroplane:1385131687020855367> 𝖩𝖾𝗍** **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
       )
     )
 
