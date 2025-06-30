@@ -135,7 +135,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     )
     .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}** ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
+      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}**  ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
     )
     .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
@@ -150,12 +150,21 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
         textDisplay => textDisplay.setContent(`${ownerDetail === 3 ? "-# ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘚𝘜𝘗𝘌𝘙𝘌𝘔𝘌": "-# ꗃ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘋𝘐𝘙𝘌𝘊𝘛𝘖𝘙"}`)
       )
     }
-    
+
     Container.addSeparatorComponents(separate => separate)
 
     Container.addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`)
     )
+
+    Container.addMediaGalleryComponents(
+      media =>
+      media.addItems(
+        item => item.setURL(userData?.banner)
+      )
+    )
+    Container.addSeparatorComponents(separate => separate.setDivider(false))
+    
     Container.addSectionComponents(
       section => section
       .addTextDisplayComponents(

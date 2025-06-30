@@ -218,6 +218,10 @@ const userSchema = new mongoose.Schema({
       type: String,
     default: "#f6e59a"
     },
+    banner: {
+      type: String,
+    default: "https://harshtiwari47.github.io/kasiko-public/images/banner/kasiko-default-banner.png"
+    },
     settings: {
       dm: {
         type: Boolean,
