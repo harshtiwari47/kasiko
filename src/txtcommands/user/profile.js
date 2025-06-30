@@ -133,11 +133,12 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "<:user:1385131666011590709> "} <@${userId?.toString()}> 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 `)
     )
+    .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> ${userData?.level} <:popularity:1359565087341543435> ${userData?.popularity} ${passInfo?.isValid ? `\n**🜲 𝗣𝗔𝗦𝗦** ${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
+      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> *${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}** ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
     )
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData?.cash?.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}`)
+      textDisplay => textDisplay.setContent(`**CASH:** <:kasiko_coin:1300141236841086977> ${Number(userData?.cash?.toFixed(1)).toLocaleString()}\n**NETWORTH:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}`)
     )
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`**${partner?.username && partner?.username !== "Unmarried" ? `Spouse: ${partner?.username}`: `Unmarried`}**${userData?.family?.children?.length === 0 ? "": `\n**Children:** ` + childrenNames?.join(", ")}${userData?.family?.children?.length === 0 ? ` ◎ **Friendly: ` + userData?.friendly + "**": `\n**Friendly: ` + userData?.friendly + "**"}`)
