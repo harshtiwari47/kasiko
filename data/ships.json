@@ -9,7 +9,7 @@
     "rarity": "epic",
     "health": 460,
     "probability": 12,
-    "emoji": "1304674707789840425",
+    "emoji": "1389100248470782032",
     "type": "sailing ship"
   },
   "ship2": {
@@ -22,7 +22,7 @@
     "rarity": "common",
     "health": 300,
     "probability": 75,
-    "emoji": "1304674535441961052",
+    "emoji": "1389093957107056770",
     "type": "airship"
   },
   "ship3": {
@@ -35,7 +35,7 @@
     "rarity": "epic",
     "health": 490,
     "probability": 5,
-    "emoji": "1304674506648064081",
+    "emoji": "1389093527912185967",
     "type": "battleship"
   },
   "ship4": {
@@ -48,7 +48,7 @@
     "rarity": "rare",
     "health": 410,
     "probability": 10,
-    "emoji": "1304674433377501256",
+    "emoji": "1389094991862825092",
     "type": "crystal ship"
   },
   "ship5": {
@@ -61,7 +61,7 @@
     "rarity": "common",
     "health": 330,
     "probability": 18,
-    "emoji": "1304674376406532146",
+    "emoji": "1389099604108120215",
     "type": "sailing ship"
   },
   "ship6": {
@@ -74,8 +74,8 @@
     "rarity": "epic",
     "health": 520,
     "probability": 12,
-    "emoji": "1304674360660852807",
-    "type": "pirate ship"
+    "emoji": "1389094724723413012",
+    "type": "tech ship"
   },
   "ship7": {
     "id": "ship7",
@@ -87,7 +87,7 @@
     "rarity": "rare",
     "health": 390,
     "probability": 18,
-    "emoji": "1304674341849665626",
+    "emoji": "1389099243528257536",
     "type": "airship"
   },
   "ship8" : {
@@ -100,7 +100,7 @@
     "rarity": "legendary",
     "health": 520,
     "probability": 15,
-    "emoji": "1316615694996996096",
+    "emoji": "1389099903895998524",
     "type": "sailing ship",
     "pass": true
   }

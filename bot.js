@@ -269,7 +269,7 @@ client.on('messageCreate', async (message) => {
           } else {
             const ttlFor = formatTTL(ttl);
             warning = await message?.channel?.send({
-              content: `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for **\` ${commandName} \`** command! ***Wait \` ${ttlFor} \`***.`
+              content: `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for **${commandName}** command! ***Wait \` ${ttlFor} \`***.`
             });
             setTimeout(() => warning?.delete().catch(() => {}), 5000);
           }

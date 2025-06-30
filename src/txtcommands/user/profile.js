@@ -1,5 +1,7 @@
 import {
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
   getUserData
@@ -60,7 +62,7 @@ export async function badges(userData) {
   }
 
   if (badges) {
-    badges = `-# # ${badges}`;
+    badges = `-# ## ${badges}`;
   }
 
   return `${badges}`;
@@ -88,7 +90,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     }
 
     let partner = {
-      username: "Not married"
+      username: "Unmarried"
     };
 
     let totalCars = userData.cars.reduce((sum, car) => {
@@ -123,56 +125,59 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
       if (passInfo?.passType === "celestia" && userData.color !== "#f6e59a") EmbedColor = userData?.color;
     }
 
-    // Embed 1: Personal Info & Wealth Stats
-    const embed1 = new EmbedBuilder()
-    .setColor(EmbedColor || "#f6e59a")
-    .setDescription(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "⌞ ⌝ "} <@${userId?.toString()}> 𝙋𝙧𝙤𝙛𝙞𝙡𝙚 ✦ <:popularity:1359565087341543435> ${userData?.popularity}\n${ badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`+ (passInfo?.isValid ? `\n**🜲 𝗣𝗔𝗦𝗦**: ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: "404"}`: ''))
-    .addFields(
-      // Financial Information
-      {
-        name: '💵 𝘍𝘪𝘯𝘢𝘯𝘤𝘪𝘢𝘭 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
-        value: `**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData?.cash?.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}`,
-        inline: true
-      },
-      // Personal Information
-      {
-        name: '👪 𝘍𝘢𝘮𝘪𝘭𝘺 𝘋𝘦𝘵𝘢𝘪𝘭𝘴',
-        value: `**Spouse:** **${partner?.username}**\n**Children:** **${userData?.family?.children?.length === 0 ? "0": childrenNames?.join(", ")}**\n**Friendly:** ${userData?.friendly}`,
-        inline: true
-      }
-    );
-
     const ownersList = getBotTeam();
     const ownerDetail = ownersList[userId];
 
-    if (ownerDetail) {
-      embed1.setFooter({
-        text: `${ownerDetail === 3 ? "ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘚𝘜𝘗𝘌𝘙𝘌𝘔𝘌": "ꗃ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘋𝘐𝘙𝘌𝘊𝘛𝘖𝘙"}`
-      })
-    }
-
-    // Embed 2: Property & Achievements
-    const embed2 = new EmbedBuilder()
-    .setTitle(`⌞ ⌝ Assets ✦`)
-    .setThumbnail(avatar)
-    .setDescription(
-      `**⤿<:spector:1324601268421005342> 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
-      `**⤿<:house:1385131710479597639> 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
-      `**⤿<:aeroplane:1385131687020855367> 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**\n`
+    const Container = new ContainerBuilder()
+    .setAccentColor(EmbedColor ? Number(`0x${EmbedColor.replace("#", "")}`): 0xf6e59a)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "<:user:1385131666011590709> "} <@${userId?.toString()}> 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 `)
     )
-    .setFooter({
-      text: `${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`
-    })
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> ${userData?.level} <:popularity:1359565087341543435> ${userData?.popularity} ${passInfo?.isValid ? `\n**🜲 𝗣𝗔𝗦𝗦** ${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`**Cash:** <:kasiko_coin:1300141236841086977> ${Number(userData?.cash?.toFixed(1)).toLocaleString()}\n**Networth:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`**${partner?.username && partner?.username !== "Unmarried" ? `Spouse: ${partner?.username}`: `Unmarried`}**${userData?.family?.children?.length === 0 ? "": `\n**Children:** ` + childrenNames?.join(", ")}${userData?.family?.children?.length === 0 ? ` ◎ **Friendly: ` + userData?.friendly + "**": `\n**Friendly: ` + userData?.friendly + "**"}`)
+    )
 
-    let embedList;
+    if (ownerDetail) {
+      Container.addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`${ownerDetail === 3 ? "-# ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘚𝘜𝘗𝘌𝘙𝘌𝘔𝘌": "-# ꗃ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘋𝘐𝘙𝘌𝘊𝘛𝘖𝘙"}`)
+      )
+    }
+    
+    Container.addSeparatorComponents(separate => separate)
 
-    embedList = [embed1,
-      embed2]
+    Container.addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`${badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`)
+    )
+    Container.addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(
+          `**<:spector:1324601268421005342> 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
+          `**<:house:1385131710479597639> 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
+          `**<:aeroplane:1385131687020855367> 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
+        )
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('User Profile')
+        .setURL(avatar)
+      )
+    )
+    Container.addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# ${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`)
+    )
 
-    return embedList;
+    return [Container];
   } catch (error) {
+    console.error('Error creating user embeds:',
+      error);
     return [];
-    console.error('Error creating user embeds:', error);
   }
 }
 
@@ -203,13 +208,15 @@ export async function profile(userId, context) {
       // If the context is an interaction
       if (!context.deferred) await context.deferReply();
       await context.editReply({
-        embeds: userProfile
+        components: userProfile,
+        flags: MessageFlags.IsComponentsV2
       });
       return;
     } else {
       // If the context is a text-based message
       await context.channel.send({
-        embeds: userProfile
+        components: userProfile,
+        flags: MessageFlags.IsComponentsV2
       });
       return;
     }
