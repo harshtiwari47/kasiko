@@ -24,7 +24,7 @@ const tasks = {
   "vote": {
     "name": "Vote",
     "description": "Vote for the bot and get extra rewards.",
-    "icon": "🗳️",
+    "icon": "<:vote:1389196518720012421>",
     "target": 1,
     "completed": false
   },
@@ -66,7 +66,7 @@ const tasks = {
   "work": {
     "name": "Do Work",
     "description": "Complete 5 work tasks in a day.",
-    "icon": "💼",
+    "icon": "<:briefcase:1389196495474921492>",
     "target": 5,
     "completed": false
   },
@@ -86,6 +86,51 @@ const tasks = {
   }
 }
 
+export async function increaseTask(id, taskId) {
+  const userData = await getUserData(id);
+
+  if (!userData) return;
+
+  const todayDate = Date.now();
+  const todayDateStr = new Date(todayDate).toLocaleDateString();
+
+  const taskDate = userData?.tasks?.date || null;
+  const taskDateStr = taskDate ? new Date(taskDate).toLocaleDateString(): null;
+
+  if (!taskDate || todayDateStr !== taskDateStr) {
+    userData.tasks = {
+      date: todayDate,
+      list: getRandomTasks(),
+      completed: false
+    }
+
+    await updateUser(id, {
+      tasks: userData.tasks
+    });
+  }
+
+  let updated = false;
+  const taskDetails = userData.tasks.list.map(tk => {
+    if (tk.id === taskId.toLowerCase()) {
+      updated = true;
+      tk.current += 1;
+
+      if (tk.current >= tk.target) {
+        tk.completed = true;
+      }
+    }
+    return tk;
+  });
+
+  if (updated) {
+    await updateUser(id,
+      {
+        "tasks.list": taskDetails
+      }
+    );
+  }
+}
+
 function getRandomTasks() {
   const newTasks = [{
     "id": "vote",
@@ -95,7 +140,8 @@ function getRandomTasks() {
   }];
 
   const keys = Object.keys(tasks);
-  const taskKeys = keys.slice(1, keys.length - 2);
+  const taskKeys = keys.slice(1,
+    keys.length - 2);
   const startIndex = Math.floor(Math.random() * taskKeys.length);
 
   for (let i = 0; i < 4; i++) {
@@ -117,7 +163,9 @@ export default {
   aliases: ["cl",
     "dailytask",
     "check",
-    "todo"],
+    "todo",
+    "tasks"],
+  emoji: "<:task_list:1388844819035590706>",
   example: ["task"],
   category: '🏦 Economy',
   async execute(args, context) {
@@ -143,6 +191,10 @@ export default {
           list: getRandomTasks(),
           completed: false
         }
+
+        await updateUser(id, {
+          tasks: userData.tasks
+        });
       }
 
       const Container = new ContainerBuilder()
@@ -161,7 +213,7 @@ export default {
 
       userData.tasks.list.forEach((task, i) => {
         Container.addTextDisplayComponents(
-          textDisplay => textDisplay.setContent(`${tasks[task.id]?.completed ? "<:checkbox_checked:1388858843324350474>": "<:checkbox_empty:1388858759228686496>"} — ${tasks[task.id]?.icon}  **${tasks[task.id]?.name}**\n-# ${tasks[task.id]?.description}`)
+          textDisplay => textDisplay.setContent(`${task.completed ? "<:checkbox_checked:1388858843324350474>": "<:checkbox_empty:1388858759228686496>"} — ${tasks[task.id]?.icon}  **${tasks[task.id]?.name}**\n-# ${tasks[task.id]?.description}`)
         )
       });
 

@@ -9,6 +9,8 @@ import {
   discordUser
 } from '../../../../helper.js';
 
+import { increaseTask } from "../../economy/task.js";
+
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
   if (isInteraction) {
@@ -136,6 +138,10 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
         ? "-# Not every customer loves the same flavor! Keep improving!": "-# Keep serving customers to grow your reputation!": "-# Try adding more flavors to meet customer preferences."
       )
     )
+    
+    if (!customerDislikesIceCream) {
+      const markTask = await increaseTask(userId, "serve");
+    }
 
     try {
       suspenseMessage.edit({

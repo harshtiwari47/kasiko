@@ -20,6 +20,10 @@ import {
   discordUser
 } from '../../../helper.js';
 
+import {
+  increaseTask
+} from "./task.js";
+
 const TOKENTG = process.env.TG_TOKEN;
 
 const dbl = new Api(TOKENTG);
@@ -121,6 +125,8 @@ export async function voteReward(userId, user, context) {
       userData.cash += Math.min(reward + ((voteDoc?.voteStreak || 1) * 1500), 75000);
       userData.lastVoteTime = now.toISOString();
 
+      const markTask = await increaseTask(userId, "vote");
+
       await updateUser(userId, {
         cash: userData.cash,
         lastVoteTime: userData.lastVoteTime
@@ -129,7 +135,7 @@ export async function voteReward(userId, user, context) {
       await handleMessage(context, {
         embeds: [
           new EmbedBuilder()
-          .setTitle('🗳️ 𝙑𝙊𝙏𝙀 𝘾𝙇𝘼𝙄𝙈𝙀𝘿!')
+          .setTitle('<:vote:1389196518720012421> 𝙑𝙊𝙏𝙀 𝘾𝙇𝘼𝙄𝙈𝙀𝘿!')
           .setDescription(`<a:ext_heart_pump:1359578512893149246> Thanks for voting, **${user.username}**! You've received <:kasiko_coin:1300141236841086977> **${reward.toLocaleString()}** cash.\n-# Your support helps us grow\n\n` +
             `<:orange_fire:1336344438464839731> **𝘊𝘶𝘳𝘳𝘦𝘯𝘵 𝘚𝘵𝘳𝘦𝘢𝘬**: ***${voteDoc.voteStreak}***`)
           .addFields(
@@ -158,7 +164,7 @@ export async function voteReward(userId, user, context) {
       await handleMessage(context, {
         embeds: [
           new EmbedBuilder()
-          .setDescription(`🗳️ **${user.username}**, you haven't voted yet! Please vote for the bot to claim your reward. Come back in a few minutes after voting to claim your reward.`)
+          .setDescription(`<:vote:1389196518720012421> **${user.username}**, you haven't voted yet! Please vote for the bot to claim your reward. Come back in a few minutes after voting to claim your reward.`)
           .setAuthor({
             name: name, iconURL: user.displayAvatarURL({
               dynamic: true
@@ -190,7 +196,7 @@ export default {
     "claimvote"],
   args: "",
   example: ["vote"],
-  emoji: "<:purple_fire:1336344667964571700>",
+  emoji: "<:vote:1389196518720012421>",
   cooldown: 10000,
   category: "🏦 Economy",
   execute: async (args, context) => {

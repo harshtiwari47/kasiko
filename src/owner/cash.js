@@ -10,7 +10,6 @@ import {
   client
 } from "../../bot.js";
 
-
 export default {
   name: "withdraw",
   description: "Withdraw any amount of cash from your account (Owner Only) or transfer it to another user.",

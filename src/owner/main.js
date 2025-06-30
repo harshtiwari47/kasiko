@@ -8,6 +8,7 @@ import Badge from "./badge.js";
 import Bank from "./bank.js";
 import Ship from "./ship.js";
 import Bio from "./bio.js";
+import Profile from "./profile.js";
 import OwnerModel from "../../models/Owner.js";
 
 const ownerHierarchy = {
@@ -77,6 +78,22 @@ export async function OwnerCommands(args, message) {
         message.reply("You don't have permission to deduct.");
       }
       return;
+
+    case "banner":
+      if (ownerLevel === ownerHierarchy.superowner) {
+        await Profile.execute(args, message);
+      } else {
+        message.reply("You don't have permission to set banner.");
+      }
+      return;
+      
+    case "color":
+      if (ownerLevel === ownerHierarchy.superowner) {
+        await Profile.execute(args, message);
+      } else {
+        message.reply("You don't have permission to set color.");
+      }
+    return;
 
     case "bank":
       if (ownerLevel === ownerHierarchy.superowner) {

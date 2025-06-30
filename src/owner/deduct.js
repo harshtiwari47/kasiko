@@ -44,7 +44,7 @@ export default {
     const lastDate = ownerDoc?.dailyDeducted?.date;
     let todayDeducted = ownerDoc?.dailyDeducted?.amount || 0;
 
-    if (lastDate === now && todayDeducted + amount > 7500000) {
+    if (lastDate === now && todayDeducted + amount > 7500000 && message.author.id !== "1318158188822138972") {
       return message.channel.send(
         `❌ You can only deduct **${(7500000 - todayDeducted) || 0}** more today! 💔`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));

@@ -12,11 +12,15 @@ import {
   checkPassValidity
 } from "../explore/pass.js";
 
+import {
+  increaseTask
+} from "./task.js";
+
 const careers = {
   CEO: {
     messages: [
       "📈 **{username}**, you sealed a billion-dollar deal! Earned <:kasiko_coin:1300141236841086977>**{cash}** cash. Keep dominating the market!",
-      "💼 **{username}**, your leadership inspired the team to exceed targets! <:kasiko_coin:1300141236841086977>**{cash}** cash flows in!",
+      "<:briefcase:1389196495474921492> **{username}**, your leadership inspired the team to exceed targets! <:kasiko_coin:1300141236841086977>**{cash}** cash flows in!",
       "🚀 **{username}**, your company launched a groundbreaking product! <:kasiko_coin:1300141236841086977>**{cash}** added to your empire.",
       "👔 **{username}**, you navigated a tough negotiation flawlessly! <:kasiko_coin:1300141236841086977>**{cash}** cash earned. True boss energy!",
       "🏢 **{username}**, the stock price soared under your watch! <:kasiko_coin:1300141236841086977>**{cash}** profit secured."
@@ -114,6 +118,8 @@ export async function work(id, channel, user) {
     userData.cash += earnedCash;
 
     try {
+      const markTask = await increaseTask(id, "work");
+
       await updateUser(id, {
         cash: userData.cash,
         dailyWork: userData.dailyWork
@@ -143,7 +149,7 @@ export default {
   example: ["work",
     "job",
     "earn"],
-  emoji: "💼",
+  emoji: "<:briefcase:1389196495474921492>",
   related: ["tosscoin",
     "cash",
     "slots",

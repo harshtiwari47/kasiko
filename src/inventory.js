@@ -13,6 +13,8 @@ import {
   generateScratchImage
 } from "./txtcommands/shop/scratch.js";
 
+import { increaseTask } from "./txtcommands/economy/task.js";
+
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -251,7 +253,8 @@ export const ITEM_DEFINITIONS = {
         if (isSpouse) {
           senderData.family.bondXP += bondGain;
           recipientData.family.bondXP += bondGain;
-
+          
+          const markTask = await increaseTask(id, "rose");
           await updateUser(id, {
             [`inventory.${this.id}`]: senderInv - amount,
             'family.bondXP': senderData.family.bondXP
@@ -267,6 +270,7 @@ export const ITEM_DEFINITIONS = {
             flags: MessageFlags.IsComponentsV2
           })
         } else {
+          const markTask = await increaseTask(id, "rose");
           await updateUser(id, {
             [`inventory.${this.id}`]: senderInv - amount
           });

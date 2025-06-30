@@ -24,7 +24,9 @@ import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 
 export const allShips = () => {
@@ -124,7 +126,9 @@ async function showUserShips(userId, message) {
     }
 
     const embeds = chunkedShips.map((shipChunk, index) => {
-      const description = shipChunk.map(({
+      const Container = new ContainerBuilder();
+
+      const description = shipChunk.forEach(({
         id,
         active,
         emoji,
@@ -135,17 +139,29 @@ async function showUserShips(userId, message) {
         rarity,
         level
       }) =>
-        `**<:${id}:${emoji}> ${name}** ${active ? "**⚓ ᗩᑕTIᐯE**": ""}\n` +
-        `> **Durability:** ${durability} | **Dmg:** ${dmg} | **Health:** ${health} | **Lvl:** ${level}\n` +
-        `> **Rarity:** ${rarity} | **ID:** ${id}\n`
-      ).join('\n');
 
-      return new EmbedBuilder()
-      .setColor(0x1e90ff)
-      .setDescription(description.trim())
-      .setFooter({
-        text: `Page ${index + 1} of ${chunkedShips.length} | \`kas help ships\``
-      });
+        Container.addSectionComponents(
+          section => section
+          .addTextDisplayComponents(
+            textDisplay => textDisplay.setContent(
+              `**<:${id}:${emoji}> ${name}** ${active ? "<:checkbox_checked:1388858843324350474>": ""}\n` +
+              `> -# **Durability:** ${durability} | **Dmg:** ${dmg} | **Health:** ${health} | **Lvl:** ${level}\n` +
+              `> -# **Rarity:** ${rarity} | **ID:** ${id}`
+            )
+          )
+          .setThumbnailAccessory(
+            thumbnail => thumbnail
+            .setDescription('Ships')
+            .setURL(`https://cdn.discordapp.com/emojis/${emoji}.png`)
+          )
+        )
+      );
+
+      Container.addTextDisplayComponents(
+        text => text.setContent(`-# Page ${index + 1} of ${chunkedShips.length} | \`help ships\``)
+      );
+
+      return Container;
     });
 
     let currentPage = 0;
@@ -163,15 +179,15 @@ async function showUserShips(userId, message) {
       .setDisabled(chunkedShips.length === 1)
     );
 
-    const embedImage = new EmbedBuilder()
-    .setColor(0x1e54ff)
-    .setTitle(`⚓ **${user.username}'**s 𝐒𝐡𝐢𝐩𝐬`)
-    .setDescription('ˢʰⁱᵖˢ ᶜᵃⁿ ᵇᵉ ᶠᵒᵘⁿᵈ ʷʰⁱˡᵉ ᶠⁱˢʰⁱⁿᵍ ⁱⁿ ᵗʰᵉ ᵒᶜᵉᵃⁿ! 🏴‍☠️ ')
-    .setThumbnail('https://cdn.discordapp.com/emojis/1304674341849665626.png');
+    const embedImage = new ContainerBuilder()
+    .setAccentColor(0x1e54ff)
+    .addTextDisplayComponents(
+      text => text.setContent(`### ⚓ **<@${user.id}>** SHIPS`)
+    );
 
     const sentMessage = await message.channel.send({
-      embeds: [embedImage, embeds[currentPage]],
-      components: [row]
+      components: [embedImage, embeds[currentPage], row],
+      flags: MessageFlags.IsComponentsV2
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     const collector = sentMessage.createMessageComponentCollector({
@@ -200,8 +216,8 @@ async function showUserShips(userId, message) {
       );
 
       interaction.update({
-        embeds: [embedImage, embeds[currentPage]],
-        components: [updatedRow]
+        components: [embedImage, embeds[currentPage], updatedRow],
+        flags: MessageFlags.IsComponentsV2
       });
     });
 
@@ -221,7 +237,7 @@ async function showUserShips(userId, message) {
         );
 
         sentMessage.edit({
-          components: [disabledRow]
+          components: [embedImage, embeds[currentPage]]
         }).catch(() => {});
       });
 

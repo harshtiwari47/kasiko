@@ -164,15 +164,11 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
       )
     )
     Container.addSeparatorComponents(separate => separate.setDivider(false))
-    
+
     Container.addSectionComponents(
       section => section
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(
-          `**<:spector:1324601268421005342> 𝖢𝖺𝗋𝗌**: **${totalCars}**\n` +
-          `**<:house:1385131710479597639> 𝖧𝗈𝗎𝗌𝖾𝗌**: **${totalStructures}**\n`+
-          `**<:aeroplane:1385131687020855367> 𝖯𝗋𝗂𝗏𝖺𝗍𝖾 𝖩𝖾𝗍**: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
-        )
+        textDisplay => textDisplay.setContent(`-# ${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`)
       )
       .setThumbnailAccessory(
         thumbnail => thumbnail
@@ -181,7 +177,11 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
       )
     )
     Container.addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`-# ${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`)
+      textDisplay => textDisplay.setContent(
+        `**<:spector:1324601268421005342> **: **${totalCars}**  ` +
+        `**<:house:1385131710479597639> **: **${totalStructures}**  `+
+        `**<:aeroplane:1385131687020855367> **: **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
+      )
     )
 
     return [Container];

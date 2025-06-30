@@ -19,6 +19,8 @@ import {
   ButtonStyle
 } from 'discord.js';
 
+import { increaseTask } from "../economy/task.js";
+
 // ==================================================
 // =============== Utility Functions ================
 // ==================================================
@@ -145,7 +147,8 @@ export async function shareCookie(authorId, mentionedUserId, authorUsername) {
   */
 
   try {
-
+    const markTask = await increaseTask(authorId, "cookie");
+      
     await updateUser(authorId, {
       'cookie.sharedCount': authorData.cookie.sharedCount,
       'friendly': authorData.friendly,

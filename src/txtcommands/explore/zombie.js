@@ -7,6 +7,8 @@ import path from 'path';
 
 import Zombie from "../../../models/Zombie.js";
 
+import { increaseTask } from "../economy/task.js";
+
 // Load all dragon types from JSON
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const storyPath = path.join(__dirname, './zombie/story.json');
@@ -367,7 +369,7 @@ export async function zombieSurvival(id, playerInfo, channel) {
         gameData.health -= dmg;
 
         zombiesEmbedShow = zombiesEmbed(
-          `<:warning:1366050875243757699> ${currentZombies} zombie${currentZombies > 1 ? "s": ""} attacked you for ${dmg} damage!`, true
+          `⚠️ ${currentZombies} zombie${currentZombies > 1 ? "s": ""} attacked you for ${dmg} damage!`, true
         );
 
         const currentEmbeds = gameMessage?.embeds?.map(e => EmbedBuilder.from(e));
@@ -448,7 +450,9 @@ export async function zombieSurvival(id, playerInfo, channel) {
             `- :boom: 𝗞𝗜𝗟𝗟𝗘𝗗 **1**`;
             embedColor = "Red";
             lilyHelp = "Use ***fight*** to battle zombies, but it risks your HP and weapon durability! 🪤";
-
+            
+            const markTask = await increaseTask(interaction.user.id, "kill");
+      
             zombiesEmbedShow = zombiesEmbed();
           } else if (choice === "hide") {
             const success = Math.random() < 0.7;

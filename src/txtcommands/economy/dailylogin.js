@@ -18,6 +18,10 @@ import {
   checkPassValidity
 } from "../explore/pass.js";
 
+import {
+  increaseTask
+} from "./task.js";
+
 import UserPet from "../../../models/Pet.js";
 
 export async function dailylogin(context) {
@@ -85,6 +89,8 @@ export async function dailylogin(context) {
       try {
         await userPetData.save();
         // Save the updated user data
+        const markTask = await increaseTask(userId, "daily");
+
         await updateUser(userId, userData);
       } catch (updateErr) {
         await handleMessage(context, `ⓘ **${name}**, an unexpected error occurred while claiming daily reward!\n-# **Error"": ${updateErr}`).catch(console.error);

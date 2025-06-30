@@ -19,6 +19,10 @@ import {
 } from "../explore/pass.js";
 
 import {
+  increaseTask
+} from "../economy/task.js";
+
+import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
@@ -247,6 +251,8 @@ async function doFishing(message, fishName, zone = null, fishingMsg, collectorEn
         } else {
           userFishData.fishes.find(f => f.name.toLowerCase() === fish.name.toLowerCase()).animals += 1;
         }
+
+        const markTask = await increaseTask(message.author.id, "fish");
 
         await updateUser(message.author.id, userData);
         await updateFishUser(message.author.id, userFishData);

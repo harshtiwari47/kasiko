@@ -12,6 +12,8 @@ import {
   checkPassValidity
 } from "../explore/pass.js";
 
+import { increaseTask } from "../economy/task.js";
+
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const BoosterDatabasePath = path.join(__dirname, './boosters.json');
 const AnimalsDatabasePath = path.join(__dirname, './animals.json');
@@ -288,7 +290,9 @@ export async function huntCommand(context, {
       textDisplay => textDisplay.setContent(`-# 𝘠𝘰𝘶 𝘨𝘢𝘪𝘯𝘦𝘥 **+${gainedExp} 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗**\n${rubBulletEmoji} 𝘙𝘦𝘮𝘢𝘪𝘯𝘪𝘯𝘨 𝘈𝘮𝘮𝘰 : ${Math.max(0, dailyHuntLimit - user.hunt.huntsToday)}`),
       textDisplay => textDisplay.setContent(`-# Use 𝙘𝙖𝙜𝙚 for hunted animals`)
     )
-
+    
+    const markTask = await increaseTask(userId, "hunt");
+      
     return handleMessage(context, {
       components: [Container],
       flags: MessageFlags.IsComponentsV2
