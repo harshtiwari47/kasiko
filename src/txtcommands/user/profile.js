@@ -135,8 +135,9 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     )
     .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> *${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}** ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
+      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}** ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
     )
+    .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`**CASH:** <:kasiko_coin:1300141236841086977> ${Number(userData?.cash?.toFixed(1)).toLocaleString()}\n**NETWORTH:** <:kasiko_coin:1300141236841086977>${userData.networth.toLocaleString()}`)
     )
