@@ -223,7 +223,7 @@ export default {
 
       if (allCompleted) {
         Container.addTextDisplayComponents(
-          textDisplay => textDisplay.setContent(`Congratulations! You have completed all the above tasks and received 50k cash and 1x Milk.`)
+          textDisplay => textDisplay.setContent(`Congratulations! You have completed all the above tasks and received <:kasiko_coin:1300141236841086977> 50k cash and <:milk:1388844881153360002> 1x Milk.`)
         )
       }
 

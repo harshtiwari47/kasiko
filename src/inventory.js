@@ -13,7 +13,9 @@ import {
   generateScratchImage
 } from "./txtcommands/shop/scratch.js";
 
-import { increaseTask } from "./txtcommands/economy/task.js";
+import {
+  increaseTask
+} from "./txtcommands/economy/task.js";
 
 import {
   ActionRowBuilder,
@@ -253,7 +255,7 @@ export const ITEM_DEFINITIONS = {
         if (isSpouse) {
           senderData.family.bondXP += bondGain;
           recipientData.family.bondXP += bondGain;
-          
+
           const markTask = await increaseTask(id, "rose");
           await updateUser(id, {
             [`inventory.${this.id}`]: senderInv - amount,
@@ -488,6 +490,7 @@ export const ITEM_DEFINITIONS = {
   teddy: {
     id: 'teddy',
     name: 'Teddy Bear',
+    aliases: ["teddybear"],
     emoji: '<:teddybear:1385131451321946113>',
     description: 'A soft and cuddly toy. Can be gifted or sold. They can be found in ` beg `, ` dungeon `, and during Kasiko server events.',
     source: ["dungeon",
@@ -524,5 +527,27 @@ export const ITEM_DEFINITIONS = {
     rarity: "rare",
     eventsOnly: false,
     usableIn: ["loot"]
+  },
+  milk: {
+    id: 'milk',
+    name: 'Milk Packet',
+    aliases: ["dairy", "milkbottle"]
+    emoji: '<:milk:1388844881153360002>',
+    description: 'A fresh packet of milk. Used in recipes, giftable, or can be sold. Found in `work`, `daily`, and `hunt`.',
+    source: ["hunt",
+      "work",
+      "daily"],
+    useable: false,
+    activatable: false,
+    sellable: true,
+    shareable: true,
+    sellPrice: 10000,
+    type: "consumable",
+    rarity: "common",
+    eventsOnly: false,
+    usableIn: [],
+    async shareHandler(args, context) {
+      await generalShare(args, context, this);
+    }
   }
 };
