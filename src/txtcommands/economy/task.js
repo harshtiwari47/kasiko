@@ -230,7 +230,6 @@ export default {
       if (allCompleted && !userData?.tasks?.completed) {
         await updateUser(id,
           {
-            "tasks.list": taskDetails,
             "tasks.completed": true,
             "inventory.milk": Number(userData?.inventory?.milk || 0) + 1,
             "cash": (userData.cash || 0) + 50000

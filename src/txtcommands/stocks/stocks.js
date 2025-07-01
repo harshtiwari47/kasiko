@@ -400,7 +400,7 @@ export async function stockPrice(companyName, message) {
 export default {
   name: "stock",
   description: "View and manage stocks in the stock market.",
-  aliases: ["stocks", "s", "portfolio", "pf"],
+  aliases: ["stocks", "st", "portfolio", "pf"],
   args: "<command> [parameters]",
   example: [
     // View all available stocks

@@ -125,7 +125,7 @@ export async function slots(id, amount, channel) {
 export default {
   name: "slots",
   description: "Play a slot machine game by betting an amount. Win or lose based on the result.",
-  aliases: ["slotmachine",
+  aliases: ["s", "slotmachine",
     "slot"],
   args: "<amount>",
   example: ["slots 250"],
