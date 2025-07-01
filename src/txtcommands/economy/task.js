@@ -119,6 +119,7 @@ export async function increaseTask(id, taskId) {
         tk.completed = true;
       }
     }
+
     return tk;
   });
 
@@ -211,21 +212,43 @@ export default {
       )
       .addSeparatorComponents(separate => separate)
 
+      let allCompleted = true;
       userData.tasks.list.forEach((task, i) => {
         Container.addTextDisplayComponents(
           textDisplay => textDisplay.setContent(`${task.completed ? "<:checkbox_checked:1388858843324350474>": "<:checkbox_empty:1388858759228686496>"} — ${tasks[task.id]?.icon}  **${tasks[task.id]?.name}**\n-# ${tasks[task.id]?.description}`)
         )
+
+        if (!task.completed) allCompleted = false;
       });
 
-      return await handleMessage(context, {
-        components: [Container],
-        flags: MessageFlags.IsComponentsV2
-      })
+      if (allCompleted) {
+        Container.addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`Congratulations! You have completed all the above tasks and received 50k cash and 1x Milk.`)
+        )
+      }
+
+      if (allCompleted && !userData?.tasks?.completed) {
+        await updateUser(id,
+          {
+            "tasks.list": taskDetails,
+            "tasks.completed": true,
+            "inventory.milk": Number(userData?.inventory?.milk || 0) + 1,
+            "cash": (userData.cash || 0) + 50000
+          }
+        );
+      }
+
+      return await handleMessage(context,
+        {
+          components: [Container],
+          flags: MessageFlags.IsComponentsV2
+        })
 
     } catch (err) {
-      return await handleMessage(context, {
-        content: `**Error**: ${err.message}`
-      })
+      return await handleMessage(context,
+        {
+          content: `**Error**: ${err.message}`
+        })
     }
   }
 }

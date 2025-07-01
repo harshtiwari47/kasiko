@@ -136,23 +136,17 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     )
     .addSeparatorComponents(separate => separate.setDivider(false).setSpacing(SeparatorSpacingSize.Large))
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`<:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}**  ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
+      textDisplay => textDisplay.setContent(`-# ${ownerDetail && ownerDetail === 3 ? "<:kasiko_supreme:1389508842529755217>": ownerDetail ? "<:kasiko_director:1389508823055601725>" : ""} <:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}**  ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
     )
     .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`**CASH:** <:kasiko_coin:1300141236841086977> **${Number(userData?.cash?.toFixed(1)).toLocaleString()}**\n**NETWORTH:** <:kasiko_coin:1300141236841086977>**${userData.networth.toLocaleString()}**`)
     )
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`**${partner?.username && partner?.username !== "Unmarried" ? `Spouse: ${partner?.username}`: `Unmarried`}**${userData?.family?.children?.length === 0 ? "": `\n**Children:** ` + childrenNames?.join(", ")}${userData?.family?.children?.length === 0 ? ` ◌ **Friendly: ` + userData?.friendly + "**": `\n**Friendly: ` + userData?.friendly + "**"}`)
+      textDisplay => textDisplay.setContent(`**${partner?.username && partner?.username !== "Unmarried" ? `Spouse: ${partner?.username}`: `Unmarried`}**${userData?.family?.children?.length === 0 ? "": `\n**Children:** ` + childrenNames?.join(", ")}${userData?.family?.children?.length === 0 ? ` ♡ **Friendly: ` + userData?.friendly + "**": `\n**Friendly: ` + userData?.friendly + "**"}`)
     )
 
-    if (ownerDetail) {
-      Container.addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`${ownerDetail === 3 ? "-# ʬʬ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘚𝘜𝘗𝘌𝘙𝘌𝘔𝘌": "-# ꗃ 𝘒𝘈𝘚𝘐𝘒𝘖 𝘋𝘐𝘙𝘌𝘊𝘛𝘖𝘙"}`)
-      )
-    }
-
-    Container.addSeparatorComponents(separate => separate)
+    Container.addSeparatorComponents(separate => separate.setSpacing(SeparatorSpacingSize.Large))
 
     Container.addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`)
@@ -169,7 +163,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     Container.addSectionComponents(
       section => section
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`-# ${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}`)
+        textDisplay => textDisplay.setContent(`-# \`\`\`${userData?.profileBio ? userData?.profileBio: "ꜱᴇᴄᴜʀɪɴɢ ᴀꜱꜱᴇᴛꜱ ɪꜱ ʟɪꜰᴇ'ꜱ ᴜʟᴛɪᴍᴀᴛᴇ ɢᴀᴍᴇ."}\`\`\``)
       )
       .setThumbnailAccessory(
         thumbnail => thumbnail
@@ -179,7 +173,7 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     )
     Container.addTextDisplayComponents(
       textDisplay => textDisplay.setContent(
-        `**<:spector:1324601268421005342> 𝖢𝖺𝗋𝗌** **${totalCars}**  ` +
+        `-# **<:spector:1324601268421005342> 𝖢𝖺𝗋𝗌** **${totalCars}**  ` +
         `**<:house:1385131710479597639> 𝖧𝗈𝗎𝗌𝖾𝗌** **${totalStructures}**  `+
         `**<:aeroplane:1385131687020855367> 𝖩𝖾𝗍** **${passInfo?.isValid && passInfo?.passType === "celestia" ? `1`: "0"}**`
       )

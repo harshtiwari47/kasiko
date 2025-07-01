@@ -115,7 +115,7 @@ export default {
         .setDescription(`-# To use a scratch card, command \`use scratch\``)
         .addFields(
           {
-            name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData.scratchs}`, inline: true
+            name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData?.inventory?.['scratch_card'] || 0}`, inline: true
           }
         );
 
