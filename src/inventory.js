@@ -531,7 +531,7 @@ export const ITEM_DEFINITIONS = {
   milk: {
     id: 'milk',
     name: 'Milk Packet',
-    aliases: ["dairy", "milkbottle"]
+    aliases: ["dairy", "milkbottle"],
     emoji: '<:milk:1388844881153360002>',
     description: 'A fresh packet of milk. Used in recipes, giftable, or can be sold. Found in `work`, `daily`, and `hunt`.',
     source: ["hunt",
