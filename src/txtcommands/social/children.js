@@ -4,10 +4,14 @@ import {
 } from '../../../database.js';
 import {
   Message,
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
-  Helper
+  Helper,
+  discordUser,
+  handleMessage
 } from '../../../helper.js';
 import {
   client
@@ -308,13 +312,6 @@ async function renameChild(message, childIndex, newName) {
   );
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// ── Child Feature 2B: Claiming Bond XP from Child XP
-//     The total XP earned by all children is added to the family’s bondXP,
-//     and each child’s XP is then reset to 0.
-//     There is also a 30% chance to receive a bonus cash reward (between 5,000 and 10,000).
-// ──────────────────────────────────────────────────────────────────────────────
-
 async function claimBondXP(message) {
   const userData = await getUserData(message.author.id);
   if (!userData.family || !userData.family.spouse) {
@@ -361,92 +358,101 @@ async function claimBondXP(message) {
   return message.channel.send(responseMessage);
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// ── Child Feature 3: Show Stats (For Self or Another User)
-// ──────────────────────────────────────────────────────────────────────────────
-
-/**
-* Displays a family’s children.
-* If the family has a custom emoji configuration (in family.customChildEmojis),
-* those will be used in place of the defaults.
-*
-* @param {Message} message The Discord message.
-* @param {string} userId The ID of the user whose children are to be shown.
-* @param {boolean} [isSelf=true] Whether the request is for the caller.
-*/
-async function showChildrenOfUser(message, userId, isSelf = true) {
+async function showChildrenOfUser(context, userId, isSelf = true) {
   const userToShow = await getUserData(userId);
+  const {
+    name
+  } = discordUser(context);
 
-  if (!userToShow?.family?.spouse) {
-    if (isSelf) {
-      return message.channel.send(`You are not married, so you don't have children.`);
-    } else {
-      return message.channel.send(`That user is not married, so they don't have children.`);
-    }
+  let children = [];
+
+  if (userToShow?.family?.children?.length) {
+    children.push(...userToShow.family?.children)
   }
 
-  let children = userToShow.family.children || [];
+  if (userToShow?.family?.adopted?.length) {
+    children.push(...userToShow?.family?.adopted)
+  }
+
   // Convert older string format (if any) into object format.
-  if (children.length > 0 && typeof children[0] === 'string') {
+  if (children.length > 0) {
     children = children.map(childStr => {
-      const parts = childStr.split(',');
-      return {
-        gender: parts[0]?.trim() || 'B',
-        xp: Number(parts[1]) || 0,
-        name: parts[2]?.trim() || 'Unnamed'
-      };
+      if (typeof childStr === 'string') {
+        const parts = childStr.split(',');
+        return {
+          gender: parts[0]?.trim() || 'B',
+          xp: Number(parts[1]) || 0,
+          name: parts[2]?.trim() || 'Unnamed',
+          adopted: false,
+          avatar: null,
+          userId: null,
+          date: null
+        };
+      }
+
+      return childStr;
     });
   }
 
   if (children.length === 0) {
     if (isSelf) {
-      return message.channel.send(
-        `You have no children yet. Increase your bondXP above **5,000** to have your first child!`
-      );
+      return await handleMessage(context, `**${name}**, you have no children yet. Increase your bondXP above **5,000** or **\` adopt @user \`** to have your first child!`);
     } else {
-      return message.channel.send(`That user currently has no children.`);
+      return await handleMessage(context, `That user currently has no children.`);
     }
   }
 
   // Retrieve the spouse’s username.
-  let partner = await client.users.fetch(userToShow.family.spouse).catch(() => null);
-  const partnerName = partner ? partner.username: "Unknown";
+  let partner = await client.users.fetch(userToShow.family.spouse).catch(() => {});
+  const partnerName = partner ? partner.username: "Not Married";
 
   // Use the family’s custom emojis (if set) or fall back to defaults.
   const customEmojis = userToShow.family.customChildEmojis || {};
 
   let description = `**${isSelf ? message.author.username: (message.guild.members.cache.get(userId)?.displayName || "User")}** & **${partnerName}**'s Children:\n`;
-  children.forEach((childObj, index) => {
-    const emoji = getChildEmoji(childObj.gender, customEmojis);
-    description += `\n**Child #${index + 1}:** ${emoji} **${childObj.name}**` +
-    `\n🧬 Gender: **${childObj.gender === 'B' ? 'Boy': 'Girl'}**` +
-    `\n💕 XP: **${childObj.xp}**\n`;
-  });
 
-  const embed = new EmbedBuilder()
-  .setTitle("🚼 Children Overview")
-  .setDescription(description)
-  .setColor("#f1a5c6");
+  const Container = new ContainerBuilder()
+  .addTextDisplayComponents(
+    txt.setContent(`### <:family:1390546644918992906> Children Overview`)
+  )
+  .addTextDisplayComponents(
+    txt.setContent(`${description}`)
+  )
 
-  return message.channel.send({
-    embeds: [embed]
-  });
+  for (let index = 0; index < children.length; index++) {
+    const childObj = children[index];
+
+    if (childObj?.userId) {
+      let userInfo = await client.users.fetch(childObj?.userId);
+      Container.addSectionComponents(
+        section => section
+        .addTextDisplayComponents(
+          txt => txt.setContent(`**Name:** ${userInfo.username}\n**Gender:** ${childObj.gender === 'B' ? 'Boy': childObj.gender === 'G' ? 'Girl': 'Other'}`),
+          txt => txt.setContent(`**Xp:** ${childObj.xp || 0}`),
+        )
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+          .setDescription('User PFP')
+          .setURL(userInfo.displayAvatarURL())
+        )
+      )
+    } else {
+      const emoji = getChildEmoji(childObj.gender, customEmojis);
+      Container.addTextDisplayComponents(
+        txt => txt.setContent(`**Name:** ${emoji} ${childObj.name}\n**Gender:** ${childObj.gender === 'B' ? 'Boy': childObj.gender === 'G' ? 'Girl': 'Other'}`),
+        txt => txt.setContent(`**Xp:** ${childObj.xp}\n**Index:** ${index + 1}`),
+      )
+    }
+
+  }
+
+  return await handleMessage(context,
+    {
+      components: [Container],
+      flags: MessageFlags.IsComponentsV2
+    });
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// ── The Main Children Command
-// ──────────────────────────────────────────────────────────────────────────────
-//
-// Usage examples:
-//   • children
-//   • children stats
-//   • children stats @user
-//   • children feed 1 2
-//   • children pat 1
-//   • children talk 1
-//   • children play 1
-//   • children rename 1 Lucy
-//   • children claim   (claim extra bond XP from children XP)
 export default {
   name: "children",
   aliases: ["child",
@@ -457,7 +463,8 @@ export default {
   emoji: "<:girl_child:1335131494070489118>",
   cooldown: 10000,
   category: "👤 User",
-  async execute(args, message) {
+  async execute(args,
+    message) {
     try {
       args.shift();
       // Always check if the family's bondXP qualifies for a new child:

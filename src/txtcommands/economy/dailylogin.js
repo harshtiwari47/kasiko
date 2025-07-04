@@ -147,7 +147,7 @@ export default {
       td.setContent(`💠  Sorry **${name}**, you have **already claimed** your daily reward for today! 🍹`)
     )
     .addTextDisplayComponents(td =>
-      td.setContent(`🗯️ ***_Next reward_ in <:kasiko_stopwatch:1355056680387481620> ${timeStr}***. 🎁`)
+      td.setContent(`🗯️ ***_Next reward_ in <:kasiko_stopwatch:1355056680387481620> ${timeStr}***. <:gift:1350355327018729517>`)
     );
 
     return {

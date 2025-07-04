@@ -5,7 +5,9 @@ import {
 
 import {
   AttachmentBuilder,
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 
 import {
@@ -159,18 +161,17 @@ export default {
   execute: async (args, message) => {
     let workReply = await work(message.author.id, message.channel, message.author);
 
-    const finalEmbed = new EmbedBuilder()
-    .setDescription(`${workReply}`)
-    .setAuthor({
-      name: message.author.username, iconURL: message.author.displayAvatarURL({
-        dynamic: true
-      })
-    })
-    .setColor('Random')
+    const finalEmbed = new ContainerBuilder()
+    .setAccentColor(Math.floor(Math.random() * 16777216))
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`${workReply}`),
+      textDisplay => textDisplay.setContent(`-# ${message.author.username}`)
+    )
 
     if (finalEmbed) {
       await message.channel.send({
-        embeds: [finalEmbed]
+        components: [finalEmbed],
+        flags: MessageFlags.IsComponentsV2
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
@@ -191,18 +192,17 @@ export default {
       // Call the work function
       let workReply = await work(userId, channel, user);
 
-      const finalEmbed = new EmbedBuilder()
-      .setDescription(`${workReply}`)
-      .setAuthor({
-        name: interaction.user.username, iconURL: interaction.user.displayAvatarURL({
-          dynamic: true
-        })
-      })
-      .setColor('Random')
+      const finalEmbed = new ContainerBuilder()
+      .setAccentColor(Math.floor(Math.random() * 16777216))
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`${workReply}`),
+        textDisplay => textDisplay.setContent(`-# ${interaction.user.username}`)
+      )
 
       // Respond to the slash command interaction
       await interaction.editReply({
-        embeds: [finalEmbed]
+        components: [finalEmbed],
+        flags: MessageFlags.IsComponentsV2
       })
 
       return;

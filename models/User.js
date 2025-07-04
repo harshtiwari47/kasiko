@@ -111,7 +111,7 @@ const userSchema = new mongoose.Schema({
         type: Number
       },
       adopted: {
-        type: [String],
+        type: [Object],
       default: []
       },
       dailyReward: {

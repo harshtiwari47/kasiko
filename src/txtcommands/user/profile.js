@@ -134,9 +134,15 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${passInfo.isValid ? "<:emoji_35:1332676884093337603>": "<:user:1385131666011590709> "} <@${userId?.toString()}> 𝗣𝗥𝗢𝗙𝗜𝗟𝗘 `)
     )
+    .addMediaGalleryComponents(
+      media =>
+      media.addItems(
+        item => item.setURL(userData?.banner)
+      )
+    )
     .addSeparatorComponents(separate => separate.setDivider(false).setSpacing(SeparatorSpacingSize.Large))
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`-# ${ownerDetail && ownerDetail === 3 ? "<:kasiko_supreme:1389508842529755217>": ownerDetail ? "<:kasiko_director:1389508823055601725>" : ""} <:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}**  ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
+      textDisplay => textDisplay.setContent(`-# ${ownerDetail && ownerDetail === 3 ? "<:kasiko_supreme:1389508842529755217>": ownerDetail ? "<:kasiko_director:1389508823055601725>": ""} <:level:1389092923525824552> **${userData?.level}**  <:popularity:1359565087341543435> **${userData?.popularity}**  ${passInfo?.isValid ? `${passInfo?.emoji} **${passInfo?.passType?.toUpperCase()}**`: ""}`)
     )
     .addSeparatorComponents(separate => separate.setDivider(false))
     .addTextDisplayComponents(
@@ -146,19 +152,11 @@ async function createUserEmbed(userId, username, userData, avatar, badges, passI
       textDisplay => textDisplay.setContent(`**${partner?.username && partner?.username !== "Unmarried" ? `Spouse: ${partner?.username}`: `Unmarried`}**${userData?.family?.children?.length === 0 ? "": `\n**Children:** ` + childrenNames?.join(", ")}${userData?.family?.children?.length === 0 ? ` ♡ **Friendly: ` + userData?.friendly + "**": `\n**Friendly: ` + userData?.friendly + "**"}`)
     )
 
-    Container.addSeparatorComponents(separate => separate.setSpacing(SeparatorSpacingSize.Large))
+    Container.addSeparatorComponents(separate => separate.setDivider(false))
 
     Container.addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${badges ? badges: '𝖡𝗎𝗂𝗅𝖽𝗂𝗇𝗀 𝗐𝖾𝖺𝗅𝗍𝗁, 𝗍𝗋𝗎𝗌𝗍, 𝖺𝗇𝖽 𝖾𝗆𝗉𝗂𝗋𝖾𝗌 𝗌𝗍𝖺𝗋𝗍𝗌 𝖿𝗋𝗈𝗆 𝗓𝖾𝗋𝗈! <:spark:1355139233559351326>'}`)
     )
-
-    Container.addMediaGalleryComponents(
-      media =>
-      media.addItems(
-        item => item.setURL(userData?.banner)
-      )
-    )
-    Container.addSeparatorComponents(separate => separate.setDivider(false))
 
     Container.addSectionComponents(
       section => section
