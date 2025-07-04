@@ -114,6 +114,10 @@ const userSchema = new mongoose.Schema({
         type: [Object],
       default: []
       },
+      parents: {
+        adopter: String,
+        spouse: String
+      },
       dailyReward: {
         type: Number
       },

@@ -429,7 +429,7 @@ async function showChildrenOfUser(context, userId, isSelf = true) {
         section => section
         .addTextDisplayComponents(
           txt => txt.setContent(`**Name:** ${userInfo.username}\n**Gender:** ${childObj.gender === 'B' ? 'Boy': childObj.gender === 'G' ? 'Girl': 'Other'}`),
-          txt => txt.setContent(`**Xp:** ${childObj.xp || 0}`),
+          txt => txt.setContent(`**Xp:** ${childObj.xp || 0} ~ ᴀᴅᴏᴘᴛᴇᴅ`),
         )
         .setThumbnailAccessory(
           thumbnail => thumbnail
@@ -437,12 +437,14 @@ async function showChildrenOfUser(context, userId, isSelf = true) {
           .setURL(userInfo.displayAvatarURL())
         )
       )
+      .addSeparatorComponents(separate => separate)
     } else {
       const emoji = getChildEmoji(childObj.gender, customEmojis);
       Container.addTextDisplayComponents(
         txt => txt.setContent(`**Name:** ${emoji} ${childObj.name}\n**Gender:** ${childObj.gender === 'B' ? 'Boy': childObj.gender === 'G' ? 'Girl': 'Other'}`),
         txt => txt.setContent(`**Xp:** ${childObj.xp}\n**Index:** ${index + 1}`),
       )
+      .addSeparatorComponents(separate => separate)
     }
 
   }

@@ -44,7 +44,7 @@ async function adoptChild(context, args) {
 
   if (!target) return await handleMessage(context, 'Please mention a valid user to adopt.');
   if (target.id === authorId) return await handleMessage(context, 'You cannot adopt yourself.');
- 
+
   const userData = await getUserData(authorId);
 
   if (userData?.family?.adopted?.some(c => c.userId === target.id)) {
@@ -56,6 +56,10 @@ async function adoptChild(context, args) {
   userData.family.adopted = userData.family.adopted || [];
   targetData.family = targetData.family || {};
   targetData.family.adopted = targetData.family.adopted || [];
+
+  if (targetData?.family?.parents?.adopter) {
+    return await handleMessage(context, `**${name}**, **${target.username}** already has a parent.`);
+  }
 
   // Prevent mutual adoption
   const mutual = targetData.family.adopted.find(a => a.userId === authorId);
@@ -142,8 +146,17 @@ async function adoptChild(context, args) {
         adopted: true
       });
 
+      const parents = {
+        adopter: authorId,
+        spouse: userData?.family?.spouse
+      }
+
       await updateUser(authorId, {
         "family.adopted": userData.family.adopted
+      });
+
+      await updateUser(target.id, {
+        "family.parents": parents
       });
 
       const Container = new ContainerBuilder()
@@ -200,7 +213,7 @@ async function adoptChild(context, args) {
     collected => {
       try {
         prompt.edit({
-          components: [new ContainerBuilder().addTextDisplayComponents(text => text.setContent('No selection made. Adoption canceled.'))],
+          components: [new ContainerBuilder(prompt?.components[0])],
           flags: MessageFlags.IsComponentsV2
         });
       } catch (err) {}
@@ -218,7 +231,7 @@ export default {
     message) {
     try {
       args.shift();
-      const sub = args[0].toLowerCase();
+      const sub = args[0]?.toLowerCase();
       return adoptChild(message,
         args);
     } catch (err) {
