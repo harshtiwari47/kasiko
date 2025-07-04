@@ -40,18 +40,17 @@ async function adoptChild(context, args) {
     name
   } = discordUser(context);
 
-  if (!args[1]) return await handleMessage(context, 'Usage: `child adopt @user`');
-
   const target = context.mentions.users.first();
 
   if (!target) return await handleMessage(context, 'Please mention a valid user to adopt.');
   if (target.id === authorId) return await handleMessage(context, 'You cannot adopt yourself.');
+ 
+  const userData = await getUserData(authorId);
 
   if (userData?.family?.adopted?.some(c => c.userId === target.id)) {
     return await handleMessage(context, `**${name}**, you have already adopted **${target.username}**.`);
   }
 
-  const userData = await getUserData(authorId);
   const targetData = await getUserData(target.id);
   userData.family = userData.family || {};
   userData.family.adopted = userData.family.adopted || [];

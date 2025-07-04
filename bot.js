@@ -77,7 +77,7 @@ export const client = new Client( {
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-const developmentMode = false;
+const developmentMode = true;
 
 const BotPrefix = developmentMode ? "ki": "kas";
 const TOKEN = developmentMode ? process.env.BOT_TOKENDEV: process.env.BOT_TOKEN;
