@@ -361,7 +361,8 @@ async function claimBondXP(message) {
 async function showChildrenOfUser(context, userId, isSelf = true) {
   const userToShow = await getUserData(userId);
   const {
-    name
+    name,
+    username
   } = discordUser(context);
 
   let children = [];
@@ -409,14 +410,14 @@ async function showChildrenOfUser(context, userId, isSelf = true) {
   // Use the family’s custom emojis (if set) or fall back to defaults.
   const customEmojis = userToShow.family.customChildEmojis || {};
 
-  let description = `**${isSelf ? message.author.username: (message.guild.members.cache.get(userId)?.displayName || "User")}** & **${partnerName}**'s Children:\n`;
+  let description = `**${isSelf ? username: (context.guild.members.cache.get(userId)?.displayName || "User")}** & **${partnerName}**'s Children:\n`;
 
   const Container = new ContainerBuilder()
   .addTextDisplayComponents(
-    txt.setContent(`### <:family:1390546644918992906> Children Overview`)
+    txt => txt.setContent(`### <:family:1390546644918992906> Children Overview`)
   )
   .addTextDisplayComponents(
-    txt.setContent(`${description}`)
+    txt => txt.setContent(`${description}`)
   )
 
   for (let index = 0; index < children.length; index++) {
