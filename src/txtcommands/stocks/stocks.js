@@ -66,7 +66,7 @@ export function createStockEmbed(name, stock, ownerView = false) {
 
   // First Embed: General Overview
   const generalInfoEmbed = new EmbedBuilder()
-  .setTitle(`<:company:1363405037552009427> ${name}`)
+  .setTitle(`<:stocks:1391426624666337431> ${name}`)
   .setColor(embedColor)
   .addFields(
     {
@@ -283,6 +283,7 @@ export async function updateStockPrices() {
     const companies = await Company.find({});
     for (const company of companies) {
       // Calculate a random percentage change between -5% and +5%.
+      if (company.currentPrice < 5) company.currentPrice = 5;
       const changePercent = Math.random() * 10 - 5; // Range: -5 to +5%
       let newPrice = company.currentPrice * (1 + changePercent / 100);
       // Ensure newPrice is at least 0.1 and round to one decimal place.

@@ -153,7 +153,13 @@ async function adoptChild(context, args) {
 
       await updateUser(authorId, {
         "family.adopted": userData.family.adopted
-      });
+      })
+
+      if (userData?.family?.spouse) {
+        await updateUser(userData.family.spouse, {
+          "family.adopted": userData.family.adopted
+        });
+      }
 
       await updateUser(target.id, {
         "family.parents": parents

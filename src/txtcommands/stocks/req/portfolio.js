@@ -9,12 +9,16 @@ import {
   InteractionType,
   TextInputStyle,
   TextInputBuilder,
-  ModalBuilder
+  ModalBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
   client
 } from '../../../../bot.js';
-
+import {
+  discordUser
+} from '../../../../helper.js';
 import {
   sellSharesCommand
 } from './sell.js';
@@ -53,6 +57,9 @@ export async function portfolioCommand(context) {
     const username = context.user ? context.user.username: context.author.username;
     const cacheKey = `totalStockPrice:${userId}`;
 
+    const {
+      name
+    } = discordUser(context);
 
     // Query companies where the user is a shareholder
     const companies = await Company.find({
@@ -84,9 +91,9 @@ export async function portfolioCommand(context) {
 
       const isProfit = currentValue > boughtPrice;
 
-      portfolioDetails += `<:company:1363405037552009427> **${company.name}** ${isProfit ? "<:stocks_profit:1321342107574599691>": "<:stocks_loss:1321342088020885525>"}\n` +
-      `𝐒𝐡𝐚𝐫𝐞𝐬: **${sharesOwned}** ` +
-      `𝐕𝐚𝐥𝐮𝐞: <:kasiko_coin:1300141236841086977> ${currentValue.toLocaleString()}\n`;
+      portfolioDetails += `-# <:company:1363405037552009427> **${company.name}** ${isProfit ? "<:stocks_profit:1321342107574599691>": "<:stocks_loss:1321342088020885525>"}\n` +
+      `𝖲𝗁𝖺𝗋𝖾𝗌: **${sharesOwned}** ` +
+      `𝖵𝖺𝗅𝗎𝖾: <:kasiko_coin:1300141236841086977> ${currentValue.toLocaleString()}\n`;
 
       // Add company option for selling if the user owns shares
       if (sharesOwned > 0) {
@@ -106,30 +113,32 @@ export async function portfolioCommand(context) {
     const profitLossSymbol = profitLossPercent >= 0 ? "+": "-";
     const finalPercentage = `${profitLossSymbol}${Math.abs(profitLossPercent).toFixed(2)}`;
 
-    // Embed 1: Portfolio Overview (detailed list)
-    const embed1 = new EmbedBuilder()
-    .setTitle(`📈 ${username}'s 𝗖𝗼𝗺𝗽𝗮𝗻𝘆 𝗣𝗼𝗿𝘁𝗳𝗼𝗹𝗶𝗼`)
-    .setDescription(portfolioDetails || "No companies found.")
-    .addFields({
-      name: "𝙏𝙤𝙩𝙖𝙡 𝙋𝙤𝙧𝙩𝙛𝙤𝙡𝙞𝙤 𝙑𝙖𝙡𝙪𝙚",
-      value: `<:kasiko_coin:1300141236841086977> ${totalPortfolioValue.toLocaleString()} Cash`,
-      inline: false
-    })
-    .setColor("#f2dada");
+    const Container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`### <:stocks:1391426624666337431> ${name} Portfolio`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`${portfolioDetails || "No companies found."}`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`### 𝙏𝙤𝙩𝙖𝙡 𝘽𝙤𝙪𝙜𝙝𝙩 𝙋𝙧𝙞𝙘𝙚`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${totalBoughtPrice.toLocaleString()} Cash`)
+    )
 
-    // Embed 2: Portfolio Summary (bought price and net profit/loss)
-    const embed2 = new EmbedBuilder()
-    .addFields([{
-      name: "𝙏𝙤𝙩𝙖𝙡 𝘽𝙤𝙪𝙜𝙝𝙩 𝙋𝙧𝙞𝙘𝙚",
-      value: `<:kasiko_coin:1300141236841086977> ${totalBoughtPrice.toLocaleString()} Cash`,
-      inline: false
-    },
-      {
-        name: `𝙉𝙚𝙩 ${profitLossLabel}`,
-        value: `${isNaN(finalPercentage) ? "0": finalPercentage}%`,
-        inline: false
-      }])
-    .setColor(profitLossPercent >= 0 ? "#a8dabf": "#f56056");
+    const ContainerColor = profitLossPercent >= 0 ? "0xa8dabf": "0xf56056";
+
+    const Container2 = new ContainerBuilder()
+    .setAccentColor(Number(ContainerColor))
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`### 𝙏𝙤𝙩𝙖𝙡 𝙋𝙤𝙧𝙩𝙛𝙤𝙡𝙞𝙤 𝙑𝙖𝙡𝙪𝙚\n<:kasiko_coin:1300141236841086977> ${totalPortfolioValue.toLocaleString()} Cash  (${isNaN(finalPercentage) ? "0": finalPercentage}%)`)
+    )
+
+    /*
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`𝙉𝙚𝙩 ${profitLossLabel}`)
+    ) */
 
     // Build a select menu for companies from which the user can sell shares
     let components = [];
@@ -149,9 +158,10 @@ export async function portfolioCommand(context) {
       });
 
     const replyData = {
-      embeds: [embed1,
-        embed2],
-      components
+      components: [Container,
+        Container2,
+        ...components],
+      flags: MessageFlags.IsComponentsV2
     };
     const replyMessage = await handleMessage(context, replyData);
 
@@ -191,7 +201,7 @@ export async function portfolioCommand(context) {
           const currentValue = Math.round(sharesOwned * currentPrice * 10) / 10;
           const detailEmbed = new EmbedBuilder()
           .setColor("#f5bbaf")
-          .setDescription(`📊 **${username}**, you currently own **${sharesOwned}** shares of **${selectedCompanyName}**.\n𝙑𝙖𝙡𝙪𝙚: <:kasiko_coin:1300141236841086977> **${currentValue}** 𝑪𝒂𝒔𝒉.\n\nClick **SELL** to sell your shares.`);
+          .setDescription(`<:stocks:1391426624666337431> **${username}**, you currently own **${sharesOwned}** shares of **${selectedCompanyName}**.\n𝙑𝙖𝙡𝙪𝙚: <:kasiko_coin:1300141236841086977> **${currentValue}** 𝑪𝒂𝒔𝒉.\n\nClick **SELL** to sell your shares.`);
 
           // Create a SELL button for triggering the sale modal.
           const sellButton = new ButtonBuilder()
@@ -214,7 +224,7 @@ export async function portfolioCommand(context) {
       async () => {
         try {
           await replyMessage.edit({
-            components: []
+            components: [new ContainerBuilder(replyMessage.components[0])]
           });
         } catch (e) {}
       });

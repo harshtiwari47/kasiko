@@ -667,7 +667,7 @@ export default {
     "love",
     "roses",
     "m",
-    "rose"],
+    "rose", "propose"],
   args: "<command> [parameters]",
   example: [
     "marry <@user>",
@@ -693,7 +693,7 @@ export default {
 
   execute: async (args, message) => {
     try {
-      if (args[0] === "marry") {
+      if (args[0] === "marry" || args[0] === "propose") {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.marry(Helper.extractUserId(args[1]), message); // Marry a user
         }

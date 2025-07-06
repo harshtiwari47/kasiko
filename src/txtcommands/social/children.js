@@ -21,7 +21,6 @@ import {
   getAllJewelry
 } from '../shop/shopDataHelper.js';
 
-
 // Default emojis if no custom emojis are set for the family.
 const DEFAULT_BOY_EMOJI = '<:boy_child:1335131474055139430>';
 const DEFAULT_GIRL_EMOJI = '<:girl_child:1335131494070489118>';
@@ -454,6 +453,43 @@ async function showChildrenOfUser(context, userId, isSelf = true) {
       components: [Container],
       flags: MessageFlags.IsComponentsV2
     });
+}
+
+async function parentRemoveChild(context, args) {
+  const {
+    id: parentId,
+    username
+  } = discordUser(context);
+  const target = context.mentions.users.first();
+  if (!target) return handleMessage(context, 'Please mention a valid child to remove.');
+
+  const parentData = await getUserData(parentId);
+  if (!parentData.family?.adopted?.some(c => c.userId === target.id)) {
+    return handleMessage(context, `**${username}**, you have not adopted **${target.username}**.`);
+  }
+
+  // Remove child entry
+  const updatedList = parentData.family.adopted.filter(c => c.userId !== target.id);
+  await updateUser(parentId, {
+    'family.adopted': updatedList
+  });
+
+  // If parent has spouse, update their list too
+  if (parentData.family.spouse) {
+    const spouseId = parentData.family.spouse;
+    const spouseData = await getUserData(spouseId);
+    const spouseList = spouseData.family?.adopted?.filter(c => c.userId !== target.id) || [];
+    await updateUser(spouseId, {
+      'family.adopted': spouseList
+    });
+  }
+
+  // Remove parents field from the child
+  await updateUser(target.id, {
+    'family.parents': null
+  });
+
+  return handleMessage(context, `**${username}** removed **${target.username}** from your family.`);
 }
 
 export default {
