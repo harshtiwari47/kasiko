@@ -62,7 +62,7 @@ export default {
   category: '👤 User',
   async execute(args, message) {
     try {
-      if (args[1].toLowerCase() === "left") {
+      if (args[1]?.toLowerCase() === "left") {
         await removeSelfAdoption(message);
         return;
       }

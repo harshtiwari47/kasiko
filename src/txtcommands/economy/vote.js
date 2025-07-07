@@ -140,7 +140,7 @@ export async function voteReward(userId, user, context) {
             `<:orange_fire:1336344438464839731> **𝘊𝘶𝘳𝘳𝘦𝘯𝘵 𝘚𝘵𝘳𝘦𝘢𝘬**: ***${voteDoc.voteStreak}***`)
           .addFields(
             {
-              name: '<a:custom_exclusive_badge_23:1355149433137926394> **𝘓𝘈𝘚𝘛 𝘝𝘖𝘛𝘌𝘚**', value: voteDoc.lastVotes.slice(0, 3).map(d => ` <t:${Math.floor(new Date(d).getTime()/1000)}:d> `).join(', '), inline: false
+              name: '<:20250707_135821:1391697551882977371> **𝘓𝘈𝘚𝘛 𝘝𝘖𝘛𝘌𝘚**', value: voteDoc.lastVotes.slice(0, 3).map(d => ` <t:${Math.floor(new Date(d).getTime()/1000)}:d> `).join(', '), inline: false
             }
           )
           .setColor('Green')

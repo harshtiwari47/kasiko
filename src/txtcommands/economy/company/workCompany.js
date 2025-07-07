@@ -4,7 +4,9 @@ import {
   updateUser
 } from '../../../../database.js';
 import {
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 
 async function handleMessage(context, data) {
@@ -81,21 +83,31 @@ export async function workCommand(message, args) {
 
     await company.save();
 
-    // Inform the user of their successful work completion via an embed
-    const embed = new EmbedBuilder()
-    .setTitle("💼 𝗪𝗢𝗥𝗞 𝗖𝗢𝗠𝗣𝗟𝗘𝗧𝗘𝗗")
-    .setDescription(
-      `**${username}**, 𝘺𝘰𝘶 𝘸𝘰𝘳𝘬𝘦𝘥 𝘧𝘰𝘳 **${company.name}** 𝘢𝘯𝘥 𝘦𝘢𝘳𝘯𝘦𝘥 <:kasiko_coin:1300141236841086977> **${reward}**.\n` +
-      `-# 𝘕𝘌𝘞 𝘚𝘛𝘖𝘊𝘒 𝘗𝘙𝘐𝘊𝘌𝘚: <:kasiko_coin:1300141236841086977> ${company.currentPrice}`
+    const Container = new ContainerBuilder()
+    .setAccentColor(0xd36134)
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`### <:briefcase:1389196495474921492> 𝗪𝗢𝗥𝗞 𝗖𝗢𝗠𝗣𝗟𝗘𝗧𝗘𝗗`),
+        textDisplay => textDisplay.setContent("-# 𝘠𝘰𝘶𝘳 𝘦𝘧𝘧𝘰𝘳𝘵𝘴 𝘧𝘶𝘦𝘭𝘦𝘥 𝘤𝘰𝘮𝘱𝘢𝘯𝘺 𝘨𝘳𝘰𝘸𝘵𝘩!")
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Company work')
+        .setURL("https://harshtiwari47.github.io/kasiko-public/images/office-work.png")
+      )
     )
-    .setColor("#d36134")
-    .setImage("https://harshtiwari47.github.io/kasiko-public/images/office-work.png")
-    .setFooter({
-      text: `𝖸𝗈𝗎𝗋 𝗁𝖺𝗋𝖽 𝗐𝗈𝗋𝗄 𝗁𝖺𝗌 𝖻𝗈𝗈𝗌𝗍𝖾𝖽 𝗒𝗈𝗎𝗋 𝖼𝗈𝗆𝗉𝖺𝗇𝗒'𝗌 𝗀𝗋𝗈𝗐𝗍𝗁!`
-    })
+    .addSeparatorComponents(separate => separate)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(
+        `**${username}**, 𝘺𝘰𝘶 𝘸𝘰𝘳𝘬𝘦𝘥 𝘧𝘰𝘳 **${company.name}** 𝘢𝘯𝘥 𝘦𝘢𝘳𝘯𝘦𝘥 <:kasiko_coin:1300141236841086977> **${reward}**.\n` +
+        `-# 𝘕𝘌𝘞 𝘚𝘛𝘖𝘊𝘒 𝘗𝘙𝘐𝘊𝘌𝘚: <:kasiko_coin:1300141236841086977> ${company.currentPrice}`
+      )
+    )
 
     return handleMessage(message, {
-      embeds: [embed]
+      components: [Container],
+      flags: MessageFlags.IsComponentsV2
     });
 
   } catch (error) {

@@ -181,7 +181,7 @@ async function handleProfile(ctx) {
       new ButtonBuilder()
       .setCustomId("alien_disguise")
       .setLabel("DISGUISE")
-      .setEmoji('1336360322516123669')
+      .setEmoji('1391676098026274826')
       .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
       .setCustomId("aliens_ability")
@@ -320,7 +320,7 @@ async function handleProfile(ctx) {
     console.error(error);
     return replyOrSend(ctx,
       {
-        content: `❌ **${getUsername(ctx)}**, something went wrong while fetching your profile.`
+        content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, something went wrong while fetching your profile.`
       });
   }
 }
@@ -371,7 +371,7 @@ async function handleJoin(ctx) {
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${getUsername(ctx)}**, an error occurred during registration. Please try again later.`
+      content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred during registration. Please try again later.`
     });
   }
 }
@@ -447,7 +447,7 @@ async function handleEnergyExchange(ctx, argsOrAmount) {
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${getUsername(ctx)}**, an error occurred during energy exchange.\n-# **Error**: ${error.message}`
+      content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred during energy exchange.\n-# **Error**: ${error.message}`
     });
   }
 }
@@ -541,7 +541,7 @@ async function handleHarvest(ctx) {
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${getUsername(ctx)}**, an error occurred while harvesting resources.`
+      content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred while harvesting resources.`
     });
   }
 }
@@ -641,7 +641,7 @@ async function handleAbilitiesList(ctx) {
         // Only allow the original user to interact.
         if (interaction.user.id !== userId) {
           return interaction.reply({
-            content: `❌ **${getUsername(ctx)}**, these buttons aren't for you!`,
+            content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, these buttons aren't for you!`,
             ephemeral: true,
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
         }
@@ -657,7 +657,7 @@ async function handleAbilitiesList(ctx) {
           });
           if (!alienDoc) {
             return interaction.reply({
-              content: `❌ **${getUsername(ctx)}**, something went wrong: alien not found.`,
+              content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, something went wrong: alien not found.`,
               ephemeral: true,
             }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
@@ -665,7 +665,7 @@ async function handleAbilitiesList(ctx) {
           const abilityDoc = alienDoc.abilities[currentPage];
           if (!abilityDoc) {
             return interaction.reply({
-              content: `❌ **${alien.name}**, ability not found.`,
+              content: `<:checkbox_cross:1388858904095625226> **${alien.name}**, ability not found.`,
               ephemeral: true,
             }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
@@ -684,7 +684,7 @@ async function handleAbilitiesList(ctx) {
 
           if (missingItems.length > 0) {
             return interaction.reply({
-              content: `❌ **${alien.name}**, you lack the following items to upgrade **${abilityDoc.name}**:\n${missingItems.join('\n')}`,
+              content: `<:checkbox_cross:1388858904095625226> **${alien.name}**, you lack the following items to upgrade **${abilityDoc.name}**:\n${missingItems.join('\n')}`,
               ephemeral: true,
             }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
@@ -763,7 +763,7 @@ async function handleAbilitiesList(ctx) {
     console.error(error);
     return replyOrSend(ctx,
       {
-        content: `❌ **${getUsername(ctx)}**, an error occurred while listing your abilities.`,
+        content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred while listing your abilities.`,
       });
   }
 }
@@ -866,7 +866,7 @@ async function handleInventoryList(ctx) {
         // Only allow the original user to interact.
         if (interaction.user.id !== userId) {
           await interaction.reply({
-            content: `❌ **${getUsername(ctx)}**, these buttons aren't for you!`,
+            content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, these buttons aren't for you!`,
             ephemeral: true,
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           return;
@@ -878,7 +878,7 @@ async function handleInventoryList(ctx) {
           currentPage = currentPage < totalPages - 1 ? currentPage + 1: 0;
         } else {
           await interaction.reply({
-            content: `❌ **${alien.name}**, no item available to use.`,
+            content: `<:checkbox_cross:1388858904095625226> **${alien.name}**, no item available to use.`,
             ephemeral: true,
           });
         }
@@ -915,7 +915,7 @@ async function handleInventoryList(ctx) {
     console.error(error);
     return replyOrSend(ctx,
       {
-        content: `❌ **${getUsername(ctx)}**, an error occurred while listing your inventory.`,
+        content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred while listing your inventory.`,
       });
   }
 }
@@ -951,7 +951,7 @@ async function handleUpgrade(ctx) {
     const availableAbilities = abilities.filter(
       (ability) => !alien.abilities.some((a) => a.name === ability.name)
     );
-     
+
     let chosenAbility;
     // Pick a random ability from those not yet unlocked.
     if (availableAbilities.length !== 0) {
@@ -988,7 +988,7 @@ async function handleUpgrade(ctx) {
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${getUsername(ctx)}**, an error occurred while upgrading your tech.`,
+      content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred while upgrading your tech.`,
     });
   }
 }
@@ -1013,15 +1013,15 @@ async function handleDisguise(ctx) {
     await alien.save();
     return replyOrSend(ctx, {
       content: randomResponse([
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your disguise is now updated to <:conqueror:1336360322516123669> **${newDisguise}**. Blend in and hide your cosmic origins! 🍷`,
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, you've morphed into a <:conqueror:1336360322516123669> **${newDisguise}**. Now go forth and infiltrate! 🍷`,
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your new identity as a <:conqueror:1336360322516123669> **${newDisguise}** is set. The humans won't suspect a thing! 🍷`
+        `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your disguise is now updated to <:conqueror:1336360322516123669> **${newDisguise}**. Blend in and hide your cosmic origins! 🍷`,
+        `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, you've morphed into a <:conqueror:1336360322516123669> **${newDisguise}**. Now go forth and infiltrate! 🍷`,
+        `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your new identity as a <:conqueror:1336360322516123669> **${newDisguise}** is set. The humans won't suspect a thing! 🍷`
       ])
     });
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${getUsername(ctx)}**, an error occurred while updating your disguise.`
+      content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred while updating your disguise.`
     });
   }
 }
@@ -1041,19 +1041,37 @@ async function handleManipulate(ctx) {
       });
     }
 
+    const FailureResponse = randomResponse([
+      `<:checkbox_cross:1388858904095625226> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _attempt to manipulate the human economy_ has fizzled out.\n☄️ 🌌 The cosmic balance remains intact. 👾`,
+      `<:checkbox_cross:1388858904095625226> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _manipulation_ failed!\n☄️ 🌌 The universe chuckles at your misfortune. 👾`,
+      `<:checkbox_cross:1388858904095625226> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _economic meddling_ was thwarted!\n☄️ 🌌 Better luck next time. 👾`,
+      `<:checkbox_cross:1388858904095625226> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _interference_ in the cosmic order has failed.\n☄️ 🌌 The universe sighs in amusement. 👾`,
+      `<:checkbox_cross:1388858904095625226> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _plan_ has crumbled like stardust.\n☄️ 🌌 The cosmos watches in quiet amusement. 👾`,
+      `<:checkbox_cross:1388858904095625226> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _devious plot_ has been undone.\n☄️ 🌌 The universe remains unshaken. 👾`
+    ]);
+
     const randomAbility = alien.abilities[Math.floor(Math.random() * alien.abilities.length)]
     let randomNumber = Math.random() + (randomAbility.manipulationRate ? Math.min(0.18, randomAbility.manipulationRate / 10): 0);
     const success = randomNumber > 0.25;
     if (!success) {
+
+      const failedContainer = new ContainerBuilder()
+      .setAccentColor(0xef7f7f)
+      .addSectionComponents(
+        section => section
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(FailureResponse)
+        )
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+          .setDescription('Manipulate')
+          .setURL("https://harshtiwari47.github.io/kasiko-public/images/manipulate.png")
+        )
+      );
+
       return replyOrSend(ctx, {
-        embeds: [new EmbedBuilder().setDescription(randomResponse([
-          `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _attempt to manipulate the human economy_ has fizzled out.\n☄️ 🌌 The cosmic balance remains intact. 👾`,
-          `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _manipulation_ failed!\n☄️ 🌌 The universe chuckles at your misfortune. 👾`,
-          `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _economic meddling_ was thwarted!\n☄️ 🌌 Better luck next time. 👾`,
-          `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _interference_ in the cosmic order has failed.\n☄️ 🌌 The universe sighs in amusement. 👾`,
-          `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _plan_ has crumbled like stardust.\n☄️ 🌌 The cosmos watches in quiet amusement. 👾`,
-          `❌ 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your _devious plot_ has been undone.\n☄️ 🌌 The universe remains unshaken. 👾`
-        ])).setImage(`https://harshtiwari47.github.io/kasiko-public/images/manipulate.png`).setColor('#ef7f7f')]
+        components: [failedContainer],
+        flags: MessageFlags.IsComponentsV2
       });
     }
     const resourceGain = 25 + (randomAbility.resourcesCollection ? randomAbility.resourcesCollection: 0);
@@ -1079,19 +1097,40 @@ async function handleManipulate(ctx) {
     }
 
     await alien.save();
+
+    const successMessage = randomResponse([
+      `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, with masterful subtlety, you gained : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
+      `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your cunning maneuver has earned you : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
+      `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your precision and wit have rewarded you with : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
+      `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your skillful planning has netted you : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
+      `<:performing_arts:1391676098026274826> 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, with perfect timing, you acquired : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`
+    ]);
+
+    const successContainer = new ContainerBuilder()
+    .setAccentColor(0x469473)
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(successMessage)
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Manipulate')
+        .setURL("https://harshtiwari47.github.io/kasiko-public/images/manipulate.png")
+      )
+    )
+    .addTextDisplayComponents(
+      txt => txt.setContent(`-# <:aliens_ability:1336346125791137855> ***ABILITY*** : **${randomAbility.name}**\n-# ✧.⋆˚‧₊˚ ⋅ ‧₊˚⁺₊❅. 🌌\n${extraMessage}`)
+    )
+
     return replyOrSend(ctx, {
-      embeds: [new EmbedBuilder().setDescription(randomResponse([
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, with masterful subtlety, you gained : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your cunning maneuver has earned you : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your precision and wit have rewarded you with : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, your skillful planning has netted you : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`,
-        `🎭 🗯️ <:aliens_nano:1336345303212752979> **${alien.name}**, with perfect timing, you acquired : <:aliens_resource:1335537435341226024> ***\`${resourceGain} resources\`***\n<:aliens_crown:1336345903048560640>`
-      ]) + `\n<:aliens_ability:1336346125791137855> ***ABILITY*** : **${randomAbility.name}**\n✧.⋆˚‧₊˚ ⋅ ‧₊˚⁺₊❅. 🌌\n${extraMessage}`).setImage(`https://harshtiwari47.github.io/kasiko-public/images/manipulate.png`).setColor('#9b7fef')]
+      components: [successContainer],
+      flags: MessageFlags.IsComponentsV2
     });
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${getUsername(ctx)}**, something went wrong while manipulating the economy.`
+      content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, something went wrong while manipulating the economy.`
     });
   }
 }
@@ -1357,7 +1396,7 @@ async function simulateBattle(ctx, alien, opponent) {
   } catch (error) {
     console.error(error);
     return replyOrSend(ctx, {
-      content: `❌ **${alien.name}**, an error occurred during battle simulation.`,
+      content: `<:checkbox_cross:1388858904095625226> **${alien.name}**, an error occurred during battle simulation.`,
     });
   }
 }
@@ -1392,13 +1431,13 @@ async function handleBattle(ctx, args) {
       const match = mention.match(/^<@!?(\d+)>$/);
       if (!match) {
         return replyOrSend(ctx, {
-          content: `❌ **${challenger.name}**, please mention a valid user to challenge.`
+          content: `<:checkbox_cross:1388858904095625226> **${challenger.name}**, please mention a valid user to challenge.`
         });
       }
       const targetId = match[1];
       if (targetId === userId) {
         return replyOrSend(ctx, {
-          content: `❌ **${challenger.name}**, you cannot challenge yourself!`
+          content: `<:checkbox_cross:1388858904095625226> **${challenger.name}**, you cannot challenge yourself!`
         });
       }
       const target = await Alien.findOne({
@@ -1406,7 +1445,7 @@ async function handleBattle(ctx, args) {
       });
       if (!target) {
         return replyOrSend(ctx, {
-          content: `❌ **${challenger.name}**, the challenged user is not part of the cosmic collective.`
+          content: `<:checkbox_cross:1388858904095625226> **${challenger.name}**, the challenged user is not part of the cosmic collective.`
         });
       }
 
@@ -1455,7 +1494,7 @@ async function handleBattle(ctx, args) {
           await simulateBattle(ctx, challenger, target);
         } else {
           await i.update({
-            content: `❌ **${target.name}** declined the challenge. The duel has been canceled.`,
+            content: `<:checkbox_cross:1388858904095625226> **${target.name}** declined the challenge. The duel has been canceled.`,
             components: []
           });
         }
@@ -1508,7 +1547,7 @@ async function handleBattle(ctx, args) {
     console.error(error);
     return replyOrSend(ctx,
       {
-        content: `❌ **${getUsername(ctx)}**, an error occurred while initiating the battle.`
+        content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred while initiating the battle.`
       });
   }
 }
@@ -1597,7 +1636,7 @@ async function handleTextCommand(ctx, args) {
     console.error(error);
     return replyOrSend(ctx,
       {
-        content: `❌ **${getUsername(ctx)}**, an error occurred processing your command.`
+        content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred processing your command.`
     });
 }
 }
@@ -1609,14 +1648,14 @@ async function handleButtonInteraction(ctx) {
 try {
 if (!ctx.customId) {
 return replyOrSend(ctx, {
-content: `❌ Invalid button interaction!`
+content: `<:checkbox_cross:1388858904095625226> Invalid button interaction!`
 });
 }
 
 // Ensure customId follows the expected format
 if (!ctx.customId.startsWith("alien_")) {
 return replyOrSend(ctx, {
-content: `❌ Invalid button ID format!`
+content: `<:checkbox_cross:1388858904095625226> Invalid button ID format!`
 });
 }
 
@@ -1641,13 +1680,13 @@ case "battle":
 return await handleBattle(ctx, []); // No extra args from a button press.
 default:
 return replyOrSend(ctx, {
-content: `❌ Unknown button command!`
+content: `<:checkbox_cross:1388858904095625226> Unknown button command!`
 });
 }
 } catch (error) {
 console.error("Button Interaction Error:", error);
 return replyOrSend(ctx, {
-content: `❌ **${getUsername(ctx)}**, an error occurred while processing your button interaction.`
+content: `<:checkbox_cross:1388858904095625226> **${getUsername(ctx)}**, an error occurred while processing your button interaction.`
 });
 }
 }

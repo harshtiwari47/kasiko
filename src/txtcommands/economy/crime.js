@@ -4,7 +4,9 @@ import {
 } from '../../../database.js';
 import {
   AttachmentBuilder,
-  EmbedBuilder
+  EmbedBuilder,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
   discordUser
@@ -313,23 +315,27 @@ export default {
     execute: async (args, message) => {
     let crimeReply = await crime(message.author.id, message.channel, message.author);
     
-    const finalEmbed = new EmbedBuilder()
-    .setDescription(crimeReply);
-    
-    const finalEmbed2 = new EmbedBuilder()
-    .setDescription(`𝗖𝗥𝗜𝗠𝗘 𝗦𝗣𝗥𝗘𝗘\n-# 𝘙𝘪𝘴𝘬 𝘪𝘵 𝘢𝘭𝘭 𝘧𝘰𝘳 𝘳𝘪𝘤𝘩𝘦𝘴 𝘰𝘳 𝘳𝘶𝘪𝘯.`)
-    .setAuthor({
-    name: message.author.username,
-    iconURL: message.author.displayAvatarURL({
-    dynamic: true
-    })
-    })
-    .setColor('Random')
-    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/crime.png`);
-    
+    const Container = new ContainerBuilder()
+    .setAccentColor(Math.floor(Math.random() * 16777216))
+      .addSectionComponents(
+        section => section
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`-# <:user:1385131666011590709> ${message.author.username}`),
+          textDisplay => textDisplay.setContent(`### 𝗖𝗥𝗜𝗠𝗘`),
+        )
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+          .setDescription('Crime')
+          .setURL("https://harshtiwari47.github.io/kasiko-public/images/crime.png")
+        )
+      )
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(crimeReply)
+      )
     
     await message.reply({
-    embeds: [finalEmbed2, finalEmbed]
+    components: [Container],
+    flags: MessageFlags.IsComponentsV2
     })
     .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     return;
@@ -351,22 +357,28 @@ export default {
     
     const crimeReply = await crime(userId, channel, user);
     
-    const finalEmbed = new EmbedBuilder()
-    .setDescription(crimeReply);
-    
-    const finalEmbed2 = new EmbedBuilder()
-    .setDescription(`𝗖𝗥𝗜𝗠𝗘 𝗦𝗣𝗥𝗘𝗘\n-# 𝘙𝘪𝘴𝘬 𝘪𝘵 𝘢𝘭𝘭 𝘧𝘰𝘳 𝘳𝘪𝘤𝘩𝘦𝘴 𝘰𝘳 𝘳𝘶𝘪𝘯.`)
-    .setAuthor({
-    name: interaction.user.username,
-    iconURL: interaction.user.displayAvatarURL({
-    dynamic: true
-    })
-    })
-    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/crime.png`)
-    .setColor('Random');
+    const Container = new ContainerBuilder()
+    .setAccentColor(Math.floor(Math.random() * 16777216))
+      .addSectionComponents(
+        section => section
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`-# <:user:1385131666011590709> ${message.author.username}`),
+          textDisplay => textDisplay.setContent(`### 𝗖𝗥𝗜𝗠𝗘`),
+        )
+        .setThumbnailAccessory(
+          thumbnail => thumbnail
+          .setDescription('Crime')
+          .setURL("https://harshtiwari47.github.io/kasiko-public/images/crime.png")
+        )
+      )
+      .addSeparatorComponents(separate => separate)
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(crimeReply)
+      )
     
     await interaction.editReply({
-    embeds: [finalEmbed2, finalEmbed]
+    components: [Container],
+    flags: MessageFlags.IsComponentsV2
     });
     return;
     } catch (e) {
