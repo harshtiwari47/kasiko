@@ -165,7 +165,7 @@ export default {
     .setAccentColor(Math.floor(Math.random() * 16777216))
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${workReply}`),
-      textDisplay => textDisplay.setContent(`-# ${message.author.username}`)
+      textDisplay => textDisplay.setContent(`-# <:briefcase:1389196495474921492> ${message.author.username}`)
     )
 
     if (finalEmbed) {
@@ -196,7 +196,7 @@ export default {
       .setAccentColor(Math.floor(Math.random() * 16777216))
       .addTextDisplayComponents(
         textDisplay => textDisplay.setContent(`${workReply}`),
-        textDisplay => textDisplay.setContent(`-# ${interaction.user.username}`)
+        textDisplay => textDisplay.setContent(`-# <:briefcase:1389196495474921492> ${interaction.user.username}`)
       )
 
       // Respond to the slash command interaction

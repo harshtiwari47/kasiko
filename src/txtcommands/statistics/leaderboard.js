@@ -4,6 +4,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  ContainerBuilder,
+  MessageFlags
 } from "discord.js";
 import User from "../../../models/User.js";
 import UserGuild from "../../../models/UserGuild.js"; // Import the new model
@@ -160,13 +162,17 @@ async function createLeaderboardEmbed( {
 
     if (users.length === 0) {
       return {
-        embed: new EmbedBuilder()
-        .setColor("#ed971e")
-        .setTitle(`<:trophy:1352897371595477084> 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗 ✧`)
-        .setDescription("No users found!")
-        .setFooter({
-          text: `Your position is: Not ranked`,
-        }),
+        embed: new ContainerBuilder()
+        .setAccentColor(0xed971e)
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`### <:trophy:1352897371595477084> 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗`)
+        )
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`No users found!`)
+        )
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`Your position is: Not ranked`)
+        ),
         totalPages: 1,
       };
     }
@@ -209,12 +215,16 @@ async function createLeaderboardEmbed( {
     const userPosition = userRank && userRank <= itemsPerPage * 3 ? userRank: userRank || "Unranked";
 
     // Create the embed
-    const embed = new EmbedBuilder()
-    .setTitle(`<:trophy:1352897371595477084> 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗 ✧`)
-    .setDescription(` ִֶָ𓂃 ࣪˖ ִֶָ\n${leaderboard}`)
-    .setFooter({
-      text: `𝘗𝘢𝘨𝘦 ${page}/${totalPages} | 𝘠𝘰𝘶𝘳 𝘱𝘰𝘴𝘪𝘵𝘪𝘰𝘯: ${userPosition > 0 ? userPosition: "Not ranked"}`,
-    });
+    const embed = new ContainerBuilder()
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`### <:trophy:1352897371595477084> 𝗡𝗘𝗧𝗪𝗢𝗥𝗧𝗛 𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(` ִֶָ𓂃 ࣪˖ ִֶָ\n${leaderboard}`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`𝘗𝘢𝘨𝘦 ${page}/${totalPages} | 𝘠𝘰𝘶𝘳 𝘱𝘰𝘴𝘪𝘵𝘪𝘰𝘯: ${userPosition > 0 ? userPosition: "Not ranked"}`)
+    )
 
     return {
       embed,
@@ -223,11 +233,11 @@ async function createLeaderboardEmbed( {
   } catch (error) {
     console.error("Oops! An error occurred while generating the leaderboard", error);
     return {
-      embed: new EmbedBuilder()
-      .setColor("#ed971e")
-      .setTitle("Error")
-      .setDescription("An error occurred while generating the leaderboard.")
-      .setTimestamp(),
+      embed: new ContainerBuilder()
+      .setAccentColor(0xed971e)
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`-# An error occurred while generating the leaderboard.`)
+      ),
       totalPages: 1,
     };
   }
@@ -249,9 +259,12 @@ function createActionRow( {
     .setDisabled(currentPage === totalPages),
     new ButtonBuilder()
     .setCustomId("server")
-    .setLabel(isServerFiltered ? "ＧＬＯＢＡＬ ⚜️": "𝖲𝖤𝖱𝖵𝖤𝖱 💛")
+    .setLabel(isServerFiltered ? "GLOBAL": "SERVER")
     .setStyle(ButtonStyle.Secondary)
     .setDisabled(false)
+    .setEmoji({
+      id: isServerFiltered ? "1392106326816985089": "1392106814664999024"
+    })
   );
 }
 
@@ -283,8 +296,9 @@ export async function leaderboard(context) {
 
     // Send the initial message using handleMessage
     const messageData = {
-      embeds: [initialEmbed],
-      components: [actionRow],
+      components: [initialEmbed,
+        actionRow],
+      flags: MessageFlags.IsComponentsV2
     };
     const sentMessage = await handleMessage(context, messageData);
 
@@ -345,8 +359,8 @@ export async function leaderboard(context) {
 
         // Edit the original message with the new embed and action row
         await sentMessage.edit({
-          embeds: [updatedEmbed],
-          components: [updatedActionRow],
+          components: [updatedEmbed, updatedActionRow],
+          flags: MessageFlags.IsComponentsV2
         })
       } catch (e) {
         if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
@@ -379,7 +393,8 @@ export async function leaderboard(context) {
         if (!sentMessage?.edit) return;
         // Edit the message to disable buttons
         await sentMessage.edit({
-          components: [disabledRow],
+          components: [initialEmbed, disabledRow],
+          flags: MessageFlags.IsComponentsV2
         });
       });
   } catch (error) {
