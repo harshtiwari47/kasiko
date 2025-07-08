@@ -329,6 +329,7 @@ export default {
           .setURL("https://harshtiwari47.github.io/kasiko-public/images/crime.png")
         )
       )
+      .addSeparatorComponents(separate => separate)
       .addTextDisplayComponents(
         textDisplay => textDisplay.setContent(crimeReply)
       )

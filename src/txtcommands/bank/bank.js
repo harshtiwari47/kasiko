@@ -306,7 +306,7 @@ export const Bank = {
         .addTextDisplayComponents(
           textDisplay => textDisplay.setContent(`### <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤`),
           textDisplay => textDisplay.setContent(`-# <:spark:1355139233559351326> **LEVEL:** **${account.level}**`),
-          textDisplay => textDisplay.setContent(`-# <:upgrade_bw:1391676208684732486> **UPGRADE**: ** <:kasiko_coin:1300141236841086977> ${(300000 - additionalReward).toLocaleString()}**`)
+          textDisplay => textDisplay.setContent(`-# <:upgrade_bw:1391676208684732486> UP: ** <:kasiko_coin:1300141236841086977> ${(300000 - additionalReward).toLocaleString()}**`)
         )
         .setThumbnailAccessory(
           thumbnail => thumbnail
@@ -315,8 +315,7 @@ export const Bank = {
         )
       )
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`<:reply:1368224908307468408> \` 𝖠𝖼𝖼𝗈𝗎𝗇𝗍 — ${name} \``),
-        textDisplay => textDisplay.setContent(`-# help bank`)
+        textDisplay => textDisplay.setContent(`<:reply:1368224908307468408> \` 𝖠𝖼𝖼𝗈𝗎𝗇𝗍 — ${name} \``)
       )
       .addSeparatorComponents(separate => separate)
       .addTextDisplayComponents(
