@@ -1,17 +1,17 @@
 import mongoose from 'mongoose';
 
-const channelSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: false,
-    sparse: true,
-  },
-  name: {
-    type: String,
-    required: false, // Name of the channel
-  },
-  isAllowed: {
-    type: Boolean,
+  const channelSchema = new mongoose.Schema({
+    id: {
+      type: String,
+      required: false,
+      sparse: true,
+    },
+    name: {
+      type: String,
+      required: false, // Name of the channel
+    },
+    isAllowed: {
+      type: Boolean,
     default: true, // Whether the bot is allowed to operate in this channel
     },
     type: {

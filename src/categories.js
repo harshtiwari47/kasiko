@@ -12,6 +12,7 @@ export const categoryMappings = {
   ocean: "🌊 Ocean Life",
   horizon: "🐉 Horizon",
   information: "📰 Information",
+  server: "🎡 Server",
   all: "all"
 };
 
@@ -28,7 +29,8 @@ export const categoriesArray = [
   "wildlife",
   "ocean",
   "horizon",
-  "information"
+  "information",
+  "server"
 ]
 
 export const categoriesEmoji = {
@@ -83,5 +85,9 @@ export const categoriesEmoji = {
   "ocean life": {
     name: "betta",
     id: "1326125169571401758"
+  },
+  server: {
+    name: "bot",
+    id: "1359577258959962152"
   }
 }

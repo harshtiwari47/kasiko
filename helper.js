@@ -129,7 +129,7 @@ export function pickDragonType(dragonTypes) {
   return dragonTypes[dragonTypes.length - 1];
 }
 
-async function wait(ms) {
+export async function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
