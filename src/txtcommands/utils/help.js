@@ -323,9 +323,9 @@ export default {
       )
       .addTextDisplayComponents(
         textDisplay =>
-        textDisplay.setContent(`<:spark:1355139233559351326> Use **\`help <command>\`** for quick help on a command.\n` +
-          ` <:spark:1355139233559351326> Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
-          ` <:spark:1355139233559351326> All commands must be triggered with a prefix, e.g., **kas**.`
+        textDisplay.setContent(`<:spark:1355139233559351326> Use **\`help <command>\`** for quick help on a command.\n\n` +
+          ` <:follow_reply:1368224897003946004> Use **\`guide <command>\`** to get a short guide on its subcommands, if available.\n` +
+          ` <:reply:1368224908307468408> All commands must be triggered with a prefix, e.g., **kas**.`
         )
       )
       .addSeparatorComponents(separate => separate.setSpacing(SeparatorSpacingSize.Large))
