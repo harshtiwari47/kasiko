@@ -7,7 +7,8 @@ import {
   ActivityType,
   ChannelType,
   ContainerBuilder,
-  MessageFlags
+  MessageFlags,
+  Partials
 } from 'discord.js';
 import dotenv from 'dotenv';
 
@@ -61,6 +62,8 @@ import {
   scheduleReminders
 } from "./scheduler.js";
 
+import LoadEvents from "./events/events.js";
+
 dotenv.config();
 
 // Run reminders
@@ -74,7 +77,11 @@ app.get('/', (req, res) => res.send('Discord bot is running!'));
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
 export const client = new Client( {
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
+  partials: [
+    Partials.GuildMember,
+    Partials.User
+  ]
 });
 
 const developmentMode = false;
@@ -87,6 +94,7 @@ client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
   updateStatus(client);
   await loadSlashCommands('./src/slashcommands', clientId, TOKEN, client);
+  LoadEvents(client);
 });
 
 client.on('messageCreate', async (message) => {
@@ -430,8 +438,6 @@ client.on('guildCreate', async (guild) => {
   }
 });
 
-
-
 client.on('error', (error) => {
   console.error('Discord.js Error:', error);
 });
@@ -495,15 +501,6 @@ client.on('guildDelete', async (guild) => {
   console.log(`Bot was removed from the server with ID: ${serverId} & NAME: ${serverName}`);
 });
 
-client.on("guildMemberRemove", async (member) => {
-  const userId = member.id;
-  const guildId = member.guild.id;
-
-  await UserGuild.deleteOne({
-    userId, guildId
-  });
-});
-
 async function getServerPrefix(message) {
   const serverId = message.guild.id;
   const serverName = message.guild.name;
@@ -548,7 +545,6 @@ function getTotalUser(client, message) {
 
   return message.channel.send(`Total Members: ${totalMembers}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 }
-
 
 function updateStatus(client) {
   let toggle = true; // Flag to switch between server count and member count

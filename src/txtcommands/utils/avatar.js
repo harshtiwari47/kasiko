@@ -27,11 +27,11 @@ export default {
       ? await message.guild.members.fetch(target.id): null;
 
       const globalAvatarURL = target.displayAvatarURL({
-        format: 'png', dynamic: true, size: 1024
+        format: 'png', dynamic: true, size: 2048
       });
       const serverAvatarURL = member
       ? member.displayAvatarURL({
-        format: 'png', dynamic: true, size: 1024
+        format: 'png', dynamic: true, size: 2048
       }): null;
 
       const container = new ContainerBuilder()

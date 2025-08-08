@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import {
+  randomBytes
+} from 'crypto';
 
 const mediaSchema = new mongoose.Schema({
   description: {
@@ -14,6 +17,15 @@ const mediaSchema = new mongoose.Schema({
 const textDisplaySchema = new mongoose.Schema({
   content: {
     type: String, required: true
+  }
+}, {
+  _id: false
+});
+
+const mediaGallerySchema = new mongoose.Schema({
+  urls: {
+    type: [String],
+    validate: [v => v.length > 0, 'Media gallery must contain at least one URL']
   }
 }, {
   _id: false
@@ -35,13 +47,19 @@ const sectionSchema = new mongoose.Schema({
 const componentSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['text', 'section', 'separator'],
+    enum: ['text', 'section', 'separator', 'media'],
     required: true
   },
   text: {
     type: textDisplaySchema,
     required: function () {
       return this.type === 'text';
+    }
+  },
+  media: {
+    type: mediaGallerySchema,
+    required: function () {
+      return this.type === 'media';
     }
   },
   section: {
@@ -56,15 +74,23 @@ const componentSchema = new mongoose.Schema({
 
 const containerSchema = new mongoose.Schema({
   server: {
+    type: String, required: true
+  },
+  name: {
     type: String, required: true, unique: true
   },
-  on: {
+  id: {
     type: String,
-    enum: ['join', 'leave', 'default'],
-    required: true
-  },
-  content: {
-    type: String,
+    unique: true,
+    default: () => randomBytes(4).toString('hex')
+    },
+    on: {
+      type: String,
+      enum: ['join', 'boost', 'leave', 'respond', 'default'],
+      required: true
+    },
+    content: {
+      type: String,
     default: null
     },
     file: {
@@ -91,8 +117,11 @@ const containerSchema = new mongoose.Schema({
       type: Date, default: Date.now
     },
     expiresAt: {
-      type: Date
-    } // Only used if temporary
+      type: Date,
+      index: {
+        expireAfterSeconds: 0
+      }
+    }
   });
 
   const ContainerMessage = mongoose.model('ContainerMessage', containerSchema);

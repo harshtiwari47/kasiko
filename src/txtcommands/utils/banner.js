@@ -28,7 +28,7 @@ export default {
       });
 
       const bannerURL = fullUser.bannerURL({
-        format: 'png', dynamic: true, size: 1024
+        format: 'png', dynamic: true, size: 2048
       });
 
       const accentColor = fullUser.accentColor
