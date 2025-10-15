@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "fs/promises";
 import path from "path";
 import mongoose from "mongoose";
 import Cash from "./cash.js";
@@ -12,10 +12,10 @@ import Profile from "./profile.js";
 import OwnerModel from "../../models/Owner.js";
 
 const ownerHierarchy = {
-  superowner: 3,
-  adminowner: 2,
-  basicowner: 1,
-  shipowner: 0,
+  superowner: 99,
+  adminowner: 90,
+  basicowner: 80,
+  shipowner: 70,
 };
 
 const defaultOwners = {
@@ -24,184 +24,173 @@ const defaultOwners = {
 
 const ownersFilePath = path.join(process.cwd(), "/src/owner", "owners.json");
 
-export function getBotTeam() {
-  if (fs.existsSync(ownersFilePath)) {
-    try {
-      const data = fs.readFileSync(ownersFilePath, "utf8"); const fileOwners = JSON.parse(data); return {
-        ...defaultOwners,
-        ...fileOwners
-      };
-    } catch (err) {
-      console.error("Error reading owners file:", err); return {
-        ...defaultOwners
-      };
-    }
-  } else {
-    return {
-      ...defaultOwners
-    };
+// ---------------- Utility functions ----------------
+
+export async function getBotTeam() {
+  try {
+    const data = await fs.readFile(ownersFilePath, "utf8");
+    const fileOwners = JSON.parse(data);
+    return { ...defaultOwners, ...fileOwners };
+  } catch {
+    return { ...defaultOwners };
   }
 }
 
-function updateBotTeam(updatedOwners) {
+async function updateBotTeam(updatedOwners) {
   try {
-    fs.writeFileSync(ownersFilePath, JSON.stringify(updatedOwners, null, 2));
+    await fs.writeFile(ownersFilePath, JSON.stringify(updatedOwners, null, 2));
   } catch (err) {
     console.error("Error writing owners file:", err);
   }
 }
 
+function noPerm(message, action) {
+  message.reply(`You don't have permission to ${action}.`);
+}
+
+// ---------------- Main command handler ----------------
+
 export async function OwnerCommands(args, message) {
-  const botTeam = getBotTeam();
-  const ownerLevel = botTeam[message.author.id]; if (!ownerLevel) return;
+  const botTeam = await getBotTeam();
+  const ownerLevel = botTeam[message.author.id];
+  if (ownerLevel === undefined) return;
 
   const command = args[0]?.toLowerCase();
   if (!command) return;
 
   switch (command) {
+    // ---------------- Finance ----------------
     case "with":
     case "withdraw":
     case "w":
-      if (ownerLevel === ownerHierarchy.superowner) {
-        await Cash.execute(args, message);
-      } else {
-        message.reply("You don't have permission to withdraw.");
-      }
-      return;
+      return ownerLevel === ownerHierarchy.superowner
+        ? await Cash.execute(args, message)
+        : noPerm(message, "withdraw");
 
     case "deduct":
     case "ded":
     case "d":
-      if (ownerLevel === ownerHierarchy.superowner) {
-        await Deduct.execute(args, message);
-      } else {
-        message.reply("You don't have permission to deduct.");
-      }
-      return;
-
-    case "banner":
-      if (ownerLevel === ownerHierarchy.superowner) {
-        await Profile.execute(args, message);
-      } else {
-        message.reply("You don't have permission to set banner.");
-      }
-      return;
-      
-    case "color":
-      if (ownerLevel === ownerHierarchy.superowner) {
-        await Profile.execute(args, message);
-      } else {
-        message.reply("You don't have permission to set color.");
-      }
-    return;
+      return ownerLevel === ownerHierarchy.superowner
+        ? await Deduct.execute(args, message)
+        : noPerm(message, "deduct cash");
 
     case "bank":
-      if (ownerLevel === ownerHierarchy.superowner) {
-        await Bank.execute(args, message);
-      } else {
-        message.reply("You don't have permission to perform bank cmd.");
-      }
-      return;
+      return ownerLevel >= ownerHierarchy.adminowner
+        ? await Bank.execute(args, message)
+        : noPerm(message, "perform bank operations");
 
+    // ---------------- Visuals ----------------
+    case "banner":
+    case "color":
+      return ownerLevel === ownerHierarchy.superowner
+        ? await Profile.execute(args, message)
+        : noPerm(message, "edit profile visuals");
+
+    // ---------------- Reward / Badge ----------------
     case "badge":
     case "emoji":
-      if (ownerLevel >= ownerHierarchy.adminowner) {
-        await Badge.execute(args, message);
-      } else {
-        message.reply("You don't have permission to manage badges.");
-      }
-      return;
-
-    case "shipcustom":
-    case "ship":
-      if (ownerLevel >= ownerHierarchy.shipowner) {
-        await Ship.execute(args, message);
-      } else {
-        message.reply("You don't have permission to customize the ship.");
-      }
-      return;
-
-    case "bio":
-      if (ownerLevel >= ownerHierarchy.basicowner) {
-        await Bio.execute(args, message);
-      } else {
-        message.reply("You don't have permission to update bio.");
-      }
-      return;
+      return ownerLevel >= ownerHierarchy.adminowner
+        ? await Badge.execute(args, message)
+        : noPerm(message, "manage badges");
 
     case "reward":
+      return ownerLevel >= ownerHierarchy.basicowner
+        ? await Reward.execute(args, message)
+        : noPerm(message, "claim rewards");
 
-      if (ownerLevel === ownerHierarchy.basicowner || ownerLevel === ownerHierarchy.adminowner) {
-        await Reward.execute(args, message);
-      } else {
-        message.reply("You don't have permission to take rewards.");
-      }
-      return;
+    // ---------------- Bio / Ship ----------------
+    case "bio":
+      return ownerLevel >= ownerHierarchy.basicowner
+        ? await Bio.execute(args, message)
+        : noPerm(message, "update bio");
 
+    case "ship":
+    case "shipcustom":
+      return ownerLevel >= ownerHierarchy.shipowner
+        ? await Ship.execute(args, message)
+        : noPerm(message, "customize ships");
+
+    // ---------------- Owner Management ----------------
     case "addowner":
-      if (message.author.id !== "1318158188822138972") {
-        message.reply("You don't have permission to add new owners.");
-        return;
-      }
+      if (message.author.id !== "1318158188822138972")
+        return noPerm(message, "add new owners");
 
-      const newOwnerId = args[1];
-      const roleStr = args[2]?.toLowerCase();
-      if (!newOwnerId || !roleStr) {
-        message.reply("Usage: addowner <ownerID> <role>");
-        return;
-      }
+      {
+        const newOwnerId = String(args[1]);
+        const roleStr = args[2]?.toLowerCase();
 
-      let newOwnerLevel = ownerHierarchy[roleStr];
-      if (!newOwnerLevel) {
-        message.reply("Invalid role specified.");
-        return;
-      }
+        if (!newOwnerId || !roleStr)
+          return message.reply("Usage: addowner <ownerID> <role>");
 
-      const currentTeam = getBotTeam();
-      currentTeam[newOwnerId] = newOwnerLevel;
-      updateBotTeam(currentTeam);
-      await OwnerModel.create({
-        ownerId: newOwnerId,
-        ownerType: roleStr,
-        dateJoined: new Date(),
-        lastRewardWithdraw: null,
-        totalCashWithdrawn: 0,
-        totalServersContributed: 0,
-        retired: false,
-      });
-      message.reply(`Added new owner ${newOwnerId} with role ${roleStr}.`);
-      return;
+        const newOwnerLevel = ownerHierarchy[roleStr];
+        if (newOwnerLevel === undefined)
+          return message.reply("Invalid role specified.");
+
+        const currentTeam = await getBotTeam();
+        currentTeam[newOwnerId] = newOwnerLevel;
+        await updateBotTeam(currentTeam);
+
+        await OwnerModel.create({
+          ownerId: newOwnerId,
+          ownerType: roleStr,
+          dateJoined: new Date(),
+          lastRewardWithdraw: null,
+          totalCashWithdrawn: 0,
+          totalServersContributed: 0,
+          retired: false,
+        });
+
+        return message.reply(
+          `Added new owner <@${newOwnerId}> with role **${roleStr}**.`
+        );
+      }
 
     case "removeowner":
-      if (message.author.id !== "1318158188822138972") {
-        message.reply("You don't have permission to remove owners.");
-        return;
+      if (message.author.id !== "1318158188822138972")
+        return noPerm(message, "remove owners");
+
+      {
+        const removeOwnerId = String(args[1]);
+        if (!removeOwnerId)
+          return message.reply("Usage: removeowner <ownerID>");
+        if (removeOwnerId === "1318158188822138972")
+          return message.reply("You cannot remove the superowner.");
+
+        const currentTeam = await getBotTeam();
+        delete currentTeam[removeOwnerId];
+        await updateBotTeam(currentTeam);
+
+        await OwnerModel.findOneAndUpdate(
+          { ownerId: removeOwnerId },
+          { retired: true },
+          { new: true }
+        );
+
+        return message.reply(`Removed owner ${removeOwnerId}.`);
       }
 
-      const removeOwnerId = args[1];
-      if (!removeOwnerId) {
-        message.reply("Usage: removeowner <ownerID>");
-        return;
-      }
+    // ---------------- NEW: Reload from MongoDB ----------------
+    case "reloadowners":
+      if (message.author.id !== "1318158188822138972")
+        return noPerm(message, "reload the owner list");
 
-      delete currentTeam[removeOwnerId];
-      updateBotTeam(currentTeam);
-      await OwnerModel.findOneAndUpdate(
-        {
-          ownerId: removeOwnerId
-        },
-        {
-          retired: true
-        },
-        {
-          new: true
+      {
+        const ownersFromDB = await OwnerModel.find({ retired: false });
+        const reloaded = { ...defaultOwners };
+
+        for (const o of ownersFromDB) {
+          if (o.ownerId && ownerHierarchy[o.ownerType] !== undefined) {
+            reloaded[o.ownerId] = ownerHierarchy[o.ownerType];
+          }
         }
-      );
-      message.reply(`Removed owner ${removeOwnerId}.`);
-      return;
+
+        await updateBotTeam(reloaded);
+        return message.reply(
+          `Reloaded ${ownersFromDB.length} owners from database into local file.`
+        );
+      }
 
     default:
-      message.reply("Unknown command or insufficient permissions.");
-      return;
+      return message.reply("Unknown command or insufficient permissions.");
   }
 }

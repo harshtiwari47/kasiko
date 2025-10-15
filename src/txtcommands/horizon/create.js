@@ -14,7 +14,10 @@ import {
   AttachmentBuilder
 } from 'discord.js';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const dragonTypesPath = path.join(__dirname, '../../../data/dragons.json');
 const dragonTypes = JSON.parse(fs.readFileSync(dragonTypesPath, 'utf-8'));
 

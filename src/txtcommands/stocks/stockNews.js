@@ -2,7 +2,9 @@ import { Helper } from '../../../helper.js';
 import fs from 'fs';
 import path from 'path';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname); // Get current directory
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const newsDatabasePath = path.join(__dirname, 'news.json');
 
 /**

@@ -16,7 +16,10 @@ import {
   increaseTask
 } from "../economy/task.js";
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const BoosterDatabasePath = path.join(__dirname, './boosters.json');
 const AnimalsDatabasePath = path.join(__dirname, './animals.json');
 

@@ -10,7 +10,10 @@ import Zombie from "../../../models/Zombie.js";
 import { increaseTask } from "../economy/task.js";
 
 // Load all dragon types from JSON
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const storyPath = path.join(__dirname, './zombie/story.json');
 const Chapters = JSON.parse(fs.readFileSync(storyPath, 'utf-8'));
 

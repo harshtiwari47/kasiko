@@ -7,7 +7,10 @@ import {
   updateUser
 } from '../../../database.js';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname); // Get the directory of the current filter
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const AnimalsDatabasePath = path.join(__dirname, './animals.json');
 let animalsData = fs.readFileSync(AnimalsDatabasePath,
   'utf-8');
