@@ -16,6 +16,11 @@ import {
   increaseTask
 } from "../economy/task.js";
 
+import {
+  getUserData,
+  updateUser
+} from '../../../database.js';
+
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -111,8 +116,25 @@ export async function huntCommand(context, {
       (b) => b.effect === 'avoidDeath'
     );
 
-    // 4) 40% chance of death (as an example) unless we have "Revival Powder"
-    const deathChance = 0.4;
+    // Check for active torch boost
+    let torchActive = false;
+    let trapReduction = 0;
+    try {
+      const userData = await getUserData(userId);
+      const torchBoost = userData?.activeBoosts?.torch;
+      if (torchBoost?.active) {
+        torchActive = true;
+        trapReduction = torchBoost.trapReduction || 0.3;
+      }
+    } catch (err) {
+      console.error("Error checking torch boost:", err);
+    }
+
+    // 4) 40% chance of death (reduced if torch is active) unless we have "Revival Powder"
+    let deathChance = 0.4;
+    if (torchActive) {
+      deathChance = Math.max(0, deathChance * (1 - trapReduction));
+    }
     const isDead = Math.random() < deathChance && !hasRevivalBooster;
     if (isDead) {
       // Mark daily usage, user fails this hunt
@@ -297,6 +319,17 @@ export async function huntCommand(context, {
     )
 
     const markTask = await increaseTask(userId, "hunt");
+
+    // Deactivate torch boost after use
+    if (torchActive) {
+      try {
+        await updateUser(userId, {
+          'activeBoosts.torch.active': false
+        });
+      } catch (err) {
+        console.error("Error deactivating torch boost:", err);
+      }
+    }
 
     return handleMessage(context, {
       components: [Container],

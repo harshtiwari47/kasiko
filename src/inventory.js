@@ -437,8 +437,48 @@ export const ITEM_DEFINITIONS = {
     eventsOnly: false,
     usableIn: ["crime"],
     onAcquire: null,
-    async useHandler (args,
-      context) {},
+    async useHandler(args, context) {
+      return generalUse(args, context, this, async (userData, args, context) => {
+        const {
+          id,
+          name
+        } = discordUser(context);
+
+        // Check if already active
+        const drinkBoost = userData.activeBoosts?.drink;
+        if (drinkBoost?.active && drinkBoost.expiresAt > Date.now()) {
+          const remainingTime = Math.ceil((drinkBoost.expiresAt - Date.now()) / 1000 / 60);
+          return await handleMessage(context, {
+            content: `<:warning:1366050875243757699> **${name}**, you already have an active drink boost! It expires in **${remainingTime}** minute${remainingTime !== 1 ? 's' : ''}.`
+          });
+        }
+
+        // Activate drink boost (30 minutes)
+        const expiresAt = Date.now() + (30 * 60 * 1000);
+        userData.inventory['drink'] -= 1;
+
+        await updateUser(id, {
+          [`inventory.drink`]: Math.max(userData.inventory['drink'] || 0, 0),
+          'activeBoosts.drink': {
+            active: true,
+            expiresAt: expiresAt,
+            multiplier: 2.0 // 100% increase = 2x
+          }
+        });
+
+        const Container = new ContainerBuilder()
+          .addTextDisplayComponents(
+            textDisplay => textDisplay.setContent(`### 🍺 **DRINK ACTIVATED**`),
+            textDisplay => textDisplay.setContent(`**${name}**, your drink boost is now active! Your next crime rewards will be **doubled** for the next **30 minutes**.`),
+            textDisplay => textDisplay.setContent(`-# Remaining drinks: ${userData.inventory['drink'] || 0}`)
+          );
+
+        return await handleMessage(context, {
+          components: [Container],
+          flags: MessageFlags.IsComponentsV2
+        });
+      });
+    },
     async shareHandler (args,
       context) {
       await generalShare(args,
@@ -485,7 +525,46 @@ export const ITEM_DEFINITIONS = {
     rarity: "rare",
     eventsOnly: false,
     usableIn: ['dungeon',
-      "hunt"]
+      "hunt"],
+    async useHandler(args, context) {
+      return generalUse(args, context, this, async (userData, args, context) => {
+        const {
+          id,
+          name
+        } = discordUser(context);
+
+        // Check if already active
+        const torchBoost = userData.activeBoosts?.torch;
+        if (torchBoost?.active) {
+          return await handleMessage(context, {
+            content: `<:warning:1366050875243757699> **${name}**, you already have an active torch boost! Use it in your next dungeon or hunt.`
+          });
+        }
+
+        // Activate torch buff (for next dungeon/hunt only)
+        userData.inventory['torch'] -= 1;
+
+        await updateUser(id, {
+          [`inventory.torch`]: Math.max(userData.inventory['torch'] || 0, 0),
+          'activeBoosts.torch': {
+            active: true,
+            trapReduction: 0.3 // 30% reduction in trap chances
+          }
+        });
+
+        const Container = new ContainerBuilder()
+          .addTextDisplayComponents(
+            textDisplay => textDisplay.setContent(`### 🔦 **TORCH ACTIVATED**`),
+            textDisplay => textDisplay.setContent(`**${name}**, your torch is now active! Your next dungeon or hunt will have **30% reduced trap chances**.`),
+            textDisplay => textDisplay.setContent(`-# Remaining torches: ${userData.inventory['torch'] || 0}`)
+          );
+
+        return await handleMessage(context, {
+          components: [Container],
+          flags: MessageFlags.IsComponentsV2
+        });
+      });
+    }
   },
   teddy: {
     id: 'teddy',
@@ -519,7 +598,7 @@ export const ITEM_DEFINITIONS = {
     source: ["loot",
       "beg",
       "scavenger"],
-    useable: true,
+    useable: false, // Changed to false - tickets are consumed automatically in loot command
     activatable: false,
     sellable: false,
     shareable: false,
@@ -546,6 +625,50 @@ export const ITEM_DEFINITIONS = {
     rarity: "common",
     eventsOnly: false,
     usableIn: [],
+    async shareHandler(args, context) {
+      await generalShare(args, context, this);
+    }
+  },
+  food: {
+    id: 'food',
+    name: 'Animal Food',
+    aliases: ["animalfood", "petfood"],
+    emoji: '<:food:1388844881153360003>',
+    description: 'Basic food for feeding animals. Gives +15 EXP per feed. Can be purchased from shop or found in various activities.',
+    source: ["shop", "work", "daily", "beg", "tasks", "battle"],
+    useable: false,
+    activatable: false,
+    sellable: true,
+    shareable: true,
+    sellPrice: 2000,
+    purchaseable: true,
+    price: 3000,
+    type: "consumable",
+    rarity: "common",
+    eventsOnly: false,
+    usableIn: ["feed"],
+    async shareHandler(args, context) {
+      await generalShare(args, context, this);
+    }
+  },
+  premium_food: {
+    id: 'premium_food',
+    name: 'Premium Animal Food',
+    aliases: ["premiumfood", "premium", "pfood"],
+    emoji: '<:premium_food:1388844881153360004>',
+    description: 'High-quality food for animals. Gives +30 EXP per feed. Found in tasks, battles, and shop.',
+    source: ["shop", "tasks", "battle", "daily"],
+    useable: false,
+    activatable: false,
+    sellable: true,
+    shareable: true,
+    sellPrice: 5000,
+    purchaseable: true,
+    price: 7500,
+    type: "consumable",
+    rarity: "uncommon",
+    eventsOnly: false,
+    usableIn: ["feed"],
     async shareHandler(args, context) {
       await generalShare(args, context, this);
     }

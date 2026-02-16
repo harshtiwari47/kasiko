@@ -19,6 +19,17 @@ export async function crime(id, channel, user) {
          return "Oops! Something went wrong while planning your caper 🚨!";
       }
 
+      // Check for active drink boost
+      const drinkBoost = userData.activeBoosts?.drink;
+      const isDrinkActive = drinkBoost?.active && drinkBoost.expiresAt > Date.now();
+      let drinkMultiplier = 1.0;
+      let drinkUsed = false;
+
+      if (isDrinkActive) {
+         drinkMultiplier = drinkBoost.multiplier || 2.0;
+         drinkUsed = true;
+      }
+
       const outcome = Math.floor(Math.random() * 45) + 1;
       let crimeMessage = "";
       let earnedCash = 0;
@@ -27,10 +38,24 @@ export async function crime(id, channel, user) {
       // Big Success outcomes (Cases 1-4): 20-30% chance total
       if (outcome >= 1 && outcome <= 21) {
          earnedCash = Math.floor(Math.random() * 5000) + 5000; // 5000 to 10000 cash
+         
+         // Apply drink boost if active
+         if (drinkUsed && earnedCash > 0) {
+            earnedCash = Math.floor(earnedCash * drinkMultiplier);
+         }
+         
          userData.cash += earnedCash;
-         await updateUser(id, {
+         
+         const updateData = {
             cash: userData.cash
-         });
+         };
+         
+         // Deactivate drink boost after use
+         if (drinkUsed) {
+            updateData['activeBoosts.drink.active'] = false;
+         }
+         
+         await updateUser(id, updateData);
          switch (outcome) {
             case 1:
                crimeMessage =
@@ -143,10 +168,24 @@ export async function crime(id, channel, user) {
          // Moderate Success outcomes (Cases 5-12): 40% chance total
       } else if (outcome >= 22 && outcome <= 31) {
          earnedCash = Math.floor(Math.random() * 2500) + 2500; // 2500 to 5000 cash
+         
+         // Apply drink boost if active
+         if (drinkUsed && earnedCash > 0) {
+            earnedCash = Math.floor(earnedCash * drinkMultiplier);
+         }
+         
          userData.cash += earnedCash;
-         await updateUser(id, {
+         
+         const updateData = {
             cash: userData.cash
-         });
+         };
+         
+         // Deactivate drink boost after use
+         if (drinkUsed) {
+            updateData['activeBoosts.drink.active'] = false;
+         }
+         
+         await updateUser(id, updateData);
          switch (outcome) {
             case 22:
                crimeMessage =
@@ -297,8 +336,15 @@ export async function crime(id, channel, user) {
       }
 
       const userDetails = discordUser(user);
+      
+      let finalMessage = crimeMessage.replace("{username}", userDetails?.name?.toUpperCase()).replace("{cash}", earnedCash ? earnedCash.toLocaleString() : "").replace("{penalty}", penalty ? penalty.toLocaleString() : "");
+      
+      // Add drink boost notification if used
+      if (drinkUsed && earnedCash > 0) {
+         finalMessage += `\n<:drink:1385131543948820520> **Drink boost active!** Rewards doubled!`;
+      }
 
-      return crimeMessage.replace("{username}", userDetails?.name?.toUpperCase()).replace("{cash}", earnedCash ? earnedCash.toLocaleString() : "").replace("{penalty}", penalty ? penalty.toLocaleString() : "");
+      return finalMessage;
    } catch (e) {
       console.error(e);
       return "Oops! Something went wrong during your risky criminal endeavor 🚨!";

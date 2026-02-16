@@ -6,7 +6,9 @@ import {
   ModalBuilder,
   TextInputBuilder,
   TextInputStyle,
-  InteractionType
+  InteractionType,
+  ContainerBuilder,
+  MessageFlags
 } from 'discord.js';
 import {
   getUserData,
@@ -40,6 +42,10 @@ import {
 import {
   exchangeFlowers
 } from "../explore/garden.js";
+import {
+  ITEM_DEFINITIONS,
+  findItemByIdOrAlias
+} from '../../inventory.js';
 
 export default {
   name: 'sell',
@@ -112,6 +118,54 @@ export default {
           content: msgReply
         })
       }
+    }
+
+    // Check if it's an inventory item
+    const itemDef = findItemByIdOrAlias(itemId);
+    if (itemDef && itemDef.sellable && itemDef.sellPrice) {
+      const userData = await getUserData(userId);
+      if (!userData) {
+        return await handleMessage(context, {
+          content: `<:warning:1366050875243757699> Could not retrieve your data. Please try again later.`
+        });
+      }
+
+      const itemCount = userData.inventory?.[itemDef.id] || 0;
+      
+      if (itemCount < 1) {
+        return await handleMessage(context, {
+          content: `❌ You don't have any ${itemDef.emoji} **${itemDef.name}** to sell.`
+        });
+      }
+      
+      const sellAmount = amountArg === "all" ? itemCount : (parseInt(amountArg, 10) || 1);
+      
+      if (sellAmount < 1 || sellAmount > itemCount) {
+        return await handleMessage(context, {
+          content: `❌ Invalid amount. You have **${itemCount}** ${itemDef.emoji} **${itemDef.name}**.`
+        });
+      }
+      
+      const totalPrice = sellAmount * itemDef.sellPrice;
+      const newCash = userData.cash + totalPrice;
+      
+      // Update user
+      await updateUser(userId, {
+        cash: newCash,
+        [`inventory.${itemDef.id}`]: Math.max(itemCount - sellAmount, 0)
+      });
+      
+      const Container = new ContainerBuilder()
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`### ✅ **ITEM SOLD**`),
+          textDisplay => textDisplay.setContent(`Sold **${sellAmount}** ${itemDef.emoji} **${itemDef.name}** for <:kasiko_coin:1300141236841086977> **${totalPrice.toLocaleString()}**`),
+          textDisplay => textDisplay.setContent(`-# Remaining: **${itemCount - sellAmount}** | New balance: <:kasiko_coin:1300141236841086977> **${newCash.toLocaleString()}**`)
+        );
+
+      return await handleMessage(context, {
+        components: [Container],
+        flags: MessageFlags.IsComponentsV2
+      });
     }
 
     return await handleMessage(context, {

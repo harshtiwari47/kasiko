@@ -6,6 +6,7 @@ import {
   ButtonStyle
 } from "discord.js";
 import redisClient from "../../../redis.js";
+import { getUserData, updateUser } from "../../../database.js";
 
 // Helper function: show the player’s dungeon stats.
 async function showStats(dungeon, message) {
@@ -155,6 +156,27 @@ async function exploreDungeon(dungeon, difficultyArg, message) {
   difficultyArg && difficultyLevels[difficultyArg.toLowerCase()]
   ? difficultyArg.toLowerCase(): "easy";
   const settings = difficultyLevels[diffKey];
+  
+  // Check for active torch boost
+  let torchActive = false;
+  let trapReduction = 0;
+  try {
+    const userData = await getUserData(message.author.id);
+    const torchBoost = userData?.activeBoosts?.torch;
+    if (torchBoost?.active) {
+      torchActive = true;
+      trapReduction = torchBoost.trapReduction || 0.3;
+    }
+  } catch (err) {
+    console.error("Error checking torch boost:", err);
+  }
+  
+  // Apply torch reduction to trap chance
+  let adjustedTrapChance = settings.trapChance;
+  if (torchActive) {
+    adjustedTrapChance = Math.max(0, settings.trapChance * (1 - trapReduction));
+  }
+  
   // Also update the stored difficulty (capitalized) in the record.
   dungeon.difficulty = diffKey.charAt(0).toUpperCase() + diffKey.slice(1);
 
@@ -189,14 +211,14 @@ async function exploreDungeon(dungeon, difficultyArg, message) {
     const roll = Math.random();
     let roomOutcome = "";
 
-    // TRAP encounter:
-    if (roll < settings.trapChance) {
+    // TRAP encounter (use adjusted trap chance if torch is active):
+    if (roll < adjustedTrapChance) {
       dungeon.stats.health -= settings.hpLoss;
       if (dungeon.stats.health < 0) dungeon.stats.health = 0;
       roomOutcome = `Room ${room}: You triggered a trap and lost **${settings.hpLoss} HP**! Current HP: **${dungeon.stats.health}**.`;
     }
     // MONSTER encounter:
-    else if (roll < settings.trapChance + settings.monsterChance) {
+    else if (roll < adjustedTrapChance + settings.monsterChance) {
       const monsterNames = ["Goblin",
         "Orc",
         "Skeleton",
@@ -314,6 +336,17 @@ async function exploreDungeon(dungeon, difficultyArg, message) {
     await dungeon.save();
   } catch (err) {
     console.error("Error saving dungeon record:", err);
+  }
+
+  // Deactivate torch boost after use
+  if (torchActive) {
+    try {
+      await updateUser(message.author.id, {
+        'activeBoosts.torch.active': false
+      });
+    } catch (err) {
+      console.error("Error deactivating torch boost:", err);
+    }
   }
 
   // Remove the Redis flag.

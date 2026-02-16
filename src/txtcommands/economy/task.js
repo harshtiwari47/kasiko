@@ -222,19 +222,57 @@ export default {
       });
 
       if (allCompleted) {
+        // Enhanced rewards with multiple items
+        const rewardItems = [
+          { id: 'milk', amount: 1 },
+          { id: 'food', amount: 2 },
+          { id: 'lollipop', amount: 1 }
+        ];
+        
+        // Random chance for bonus item (30% chance)
+        if (Math.random() < 0.3) {
+          const bonusItems = ['premium_food', 'torch', 'ticket'];
+          const randomBonus = bonusItems[Math.floor(Math.random() * bonusItems.length)];
+          rewardItems.push({ id: randomBonus, amount: 1 });
+        }
+        
+        const itemRewardsText = rewardItems.map(item => {
+          const itemDef = ITEM_DEFINITIONS[item.id];
+          return itemDef ? `${itemDef.emoji} **${itemDef.name}** x${item.amount}` : '';
+        }).filter(Boolean).join(', ');
+        
         Container.addTextDisplayComponents(
-          textDisplay => textDisplay.setContent(`Congratulations! You have completed all the above tasks and received <:kasiko_coin:1300141236841086977> 50k cash and <:milk:1388844881153360002> 1x Milk.`)
+          textDisplay => textDisplay.setContent(`Congratulations! You have completed all the above tasks and received:\n💰 <:kasiko_coin:1300141236841086977> **50,000** cash\n🎁 ${itemRewardsText}`)
         )
       }
 
       if (allCompleted && !userData?.tasks?.completed) {
-        await updateUser(id,
-          {
-            "tasks.completed": true,
-            "inventory.milk": Number(userData?.inventory?.milk || 0) + 1,
-            "cash": (userData.cash || 0) + 50000
-          }
-        );
+        // Enhanced rewards with multiple items
+        const rewardItems = [
+          { id: 'milk', amount: 1 },
+          { id: 'food', amount: 2 },
+          { id: 'lollipop', amount: 1 }
+        ];
+        
+        // Random chance for bonus item (30% chance)
+        if (Math.random() < 0.3) {
+          const bonusItems = ['premium_food', 'torch', 'ticket'];
+          const randomBonus = bonusItems[Math.floor(Math.random() * bonusItems.length)];
+          rewardItems.push({ id: randomBonus, amount: 1 });
+        }
+        
+        const updateData = {
+          "tasks.completed": true,
+          "cash": (userData.cash || 0) + 50000
+        };
+        
+        // Add all reward items to inventory
+        rewardItems.forEach(item => {
+          const currentAmount = userData?.inventory?.[item.id] || 0;
+          updateData[`inventory.${item.id}`] = currentAmount + item.amount;
+        });
+        
+        await updateUser(id, updateData);
       }
 
       return await handleMessage(context,
