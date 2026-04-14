@@ -623,7 +623,7 @@ async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 900,
     const ud = calculateDamage(ua.attack);
     od.hp -= ud;
 
-    let log = `⚔️ **Round ${round}** — ${ua.emoji} **${ua.name}** → ${od.emoji} **${od.name}** \`-${ud} HP\``;
+    let log = `<:claw:1493561807091138631> **Round ${round}** — ${ua.emoji} **${ua.name}** → ${od.emoji} **${od.name}** \`-${ud} HP\``;
     if (od.hp <= 0) { log += `\n<:dead_skull:1493557754747420732> **${od.name}** defeated!`; oppAlive = oppAlive.filter(a => a !== od); }
     await onUpdate({ round, logLine: log, userAlive: [...userAlive], oppAlive: [...oppAlive] });
     if (oppAlive.length === 0) break;
@@ -634,7 +634,7 @@ async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 900,
     const od2 = calculateDamage(oa.attack);
     ud2.hp -= od2;
 
-    let log2 = `⚔️ **Round ${round}** — ${oa.emoji} **${oa.name}** → ${ud2.emoji} **${ud2.name}** \`-${od2} HP\``;
+    let log2 = `<:claw:1493561807091138631> **Round ${round}** — ${oa.emoji} **${oa.name}** → ${ud2.emoji} **${ud2.name}** \`-${od2} HP\``;
     if (ud2.hp <= 0) { log2 += `\n<:dead_skull:1493557754747420732> **${ud2.name}** defeated!`; userAlive = userAlive.filter(a => a !== ud2); }
     await onUpdate({ round, logLine: log2, userAlive: [...userAlive], oppAlive: [...oppAlive] });
 
