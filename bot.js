@@ -76,7 +76,7 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => res.send('Discord bot is running!'));
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
-export const client = new Client( {
+export const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
   partials: [
     Partials.GuildMember,
@@ -84,11 +84,11 @@ export const client = new Client( {
   ]
 });
 
-const developmentMode = true;
+const developmentMode = false;
 
-const BotPrefix = developmentMode ? "ki": "kas";
-const TOKEN = developmentMode ? process.env.BOT_TOKENDEV: process.env.BOT_TOKEN;
-const clientId = developmentMode ? process.env.APP_IDDEV: process.env.APP_ID;
+const BotPrefix = developmentMode ? "ki" : "kas";
+const TOKEN = developmentMode ? process.env.BOT_TOKENDEV : process.env.BOT_TOKEN;
+const clientId = developmentMode ? process.env.APP_IDDEV : process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
@@ -243,7 +243,7 @@ client.on('messageCreate', async (message) => {
     try {
       const canonical = command.name;
       const cooldownKey = `cooldown:${canonical}:${userId}`;
-      const cooldownDuration = Math.ceil(command.cooldown/1000); // seconds
+      const cooldownDuration = Math.ceil(command.cooldown / 1000); // seconds
 
       // Atomic cooldown set
       const cooldownSet = await redisClient.set(cooldownKey, '1', {
@@ -263,7 +263,7 @@ client.on('messageCreate', async (message) => {
         }
 
         // Ban after 10 violations in 60 seconds
-        if (violations >= ((command?.cooldown || 10000) > 60000 ? 20: 10)) {
+        if (violations >= ((command?.cooldown || 10000) > 60000 ? 20 : 10)) {
           await redisClient.setEx(banKey, 600, '1'); // 10-minute ban
           await redisClient.del(violationsKey);
           return message.channel.send(`⛔ Command access revoked for 10 minutes due to spamming`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -279,10 +279,10 @@ client.on('messageCreate', async (message) => {
             warning = await message?.channel?.send({
               content: `<:kasiko_stopwatch:1355056680387481620> **${message.author.username.toUpperCase()}**, you're on cooldown for **${commandName}** command! ***Wait \` ${ttlFor} \`***.`
             });
-            setTimeout(() => warning?.delete().catch(() => {}), 5000);
+            setTimeout(() => warning?.delete().catch(() => { }), 5000);
           }
           return;
-        } catch (errMsg) {}
+        } catch (errMsg) { }
       }
 
       // Reset violation counter on successful command
@@ -367,7 +367,7 @@ client.on('interactionCreate', async (interaction) => {
 
   // Button Interaction Handling
   if (interaction.isButton()) {
-    try {} catch (error) {
+    try { } catch (error) {
       console.error(error);
     }
     return; // Exit after handling button interactions
@@ -410,20 +410,20 @@ client.on('guildCreate', async (guild) => {
 
     // Create an embed message
     const embed = new EmbedBuilder()
-    .setTitle('𝙉𝙚𝙬 𝙎𝙚𝙧𝙫𝙚𝙧 𝙅𝙤𝙞𝙣𝙚𝙙')
-    .setColor("Random")
-    .addFields(
-      {
-        name: 'Server Name', value: guild.name, inline: true
-      },
-      {
-        name: 'Total Members', value: guild.memberCount.toString(), inline: true
-      },
-      {
-        name: 'Owner', value: owner.user.tag, inline: true
-      }
-    )
-    .setTimestamp();
+      .setTitle('𝙉𝙚𝙬 𝙎𝙚𝙧𝙫𝙚𝙧 𝙅𝙤𝙞𝙣𝙚𝙙')
+      .setColor("Random")
+      .addFields(
+        {
+          name: 'Server Name', value: guild.name, inline: true
+        },
+        {
+          name: 'Total Members', value: guild.memberCount.toString(), inline: true
+        },
+        {
+          name: 'Owner', value: owner.user.tag, inline: true
+        }
+      )
+      .setTimestamp();
 
     // Send the embed message
     await channel.send({
@@ -458,20 +458,20 @@ client.on('guildDelete', async (guild) => {
 
     // Create an embed message
     const embed = new EmbedBuilder()
-    .setTitle('𝙎𝙚𝙧𝙫𝙚𝙧 𝙍𝙀𝙈𝙊𝙑𝙀𝘿')
-    .setColor("#000000")
-    .addFields(
-      {
-        name: 'Server Name', value: guild.name, inline: true
-      },
-      {
-        name: 'Total Members', value: guild?.memberCount.toString(), inline: true
-      },
-      {
-        name: 'Owner', value: owner.user.tag, inline: true
-      }
-    )
-    .setTimestamp();
+      .setTitle('𝙎𝙚𝙧𝙫𝙚𝙧 𝙍𝙀𝙈𝙊𝙑𝙀𝘿')
+      .setColor("#000000")
+      .addFields(
+        {
+          name: 'Server Name', value: guild.name, inline: true
+        },
+        {
+          name: 'Total Members', value: guild?.memberCount.toString(), inline: true
+        },
+        {
+          name: 'Owner', value: owner.user.tag, inline: true
+        }
+      )
+      .setTimestamp();
 
     // Send the embed message
     await channel.send({
@@ -487,7 +487,7 @@ client.on('guildDelete', async (guild) => {
   });
 
   try {
-    const removedServer = new ServerRemoved( {
+    const removedServer = new ServerRemoved({
       id: serverId,
       name: serverName,
       removedAt: new Date()
@@ -514,7 +514,7 @@ async function getServerPrefix(message) {
 
   try {
     if (!existingServer) {
-      existingServer = new Server( {
+      existingServer = new Server({
         id: serverId,
         name: serverName,
         ownerId: serverOwnerId,
@@ -559,13 +559,13 @@ function updateStatus(client) {
 
     // Alternate between showing server count and member count
     const activity = toggle
-    ? {
-      name: `${guildCount} servers`,
-      type: ActivityType.Watching,
-    }: {
-      name: `with ${totalMembers} members`,
-      type: ActivityType.Playing,
-    };
+      ? {
+        name: `${guildCount} servers`,
+        type: ActivityType.Watching,
+      } : {
+        name: `with ${totalMembers} members`,
+        type: ActivityType.Playing,
+      };
 
     client.user.presence.set({
       activities: [activity],
