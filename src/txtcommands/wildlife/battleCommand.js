@@ -521,10 +521,6 @@ function buildBattleContainer({
     .addSectionComponents(section =>
       section
         .addTextDisplayComponents(t => t.setContent(`## Animal Battle`))
-        .setThumbnailAccessory(thumb => {
-          thumb.setDescription(username).setURL(userAvatarUrl || ICON_SWORDS);
-          return thumb;
-        })
     )
     .addSeparatorComponents(s => s)
     // ── Challenger team: forest image thumbnail ────────────────────────────────
@@ -532,7 +528,7 @@ function buildBattleContainer({
       section
         .addTextDisplayComponents(t => t.setContent(`**${username}**\n${userTeamDisplay}`))
         .setThumbnailAccessory(thumb => {
-          thumb.setDescription('Forest Battle').setURL('attachment://battle-thumbnail.png');
+          thumb.setDescription('Forest Battle').setURL('attachment://battle_thumbnail.png');
           return thumb;
         })
     )
@@ -545,7 +541,7 @@ function buildBattleContainer({
   if (logLine && logLine.trim()) C.addTextDisplayComponents(t => t.setContent(logLine));
 
   if (winnerBlock && winnerBlock.trim()) {
-    C.addSeparatorComponents(s => s);
+    // C.addSeparatorComponents(s => s);
     C.addTextDisplayComponents(t => t.setContent(winnerBlock));
   }
 
@@ -805,7 +801,7 @@ export async function battleCommand(context, { opponentId }) {
 
     // Build thumbnail attachment for the forest image (used in challenger team section)
     const thumbnailAttachment = fs.existsSync(BattleThumbnailPath)
-      ? new AttachmentBuilder(fs.readFileSync(BattleThumbnailPath), { name: 'battle-thumbnail.png' })
+      ? new AttachmentBuilder(fs.readFileSync(BattleThumbnailPath), { name: 'battle_thumbnail.png' })
       : null;
 
     // ── Initial card ────────────────────────────────────────────────────────
