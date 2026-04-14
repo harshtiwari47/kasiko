@@ -40,7 +40,7 @@ async function handleMessage(context, data) {
 async function sendEditableInitial(context, payload) {
   if (context.isCommand) {
     try {
-      if (!context.deferred) await context.deferReply().catch(() => {});
+      if (!context.deferred) await context.deferReply().catch(() => { });
       return await context.editReply(payload);
     } catch (err) {
       console.error('sendEditableInitial error', err);
@@ -59,9 +59,9 @@ async function sendEditableInitial(context, payload) {
 async function editExisting(context, sentMsg, payload) {
   try {
     if (context.isCommand) {
-      await context.editReply(payload).catch(() => {});
+      await context.editReply(payload).catch(() => { });
     } else if (sentMsg && typeof sentMsg.edit === 'function') {
-      await sentMsg.edit(payload).catch(() => {});
+      await sentMsg.edit(payload).catch(() => { });
     }
   } catch (e) { /* ignore */ }
 }
@@ -162,7 +162,7 @@ async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageC
       // Draw as a circle-clipped image for a clean look
       const cx = x + size / 2;
       const cy = y + size / 2;
-      const r  = size / 2;
+      const r = size / 2;
 
       ctx.save();
       ctx.beginPath();
@@ -178,10 +178,10 @@ async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageC
   // ── Fallback: colored circle with first letter ──────────────────────────
   const letter = (animalName || '?')[0].toUpperCase();
   const colors = ['#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4', '#ff5722'];
-  const color  = colors[letter.charCodeAt(0) % colors.length];
+  const color = colors[letter.charCodeAt(0) % colors.length];
   const cx = x + size / 2;
   const cy = y + size / 2;
-  const r  = size / 2;
+  const r = size / 2;
 
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
@@ -277,7 +277,7 @@ async function generateBattleImage({
   winner,
   userTeamHp, oppTeamHp,
   userTeamAlive, oppTeamAlive,
-  cashReward, passBonus, droppedItems, deathOccurred
+  cashReward, passBonus, droppedItems
 }) {
   // Shared image cache for this render call — avoids duplicate CDN fetches
   const imageCache = new Map();
@@ -355,7 +355,7 @@ async function generateBattleImage({
   // ── Winner banner ─────────────────────────────────────────────────────────
   const bannerText = winner === 'user' ? `${username} wins!`
     : winner === 'opp' ? `${opponentUsername} wins!`
-    : `Tie!`;
+      : `Tie!`;
 
   const bW = 300, bH = 42, bX = (W - bW) / 2, bY = 34;
   roundRect(bX, bY, bW, bH, 21);
@@ -494,9 +494,7 @@ async function generateBattleImage({
     line1 += `   🎁 ${droppedItems.map(d => `${d.item.emoji} ${d.item.name} ×${d.amount}`).join(', ')}`;
   }
 
-  line2 = deathOccurred
-    ? `💀 ${winner === 'user' ? opponentUsername : username}'s animals were lost.`
-    : '✨ All animals survived.';
+  line2 = '✨ All animals are safe.';
 
   await drawTextWithEmoji(ctx, line1, gap + 14, fY + 20, 11, 'rgba(255,255,255,0.55)', imageCache);
   await drawTextWithEmoji(ctx, line2, gap + 14, fY + 38, 11, 'rgba(255,255,255,0.3)', imageCache);
@@ -563,19 +561,48 @@ function buildBattleContainer({
 
 // ─── Team helpers ─────────────────────────────────────────────────────────────
 
+/**
+ * Builds a battle team from the user's saved preferred team list.
+ *
+ * - Iterates the preferred team entries and matches each against the user's
+ *   actual animal collection (case-insensitive, must have totalAnimals > 0).
+ * - If some preferred animals are missing (sold/dead), fills remaining slots
+ *   with random animals from the rest of the collection.
+ * - Returns [] only if the preferredTeam list itself is empty/null,
+ *   signalling the caller to fall back to a fully random team.
+ */
 function buildTeamFromPreferred(preferredTeam, userAnimals, maxSize = 3) {
   if (!preferredTeam || preferredTeam.length === 0) return [];
-  const chosen = [], seen = new Set();
+
+  const chosen = [];
+  const seen = new Set();
+
+  // ── Step 1: pick animals that are still in the collection ─────────────────
   for (const entry of preferredTeam) {
     const name = entry?.name || (typeof entry === 'string' ? entry : null);
     if (!name) continue;
-    const found = userAnimals.find(a => a.name?.toLowerCase() === name.toLowerCase() && (a.totalAnimals || 1) > 0);
+    const found = userAnimals.find(
+      a => a.name?.toLowerCase() === name.toLowerCase() && (a.totalAnimals || 1) > 0
+    );
     if (found && !seen.has(found.name.toLowerCase())) {
       chosen.push(found);
       seen.add(found.name.toLowerCase());
       if (chosen.length >= maxSize) break;
     }
   }
+
+  // ── Step 2: if slots remain, fill with random animals not already chosen ──
+  if (chosen.length < maxSize) {
+    const remaining = userAnimals
+      .filter(a => (a.totalAnimals || 1) > 0 && !seen.has((a.name || '').toLowerCase()))
+      .sort(() => Math.random() - 0.5);
+    for (const animal of remaining) {
+      if (chosen.length >= maxSize) break;
+      chosen.push(animal);
+      seen.add((animal.name || '').toLowerCase());
+    }
+  }
+
   return chosen;
 }
 
@@ -724,20 +751,20 @@ export async function battleCommand(context, { opponentId }) {
     const username = context.user?.username || context.author?.username;
 
     if (!opponentId || opponentId === userId)
-      return handleMessage(context, { content: `⚠️ Mention a valid opponent. You can't battle yourself.` });
+      return handleMessage(context, { content: `<:warning:1366050875243757699> Mention a valid opponent. You can't battle yourself.` });
 
     let opponentUser;
     try { opponentUser = await context.client?.users?.fetch(opponentId) || null; }
-    catch (e) { return handleMessage(context, { content: `⚠️ Opponent not found.` }); }
+    catch (e) { return handleMessage(context, { content: `<:warning:1366050875243757699>  Opponent not found.` }); }
 
     if (opponentUser?.bot)
-      return handleMessage(context, { content: `⚠️ Can't battle bot accounts.` });
+      return handleMessage(context, { content: `<:warning:1366050875243757699> Can't battle bot accounts.` });
 
     const opponentUsername = opponentUser?.username || 'Unknown';
 
     // Avatar URLs for the card thumbnails (Discord CDN — always accessible)
     const userAvatarUrl = (context.user || context.author)?.displayAvatarURL({ size: 64, extension: 'png' }) || null;
-    const oppAvatarUrl  = opponentUser?.displayAvatarURL({ size: 64, extension: 'png' }) || null;
+    const oppAvatarUrl = opponentUser?.displayAvatarURL({ size: 64, extension: 'png' }) || null;
 
     let user = await User.findOne({ discordId: userId });
     let opp = await User.findOne({ discordId: opponentId });
@@ -749,18 +776,22 @@ export async function battleCommand(context, { opponentId }) {
     const oppAnimals = opp.hunt?.animals || [];
 
     if (userAnimals.length === 0)
-      return handleMessage(context, { content: `⚠️ **${username}**, you have no animals. Use \`kas hunt\` first.` });
+      return handleMessage(context, { content: `<:warning:1366050875243757699> **${username}**, you have no animals. Use \`kas hunt\` first.` });
     if (oppAnimals.length === 0)
-      return handleMessage(context, { content: `⚠️ **${opponentUsername}** has no animals.` });
+      return handleMessage(context, { content: `<:warning:1366050875243757699> **${opponentUsername}** has no animals.` });
 
-    const preferredUser = user.hunt?.team?.length > 0 ? buildTeamFromPreferred(user.hunt.team, userAnimals, 3) : [];
-    const preferredOpp = opp.hunt?.team?.length > 0 ? buildTeamFromPreferred(opp.hunt.team, oppAnimals, 3) : [];
+    // If team is set, buildTeamFromPreferred uses saved animals + fills slots randomly.
+    // Only falls back to selectRandomTeam if user has no team saved at all.
+    const userTeam = user.hunt?.team?.length > 0
+      ? buildTeamFromPreferred(user.hunt.team, userAnimals, 3)
+      : selectRandomTeam(userAnimals, 3);
 
-    const userTeam = preferredUser.length > 0 ? preferredUser.slice(0, 3) : selectRandomTeam(userAnimals, 3);
-    const oppTeam = preferredOpp.length > 0 ? preferredOpp.slice(0, 3) : selectRandomTeam(oppAnimals, 3);
+    const oppTeam = opp.hunt?.team?.length > 0
+      ? buildTeamFromPreferred(opp.hunt.team, oppAnimals, 3)
+      : selectRandomTeam(oppAnimals, 3);
 
     if (userTeam.length === 0 || oppTeam.length === 0)
-      return handleMessage(context, { content: `⚠️ One player has no available animals.` });
+      return handleMessage(context, { content: `<:warning:1366050875243757699> One player has no available animals.` });
 
     const userTeamDisplay = userTeam.map(a => {
       const s = calculateAnimalStats(a);
@@ -813,14 +844,13 @@ export async function battleCommand(context, { opponentId }) {
     }, 900);
 
     // ── Rewards ─────────────────────────────────────────────────────────────
-    let deathOccurred = false, cashReward = 0, droppedItems = [], passBonus = 0;
+    // Animals never die from battle — zoo count only changes on sell.
+    let cashReward = 0, droppedItems = [], passBonus = 0;
 
     if (battleResult.winner === 'user') {
-      if (Math.random() < 0.3) { deathOccurred = true; removeAnimals(opp, oppTeam); }
       const r = await grantBattleRewards({ userId, defeatedTeam: oppTeam, winningTeam: userTeam, huntUser: user });
       cashReward = r.cashReward; droppedItems = r.items; passBonus = r.passBonus;
     } else if (battleResult.winner === 'opp') {
-      if (Math.random() < 0.3) { deathOccurred = true; removeAnimals(user, userTeam); }
       const r = await grantBattleRewards({ userId: opponentId, defeatedTeam: userTeam, winningTeam: oppTeam, huntUser: opp });
       cashReward = r.cashReward; droppedItems = r.items; passBonus = r.passBonus;
     }
@@ -832,22 +862,19 @@ export async function battleCommand(context, { opponentId }) {
     const winnerColor = battleResult.winner === 'user' ? 0x00c853 : battleResult.winner === 'opp' ? 0xff3d00 : 0x808080;
     const winnerName = battleResult.winner === 'user' ? username : opponentUsername;
     const loserName = battleResult.winner === 'user' ? opponentUsername : username;
-
-    let winnerBlock = battleResult.winner === 'user' ? `🏆 **${username}** wins!`
-      : battleResult.winner === 'opp' ? `🏆 **${opponentUsername}** wins!`
-      : `🤝 Tie!`;
+    let winnerBlock = battleResult.winner === 'user' ? `<:trophy:1352897371595477084> **${username}** wins!`
+      : battleResult.winner === 'opp' ? `<:trophy:1352897371595477084> **${opponentUsername}** wins!`
+        : `🤝 Tie!`;
 
     winnerBlock += `\n${username} **${Math.max(0, battleResult.userTeamHp)} HP** · ${opponentUsername} **${Math.max(0, battleResult.oppTeamHp)} HP**`;
 
     if (battleResult.winner !== 'tie') {
-      winnerBlock += `\n💰 **${winnerName}** earned <:kasiko_coin:1300141236841086977> **${cashReward.toLocaleString()}**`;
+      winnerBlock += `\n<:moneybag:1365976001179553792> **${winnerName}** earned <:kasiko_coin:1300141236841086977> **${cashReward.toLocaleString()}**`;
       if (passBonus > 0) winnerBlock += ` *(+${passBonus.toLocaleString()} pass bonus)*`;
     }
     if (droppedItems.length > 0)
-      winnerBlock += `\n🎁 ${droppedItems.map(d => `${d.item.emoji} **${d.item.name}** ×${d.amount}`).join(', ')}`;
-    winnerBlock += deathOccurred
-      ? `\n💀 **${loserName}'s** animals were lost.`
-      : `\n✨ All animals survived.`;
+      winnerBlock += `\n<:reward_box:1366435558011965500>  ${droppedItems.map(d => `${d.item.emoji} **${d.item.name}** ×${d.amount}`).join(', ')}`;
+    winnerBlock += `\n<a:custom_exclusive_badge_23:1355149433137926394> All animals are safe.`;
 
     // ── Generate canvas image ───────────────────────────────────────────────
     let attachment = null;
@@ -860,7 +887,7 @@ export async function battleCommand(context, { opponentId }) {
         oppTeamHp: battleResult.oppTeamHp,
         userTeamAlive: battleResult.userTeamAlive,
         oppTeamAlive: battleResult.oppTeamAlive,
-        cashReward, passBonus, droppedItems, deathOccurred
+        cashReward, passBonus, droppedItems
       });
       attachment = new AttachmentBuilder(buf, { name: 'battle-result.png' });
     } catch (e) {
@@ -889,7 +916,7 @@ export async function battleCommand(context, { opponentId }) {
 
   } catch (error) {
     console.error('Animal battle error:', error);
-    return handleMessage(context, { content: `❌ ${error.message || 'Battle error.'}` });
+    return handleMessage(context, { content: `<:alert:1366050815089053808> ${error.message || 'Battle error.'}` });
   }
 }
 
@@ -916,7 +943,7 @@ export default {
       opponentId = m ? m[1] : args[0];
     }
     if (!opponentId)
-      return handleMessage(context, { content: `⚠️ Mention an opponent.\n**Usage:** \`kas ab @user\`` });
+      return handleMessage(context, { content: `<:warning:1366050875243757699> Mention an opponent.\n**Usage:** \`kas ab @user\`` });
     await battleCommand(context, { opponentId });
   }
 };

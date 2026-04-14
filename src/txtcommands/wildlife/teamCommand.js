@@ -5,7 +5,7 @@ async function sendMessage(context, payload) {
   const isInteraction = !!context.isCommand;
   if (isInteraction) {
     try {
-      if (!context.deferred) await context.deferReply().catch(() => {});
+      if (!context.deferred) await context.deferReply().catch(() => { });
       return await context.editReply(payload);
     } catch (err) {
       console.error('teamCommand interaction send error', err);
