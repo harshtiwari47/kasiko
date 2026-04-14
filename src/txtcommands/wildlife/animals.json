@@ -1,18 +1,20 @@
 {
   "animals": [
     {
-    "name": "Rat",
-    "emoji": "<:Rat:1330378628953014294>",
-    "emojiId": "1330378628953014294",
-    "rarity": 1,
-    "type": "common",
-    "baseHp": 20,
-    "baseAttack": 3,
-    "baseXp": 10,
-    "description": "A small and agile creature, known for its cunning.",
-    "found": ["Urban Areas"],
-    "bullets": 1
-  },
+      "name": "Rat",
+      "emoji": "<:Rat:1330378628953014294>",
+      "emojiId": "1330378628953014294",
+      "rarity": 1,
+      "type": "common",
+      "baseHp": 20,
+      "baseAttack": 3,
+      "baseXp": 10,
+      "description": "A small and agile creature, known for its cunning.",
+      "found": [
+        "Urban Areas"
+      ],
+      "bullets": 1
+    },
     {
       "name": "Rabbit",
       "emoji": "<:Rabbit:1330464447860572252>",
@@ -23,7 +25,9 @@
       "baseAttack": 3,
       "baseXp": 12,
       "description": "A quick and nimble herbivore that loves carrots.",
-      "found": ["Grasslands"],
+      "found": [
+        "Grasslands"
+      ],
       "bullets": 1
     },
     {
@@ -36,7 +40,9 @@
       "baseAttack": 4,
       "baseXp": 20,
       "description": "A friendly and adaptable farm animal.",
-      "found": ["Grasslands"],
+      "found": [
+        "Grasslands"
+      ],
       "bullets": 1
     },
     {
@@ -49,7 +55,9 @@
       "baseAttack": 4,
       "baseXp": 15,
       "description": "A nimble and curious animal, beloved by many.",
-      "found": ["Urban Areas"],
+      "found": [
+        "Urban Areas"
+      ],
       "bullets": 1
     },
     {
@@ -62,7 +70,9 @@
       "baseAttack": 5,
       "baseXp": 20,
       "description": "A loyal and friendly companion, full of energy.",
-      "found": ["Urban Areas"],
+      "found": [
+        "Urban Areas"
+      ],
       "bullets": 1
     },
     {
@@ -75,7 +85,9 @@
       "baseAttack": 5,
       "baseXp": 25,
       "description": "A hardy animal known for its ability to climb steep terrain.",
-      "found": ["Mountains"],
+      "found": [
+        "Mountains"
+      ],
       "bullets": 2
     },
     {
@@ -88,7 +100,9 @@
       "baseAttack": 7,
       "baseXp": 30,
       "description": "A playful and intelligent animal often found swinging in trees.",
-      "found": ["Forest"],
+      "found": [
+        "Forest"
+      ],
       "bullets": 2
     },
     {
@@ -101,7 +115,9 @@
       "baseAttack": 7,
       "baseXp": 35,
       "description": "A clever and swift animal with a bushy tail.",
-      "found": ["Forest"],
+      "found": [
+        "Forest"
+      ],
       "bullets": 2
     },
     {
@@ -114,7 +130,9 @@
       "baseAttack": 6,
       "baseXp": 30,
       "description": "A striped herbivore known for its speed and agility.",
-      "found": ["Savannah"],
+      "found": [
+        "Savannah"
+      ],
       "bullets": 2
     },
     {
@@ -127,7 +145,9 @@
       "baseAttack": 8,
       "baseXp": 50,
       "description": "A strong herbivore that thrives in herds.",
-      "found": ["Grasslands"],
+      "found": [
+        "Grasslands"
+      ],
       "bullets": 2
     },
     {
@@ -140,7 +160,9 @@
       "baseAttack": 15,
       "baseXp": 40,
       "description": "A venomous and stealthy predator.",
-      "found": ["Wetlands"],
+      "found": [
+        "Wetlands"
+      ],
       "bullets": 2
     },
     {
@@ -153,7 +175,9 @@
       "baseAttack": 17,
       "baseXp": 70,
       "description": "A fierce predator with striking stripes and agility.",
-      "found": ["Forest"],
+      "found": [
+        "Forest"
+      ],
       "bullets": 3
     },
     {
@@ -166,7 +190,9 @@
       "baseAttack": 16,
       "baseXp": 75,
       "description": "A stealthy predator lurking in the water, ready to strike.",
-      "found": ["Wetlands"],
+      "found": [
+        "Wetlands"
+      ],
       "bullets": 3
     },
     {
@@ -179,7 +205,9 @@
       "baseAttack": 18,
       "baseXp": 90,
       "description": "A powerful beast with an armored body and sharp horn.",
-      "found": ["Savannah"],
+      "found": [
+        "Savannah"
+      ],
       "bullets": 4
     },
     {
@@ -192,7 +220,9 @@
       "baseAttack": 20,
       "baseXp": 80,
       "description": "The king of the jungle, strong and majestic.",
-      "found": ["Savannah"],
+      "found": [
+        "Savannah"
+      ],
       "bullets": 4
     },
     {
@@ -205,7 +235,9 @@
       "baseAttack": 14,
       "baseXp": 100,
       "description": "A massive herbivore with incredible strength and intelligence.",
-      "found": ["Grasslands"],
+      "found": [
+        "Grasslands"
+      ],
       "bullets": 4
     },
     {
@@ -218,7 +250,9 @@
       "baseAttack": 12,
       "baseXp": 60,
       "description": "A fierce pack hunter with sharp instincts.",
-      "found": ["Mountains"],
+      "found": [
+        "Mountains"
+      ],
       "bullets": 3
     },
     {
@@ -231,8 +265,10 @@
       "baseAttack": 22,
       "baseXp": 110,
       "description": "A powerful and resilient beast with unmatched strength.",
-      "found": ["Forests",
-        "Mountains"],
+      "found": [
+        "Forests",
+        "Mountains"
+      ],
       "bullets": 5
     },
     {
@@ -245,7 +281,9 @@
       "baseAttack": 18,
       "baseXp": 100,
       "description": "A fast and agile fighter, known for its powerful kicks.",
-      "found": ["Australian Outback"],
+      "found": [
+        "Australian Outback"
+      ],
       "bullets": 4
     },
     {
@@ -258,7 +296,9 @@
       "baseAttack": 15,
       "baseXp": 120,
       "description": "A rare and gentle giant, spending most of its time eating bamboo.",
-      "found": ["Bamboo Forests"],
+      "found": [
+        "Bamboo Forests"
+      ],
       "bullets": 4
     },
     {
@@ -271,7 +311,9 @@
       "baseAttack": 40,
       "baseXp": 200,
       "description": "A legendary dinosaur, the king of prehistoric predators.",
-      "found": ["Prehistoric Era"],
+      "found": [
+        "Prehistoric Era"
+      ],
       "bullets": 6
     },
     {
@@ -284,7 +326,9 @@
       "baseAttack": 30,
       "baseXp": 150,
       "description": "A fierce Ice Age predator with razor-sharp fangs.",
-      "found": ["Frozen Tundra"],
+      "found": [
+        "Frozen Tundra"
+      ],
       "bullets": 5
     },
     {
@@ -297,7 +341,9 @@
       "baseAttack": 60,
       "baseXp": 300,
       "description": "A mythical beast capable of breathing fire and soaring the skies.",
-      "found": ["Mythical Lands"],
+      "found": [
+        "Mythical Lands"
+      ],
       "bullets": 8
     },
     {
@@ -310,7 +356,10 @@
       "baseAttack": 50,
       "baseXp": 250,
       "description": "A legendary creature of purity and magic, known for its healing powers.",
-      "found": ["Enchanted Forest"],
+      "found": [
+        "Enchanted Forest"
+      ],
       "bullets": 7
-    }]
+    }
+  ]
 }

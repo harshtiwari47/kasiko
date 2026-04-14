@@ -25,6 +25,12 @@ const animalSchema = new mongoose.Schema({
     _id: false
   });
 
+// Minimal team member schema for user's preferred battle team
+const teamMemberSchema = new mongoose.Schema({
+  name: String,
+  level: { type: Number, default: 1 }
+}, { _id: false });
+
   const boosterSchema = new mongoose.Schema({
     name: String,
     effect: String,
@@ -64,6 +70,10 @@ const animalSchema = new mongoose.Schema({
         type: Number, default: 0
       },
       animals: [animalSchema],
+      team: {
+        type: [teamMemberSchema],
+        default: []
+      },
       boosters: [boosterSchema],
       huntsToday: {
         type: Number, default: 0

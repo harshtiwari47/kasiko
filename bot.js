@@ -84,7 +84,7 @@ export const client = new Client( {
   ]
 });
 
-const developmentMode = false;
+const developmentMode = true;
 
 const BotPrefix = developmentMode ? "ki": "kas";
 const TOKEN = developmentMode ? process.env.BOT_TOKENDEV: process.env.BOT_TOKEN;
