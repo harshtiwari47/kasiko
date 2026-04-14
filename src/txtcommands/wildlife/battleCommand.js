@@ -517,11 +517,8 @@ function buildBattleContainer({
 
   const C = new ContainerBuilder()
     .setAccentColor(winnerColor)
-    // ── Header: title + challenger avatar (author icon) ───────────────────────
-    .addSectionComponents(section =>
-      section
-        .addTextDisplayComponents(t => t.setContent(`## Animal Battle`))
-    )
+    // ── Header: title ─────────────────────────────────────────────────────────
+    .addTextDisplayComponents(t => t.setContent(`## Animal Battle`))
     .addSeparatorComponents(s => s)
     // ── Challenger team: forest image thumbnail ────────────────────────────────
     .addSectionComponents(section =>
