@@ -624,7 +624,7 @@ async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 900,
     od.hp -= ud;
 
     let log = `⚔️ **Round ${round}** — ${ua.emoji} **${ua.name}** → ${od.emoji} **${od.name}** \`-${ud} HP\``;
-    if (od.hp <= 0) { log += `\n💀 **${od.name}** defeated!`; oppAlive = oppAlive.filter(a => a !== od); }
+    if (od.hp <= 0) { log += `\n<:dead_skull:1493557754747420732> **${od.name}** defeated!`; oppAlive = oppAlive.filter(a => a !== od); }
     await onUpdate({ round, logLine: log, userAlive: [...userAlive], oppAlive: [...oppAlive] });
     if (oppAlive.length === 0) break;
 
@@ -635,7 +635,7 @@ async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 900,
     ud2.hp -= od2;
 
     let log2 = `⚔️ **Round ${round}** — ${oa.emoji} **${oa.name}** → ${ud2.emoji} **${ud2.name}** \`-${od2} HP\``;
-    if (ud2.hp <= 0) { log2 += `\n💀 **${ud2.name}** defeated!`; userAlive = userAlive.filter(a => a !== ud2); }
+    if (ud2.hp <= 0) { log2 += `\n<:dead_skull:1493557754747420732> **${ud2.name}** defeated!`; userAlive = userAlive.filter(a => a !== ud2); }
     await onUpdate({ round, logLine: log2, userAlive: [...userAlive], oppAlive: [...oppAlive] });
 
     round++;
