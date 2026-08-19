@@ -15,14 +15,20 @@ export async function slots(id, amount, channel) {
     if (!userData) return;
     if (!guild) return;
 
-    if (amount === "all") amount = userData.cash;
+    if (amount === "all") {
+      amount = Math.min(300000, Number(userData.cash || 0));
+    } else {
+      amount = parseInt(amount, 10);
+    }
+
+    if (isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
+      return channel.send("⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **1**.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
 
     if (amount > 300000) amount = 300000;
 
     if (userData.cash < 1) {
       return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } else if (amount < 1) {
-      return channel.send("⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **1**.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
     if (userData.cash < amount) {
@@ -143,36 +149,33 @@ export default {
     try {
       // Check if a valid amount argument is provided
       if ((args[1] && Helper.isNumber(args[1])) || String(args[1]).toLowerCase() === "all") {
-
         let amount;
 
         if (String(args[1]).toLowerCase() === "all") {
           amount = "all";
         } else {
-          amount = parseInt(args[1]);
+          amount = parseInt(args[1], 10);
         }
 
-        // Ensure amount is within valid range
-        if (String(amount).toLowerCase() !== "all" && amount < 1) {
+        if (amount !== "all" && (isNaN(amount) || amount < 1)) {
           await message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
           return;
         }
 
-        if (String(amount !== "all").toLowerCase() && amount > 300000) {
-          await message.channel.send(`⚠️ **${message.author.username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+        if (amount !== "all" && amount > 300000) {
+          await message.channel.send(`⚠️ **${message.author.username}**, you can't spin slots with more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
           return;
         }
 
         // Call the slots function
-        slots(message.author.id, amount, message.channel);
+        await slots(message.author.id, amount, message.channel);
         return;
       } else {
-        // Send usage error if the amount argument is invalid
         await message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `slots <amount>`, minimum is 1.");
         return;
       }
     } catch (err) {
-      await message.channel.send(`ⓘ Something went wrong in Blackjack!\n-# **Error**: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      await message.channel.send(`ⓘ Something went wrong in Slots!\n-# **Error**: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       return;
     }
   }

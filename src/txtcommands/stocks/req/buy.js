@@ -10,6 +10,7 @@ import {
 import {
   checkPassValidity
 } from "../../explore/pass.js";
+import redisClient from '../../../../redis.js';
 
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
@@ -183,11 +184,15 @@ export async function buySharesCommand(message, args) {
     }
 
     // Recalculate the market capitalization.
-    company.marketCap = company.currentPrice * company.totalSharesOutstanding;
+    company.marketCap = parseFloat((company.currentPrice * company.totalSharesOutstanding).toFixed(2));
 
     await company.save();
 
-    const description = `**:bar_chart: 𝐒𝐡𝐚𝐫𝐞𝐬 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝**\n\n🛍️ **${username}**, you have purchased **${numShares}** shares of **${company.name}** for <:kasiko_coin:1300141236841086977> **${totalCost}**.\nɴᴇᴡ ꜱᴛᴏᴄᴋ ᴘʀɪᴄᴇ: **${company.currentPrice.toFixed(2)}**\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`
+    // Record trade volume & invalidate portfolio cache
+    await redisClient.incrByFloat(`stock:vol:buy:${company.name}`, numShares).catch(() => {});
+    await redisClient.del(`totalStockPrice:${userId}`).catch(() => {});
+
+    const description = `**:bar_chart: 𝐒𝐡𝐚𝐫𝐞𝐬 𝐏𝐮𝐫𝐜𝐡𝐚𝐬𝐞𝐝**\n\n🛍️ **${username}**, you have purchased **${numShares}** shares of **${company.name}** for <:kasiko_coin:1300141236841086977> **${totalCost.toLocaleString()}**.\nɴᴇᴡ ꜱᴛᴏᴄᴋ ᴘʀɪᴄᴇ: **${company.currentPrice.toFixed(2)}**\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`;
 
     return handleMessage(message, {
       content: description

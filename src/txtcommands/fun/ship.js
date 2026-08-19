@@ -21,6 +21,7 @@ import {
 } from '../../../database.js';
 
 import shippingQuotes from "./req/shipSuggestions.js";
+import { sendErrorLog } from "../../../utils/errorLogger.js";
 
 // Path to custom scores JSON file
 const shipDatabasePath = path.join(process.cwd(), "database", "customScores.json");
@@ -57,12 +58,20 @@ const ShipCmd = {
   category: "🧩 Fun",
 
   // Pass in arguments and the universal "context" (which may be a message or an interaction)
-  execute: async (args, context) => {
+  execute: async (args, context, cmdOptions = {}) => {
     try {
+      const passedUserIds = new Set(
+        Array.isArray(cmdOptions.passedUserIds)
+          ? cmdOptions.passedUserIds
+          : (cmdOptions.excludeUserId ? [cmdOptions.excludeUserId] : [])
+      );
+      const forceNewMessage = cmdOptions.forceNewMessage || false;
+      const ignoreMentions = cmdOptions.ignoreMentions || false;
+
       // Remove the command itself from arguments
-      if (args.length > 0) args.shift();
-      const isRandom = args[0]?.toLowerCase() === "random" || !args[0];
-      const isAll = args[0]?.toLowerCase() === "all";
+      if (args && args.length > 0 && args[0].toLowerCase() === "ship") args.shift();
+      const isAll = cmdOptions.isAll || args[0]?.toLowerCase() === "all";
+      const isRandom = args[0]?.toLowerCase() === "random" || !args[0] || forceNewMessage;
 
       // Ensure we are in a guild
       if (!context.guild) {
@@ -71,9 +80,6 @@ const ShipCmd = {
 
       // Get the invoker from context. For slash commands use context.user, for text commands use context.author.
       const invoker = context.user || context.author;
-
-      // Fetch guild members (this is required for random pairing)
-      const allMembers = await context.guild.members.fetch();
 
       let serverDoc;
       // Cache server configuration
@@ -95,93 +101,110 @@ const ShipCmd = {
         console.error('Server config error:', e);
       }
 
-
-      if (isRandom && (!allMembers || allMembers.size <= 1)) {
-        return handleMessage(context, "Not enough members to perform `ship random`. At least 2 members are required!");
-      }
-
       // Determine user1 and user2.
       let user1 = null;
       let user2 = null;
 
-      // If this is a slash command, use options (if present) – expect options named "user1" and "user2".
-      if (context.options) {
+      // If this is a slash command, use options (if present and not ignored)
+      if (context.options && !ignoreMentions) {
         user1 = context.options.getUser("user1") || invoker;
         user2 = context.options.getUser("user2");
       }
 
       // Fallback to text-based logic, using mentions if available.
       if (!user1 || !user2) {
-        if (context.mentions && context.mentions.users.size >= 2) {
+        if (!ignoreMentions && context.mentions && context.mentions.users.size >= 2) {
           const arr = [...context.mentions.users.values()];
           user1 = arr[0];
           user2 = arr[1];
-        } else if (context.mentions && context.mentions.users.size === 1) {
+        } else if (!ignoreMentions && context.mentions && context.mentions.users.size === 1) {
           user1 = invoker;
           user2 = context.mentions.users.first();
-        } else if ((isAll || isRandom) && allMembers && allMembers.size > 1) {
+        } else if (isAll || isRandom) {
+          user1 = invoker;
 
-          const randomMember1 = invoker;
-          let hasMaleRole;
-          let hasFemaleRole;
-          let femaleRoleId;
-          let maleRoleId;
-          user1 = randomMember1;
+          // Fetch up to 1000 members via REST API to ensure the full active server pool without gateway chunking timeouts
+          let allMembers = context.guild.members.cache;
+          try {
+            allMembers = await context.guild.members.fetch({ limit: 1000 });
+          } catch {
+            allMembers = context.guild.members.cache;
+          }
+
+          // Filter candidates: non-bots, not invoker, and not previously passed in this session
+          let candidates = allMembers.filter(m => {
+            const u = m.user || m;
+            if (u.bot) return false;
+            if (m.id === invoker.id) return false;
+            if (passedUserIds.has(m.id)) return false;
+            return true;
+          });
+
+          // If all candidates were passed, reset and filter out only the invoker and last partner
+          if (candidates.size === 0) {
+            candidates = allMembers.filter(m => {
+              const u = m.user || m;
+              return !u.bot && m.id !== invoker.id && !passedUserIds.has(m.id);
+            });
+            if (candidates.size === 0) {
+              candidates = allMembers.filter(m => {
+                const u = m.user || m;
+                return !u.bot && m.id !== invoker.id;
+              });
+            }
+          }
+
+          if (candidates.size === 0) {
+            return handleMessage(context, "⚠️ Not enough server members found to ship with. Please mention someone (e.g. `ship @user`)!");
+          }
 
           if (!user1.roles) user1.roles = context?.member?.roles;
 
+          // Apply ship role filters if configured (unless 'ship all' is requested)
           if (!isAll && user1.roles && serverDoc && serverDoc?.shipRoles) {
-            if (serverDoc?.shipRoles?.male) {
-              maleRoleId = serverDoc.shipRoles.male;
-              hasMaleRole = user1.roles.cache.has(maleRoleId);
-            }
+            const maleRoleId = serverDoc.shipRoles.male;
+            const femaleRoleId = serverDoc.shipRoles.female;
+            const hasMaleRole = maleRoleId && user1.roles.cache?.has(maleRoleId);
+            const hasFemaleRole = femaleRoleId && user1.roles.cache?.has(femaleRoleId);
 
-            if (serverDoc?.shipRoles?.female) {
-              femaleRoleId = serverDoc.shipRoles.female;
-              hasFemaleRole = user1.roles.cache.has(femaleRoleId);
-            }
-          }
-
-          let modifiedAllMembers;
-
-          if (!isAll && hasMaleRole && femaleRoleId) {
-            modifiedAllMembers = allMembers.filter(member => member.roles.cache.has(femaleRoleId));
-          } else if (!isAll && hasFemaleRole && maleRoleId) {
-            modifiedAllMembers = allMembers.filter(member => member.roles.cache.has(maleRoleId));
-          }
-
-          let randomMember2;
-
-          if (!isAll && modifiedAllMembers) {
-            randomMember2 = modifiedAllMembers.random();
-          } else {
-            randomMember2 = allMembers.random();
-          }
-
-          while (randomMember1.id === randomMember2.id) {
-            if (modifiedAllMembers) {
-              randomMember2 = modifiedAllMembers.random();
-            } else {
-              randomMember2 = allMembers.random();
+            if (hasMaleRole && femaleRoleId) {
+              const roleFiltered = candidates.filter(member => member.roles?.cache?.has(femaleRoleId));
+              if (roleFiltered.size > 0) candidates = roleFiltered;
+            } else if (hasFemaleRole && maleRoleId) {
+              const roleFiltered = candidates.filter(member => member.roles?.cache?.has(maleRoleId));
+              if (roleFiltered.size > 0) candidates = roleFiltered;
             }
           }
-          user2 = randomMember2.user;
+
+          const randomMember2 = candidates.random();
+          if (!randomMember2) {
+            return handleMessage(context, "⚠️ Could not find an eligible server member to ship with.");
+          }
+          user2 = randomMember2.user || randomMember2;
 
         } else {
           return handleMessage(context, "Please mention one/two users or use `ship random` (in a server with enough members) to test a love score!");
         }
       }
 
+      // Ensure user1 has username and id
+      if (!user1) user1 = invoker;
+      if (!user2) {
+        return handleMessage(context, "⚠️ No partner found to ship with.");
+      }
+
       // Attempt to load a custom score from your JSON file.
       let customScore = null;
       try {
-        const data = fs.readFileSync(shipDatabasePath, "utf8");
-        const customScores = JSON.parse(data);
-        // Create a sorted key (order does not matter).
-        const key = [user1.id,
-          user2.id].sort().join("-");
-        if (customScores.hasOwnProperty(key)) {
-          customScore = customScores[key];
+        if (fs.existsSync(shipDatabasePath)) {
+          const data = fs.readFileSync(shipDatabasePath, "utf8");
+          const customScores = JSON.parse(data);
+          // Create a sorted key (order does not matter).
+          const key = [user1.id,
+            user2.id].sort().join("-");
+          if (customScores.hasOwnProperty(key)) {
+            customScore = customScores[key];
+          }
         }
       } catch (error) {
         console.error("Error reading customScores.json:", error);
@@ -192,7 +215,7 @@ const ShipCmd = {
       customScore !== null
       ? Math.min(100, customScore): Math.min(
         100,
-        getLoveScore(user1.id, user2.id, user1.username, user2.username, 100, Math.max(35, Math.ceil(Math.random() * 40))) +
+        getLoveScore(user1.id, user2.id, user1.username || user1.user?.username || "User1", user2.username || user2.user?.username || "User2", 100, Math.max(35, Math.ceil(Math.random() * 40))) +
         Math.floor(Math.random() * 10)
       );
 
@@ -211,14 +234,22 @@ const ShipCmd = {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-      // Load user avatars.
+      // Load user avatars safely with fallback
+      const defaultAvatar = "https://cdn.discordapp.com/embed/avatars/0.png";
       const avatarSize = 290;
-      const user1Avatar = await loadImage(user1.displayAvatarURL({
-        extension: "png", size: 512
-      }));
-      const user2Avatar = await loadImage(user2.displayAvatarURL({
-        extension: "png", size: 512
-      }));
+      let user1Avatar, user2Avatar;
+      try {
+        const u1Url = user1.displayAvatarURL ? user1.displayAvatarURL({ extension: "png", size: 512, forceStatic: true }) : defaultAvatar;
+        user1Avatar = await loadImage(u1Url);
+      } catch {
+        user1Avatar = await loadImage(defaultAvatar);
+      }
+      try {
+        const u2Url = user2.displayAvatarURL ? user2.displayAvatarURL({ extension: "png", size: 512, forceStatic: true }) : defaultAvatar;
+        user2Avatar = await loadImage(u2Url);
+      } catch {
+        user2Avatar = await loadImage(defaultAvatar);
+      }
 
       // Draw avatars with rounded masking.
       drawRoundedImage(ctx, user1Avatar, 0, canvasHeight / 2 - avatarSize / 2, avatarSize);
@@ -234,10 +265,12 @@ const ShipCmd = {
       ctx.fill();
       ctx.closePath();
 
-      const heartImage = await loadImage("https://cdn.discordapp.com/emojis/1359475162646450206.png");
-      const heartImageWidth = 100;
-      const heartImageHeight = 100;
-      ctx.drawImage(heartImage, circleX - heartImageWidth / 2, circleY - 12 - heartImageHeight / 2, heartImageWidth, heartImageHeight);
+      try {
+        const heartImage = await loadImage("https://cdn.discordapp.com/emojis/1359475162646450206.png");
+        const heartImageWidth = 100;
+        const heartImageHeight = 100;
+        ctx.drawImage(heartImage, circleX - heartImageWidth / 2, circleY - 12 - heartImageHeight / 2, heartImageWidth, heartImageHeight);
+      } catch {}
 
       ctx.fillStyle = "rgb(196,0,0)";
       ctx.font = "30px sans-serif";
@@ -248,7 +281,7 @@ const ShipCmd = {
       });
       const msgDescription =
       `### <a:red_heart:1356865968164569158>  *** 𝙒𝙄𝙉𝘿𝙎 𝙊𝙁 𝘼𝙁𝙁𝙀𝘾𝙏𝙄𝙊𝙉 ***\n` +
-      `### **${user1.username}** <:wine:1356880010866069562> **${user2.username}${user2.bot ? " <:bot:1359577258959962152>": ""}**\n` +
+      `### **${user1.username || user1.user?.username}** <:wine:1356880010866069562> **${user2.username || user2.user?.username}${user2.bot ? " <:bot:1359577258959962152>": ""}**\n` +
       `ᥫ᭡ ﹒ ***_𝗦𝗰𝗼𝗿𝗲 ﹒ ${score}%_***\n` +
       `-# 💌 _${quote}_\n`;
 
@@ -266,31 +299,36 @@ const ShipCmd = {
       .setStyle(ButtonStyle.Secondary);
       const actionRow = new ActionRowBuilder().addComponents(likeButton, passButton);
 
-      // Send the ship embed/image using our universal handler.
-      const shipResponse = await handleMessage(context, {
+      // Send the ship embed/image using our universal handler or channel.send on pass
+      const messagePayload = {
         content: msgDescription,
         files: [attachment],
         components: [actionRow],
-      });
+      };
 
-      // Grab the actual message (different in interactions vs. text commands).
       let responseMessage;
-      if (context.isCommand) {
-        responseMessage = await context.fetchReply();
+      if (forceNewMessage) {
+        responseMessage = await context.channel.send(messagePayload).catch(err => console.error(err));
       } else {
-        responseMessage = shipResponse;
+        const shipResponse = await handleMessage(context, messagePayload);
+        if (context.isCommand) {
+          responseMessage = await context.fetchReply().catch(() => null);
+        } else {
+          responseMessage = shipResponse;
+        }
       }
+
+      if (!responseMessage) return;
 
       // Create a collector for button interactions (only the invoker may interact).
       const filter = i => i.user.id === invoker.id;
-      const collector = responseMessage?.createMessageComponentCollector({
+      const collector = responseMessage.createMessageComponentCollector({
         filter,
         componentType: ComponentType.Button,
         time: 300000,
       });
 
       collector.on("collect", async interaction => {
-
         if (interaction.user.id !== invoker.id) {
           return await interaction.reply({
             content: "⚠️ You cannot interact with this button.",
@@ -298,15 +336,15 @@ const ShipCmd = {
           });
         }
 
-        await interaction.deferUpdate();
-        // Disable the buttons.
+        await interaction.deferUpdate().catch(() => {});
+        // Disable the buttons on current card.
         const disabledRow = new ActionRowBuilder().addComponents(
           likeButton.setDisabled(true),
           passButton.setDisabled(true)
         );
         await responseMessage.edit({
           components: [disabledRow]
-        });
+        }).catch(() => {});
 
         if (interaction.customId === "like_ship") {
           const user2Data = await getUserData(user2?.id);
@@ -315,32 +353,30 @@ const ShipCmd = {
           if (user2Data) {
             await updateUser(user2?.id, {
               popularity: (user2Data?.popularity || 0) + 1
-            })
+            });
           }
 
           const likeEmbed = new EmbedBuilder()
-          .setTitle(`<a:red_heart:1356865968164569158> 𝒀𝑶𝑼 𝑳𝑰𝑲𝑬𝑫 ${user2.username}!`)
+          .setTitle(`<a:red_heart:1356865968164569158> 𝒀𝑶𝑼 𝑳𝑰𝑲𝑬𝑫 ${user2.username || user2.user?.username}!`)
           .setDescription(`𝗞𝗔𝗦𝗜𝗞𝗢 𝗠𝗘𝗠𝗕𝗘𝗥: ${user2Data ? "YES": "NO"}\n𝗠𝗔𝗥𝗥𝗜𝗘𝗗: ${user2Data?.family?.spouse ? "YES": "NO"}\n𝗣𝗢𝗣𝗨𝗟𝗔𝗥𝗜𝗧𝗬: <:popularity:1359565087341543435> ${user2Data?.popularity ? user2Data.popularity + 1: "0"}`)
           .setFooter({
             text: `Each like contributes +1 popularity`
           })
-          .setThumbnail(user2.displayAvatarURL({
-            extension: "png", size: 512
-          }))
-          .setColor(0xff69b4)
+          .setThumbnail(user2.displayAvatarURL ? user2.displayAvatarURL({ extension: "png", size: 512 }) : defaultAvatar)
+          .setColor(0xff69b4);
 
           const likeEmbed2 = new EmbedBuilder()
-          .setDescription(`𝗥𝗢𝗦𝗘𝗦 𝗬𝗢𝗨 𝗛𝗔𝗩𝗘: <:rose:1343097565738172488> ${user1Data.inventory['rose'] || 0}\n` +
+          .setDescription(`𝗥𝗢𝗦𝗘𝗦 𝗬𝗢𝗨 𝗛𝗔𝗩𝗘: <:rose:1343097565738172488> ${user1Data?.inventory?.['rose'] || 0}\n` +
             `-# ᥫ᭡ You can buy roses using **\`buy roses <amount>\`**\n` +
             `-# ᥫ᭡ When you send someone roses, if their DMs are open, they will receive a notification\n` +
             `-# ᥫ᭡ Roses also contribute to someone's popularity (+25)\n` +
             `-# ᥫ᭡ You can propose to them using **\`marry @user\`**\n` +
             `-# ᴜꜱᴇ ᴘʀᴇꜰɪx ~ BETA FEATURE`)
-          .setColor("#f29adf")
+          .setColor("#f29adf");
 
           const rosesButton = new ButtonBuilder()
           .setCustomId("send_roses")
-          .setDisabled((!user2Data || (user1Data.inventory['rose'] || 0) < 5) ? true: false)
+          .setDisabled((!user2Data || (user1Data?.inventory?.['rose'] || 0) < 5) ? true: false)
           .setLabel("𝙎𝙀𝙉𝘿 𝙋𝙍𝙄𝙑𝘼𝙏𝙀 𝙍𝙊𝙎𝙀𝙎 (𝟓)")
           .setEmoji(`1343097565738172488`)
           .setStyle(ButtonStyle.Primary);
@@ -350,7 +386,7 @@ const ShipCmd = {
             embeds: [likeEmbed, likeEmbed2],
             components: [rosesRow],
             ephemeral: true,
-          });
+          }).catch(() => {});
 
           // Collector for the send roses button.
           const dmCollectorFilter = i => i.user.id === invoker.id && i.customId === "send_roses";
@@ -361,7 +397,7 @@ const ShipCmd = {
           });
 
           dmCollector.on("collect", async btnInteraction => {
-            await btnInteraction.deferUpdate();
+            await btnInteraction.deferUpdate().catch(() => {});
             try {
               await user2.send(`💖 **${invoker.username}** 𝘩𝘢𝘴 𝘴𝘦𝘯𝘵 𝘺𝘰𝘶 **5** 𝘳𝘰𝘴𝘦𝘴 <:rose:1343097565738172488>\n` +
                 `𝑌𝑜𝑢𝑟 𝑝𝑜𝑝𝑢𝑙𝑎𝑟𝑖𝑡𝑦 𝑠𝑐𝑜𝑟𝑒 𝑖𝑛𝑐𝑟𝑒𝑎𝑠𝑒𝑑 𝑏𝑦 **+25**!\n` +
@@ -372,49 +408,67 @@ const ShipCmd = {
                   popularity: (user2Data?.popularity || 0) + 25
                 });
                 await updateUser(user1?.id, {
-                  'inventory.rose': Math.max((user1Data?.inventory['rose'] || 0) - 25, 0)
-                })
+                  'inventory.rose': Math.max((user1Data?.inventory?.['rose'] || 0) - 5, 0)
+                });
               }
 
               await btnInteraction.followUp({
-                content: `<:rose:1343097565738172488> 5 roses have been sent to **${user2.username}**!`,
+                content: `<:rose:1343097565738172488> 5 roses have been sent to **${user2.username || user2.user?.username}**!`,
                 ephemeral: true
-              });
+              }).catch(() => {});
             } catch (err) {
               await btnInteraction.followUp({
-                content: `Could not send DM to **${user2.username}**. They might have DMs disabled.`,
+                content: `Could not send DM to **${user2.username || user2.user?.username}**. They might have DMs disabled.`,
                 ephemeral: true
-              });
+              }).catch(() => {});
             }
           });
         } else if (interaction.customId === "pass_ship") {
-
           const randomQuote = shippingQuotes[Math.floor(Math.random() * shippingQuotes.length)];
 
           await interaction.followUp({
-            content: `❤️ **${interaction.user.username}**, 𝘱𝘦𝘳𝘧𝘰𝘳𝘮𝘪𝘯𝘨 𝘢 𝘯𝘦𝘸 𝘴𝘩𝘪𝘱...\n${randomQuote}`, ephemeral: true
-          });
+            content: `❤️ **${interaction.user.username}**, 𝘱𝘦𝘳𝘧𝘰𝘳𝘮𝘪𝘯𝘨 𝘢 𝘯𝘦𝘸 𝘴𝘩𝘪𝘱...\n${randomQuote}`,
+            ephemeral: true
+          }).catch(() => {});
 
-          args.unshift("ship");
-          await ShipCmd.execute(args, context);
+          collector.stop();
+
+          const updatedPassedUserIds = Array.isArray(cmdOptions.passedUserIds)
+            ? [...cmdOptions.passedUserIds, user2?.id].filter(Boolean)
+            : (user2?.id ? [user2.id] : []);
+
+          // Execute a fresh random ship in the channel excluding all previously passed partners
+          await ShipCmd.execute(isAll ? ["ship", "all"] : ["ship", "random"], context, {
+            passedUserIds: updatedPassedUserIds,
+            forceNewMessage: true,
+            ignoreMentions: true,
+            isAll
+          });
         }
         collector.stop();
       });
 
-      collector.on("end",
-        async collected => {
-          try {
-            const disabledRow = new ActionRowBuilder().addComponents(
-              likeButton.setDisabled(true),
-              passButton.setDisabled(true)
-            );
-            await responseMessage.edit({
-              components: [disabledRow]
-            });
-          } catch (err) {}
-        });
+      collector.on("end", async () => {
+        try {
+          const disabledRow = new ActionRowBuilder().addComponents(
+            likeButton.setDisabled(true),
+            passButton.setDisabled(true)
+          );
+          await responseMessage.edit({
+            components: [disabledRow]
+          }).catch(() => {});
+        } catch (err) {}
+      });
     } catch (e) {
       console.error(e);
+      sendErrorLog(e, {
+        source: 'Ship Command Error',
+        commandName: 'ship',
+        args,
+        author: context.user || context.author,
+        guild: context.guild,
+        channel: context.channel
+      }).catch(() => {});
       return handleMessage(context,
         "❗Something went wrong during shipping. Possibly an error occurred with your profile picture or interactions.");
     }

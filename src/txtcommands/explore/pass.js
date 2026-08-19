@@ -12,6 +12,8 @@ import UserPet from "../../../models/Pet.js";
 import {
   discordUser
 } from '../../../helper.js';
+import { hasOwnerPermission } from '../../owner/ownerManager.js';
+import { logPassAction } from '../../../utils/auditLogger.js';
 
 // Configure logger
 const logger = winston.createLogger({
@@ -299,16 +301,14 @@ export async function execute(args,
     name
   } = discordUser(context);
 
-  // For simplicity, we hardcode the owner ID here (replace with your own or use a config variable)
-  const ownerId = '1318158188822138972';
   const subCommand = args[1]?.toLowerCase();
 
   try {
     switch (subCommand) {
       case 'activate': {
-        // Only the owner can activate a pass manually.
+        // Only management (admin+) can activate a pass manually.
         const requesterId = context.author ? context.author.id: context.user.id;
-        if (requesterId !== ownerId) {
+        if (!hasOwnerPermission(requesterId, 'admin')) {
           return await handleMessage(context, {
             content: `${username}, you are not authorized to activate passes.`
           });
@@ -353,6 +353,20 @@ export async function execute(args,
               upsert: true
             }
           );
+
+          // Send Audit Log
+          const clientInstance = context.client || (context.message && context.message.client);
+          const executorUser = context.author || context.user;
+          if (clientInstance) {
+            await logPassAction({
+              client: clientInstance,
+              executor: executorUser,
+              target: targetUser,
+              plan,
+              expiryDate
+            });
+          }
+
           return await handleMessage(context, {
             content: `**${name}**, activated **${plan}** pass for **${targetUser.tag}**. Your pass will expire on ${expiryDate.toLocaleDateString()}.`
           });
@@ -428,9 +442,9 @@ export async function execute(args,
         }
 
       case 'createpromo': {
-          // Owner-only command to generate a promo code.
+          // Only management (admin+) can generate a promo code.
           const requesterId = context.author ? context.author.id: context.user.id;
-          if (requesterId !== ownerId) {
+          if (!hasOwnerPermission(requesterId, 'admin')) {
             return await handleMessage(context, {
               content: `${username}, you are not authorized to create promo codes.`
             });
@@ -446,6 +460,18 @@ export async function execute(args,
             code, plan
           });
           await newPromo.save();
+
+          const clientInstance = context.client || (context.message && context.message.client);
+          const executorUser = context.author || context.user;
+          if (clientInstance) {
+            await logPassAction({
+              client: clientInstance,
+              executor: executorUser,
+              plan,
+              promoCode: code
+            });
+          }
+
           return await handleMessage(context, {
             content: `**${username}**, Promo code for ${PassEmojis[plan]} **${plan}** pass created: **${code}**`
           });

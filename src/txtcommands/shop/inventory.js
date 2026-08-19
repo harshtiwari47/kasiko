@@ -4,10 +4,6 @@ import {
 } from '../../../database.js';
 
 import {
-  ALLITEMS
-} from "./shopIDs.js";
-
-import {
   discordUser,
   handleMessage
 } from '../../../helper.js';
@@ -20,8 +16,6 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
-  InteractionType,
   ContainerBuilder,
   MessageFlags,
   TextDisplayBuilder
@@ -29,21 +23,19 @@ import {
 
 export default {
   name: 'inventory',
-  description: 'View your inventory: scratch cards, roses, etc., with sellable/shareable info.',
-  aliases: ['inv',
-    'bag'],
+  description: 'View your inventory: scratch cards, roses, tools, animal food, etc.',
+  aliases: ['inv', 'bag'],
   args: '',
   emoji: '🎒',
   category: '🛍️ Shop',
-  cooldown: 10000,
+  cooldown: 5000,
 
   async execute(args, context) {
     try {
       const {
         id: userId,
         username,
-        name,
-        avatar
+        name
       } = discordUser(context);
 
       let userData;
@@ -53,140 +45,122 @@ export default {
         return handleMessage(context, '❌ Unable to fetch your inventory right now. Please try again later.');
       }
 
-      const userInv = userData?.inventory && typeof userData?.inventory === "object" ? userData.inventory: {};
+      const userInv = userData?.inventory && typeof userData?.inventory === "object" ? userData.inventory : {};
 
-      const inventoryItems = Object.keys(userInv).map(key => {
-        const {
-          id,
-          name,
-          emoji,
-          useable,
-          activatable,
-          sellable,
-          shareable
-        } = ITEM_DEFINITIONS[key];
+      const inventoryItems = Object.keys(userInv)
+        .map(key => {
+          const itemDef = ITEM_DEFINITIONS[key];
+          if (!itemDef) return null;
 
-        userInv[key] = parseInt(userInv[key]) < 0 ? 0: parseInt(userInv[key]);
+          const rawCount = parseInt(userInv[key], 10);
+          const count = isNaN(rawCount) || rawCount < 0 ? 0 : rawCount;
+          if (count === 0) return null; // Only show owned items
 
-        return {
-          id,
-          name,
-          emoji,
-          useable,
-          activatable,
-          sellable,
-          shareable,
-          count: userInv[key]
-        }
-      });
+          return {
+            id: itemDef.id,
+            name: itemDef.name,
+            emoji: itemDef.emoji,
+            useable: itemDef.useable,
+            activatable: itemDef.activatable,
+            sellable: itemDef.sellable,
+            shareable: itemDef.shareable,
+            count
+          };
+        })
+        .filter(Boolean);
 
       const ItemsPerPage = 4;
       let currentPage = 1;
-      let start = (currentPage - 1) * ItemsPerPage;
-      const TotalPages = Math.ceil(inventoryItems.length / ItemsPerPage);
+      const TotalPages = Math.max(1, Math.ceil(inventoryItems.length / ItemsPerPage));
 
-      const GenContainer = (currentPage) => {
-
-        const start = (currentPage - 1) * ItemsPerPage;
+      const GenContainer = (page) => {
+        const start = (page - 1) * ItemsPerPage;
         const ITEMS = inventoryItems.slice(start, start + ItemsPerPage);
 
         const Container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          textDisplay => textDisplay.setContent(`### 🎒 𝗜𝗡𝗩𝗘𝗡𝗧𝗢𝗥𝗬`),
-          textDisplay => textDisplay.setContent(`-# ${name} ◎ \`info \`**\`<item>\`**`)
-        );
-
-        // For each item, add a field
-        for (const item of ITEMS) {
-          // Format value with count and flags
-          const lines = [];
-          lines.push(`-# <:reply:1368224908307468408> ${item.sellable ? '**Sellable** ': ''}${item.shareable ? '**Shareable** ': ''}${item.useable ? '**Useable** ': ''}`);
-          Container.addTextDisplayComponents(
-            textDisplay => textDisplay.setContent(`${item.emoji}  **${item.name}** — ${item.count}`)
+          .addTextDisplayComponents(
+            textDisplay => textDisplay.setContent(`### 🎒 **${name.toUpperCase()}'S INVENTORY**`),
+            textDisplay => textDisplay.setContent(`-# Page ${page}/${TotalPages} · Use \`info <item>\` for details`)
           );
 
+        if (ITEMS.length === 0) {
           Container.addTextDisplayComponents(
-            textDisplay => textDisplay.setContent(lines.join('\n'))
+            textDisplay => textDisplay.setContent(`*Your bag is currently empty! Use \`shop\`, \`hunt\`, \`loot\`, or \`tasks\` to collect items.*`)
           );
+        } else {
+          for (const item of ITEMS) {
+            const tags = [];
+            if (item.sellable) tags.push('**Sellable**');
+            if (item.shareable) tags.push('**Shareable**');
+            if (item.useable || item.activatable) tags.push('**Useable**');
+
+            Container.addTextDisplayComponents(
+              textDisplay => textDisplay.setContent(`${item.emoji} **${item.name}** — \`${item.count}\``),
+              textDisplay => textDisplay.setContent(`-# <:reply:1368224908307468408> ${tags.join(' · ') || 'Collectible'}`)
+            );
+          }
         }
 
         Container.addSeparatorComponents(separate => separate);
 
-        Container.addActionRowComponents(
-          ActionRow => ActionRow
-          .addComponents([
-            new ButtonBuilder()
-            .setCustomId("leftinv")
-            .setLabel("◀")
-            .setStyle(ButtonStyle.Primary)
-            .setDisabled(currentPage === 1 ? true: false),
-            new ButtonBuilder()
-            .setCustomId("rightinv")
-            .setLabel("▶")
-            .setStyle(ButtonStyle.Primary)
-            .setDisabled(currentPage === TotalPages ? true: false)
-          ])
-        )
+        if (TotalPages > 1) {
+          Container.addActionRowComponents(
+            ActionRow => ActionRow.addComponents([
+              new ButtonBuilder()
+                .setCustomId("leftinv")
+                .setLabel("◀")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(page <= 1),
+              new ButtonBuilder()
+                .setCustomId("rightinv")
+                .setLabel("▶")
+                .setStyle(ButtonStyle.Primary)
+                .setDisabled(page >= TotalPages)
+            ])
+          );
+        }
 
         return Container;
-      }
+      };
 
-      // Send embed
       const msgReply = await handleMessage(context, {
         components: [GenContainer(currentPage)],
         flags: MessageFlags.IsComponentsV2
       });
 
+      if (TotalPages <= 1 || !msgReply) return;
+
       const collector = msgReply.createMessageComponentCollector({
-        time: 150000
+        time: 120000
       });
 
       collector.on('collect', async interaction => {
         try {
-          if (interaction.replied || interaction.deferred) return;
-
           if (interaction.user.id !== userId) {
-            interaction.reply({
-              context: `You are not allowed to interact with someone else's button!`
-            })
+            return interaction.reply({
+              content: `<:warning:1366050875243757699> You cannot interact with someone else's inventory!`,
+              ephemeral: true
+            });
           }
 
-          await interaction.deferUpdate();
           if (interaction.customId === "leftinv") {
-            currentPage -= 1;
-            await interaction.editReply({
-              components: [GenContainer(currentPage)],
-              flags: MessageFlags.IsComponentsV2
-            })
+            currentPage = Math.max(1, currentPage - 1);
+          } else if (interaction.customId === "rightinv") {
+            currentPage = Math.min(TotalPages, currentPage + 1);
           }
 
-          if (interaction.customId === "rightinv") {
-            currentPage += 1;
-            await interaction.editReply({
-              components: [GenContainer(currentPage)],
-              flags: MessageFlags.IsComponentsV2
-            })
-          }
+          await interaction.update({
+            components: [GenContainer(currentPage)],
+            flags: MessageFlags.IsComponentsV2
+          });
         } catch (err) {}
       });
 
-      collector.on('end',
-        async () => {
-          try {
-            const comp = (msgReply.components || []).map(e => new ContainerBuilder(e));
-            comp[0] = comp[0] ?? new ContainerBuilder();
-            comp[0].components = (comp[0].components || []).slice(0, 6).map(e => new TextDisplayBuilder(e).setContent(e?.data?.data?.content || "-# TimeOut"))
-
-            await msgReply.edit({
-              components: comp
-            }).catch((err) => {});
-          } catch (e) {}
-        })
-    } catch (ercr) {
-      return await handleMessage(context,
-        {
-          content: `**Inventory Error**: ${ercr.message}`
-        })
+    } catch (err) {
+      console.error('[InventoryCommand] Error:', err);
+      return handleMessage(context, {
+        content: `**Inventory Error**: ${err.message}`
+      });
     }
   }
 };

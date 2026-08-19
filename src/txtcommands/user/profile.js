@@ -10,7 +10,7 @@ import { calculateNetWorth } from "../../../utils/updateNetworth.js";
 
 import { Helper } from "../../../helper.js";
 
-import { getBotTeam } from "../../owner/main.js";
+import { getOwner } from "../../owner/ownerManager.js";
 
 import { checkPassValidity } from "../explore/pass.js";
 
@@ -140,8 +140,7 @@ async function createUserEmbed(
         EmbedColor = userData?.color;
     }
 
-    const ownersList = getBotTeam();
-    const ownerDetail = ownersList[userId];
+    const ownerDetail = getOwner(userId);
 
     const Container = new ContainerBuilder()
       .setAccentColor(
@@ -165,9 +164,9 @@ async function createUserEmbed(
       .addTextDisplayComponents((textDisplay) =>
         textDisplay.setContent(
           `-# ${
-            ownerDetail && ownerDetail === 99
+            ownerDetail.isOwner && ownerDetail.level >= 100
               ? "<:kasiko_supreme:1389508842529755217>"
-              : ownerDetail
+              : ownerDetail.isOwner && ownerDetail.level >= 40
               ? "<:kasiko_director:1389508823055601725>"
               : ""
           } <:level:1389092923525824552> **${

@@ -5,12 +5,12 @@ import {
 import {
   EmbedBuilder
 } from "discord.js";
-import OwnerModel from "../../models/Owner.js";
+import { logAssetChange } from "../../utils/auditLogger.js";
 
 export default {
   name: "profile",
-  description: "Set banner image or profile color for a user (Owner Only).",
-  aliases: [],
+  description: "Set banner image or profile color for a user (Management Only).",
+  aliases: ["banner", "color"],
   args: "<@user> <hex_color | image_url>",
   example: [
     "color @user #ff9900",
@@ -25,15 +25,7 @@ export default {
     const input = args[2];
 
     if (!target || !input) {
-      return message.channel.send("❌ Usage: `profile @user <hex_color | image_url>`");
-    }
-
-    // Permission check
-    const ownerDoc = await OwnerModel.findOne({
-      ownerId: message.author.id
-    });
-    if (!ownerDoc && message.author.id !== "1318158188822138972") {
-      return message.channel.send("❌ You are not an owner.");
+      return message.channel.send("❌ Usage: `kasow banner @user <image_url>` or `kasow color @user <hex_color>`");
     }
 
     const userData = await getUserData(target.id);
@@ -42,18 +34,28 @@ export default {
     }
 
     const embed = new EmbedBuilder()
-    .setTitle("✅ Profile Updated")
-    .setColor("Green");
+      .setTitle("✅ Profile Updated")
+      .setColor("Green");
 
     // Handle color
     if (/^#?[0-9A-Fa-f]{6}$/.test(input)) {
-      const cleanHex = input.startsWith("#") ? input: `#${input}`;
+      const cleanHex = input.startsWith("#") ? input : `#${input}`;
       await updateUser(target.id, {
         color: cleanHex
       });
 
+      // Send Audit Log
+      await logAssetChange({
+        client: message.client,
+        executor: message.author,
+        target,
+        assetType: 'profile_color',
+        action: 'updated',
+        value: cleanHex
+      });
+
       embed.setDescription(`Profile color for **${target.username}** updated to **${cleanHex}**.`)
-      .setColor(cleanHex);
+        .setColor(cleanHex);
 
       // Handle banner URL
     } else if (input.startsWith("http://") || input.startsWith("https://")) {
@@ -61,8 +63,18 @@ export default {
         banner: input
       });
 
+      // Send Audit Log
+      await logAssetChange({
+        client: message.client,
+        executor: message.author,
+        target,
+        assetType: 'profile_banner',
+        action: 'updated',
+        value: input
+      });
+
       embed.setDescription(`Banner for **${target.username}** updated.`)
-      .setImage(input);
+        .setImage(input);
 
     } else {
       return message.channel.send("❌ Please provide a valid hex color or image URL.");

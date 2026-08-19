@@ -6,14 +6,12 @@ import {
   EmbedBuilder
 } from "discord.js";
 import OwnerModel from "../../models/Owner.js";
-import {
-  client
-} from "../../bot.js";
+import { logFinancialAction } from "../../utils/auditLogger.js";
 
 export default {
   name: "deduct",
   description: "Deduct any amount of cash from a user's account (Owner Only), or from yourself if no user is specified.",
-  aliases: [],
+  aliases: ["ded", "d"],
   args: "<amount> [userId]",
   example: [
     "deduct 5000",
@@ -34,11 +32,6 @@ export default {
       ownerId: message.author.id
     });
 
-    if (!ownerDoc && message.author.id !== "1318158188822138972") {
-      return message.channel.send("❌ You are not an owner.")
-        .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
     // Daily‐deduction tracking (limit: 7,500,000 per day)
     const now = new Date().toISOString().split("T")[0];
     const lastDate = ownerDoc?.dailyDeducted?.date;
@@ -51,12 +44,6 @@ export default {
     } else if (lastDate !== now) {
       todayDeducted = 0;
     }
-
-    // Prepare the logs channel and base embed
-    const logsChannel = client.channels?.cache?.get("1361928841307623506");
-    const embedTransaction = new EmbedBuilder()
-      .setTitle("𝗡𝗘𝗪 𝗗𝗘𝗗𝗨𝗖𝗧𝗜𝗢𝗡")
-      .setColor("Random");
 
     // Determine if a target user was mentioned or provided
     const target = message.mentions.users.first();
@@ -71,7 +58,7 @@ export default {
     let discordUser;
     try {
       if (!target && hasExplicitId) {
-        discordUser = await client.users.fetch(recipientId);
+        discordUser = await message.client.users.fetch(recipientId);
       } else if (target) {
         discordUser = target;
       } else {
@@ -111,17 +98,15 @@ export default {
         { new: true }
       );
 
-      // Build the transaction embed
-      embedTransaction.setDescription([
-        `💸 **From:** ${message.author.tag}`,
-        `**To:** ${discordUser.tag}`,
-        `**Amount Deducted:** <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()}`
-      ].join("\n"));
-
-      // Send to logs channel if available
-      if (logsChannel) {
-        logsChannel.send({ embeds: [embedTransaction] });
-      }
+      // Send Audit Log
+      await logFinancialAction({
+        client: message.client,
+        executor: message.author,
+        target: discordUser,
+        action: 'deduct',
+        amount,
+        details: `Deducted cash from <@${recipientId}>'s account`
+      });
 
       // Confirmation embed to the channel
       const embed = new EmbedBuilder()

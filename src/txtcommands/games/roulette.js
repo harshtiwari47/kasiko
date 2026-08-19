@@ -57,15 +57,15 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
       return channel.send('🚨 **Error**: Unable to retrieve challenger data. Please try again.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
-    // If the opponent is the bot, define some placeholders
-    let opponentUsername = 'kasiko';
-    let opponentUserId = '1300081477358452756'; // You can define or use any ID placeholder as your 'bot user ID'.
+    // If the opponent is the bot, define placeholders dynamically from client
+    let opponentUsername = channel.client?.user?.username || 'kasiko';
+    let opponentUserId = channel.client?.user?.id || '1300081477358452756';
 
-    if (opponentUserId === opponentId) {
+    if (opponentUserId === opponentId || opponentMember?.user?.bot) {
       isBotOpponent = true;
     }
 
-    if (!isBotOpponent) {
+    if (!isBotOpponent && opponentMember) {
       opponentUsername = opponentMember.user.username;
       opponentUserId = opponentMember.id;
     }

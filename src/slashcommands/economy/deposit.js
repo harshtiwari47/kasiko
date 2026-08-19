@@ -32,12 +32,8 @@ export default {
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      await interaction.deferReply({
-        ephemeral: true
-      });
       return interaction.editReply({
-        content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`,
-        ephemeral: true
+        content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`
       });
     }
 

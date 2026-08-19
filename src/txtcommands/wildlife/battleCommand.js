@@ -70,7 +70,7 @@ async function editExisting(context, sentMsg, payload) {
 
 function getAnimalBaseStats(animalName) {
   const animal = animalsData.animals.find(a => a.name.toLowerCase() === animalName.toLowerCase());
-  if (!animal) return { baseHp: 30, baseAttack: 5 };
+  if (!animal) return { baseHp: 30, baseAttack: 5, emoji: '🐾', rarity: 1, type: 'common' };
   return {
     baseHp: animal.baseHp || 30,
     baseAttack: animal.baseAttack || 5,
@@ -84,70 +84,66 @@ function calculateAnimalStats(animal) {
   const n = typeof animal?.toObject === 'function' ? animal.toObject() : animal;
   const animalName = n?.name || animal?.name || 'Unknown';
   const baseStats = getAnimalBaseStats(animalName);
-  const level = n?.level || animal?.level || 1;
-  const hp = (baseStats.baseHp || 30) + ((level - 1) * 5);
-  const attack = (baseStats.baseAttack || 5) + ((level - 1) * 1);
+  const level = Math.max(1, n?.level || animal?.level || 1);
+  const maxHp = (baseStats.baseHp || 30) + ((level - 1) * 8);
+  const attack = (baseStats.baseAttack || 5) + ((level - 1) * 2);
+  const hp = animal?.currentHp !== undefined ? animal.currentHp : (animal?.hp !== undefined && animal.hp <= maxHp ? animal.hp : maxHp);
+
   return {
     ...n,
     name: animalName,
     level,
-    hp: Math.max(hp, n?.hp || animal?.hp || hp),
-    attack: Math.max(attack, n?.attack || animal?.attack || attack),
+    maxHp,
+    hp: Math.max(0, hp),
+    attack,
     baseHp: baseStats.baseHp,
     baseAttack: baseStats.baseAttack,
-    emoji: baseStats.emoji || n?.emoji || animal?.emoji,
+    emoji: baseStats.emoji || n?.emoji || animal?.emoji || '🐾',
     rarity: baseStats.rarity,
     type: baseStats.type
   };
 }
 
-function calculateDamage(attack) {
-  const variance = attack * 0.3;
-  const min = Math.max(1, Math.floor(attack - variance));
-  const max = Math.floor(attack + variance);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function calculateAttackAction(attacker, defender) {
+  // Dodge chance (8%)
+  if (Math.random() < 0.08) {
+    return { damage: 0, isCrit: false, isDodge: true };
+  }
+
+  // Slightly boosted base damage so 4 rounds is decisive
+  const effectiveAtk = attacker.attack * 1.35;
+  const variance = effectiveAtk * 0.25;
+  const min = Math.max(2, Math.floor(effectiveAtk - variance));
+  const max = Math.floor(effectiveAtk + variance);
+  let damage = Math.floor(Math.random() * (max - min + 1)) + min;
+
+  // Critical Hit chance (14%) -> 1.5x damage
+  let isCrit = false;
+  if (Math.random() < 0.14) {
+    isCrit = true;
+    damage = Math.floor(damage * 1.5);
+  }
+
+  return { damage, isCrit, isDodge: false };
 }
 
 // ─── Canvas battle result image ──────────────────────────────────────────────
 
-/**
- * Extracts the numeric emoji ID from a Discord custom emoji string.
- * Input:  "<:Bear:1348527811224145940>"  or  "<a:Flame:123456789>"
- * Output: "1348527811224145940"  |  null
- */
 function getDiscordEmojiId(rawEmoji) {
   if (!rawEmoji) return null;
   const match = (rawEmoji + '').trim().match(/^<a?:[\w]+:(\d+)>$/);
   return match ? match[1] : null;
 }
 
-/**
- * Returns the Discord CDN PNG URL for a given emoji ID.
- */
 function discordEmojiUrl(emojiId) {
   return `https://cdn.discordapp.com/emojis/${emojiId}.png?size=64`;
 }
 
-/**
- * Draws the animal icon on the canvas.
- * - Tries to load the custom emoji image from Discord CDN (using emojiId).
- * - Falls back to a colored letter badge if the image cannot be loaded.
- *
- * @param {CanvasRenderingContext2D} ctx
- * @param {string|null}  rawEmoji   - raw emoji string from animals.json, e.g. "<:Bear:1348527811224145940>"
- * @param {string}       animalName - display name used for the fallback badge
- * @param {number}       x          - left edge of the icon area
- * @param {number}       y          - top edge of the icon area
- * @param {number}       size       - icon diameter in pixels
- * @param {Map}          imageCache - shared cache: emojiId → Image | 'failed'
- */
 async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageCache = new Map()) {
   const emojiId = getDiscordEmojiId(rawEmoji);
 
   if (emojiId) {
-    // Try to get from cache first
     let img = imageCache.get(emojiId);
-
     if (!img) {
       try {
         img = await loadImage(discordEmojiUrl(emojiId));
@@ -159,7 +155,6 @@ async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageC
     }
 
     if (img && img !== 'failed') {
-      // Draw as a circle-clipped image for a clean look
       const cx = x + size / 2;
       const cy = y + size / 2;
       const r = size / 2;
@@ -175,7 +170,7 @@ async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageC
     }
   }
 
-  // ── Fallback: colored circle with first letter ──────────────────────────
+  // Fallback: colored circle with letter
   const letter = (animalName || '?')[0].toUpperCase();
   const colors = ['#4caf50', '#2196f3', '#ff9800', '#e91e63', '#9c27b0', '#00bcd4', '#ff5722'];
   const color = colors[letter.charCodeAt(0) % colors.length];
@@ -197,14 +192,8 @@ async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageC
   ctx.textAlign = 'left';
 }
 
-// ─── Twemoji helpers (render unicode emoji as images on canvas) ───────────────
-
 const TWEMOJI_BASE = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72';
 
-/**
- * Converts a unicode emoji character to its Twemoji CDN PNG URL.
- * Strips variation-selector U+FE0F before building the codepoint path.
- */
 function emojiToTwemojiUrl(char) {
   const cp = [...char]
     .filter(c => c.codePointAt(0) !== 0xFE0F)
@@ -213,7 +202,6 @@ function emojiToTwemojiUrl(char) {
   return `${TWEMOJI_BASE}/${cp}.png`;
 }
 
-/** Loads a twemoji image, caches the result (null on failure). */
 async function loadTwemojiImg(char, cache) {
   if (cache.has(char)) return cache.get(char);
   try {
@@ -226,17 +214,8 @@ async function loadTwemojiImg(char, cache) {
   }
 }
 
-/**
- * Draws a mixed text+emoji string on the canvas.
- * Emoji are fetched from Twemoji CDN and drawn as inline images.
- * Discord custom emoji strings like <:name:id> are stripped silently.
- * Returns the final cursor X position.
- */
 async function drawTextWithEmoji(ctx, text, startX, baselineY, fontSize, color, cache) {
-  // Strip Discord custom emoji (they are not Unicode and can't be fetched from Twemoji)
   const cleaned = (text || '').replace(/<a?:[\w]+:\d+>/g, '').replace(/\s+/g, ' ').trim();
-
-  // Regex that matches most Unicode emoji (Emoji_Presentation + Extended_Pictographic)
   const EMOJI_RE = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
 
   ctx.font = `${fontSize}px sans-serif`;
@@ -247,13 +226,11 @@ async function drawTextWithEmoji(ctx, text, startX, baselineY, fontSize, color, 
   let lastIndex = 0;
 
   for (const match of cleaned.matchAll(EMOJI_RE)) {
-    // Draw plain text before this emoji
     const before = cleaned.slice(lastIndex, match.index);
     if (before) {
       ctx.fillText(before, cx, baselineY);
       cx += ctx.measureText(before).width;
     }
-    // Draw the emoji as a Twemoji image
     const img = await loadTwemojiImg(match[0], cache);
     if (img) {
       ctx.drawImage(img, cx, baselineY - fontSize * 0.82, fontSize * 1.1, fontSize * 1.1);
@@ -262,7 +239,6 @@ async function drawTextWithEmoji(ctx, text, startX, baselineY, fontSize, color, 
     lastIndex = match.index + match[0].length;
   }
 
-  // Draw any remaining plain text
   const rest = cleaned.slice(lastIndex);
   if (rest) {
     ctx.fillText(rest, cx, baselineY);
@@ -277,15 +253,14 @@ async function generateBattleImage({
   winner,
   userTeamHp, oppTeamHp,
   userTeamAlive, oppTeamAlive,
-  cashReward, passBonus, droppedItems
+  cashReward, passBonus, droppedItems,
+  winStreak = 0
 }) {
-  // Shared image cache for this render call — avoids duplicate CDN fetches
   const imageCache = new Map();
-  const W = 760, H = 420;
+  const W = 780, H = 420;
   const canvas = createCanvas(W, H);
   const ctx = canvas.getContext('2d');
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
   function roundRect(x, y, w, h, r) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -312,16 +287,15 @@ async function generateBattleImage({
     }
   }
 
-  // ── Background: forest image with dark overlay ───────────────────────────
-  const glowColor = winner === 'user' ? '#00c853' : winner === 'opp' ? '#ff3d00' : '#9e9e9e';
+  const glowColor = winner === 'user' ? '#00e676' : winner === 'opp' ? '#ff3d00' : '#7986cb';
 
+  // ── Background ────────────────────────────────────────────────────────────
   let bgLoaded = false;
   try {
     if (fs.existsSync(BattleBgPath)) {
       const bgImg = await loadImage(BattleBgPath);
       ctx.drawImage(bgImg, 0, 0, W, H);
-      // Dark overlay so text remains readable
-      ctx.fillStyle = 'rgba(4, 6, 18, 0.74)';
+      ctx.fillStyle = 'rgba(7, 9, 20, 0.82)';
       ctx.fillRect(0, 0, W, H);
       bgLoaded = true;
     }
@@ -329,198 +303,186 @@ async function generateBattleImage({
 
   if (!bgLoaded) {
     const bg = ctx.createLinearGradient(0, 0, W, H);
-    bg.addColorStop(0, '#0a0c18');
-    bg.addColorStop(1, '#0f1122');
+    bg.addColorStop(0, '#0a0d1e');
+    bg.addColorStop(1, '#0e1226');
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = 'rgba(255,255,255,0.025)';
-    ctx.lineWidth = 1;
-    for (let gx = 0; gx < W; gx += 40) { ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); }
-    for (let gy = 0; gy < H; gy += 40) { ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
   }
 
-  // Accent glow on top
-  const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, 300);
-  glow.addColorStop(0, glowColor + '55');
+  // Accent radial glow at the top
+  const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, 280);
+  glow.addColorStop(0, glowColor + '40');
   glow.addColorStop(1, 'transparent');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, H);
 
-  // ── Title ────────────────────────────────────────────────────────────────
-  ctx.font = 'bold 13px sans-serif';
+  // ── Header Title & Winner Banner ──────────────────────────────────────────
+  ctx.font = 'bold 10px sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.4)';
   ctx.textAlign = 'center';
-  ctx.fillText('ANIMAL BATTLE', W / 2, 24);
+  ctx.fillText('W I L D L I F E   A R E N A', W / 2, 18);
 
-  // ── Winner banner ─────────────────────────────────────────────────────────
   const bannerText = winner === 'user' ? `${username} wins!`
     : winner === 'opp' ? `${opponentUsername} wins!`
-      : `Tie!`;
+      : `Battle Tied!`;
 
-  const bW = 300, bH = 42, bX = (W - bW) / 2, bY = 34;
-  roundRect(bX, bY, bW, bH, 21);
-  ctx.fillStyle = glowColor + '22';
+  const bW = 340, bH = 38, bX = (W - bW) / 2, bY = 26;
+  roundRect(bX, bY, bW, bH, 19);
+  ctx.fillStyle = glowColor + '1a';
   ctx.fill();
-  roundRect(bX, bY, bW, bH, 21);
-  ctx.strokeStyle = glowColor;
+  roundRect(bX, bY, bW, bH, 19);
+  ctx.strokeStyle = glowColor + 'aa';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Draw winner banner text with emoji images (Twemoji CDN)
   {
     const bannerFullText = winner === 'tie' ? '🤝 ' + bannerText : '🏆 ' + bannerText;
-    ctx.font = 'bold 17px sans-serif';
-    // Estimate total width to center: one emoji + space + plain text
-    const emojiWidth = 17 * 1.1 + 2 + ctx.measureText(' ').width;
+    ctx.font = 'bold 15px sans-serif';
     const textWidth = ctx.measureText(bannerText).width;
+    const emojiWidth = 15 * 1.1 + 4;
     const totalWidth = emojiWidth + textWidth;
     const bannerStartX = W / 2 - totalWidth / 2;
-    await drawTextWithEmoji(ctx, bannerFullText, bannerStartX, bY + 27, 17, glowColor, imageCache);
+    await drawTextWithEmoji(ctx, bannerFullText, bannerStartX, bY + 24, 15, glowColor, imageCache);
   }
 
-  // ── Team panels ───────────────────────────────────────────────────────────
-  const panelY = 96, panelH = 210, panelW = 330, gap = 20;
+  // ── Team Cards ────────────────────────────────────────────────────────────
+  const panelY = 76, panelH = 250, panelW = 356, gap = 18;
   const leftX = gap, rightX = W - panelW - gap;
 
-  async function drawTeam(px, team, teamName, alive, isWinner) {
-    // Panel bg
-    roundRect(px, panelY, panelW, panelH, 14);
+  async function drawTeamCard(px, team, teamName, totalHp, aliveCount, isWinner) {
+    // Card background
+    roundRect(px, panelY, panelW, panelH, 16);
     const pg = ctx.createLinearGradient(px, panelY, px, panelY + panelH);
-    pg.addColorStop(0, isWinner ? glowColor + '28' : 'rgba(255,255,255,0.09)');
-    pg.addColorStop(1, 'rgba(0,0,0,0.45)');
+    pg.addColorStop(0, isWinner ? glowColor + '1f' : 'rgba(255,255,255,0.06)');
+    pg.addColorStop(1, 'rgba(10, 13, 26, 0.85)');
     ctx.fillStyle = pg;
     ctx.fill();
 
-    // Border
-    roundRect(px, panelY, panelW, panelH, 14);
-    ctx.strokeStyle = isWinner ? glowColor + 'cc' : 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = isWinner ? 2 : 1;
+    roundRect(px, panelY, panelW, panelH, 16);
+    ctx.strokeStyle = isWinner ? glowColor + '99' : 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = isWinner ? 1.5 : 1;
     ctx.stroke();
 
-    // Winner glow shadow
-    if (isWinner) {
-      ctx.save();
-      ctx.shadowColor = glowColor;
-      ctx.shadowBlur = 14;
-      roundRect(px, panelY, panelW, panelH, 14);
-      ctx.strokeStyle = glowColor + '66';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // Team name
+    // Card Header: Name + Life Status
     ctx.font = 'bold 13px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
     ctx.fillText(teamName, px + 14, panelY + 22);
-    ctx.font = '10px sans-serif';
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.fillText(`${alive} alive`, px + 14, panelY + 36);
 
-    // Animals
-    let ay = panelY + 52;
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = aliveCount > 0 ? '#81c784' : '#e57373';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${totalHp} HP · ${aliveCount}/3 alive`, px + panelW - 14, panelY + 22);
+    ctx.textAlign = 'left';
+
+    // 3 Animal Rows
+    let ay = panelY + 36;
     for (const animal of team.slice(0, 3)) {
       const stats = calculateAnimalStats(animal);
-      const maxHp = stats.baseHp + ((stats.level - 1) * 5);
+      const maxHp = stats.maxHp;
       const curHp = Math.max(0, stats.hp);
       const ratio = curHp / Math.max(maxHp, 1);
       const hpColor = ratio > 0.5 ? '#4caf50' : ratio > 0.25 ? '#ff9800' : '#f44336';
+      const isAlive = curHp > 0;
 
-      // Load emoji image from Discord CDN (or fall back to letter badge)
-      await drawAnimalIcon(ctx, stats.emoji, stats.name, px + 10, ay, 24, imageCache);
+      // Sub-card row container
+      roundRect(px + 10, ay, panelW - 20, 62, 10);
+      ctx.fillStyle = isAlive ? 'rgba(255, 255, 255, 0.03)' : 'rgba(255, 50, 50, 0.02)';
+      ctx.fill();
+      roundRect(px + 10, ay, panelW - 20, 62, 10);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
 
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.88)';
-      ctx.fillText(stats.name, px + 42, ay + 8);
+      // Animal icon
+      await drawAnimalIcon(ctx, stats.emoji, stats.name, px + 18, ay + 14, 34, imageCache);
+
+      // Animal name & stats
+      ctx.font = 'bold 13px sans-serif';
+      ctx.fillStyle = isAlive ? '#f0f4f8' : 'rgba(255,255,255,0.35)';
+      ctx.fillText(stats.name, px + 62, ay + 26);
 
       ctx.font = '10px sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.38)';
-      ctx.fillText(`Lv.${stats.level}  ·  ATK ${stats.attack}`, px + 42, ay + 21);
+      ctx.fillStyle = 'rgba(255,255,255,0.45)';
+      ctx.fillText(`Lv.${stats.level} · ${stats.attack} ATK`, px + 62, ay + 44);
 
-      drawHpBar(px + 42, ay + 26, panelW - 60, 5, curHp, maxHp, hpColor);
-
-      ctx.font = '9px sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      // HP status text & HP bar (right side)
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillStyle = isAlive ? '#81c784' : '#e57373';
       ctx.textAlign = 'right';
-      ctx.fillText(`${curHp} HP`, px + panelW - 12, ay + 33);
+      ctx.fillText(isAlive ? `${curHp}/${maxHp} HP` : 'FAINTED', px + panelW - 20, ay + 26);
       ctx.textAlign = 'left';
 
-      ay += 50;
+      drawHpBar(px + panelW - 110, ay + 36, 90, 5, curHp, maxHp, isAlive ? hpColor : 'rgba(255,255,255,0.08)');
+
+      ay += 68;
     }
   }
 
-  await drawTeam(leftX, userTeam, username, userTeamAlive, winner === 'user');
-  await drawTeam(rightX, oppTeam, opponentUsername, oppTeamAlive, winner === 'opp');
+  await drawTeamCard(leftX, userTeam, username, userTeamHp, userTeamAlive, winner === 'user');
+  await drawTeamCard(rightX, oppTeam, opponentUsername, oppTeamHp, oppTeamAlive, winner === 'opp');
 
-  // VS badge
+  // Center VS Badge
   const vsX = W / 2, vsY = panelY + panelH / 2;
-  roundRect(vsX - 20, vsY - 16, 40, 32, 16);
-  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.beginPath();
+  ctx.arc(vsX, vsY, 18, 0, Math.PI * 2);
+  ctx.fillStyle = '#101428';
   ctx.fill();
-  roundRect(vsX - 20, vsY - 16, 40, 32, 16);
-  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
   ctx.stroke();
-  ctx.font = 'bold 14px sans-serif';
-  ctx.fillStyle = 'rgba(255,255,255,0.45)';
-  ctx.textAlign = 'center';
-  ctx.fillText('VS', vsX, vsY + 5);
 
-  // ── Footer strip ──────────────────────────────────────────────────────────
-  const fY = panelY + panelH + 16, fH = 54;
-  roundRect(gap, fY, W - gap * 2, fH, 12);
-  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  ctx.font = 'bold 11px sans-serif';
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.textAlign = 'center';
+  ctx.fillText('VS', vsX, vsY + 4);
+
+  // ── Footer Reward Strip ───────────────────────────────────────────────────
+  const fY = panelY + panelH + 12, fH = 64;
+  roundRect(gap, fY, W - gap * 2, fH, 14);
+  ctx.fillStyle = 'rgba(18, 22, 40, 0.85)';
   ctx.fill();
-  roundRect(gap, fY, W - gap * 2, fH, 12);
-  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  roundRect(gap, fY, W - gap * 2, fH, 14);
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
   ctx.lineWidth = 1;
   ctx.stroke();
 
   ctx.textAlign = 'left';
   ctx.font = '11px sans-serif';
 
-  let line1 = '', line2 = '';
-
+  let line1 = '';
   if (winner !== 'tie') {
     const wName = winner === 'user' ? username : opponentUsername;
     line1 = `💰 ${wName} earned +${cashReward.toLocaleString()} cash`;
-    if (passBonus > 0) line1 += `  (+${passBonus.toLocaleString()} pass bonus)`;
+    if (passBonus > 0) line1 += ` (+${passBonus.toLocaleString()} pass bonus)`;
   } else {
-    line1 = 'No rewards for a tie.';
+    line1 = '🤝 Battle ended in a tie · No rewards granted.';
   }
 
   if (droppedItems && droppedItems.length > 0) {
-    line1 += `   🎁 ${droppedItems.map(d => `${d.item.emoji} ${d.item.name} ×${d.amount}`).join(', ')}`;
+    line1 += `  ·  🎁 ${droppedItems.map(d => `${d.item.emoji} ${d.item.name} ×${d.amount}`).join(', ')}`;
   }
 
-  line2 = '✨ All animals are safe.';
+  const line2 = '✨ All animals are safe · Full team gained combat EXP!';
 
-  await drawTextWithEmoji(ctx, line1, gap + 14, fY + 20, 11, 'rgba(255,255,255,0.55)', imageCache);
-  await drawTextWithEmoji(ctx, line2, gap + 14, fY + 38, 11, 'rgba(255,255,255,0.3)', imageCache);
+  await drawTextWithEmoji(ctx, line1, gap + 16, fY + 25, 11, 'rgba(255,255,255,0.7)', imageCache);
+  await drawTextWithEmoji(ctx, line2, gap + 16, fY + 47, 10, 'rgba(255,255,255,0.38)', imageCache);
 
   return canvas.toBuffer('image/png');
 }
 
-// ─── Live-update container builder ───────────────────────────────────────────
+// ─── Live-update container builder (during battle) ───────────────────────────
 
 function buildBattleContainer({
   username, opponentUsername,
   userTeamDisplay, oppTeamDisplay,
   statusLine = '', logLine = '',
-  winnerBlock = '', includeImage = false,
-  winnerColor = 0x808080,
-  userAvatarUrl = null,
+  winnerColor = 0x5865F2,
 }) {
-  // Fallback icon if no avatar is available
-  const ICON_SWORDS = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/2694.png'; // ⚔️
-
   const C = new ContainerBuilder()
     .setAccentColor(winnerColor)
-    // ── Header: title ─────────────────────────────────────────────────────────
-    .addTextDisplayComponents(t => t.setContent(`## Animal Battle`))
+    .addTextDisplayComponents(t => t.setContent(`### ⚔️ **Animal Battle Arena**`))
     .addSeparatorComponents(s => s)
-    // ── Challenger team: forest image thumbnail ────────────────────────────────
     .addSectionComponents(section =>
       section
         .addTextDisplayComponents(t => t.setContent(`**${username}**\n${userTeamDisplay}`))
@@ -530,47 +492,55 @@ function buildBattleContainer({
         })
     )
     .addSeparatorComponents(s => s)
-    // ── Opponent team: plain text (no thumbnail) ───────────────────────────
     .addTextDisplayComponents(t => t.setContent(`**${opponentUsername}**\n${oppTeamDisplay}`))
     .addSeparatorComponents(s => s);
 
   if (statusLine && statusLine.trim()) C.addTextDisplayComponents(t => t.setContent(statusLine));
   if (logLine && logLine.trim()) C.addTextDisplayComponents(t => t.setContent(logLine));
 
-  if (winnerBlock && winnerBlock.trim()) {
-    // C.addSeparatorComponents(s => s);
-    C.addTextDisplayComponents(t => t.setContent(winnerBlock));
+  return C;
+}
+
+// ─── Sleek final result container ─────────────────────────────────────────────
+
+function buildFinalBattleContainer({
+  titleText,
+  lifeStatusText = '',
+  streakText = '',
+  rewardText = '',
+  winnerColor = 0x00c853,
+}) {
+  const C = new ContainerBuilder()
+    .setAccentColor(winnerColor)
+    .addTextDisplayComponents(t => t.setContent(`### ${titleText}`))
+    .addSeparatorComponents(s => s);
+
+  if (lifeStatusText && lifeStatusText.trim()) {
+    C.addTextDisplayComponents(t => t.setContent(lifeStatusText));
   }
 
-  // Embed canvas result image using attachment:// protocol
-  if (includeImage) {
-    C.addMediaGalleryComponents(
-      media => media.addItems(item => item.setURL('attachment://battle-result.png'))
-    );
+  if (streakText && streakText.trim()) {
+    C.addTextDisplayComponents(t => t.setContent(streakText));
   }
+
+  if (rewardText && rewardText.trim()) {
+    C.addTextDisplayComponents(t => t.setContent(rewardText));
+  }
+
+  C.addMediaGalleryComponents(
+    media => media.addItems(item => item.setURL('attachment://battle-result.png'))
+  );
 
   return C;
 }
 
 // ─── Team helpers ─────────────────────────────────────────────────────────────
 
-/**
- * Builds a battle team from the user's saved preferred team list.
- *
- * - Iterates the preferred team entries and matches each against the user's
- *   actual animal collection (case-insensitive, must have totalAnimals > 0).
- * - If some preferred animals are missing (sold/dead), fills remaining slots
- *   with random animals from the rest of the collection.
- * - Returns [] only if the preferredTeam list itself is empty/null,
- *   signalling the caller to fall back to a fully random team.
- */
 function buildTeamFromPreferred(preferredTeam, userAnimals, maxSize = 3) {
   if (!preferredTeam || preferredTeam.length === 0) return [];
-
   const chosen = [];
   const seen = new Set();
 
-  // ── Step 1: pick animals that are still in the collection ─────────────────
   for (const entry of preferredTeam) {
     const name = entry?.name || (typeof entry === 'string' ? entry : null);
     if (!name) continue;
@@ -584,7 +554,6 @@ function buildTeamFromPreferred(preferredTeam, userAnimals, maxSize = 3) {
     }
   }
 
-  // ── Step 2: if slots remain, fill with random animals not already chosen ──
   if (chosen.length < maxSize) {
     const remaining = userAnimals
       .filter(a => (a.totalAnimals || 1) > 0 && !seen.has((a.name || '').toLowerCase()))
@@ -604,44 +573,133 @@ function selectRandomTeam(animals, maxSize = 3) {
   return [...available].sort(() => Math.random() - 0.5).slice(0, Math.min(maxSize, available.length));
 }
 
-// ─── Battle engine ────────────────────────────────────────────────────────────
+function generateWildTeam(avgLevel = 1) {
+  const available = animalsData.animals.filter(a => a.type !== 'exclusive');
+  const chosen = [...available].sort(() => Math.random() - 0.5).slice(0, 3);
+  return chosen.map(a => {
+    const level = Math.max(1, avgLevel + Math.floor(Math.random() * 3) - 1);
+    const stats = getAnimalBaseStats(a.name);
+    const maxHp = stats.baseHp + ((level - 1) * 8);
+    const attack = stats.baseAttack + ((level - 1) * 2);
+    return {
+      name: a.name,
+      level,
+      hp: maxHp,
+      maxHp,
+      attack,
+      emoji: a.emoji,
+      rarity: stats.rarity,
+      type: stats.type
+    };
+  });
+}
 
-async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 900, maxRounds = 20) {
-  const userAliveStats = userTeam.map(calculateAnimalStats);
-  const oppAliveStats = oppTeam.map(calculateAnimalStats);
-  let userAlive = [...userAliveStats];
-  let oppAlive = [...oppAliveStats];
+function formatTeamDisplay(team) {
+  return team.map(a => {
+    const s = calculateAnimalStats(a);
+    const hpStr = s.hp > 0 ? `\`${s.hp}/${s.maxHp} HP\`` : `\`FAINTED\``;
+    return `${s.emoji} **${s.name}** (Lv.${s.level}) · ${hpStr}`;
+  }).join('\n');
+}
+
+// ─── Battle engine (Max 4 Rounds) ───────────────────────────────────────────
+
+async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 1100, maxRounds = 4) {
+  const userAlive = userTeam.map(calculateAnimalStats);
+  const oppAlive = oppTeam.map(calculateAnimalStats);
   let round = 1;
 
-  while (round <= maxRounds && userAlive.length > 0 && oppAlive.length > 0) {
-    // User attacks
-    const ua = userAlive[Math.floor(Math.random() * userAlive.length)];
-    const od = oppAlive[Math.floor(Math.random() * oppAlive.length)];
-    const ud = calculateDamage(ua.attack);
-    od.hp -= ud;
+  while (round <= maxRounds) {
+    const uActive = userAlive.filter(a => a.hp > 0);
+    const oActive = oppAlive.filter(a => a.hp > 0);
 
-    let log = `<:claw:1493561807091138631> **Round ${round}** — ${ua.emoji} **${ua.name}** → ${od.emoji} **${od.name}** \`-${ud} HP\``;
-    if (od.hp <= 0) { log += `\n<:dead_skull:1493557754747420732> **${od.name}** defeated!`; oppAlive = oppAlive.filter(a => a !== od); }
-    await onUpdate({ round, logLine: log, userAlive: [...userAlive], oppAlive: [...oppAlive] });
-    if (oppAlive.length === 0) break;
+    if (uActive.length === 0 || oActive.length === 0) break;
 
-    // Opponent attacks
-    const oa = oppAlive[Math.floor(Math.random() * oppAlive.length)];
-    const ud2 = userAlive[Math.floor(Math.random() * userAlive.length)];
-    const od2 = calculateDamage(oa.attack);
-    ud2.hp -= od2;
+    const userFirst = Math.random() < 0.5;
+    const logs = [];
 
-    let log2 = `<:claw:1493561807091138631> **Round ${round}** — ${oa.emoji} **${oa.name}** → ${ud2.emoji} **${ud2.name}** \`-${od2} HP\``;
-    if (ud2.hp <= 0) { log2 += `\n<:dead_skull:1493557754747420732> **${ud2.name}** defeated!`; userAlive = userAlive.filter(a => a !== ud2); }
-    await onUpdate({ round, logLine: log2, userAlive: [...userAlive], oppAlive: [...oppAlive] });
+    if (userFirst) {
+      // User strikes
+      const ua = uActive[Math.floor(Math.random() * uActive.length)];
+      const od = oActive[Math.floor(Math.random() * oActive.length)];
+      const act = calculateAttackAction(ua, od);
+      od.hp = Math.max(0, od.hp - act.damage);
+
+      let log1 = `<:claw:1493561807091138631> ${ua.emoji} **${ua.name}** attacked ${od.emoji} **${od.name}** for **${act.damage} HP**!`;
+      if (act.isDodge) log1 = `💨 ${od.emoji} **${od.name}** dodged ${ua.emoji} **${ua.name}**'s attack!`;
+      else if (act.isCrit) log1 += ` 💥 *(Crit!)*`;
+      if (od.hp <= 0) log1 += `\n<:dead_skull:1493557754747420732> **${od.name}** fainted!`;
+      logs.push(log1);
+
+      // Opponent retaliates if any remain alive
+      const remainingOpp = oppAlive.filter(a => a.hp > 0);
+      if (remainingOpp.length > 0) {
+        const oa = remainingOpp[Math.floor(Math.random() * remainingOpp.length)];
+        const ud = userAlive.filter(a => a.hp > 0)[Math.floor(Math.random() * userAlive.filter(a => a.hp > 0).length)];
+        if (ud) {
+          const act2 = calculateAttackAction(oa, ud);
+          ud.hp = Math.max(0, ud.hp - act2.damage);
+
+          let log2 = `<:claw:1493561807091138631> ${oa.emoji} **${oa.name}** struck back at ${ud.emoji} **${ud.name}** for **${act2.damage} HP**!`;
+          if (act2.isDodge) log2 = `💨 ${ud.emoji} **${ud.name}** dodged ${oa.emoji} **${oa.name}**'s attack!`;
+          else if (act2.isCrit) log2 += ` 💥 *(Crit!)*`;
+          if (ud.hp <= 0) log2 += `\n<:dead_skull:1493557754747420732> **${ud.name}** fainted!`;
+          logs.push(log2);
+        }
+      }
+    } else {
+      // Opponent strikes first
+      const oa = oActive[Math.floor(Math.random() * oActive.length)];
+      const ud = uActive[Math.floor(Math.random() * uActive.length)];
+      const act = calculateAttackAction(oa, ud);
+      ud.hp = Math.max(0, ud.hp - act.damage);
+
+      let log1 = `<:claw:1493561807091138631> ${oa.emoji} **${oa.name}** attacked ${ud.emoji} **${ud.name}** for **${act.damage} HP**!`;
+      if (act.isDodge) log1 = `💨 ${ud.emoji} **${ud.name}** dodged ${oa.emoji} **${oa.name}**'s attack!`;
+      else if (act.isCrit) log1 += ` 💥 *(Crit!)*`;
+      if (ud.hp <= 0) log1 += `\n<:dead_skull:1493557754747420732> **${ud.name}** fainted!`;
+      logs.push(log1);
+
+      // User retaliates if any remain alive
+      const remainingUser = userAlive.filter(a => a.hp > 0);
+      if (remainingUser.length > 0) {
+        const ua = remainingUser[Math.floor(Math.random() * remainingUser.length)];
+        const od = oppAlive.filter(a => a.hp > 0)[Math.floor(Math.random() * oppAlive.filter(a => a.hp > 0).length)];
+        if (od) {
+          const act2 = calculateAttackAction(ua, od);
+          od.hp = Math.max(0, od.hp - act2.damage);
+
+          let log2 = `<:claw:1493561807091138631> ${ua.emoji} **${ua.name}** struck back at ${od.emoji} **${od.name}** for **${act2.damage} HP**!`;
+          if (act2.isDodge) log2 = `💨 ${od.emoji} **${od.name}** dodged ${ua.emoji} **${ua.name}**'s attack!`;
+          else if (act2.isCrit) log2 += ` 💥 *(Crit!)*`;
+          if (od.hp <= 0) log2 += `\n<:dead_skull:1493557754747420732> **${od.name}** fainted!`;
+          logs.push(log2);
+        }
+      }
+    }
+
+    const roundLog = `**Round ${round} / ${maxRounds}**\n` + logs.join('\n');
+    await onUpdate({
+      round,
+      logLine: roundLog,
+      userTeamState: userAlive,
+      oppTeamState: oppAlive
+    });
+
+    if (userAlive.filter(a => a.hp > 0).length === 0 || oppAlive.filter(a => a.hp > 0).length === 0) {
+      break;
+    }
 
     round++;
     await new Promise(res => setTimeout(res, delayMs));
   }
 
+  const uFinalAlive = userAlive.filter(a => a.hp > 0);
+  const oFinalAlive = oppAlive.filter(a => a.hp > 0);
+
   let winner;
-  if (userAlive.length > 0 && oppAlive.length === 0) winner = 'user';
-  else if (oppAlive.length > 0 && userAlive.length === 0) winner = 'opp';
+  if (uFinalAlive.length > 0 && oFinalAlive.length === 0) winner = 'user';
+  else if (oFinalAlive.length > 0 && uFinalAlive.length === 0) winner = 'opp';
   else {
     const uHp = userAlive.reduce((s, a) => s + Math.max(0, a.hp), 0);
     const oHp = oppAlive.reduce((s, a) => s + Math.max(0, a.hp), 0);
@@ -650,164 +708,197 @@ async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 900,
 
   return {
     winner,
+    userFinalTeam: userAlive,
+    oppFinalTeam: oppAlive,
     userTeamHp: userAlive.reduce((s, a) => s + Math.max(0, a.hp), 0),
     oppTeamHp: oppAlive.reduce((s, a) => s + Math.max(0, a.hp), 0),
-    userTeamAlive: userAlive.length,
-    oppTeamAlive: oppAlive.length
+    userTeamAlive: uFinalAlive.length,
+    oppTeamAlive: oFinalAlive.length
   };
 }
 
-// ─── Rewards & death ──────────────────────────────────────────────────────────
+// ─── Rewards & EXP ──────────────────────────────────────────────────────────
 
-function removeAnimals(user, team) {
-  team.forEach(animal => {
-    const idx = user.hunt.animals.findIndex(a =>
-      a.name === animal.name && (a.level === animal.level || !animal.level)
+function applyTeamExp(huntUser, team, expAmount) {
+  if (!huntUser?.hunt?.animals) return;
+  team.forEach(tAnimal => {
+    const idx = huntUser.hunt.animals.findIndex(a =>
+      a.name.toLowerCase() === tAnimal.name.toLowerCase()
     );
-    if (idx !== -1) {
-      if (user.hunt.animals[idx].totalAnimals > 1) user.hunt.animals[idx].totalAnimals -= 1;
-      else user.hunt.animals.splice(idx, 1);
+    if (idx !== -1 && huntUser.hunt.animals[idx]) {
+      const animal = huntUser.hunt.animals[idx];
+      animal.exp = (animal.exp || 0) + expAmount;
+
+      // Level-up curve: (level * 30) XP
+      while (animal.exp >= (animal.level || 1) * 30) {
+        const needed = (animal.level || 1) * 30;
+        animal.level = (animal.level || 1) + 1;
+        animal.exp -= needed;
+        const base = getAnimalBaseStats(animal.name);
+        animal.hp = base.baseHp + ((animal.level - 1) * 8);
+        animal.attack = base.baseAttack + ((animal.level - 1) * 2);
+      }
+
+      // Sync saved team member level
+      if (huntUser.hunt.team && huntUser.hunt.team.length > 0) {
+        const teamIdx = huntUser.hunt.team.findIndex(t => t.name.toLowerCase() === animal.name.toLowerCase());
+        if (teamIdx !== -1) {
+          huntUser.hunt.team[teamIdx].level = animal.level;
+        }
+      }
     }
   });
 }
 
-async function grantBattleRewards({ userId, defeatedTeam = [], winningTeam = [], huntUser = null }) {
+async function grantBattleRewards({ userId, defeatedTeam = [], winningTeam = [], huntUser = null, isWinner = true }) {
   const userData = await getUserData(userId);
   if (!userData) return { cashReward: 0, items: [], passBonus: 0 };
 
   const teamStrength = defeatedTeam.reduce((sum, a) => {
     const s = calculateAnimalStats(a);
-    return sum + s.hp + (s.attack * 10);
+    return sum + s.maxHp + (s.attack * 8);
   }, 0);
-  let cashReward = Math.floor(500 + teamStrength * 0.5);
 
+  let cashReward = isWinner ? Math.floor(500 + teamStrength * 0.6) : 0;
   let passBonus = 0;
-  const passInfo = await checkPassValidity(userId);
-  if (passInfo.isValid) {
-    const mult = (passInfo.passType === 'etheral' || passInfo.passType === 'celestia') ? 0.15 : 0.10;
-    passBonus = Math.floor(cashReward * mult);
-    cashReward += passBonus;
-  }
 
-  const avgRarity = defeatedTeam.length > 0
-    ? defeatedTeam.reduce((s, a) => s + (getAnimalBaseStats(a.name).rarity || 1), 0) / defeatedTeam.length
-    : 1;
-
-  const dropChance = Math.min(0.2 + (avgRarity - 1) * 0.05, 0.5);
-  const droppedItems = [];
-
-  if (Math.random() < dropChance) {
-    const itemRarity = avgRarity >= 4 ? 'rare' : avgRarity >= 3 ? 'uncommon' : 'common';
-    const pools = { common: ['food', 'milk'], uncommon: ['food', 'premium_food', 'torch', 'lollipop'], rare: ['premium_food', 'torch', 'drink', 'ticket'] };
-    const pool = pools[itemRarity] || pools.common;
-    const item = ITEM_DEFINITIONS[pool[Math.floor(Math.random() * pool.length)]];
-    if (item) {
-      const amount = itemRarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
-      await updateUser(userId, { [`inventory.${item.id}`]: (userData.inventory?.[item.id] || 0) + amount });
-      droppedItems.push({ item, amount });
+  if (isWinner && cashReward > 0) {
+    const passInfo = await checkPassValidity(userId);
+    if (passInfo.isValid) {
+      const mult = (passInfo.passType === 'etheral' || passInfo.passType === 'celestia') ? 0.15 : 0.10;
+      passBonus = Math.floor(cashReward * mult);
+      cashReward += passBonus;
     }
   }
 
-  userData.cash += cashReward;
+  const droppedItems = [];
+  if (isWinner) {
+    const avgRarity = defeatedTeam.length > 0
+      ? defeatedTeam.reduce((s, a) => s + (getAnimalBaseStats(a.name).rarity || 1), 0) / defeatedTeam.length
+      : 1;
 
-  // ── EXP gain for winning team (50 XP per animal) ──────────────────────
-  if (huntUser?.hunt?.animals) {
-    const XP_GAIN = 50;
-    winningTeam.forEach(animal => {
-      const idx = huntUser.hunt.animals.findIndex(a =>
-        a.name === animal.name && (a.level === animal.level || !animal.level)
-      );
-      if (idx !== -1 && huntUser.hunt.animals[idx]) {
-        huntUser.hunt.animals[idx].exp = (huntUser.hunt.animals[idx].exp || 0) + XP_GAIN;
-        // Level-up loop
-        while (huntUser.hunt.animals[idx].exp >= (huntUser.hunt.animals[idx].level || 1) * 25) {
-          const neededExp = (huntUser.hunt.animals[idx].level || 1) * 25;
-          huntUser.hunt.animals[idx].level = (huntUser.hunt.animals[idx].level || 1) + 1;
-          huntUser.hunt.animals[idx].exp -= neededExp;
-          const base = getAnimalBaseStats(animal.name);
-          huntUser.hunt.animals[idx].hp = base.baseHp + ((huntUser.hunt.animals[idx].level - 1) * 5);
-          huntUser.hunt.animals[idx].attack = base.baseAttack + (huntUser.hunt.animals[idx].level - 1);
-        }
+    const dropChance = Math.min(0.25 + (avgRarity - 1) * 0.06, 0.6);
+    if (Math.random() < dropChance) {
+      const itemRarity = avgRarity >= 4 ? 'rare' : avgRarity >= 3 ? 'uncommon' : 'common';
+      const pools = {
+        common: ['food', 'milk'],
+        uncommon: ['food', 'premium_food', 'torch', 'lollipop'],
+        rare: ['premium_food', 'torch', 'drink', 'ticket']
+      };
+      const pool = pools[itemRarity] || pools.common;
+      const item = ITEM_DEFINITIONS[pool[Math.floor(Math.random() * pool.length)]];
+      if (item) {
+        const amount = itemRarity === 'rare' ? 1 + Math.floor(Math.random() * 2) : 1;
+        await updateUser(userId, { [`inventory.${item.id}`]: (userData.inventory?.[item.id] || 0) + amount });
+        droppedItems.push({ item, amount });
       }
-    });
+    }
   }
 
-  await updateUser(userId, { cash: userData.cash });
+  // Grant EXP (Winner: 50 XP per animal, Loser: 20 XP participation)
+  const expReward = isWinner ? 50 : 20;
+  applyTeamExp(huntUser, winningTeam, expReward);
+
+  if (cashReward > 0) {
+    userData.cash = (userData.cash || 0) + cashReward;
+    await updateUser(userId, { cash: userData.cash });
+  }
+
   return { cashReward, items: droppedItems, passBonus };
 }
 
 // ─── Main command ──────────────────────────────────────────────────────────────
 
-export async function battleCommand(context, { opponentId }) {
+export async function battleCommand(context, { opponentId = null, isWild = false }) {
   try {
     const userId = context.user?.id || context.author?.id;
     const username = context.user?.username || context.author?.username;
 
-    if (!opponentId || opponentId === userId)
-      return handleMessage(context, { content: `<:warning:1366050875243757699> Mention a valid opponent. You can't battle yourself.` });
+    let opponentUser = null;
+    let opponentUsername = 'Wild Wildlife';
+    let isNpcBattle = isWild;
 
-    let opponentUser;
-    try { opponentUser = await context.client?.users?.fetch(opponentId) || null; }
-    catch (e) { return handleMessage(context, { content: `<:warning:1366050875243757699>  Opponent not found.` }); }
+    if (!isNpcBattle && opponentId && opponentId !== userId) {
+      try {
+        opponentUser = await context.client?.users?.fetch(opponentId) || null;
+      } catch (e) {
+        opponentUser = null;
+      }
 
-    if (opponentUser?.bot)
-      return handleMessage(context, { content: `<:warning:1366050875243757699> Can't battle bot accounts.` });
-
-    const opponentUsername = opponentUser?.username || 'Unknown';
-
-    // Avatar URLs for the card thumbnails (Discord CDN — always accessible)
-    const userAvatarUrl = (context.user || context.author)?.displayAvatarURL({ size: 64, extension: 'png' }) || null;
-    const oppAvatarUrl = opponentUser?.displayAvatarURL({ size: 64, extension: 'png' }) || null;
+      if (opponentUser?.bot) {
+        isNpcBattle = true;
+        opponentUsername = 'Forest Guardians';
+      } else if (opponentUser) {
+        opponentUsername = opponentUser.username || 'Opponent';
+      } else {
+        isNpcBattle = true;
+        opponentUsername = 'Wild Wildlife';
+      }
+    } else {
+      isNpcBattle = true;
+      opponentUsername = 'Wild Wildlife';
+    }
 
     let user = await User.findOne({ discordId: userId });
-    let opp = await User.findOne({ discordId: opponentId });
-
-    if (!user) { user = new User({ discordId: userId, hunt: { animals: [], unlockedLocations: ['Forest'] } }); await user.save(); }
-    if (!opp) { opp = new User({ discordId: opponentId, hunt: { animals: [], unlockedLocations: ['Forest'] } }); await opp.save(); }
+    if (!user) {
+      user = new User({ discordId: userId, hunt: { animals: [], unlockedLocations: ['Forest'] } });
+      await user.save();
+    }
 
     const userAnimals = user.hunt?.animals || [];
-    const oppAnimals = opp.hunt?.animals || [];
+    if (userAnimals.length === 0) {
+      return handleMessage(context, {
+        content: `<:warning:1366050875243757699> **${username}**, you have no animals. Use \`kas hunt\` to capture some first!`
+      });
+    }
 
-    if (userAnimals.length === 0)
-      return handleMessage(context, { content: `<:warning:1366050875243757699> **${username}**, you have no animals. Use \`kas hunt\` first.` });
-    if (oppAnimals.length === 0)
-      return handleMessage(context, { content: `<:warning:1366050875243757699> **${opponentUsername}** has no animals.` });
-
-    // If team is set, buildTeamFromPreferred uses saved animals + fills slots randomly.
-    // Only falls back to selectRandomTeam if user has no team saved at all.
     const userTeam = user.hunt?.team?.length > 0
       ? buildTeamFromPreferred(user.hunt.team, userAnimals, 3)
       : selectRandomTeam(userAnimals, 3);
 
-    const oppTeam = opp.hunt?.team?.length > 0
-      ? buildTeamFromPreferred(opp.hunt.team, oppAnimals, 3)
-      : selectRandomTeam(oppAnimals, 3);
+    if (userTeam.length === 0) {
+      return handleMessage(context, {
+        content: `<:warning:1366050875243757699> You have no available animals for battle.`
+      });
+    }
 
-    if (userTeam.length === 0 || oppTeam.length === 0)
-      return handleMessage(context, { content: `<:warning:1366050875243757699> One player has no available animals.` });
+    const userAvgLevel = Math.round(userTeam.reduce((s, a) => s + (a.level || 1), 0) / userTeam.length);
 
-    const userTeamDisplay = userTeam.map(a => {
-      const s = calculateAnimalStats(a);
-      return `${s.emoji} **${a.name}** Lv.${a.level || 1} · ${s.hp} HP · ${s.attack} ATK`;
-    }).join('\n');
+    let opp = null;
+    let oppTeam = [];
 
-    const oppTeamDisplay = oppTeam.map(a => {
-      const s = calculateAnimalStats(a);
-      return `${s.emoji} **${a.name}** Lv.${a.level || 1} · ${s.hp} HP · ${s.attack} ATK`;
-    }).join('\n');
+    if (!isNpcBattle && opponentUser) {
+      opp = await User.findOne({ discordId: opponentUser.id });
+      if (!opp) {
+        opp = new User({ discordId: opponentUser.id, hunt: { animals: [], unlockedLocations: ['Forest'] } });
+        await opp.save();
+      }
+      const oppAnimals = opp.hunt?.animals || [];
+      if (oppAnimals.length === 0) {
+        return handleMessage(context, {
+          content: `<:warning:1366050875243757699> **${opponentUsername}** has no animals in their cage.`
+        });
+      }
+      oppTeam = opp.hunt?.team?.length > 0
+        ? buildTeamFromPreferred(opp.hunt.team, oppAnimals, 3)
+        : selectRandomTeam(oppAnimals, 3);
+    } else {
+      oppTeam = generateWildTeam(userAvgLevel);
+    }
 
-    // Build thumbnail attachment for the forest image (used in challenger team section)
     const thumbnailAttachment = fs.existsSync(BattleThumbnailPath)
       ? new AttachmentBuilder(fs.readFileSync(BattleThumbnailPath), { name: 'battle_thumbnail.png' })
       : null;
 
-    // ── Initial card ────────────────────────────────────────────────────────
+    // ── Initial card (Round 1 / 4) ──────────────────────────────────────────
     const initialContainer = buildBattleContainer({
-      username, opponentUsername,
-      userTeamDisplay, oppTeamDisplay,
-      statusLine: '*Preparing the arena...*',
-      logLine: '', winnerBlock: '', includeImage: false, winnerColor: 0x808080,
-      userAvatarUrl
+      username,
+      opponentUsername,
+      userTeamDisplay: formatTeamDisplay(userTeam),
+      oppTeamDisplay: formatTeamDisplay(oppTeam),
+      statusLine: '⏳ *Entering the battle arena...*',
+      logLine: '',
+      winnerColor: 0x5865F2,
     });
 
     const sentMsg = await sendEditableInitial(context, {
@@ -816,93 +907,174 @@ export async function battleCommand(context, { opponentId }) {
       ...(thumbnailAttachment ? { files: [thumbnailAttachment] } : {})
     });
 
-    // ── Live battle ─────────────────────────────────────────────────────────
+    // ── Live battle (Max 4 Rounds) ──────────────────────────────────────────
     const battleResult = await runBattleWithProgress(userTeam, oppTeam, async (update) => {
-      const uHp = update.userAlive.reduce((s, a) => s + Math.max(0, a.hp), 0);
-      const oHp = update.oppAlive.reduce((s, a) => s + Math.max(0, a.hp), 0);
-      const statusLine = `${username} **${uHp} HP** (${update.userAlive.length} alive)  ·  ${opponentUsername} **${oHp} HP** (${update.oppAlive.length} alive)`;
+      const uHp = update.userTeamState.reduce((s, a) => s + Math.max(0, a.hp), 0);
+      const oHp = update.oppTeamState.reduce((s, a) => s + Math.max(0, a.hp), 0);
+      const uAlive = update.userTeamState.filter(a => a.hp > 0).length;
+      const oAlive = update.oppTeamState.filter(a => a.hp > 0).length;
+
+      const statusLine = `🟢 **Round ${update.round} / 4** · ${username} **${uHp} HP** (${uAlive} alive) vs ${opponentUsername} **${oHp} HP** (${oAlive} alive)`;
 
       const c = buildBattleContainer({
-        username, opponentUsername,
-        userTeamDisplay, oppTeamDisplay,
-        statusLine, logLine: update.logLine,
-        winnerBlock: '', includeImage: false, winnerColor: 0x808080,
-        userAvatarUrl
+        username,
+        opponentUsername,
+        userTeamDisplay: formatTeamDisplay(update.userTeamState),
+        oppTeamDisplay: formatTeamDisplay(update.oppTeamState),
+        statusLine,
+        logLine: update.logLine,
+        winnerColor: 0x5865F2,
       });
+
       await editExisting(context, sentMsg, {
         components: [c],
         flags: MessageFlags.IsComponentsV2,
         ...(thumbnailAttachment ? { files: [thumbnailAttachment] } : {})
       });
-    }, 900);
+    }, 1100, 4);
+
+    // ── Win Streak & Stats Tracking ─────────────────────────────────────────
+    if (battleResult.winner === 'user') {
+      user.hunt.winStreak = (user.hunt.winStreak || 0) + 1;
+      user.hunt.battlesWon = (user.hunt.battlesWon || 0) + 1;
+      if (user.hunt.winStreak > (user.hunt.highestWinStreak || 0)) {
+        user.hunt.highestWinStreak = user.hunt.winStreak;
+      }
+      if (opp) {
+        opp.hunt.winStreak = 0;
+        opp.hunt.battlesLost = (opp.hunt.battlesLost || 0) + 1;
+      }
+    } else if (battleResult.winner === 'opp') {
+      user.hunt.winStreak = 0;
+      user.hunt.battlesLost = (user.hunt.battlesLost || 0) + 1;
+      if (opp) {
+        opp.hunt.winStreak = (opp.hunt.winStreak || 0) + 1;
+        opp.hunt.battlesWon = (opp.hunt.battlesWon || 0) + 1;
+        if (opp.hunt.winStreak > (opp.hunt.highestWinStreak || 0)) {
+          opp.hunt.highestWinStreak = opp.hunt.winStreak;
+        }
+      }
+    }
 
     // ── Rewards ─────────────────────────────────────────────────────────────
-    // Animals never die from battle — zoo count only changes on sell.
     let cashReward = 0, droppedItems = [], passBonus = 0;
 
     if (battleResult.winner === 'user') {
-      const r = await grantBattleRewards({ userId, defeatedTeam: oppTeam, winningTeam: userTeam, huntUser: user });
-      cashReward = r.cashReward; droppedItems = r.items; passBonus = r.passBonus;
+      const r = await grantBattleRewards({
+        userId,
+        defeatedTeam: oppTeam,
+        winningTeam: userTeam,
+        huntUser: user,
+        isWinner: true
+      });
+      cashReward = r.cashReward;
+      droppedItems = r.items;
+      passBonus = r.passBonus;
+
+      if (!isNpcBattle && opp && opponentUser) {
+        await grantBattleRewards({
+          userId: opponentUser.id,
+          defeatedTeam: userTeam,
+          winningTeam: oppTeam,
+          huntUser: opp,
+          isWinner: false
+        });
+      }
     } else if (battleResult.winner === 'opp') {
-      const r = await grantBattleRewards({ userId: opponentId, defeatedTeam: userTeam, winningTeam: oppTeam, huntUser: opp });
-      cashReward = r.cashReward; droppedItems = r.items; passBonus = r.passBonus;
+      if (!isNpcBattle && opp && opponentUser) {
+        const r = await grantBattleRewards({
+          userId: opponentUser.id,
+          defeatedTeam: userTeam,
+          winningTeam: oppTeam,
+          huntUser: opp,
+          isWinner: true
+        });
+        cashReward = r.cashReward;
+        droppedItems = r.items;
+        passBonus = r.passBonus;
+      }
+
+      await grantBattleRewards({
+        userId,
+        defeatedTeam: oppTeam,
+        winningTeam: userTeam,
+        huntUser: user,
+        isWinner: false
+      });
     }
 
     await user.save();
-    await opp.save();
+    if (opp) await opp.save();
 
-    // ── Final result text ───────────────────────────────────────────────────
+    // ── Sleek Final Result Construction ─────────────────────────────────────
     const winnerColor = battleResult.winner === 'user' ? 0x00c853 : battleResult.winner === 'opp' ? 0xff3d00 : 0x808080;
-    const winnerName = battleResult.winner === 'user' ? username : opponentUsername;
-    const loserName = battleResult.winner === 'user' ? opponentUsername : username;
-    let winnerBlock = battleResult.winner === 'user' ? `<:trophy:1352897371595477084> **${username}** wins!`
-      : battleResult.winner === 'opp' ? `<:trophy:1352897371595477084> **${opponentUsername}** wins!`
-        : `🤝 Tie!`;
+    const winnerTitle = battleResult.winner === 'user'
+      ? `<:trophy:1352897371595477084> **${username}** won the battle!`
+      : battleResult.winner === 'opp'
+        ? `<:trophy:1352897371595477084> **${opponentUsername}** won the battle!`
+        : `🤝 **Battle Tied!**`;
 
-    winnerBlock += `\n${username} **${Math.max(0, battleResult.userTeamHp)} HP** · ${opponentUsername} **${Math.max(0, battleResult.oppTeamHp)} HP**`;
+    const uIcon = battleResult.userTeamHp > 0 ? '💚' : '💔';
+    const oIcon = battleResult.oppTeamHp > 0 ? '💚' : '💔';
+    const lifeStatusText = `${uIcon} **${username}:** \`${battleResult.userTeamHp} HP\` (${battleResult.userTeamAlive} alive)   ·   ${oIcon} **${opponentUsername}:** \`${battleResult.oppTeamHp} HP\` (${battleResult.oppTeamAlive} alive)`;
 
-    if (battleResult.winner !== 'tie') {
-      winnerBlock += `\n<:moneybag:1365976001179553792> **${winnerName}** earned <:kasiko_coin:1300141236841086977> **${cashReward.toLocaleString()}**`;
-      if (passBonus > 0) winnerBlock += ` *(+${passBonus.toLocaleString()} pass bonus)*`;
+    const streakCount = user.hunt.winStreak || 0;
+    const bestStreak = user.hunt.highestWinStreak || 0;
+    let streakText = '';
+    if (battleResult.winner === 'user') {
+      streakText = `🔥 **Win Streak:** \`${streakCount}\` *(Best: ${bestStreak})*`;
+    } else if (battleResult.winner === 'opp') {
+      streakText = `💔 **Streak Reset:** \`0\` *(Best: ${bestStreak})*`;
+    } else {
+      streakText = `🔥 **Win Streak:** \`${streakCount}\` *(Best: ${bestStreak})*`;
     }
-    if (droppedItems.length > 0)
-      winnerBlock += `\n<:reward_box:1366435558011965500>  ${droppedItems.map(d => `${d.item.emoji} **${d.item.name}** ×${d.amount}`).join(', ')}`;
-    winnerBlock += `\n<a:custom_exclusive_badge_23:1355149433137926394> All animals are safe.`;
 
-    // ── Generate canvas image ───────────────────────────────────────────────
+    let rewardText = '';
+    if (battleResult.winner !== 'tie' && cashReward > 0) {
+      const wName = battleResult.winner === 'user' ? username : opponentUsername;
+      rewardText = `<:moneybag:1365976001179553792> **${wName}** earned <:kasiko_coin:1300141236841086977> **${cashReward.toLocaleString()}**`;
+      if (passBonus > 0) rewardText += ` *(+${passBonus.toLocaleString()} pass bonus)*`;
+      if (droppedItems.length > 0) {
+        rewardText += ` · 🎁 ${droppedItems.map(d => `${d.item.emoji} ${d.item.name} ×${d.amount}`).join(', ')}`;
+      }
+    }
+
+    // ── Generate Canvas Result Image ────────────────────────────────────────
     let attachment = null;
     try {
       const buf = await generateBattleImage({
-        username, opponentUsername,
-        userTeam, oppTeam,
+        username,
+        opponentUsername,
+        userTeam: battleResult.userFinalTeam,
+        oppTeam: battleResult.oppFinalTeam,
         winner: battleResult.winner,
         userTeamHp: battleResult.userTeamHp,
         oppTeamHp: battleResult.oppTeamHp,
         userTeamAlive: battleResult.userTeamAlive,
         oppTeamAlive: battleResult.oppTeamAlive,
-        cashReward, passBonus, droppedItems
+        cashReward,
+        passBonus,
+        droppedItems,
+        winStreak: user.hunt.winStreak
       });
       attachment = new AttachmentBuilder(buf, { name: 'battle-result.png' });
     } catch (e) {
       console.error('Battle canvas error:', e);
     }
 
-    // ── Edit existing message with final result ─────────────────────────────
-    const finalContainer = buildBattleContainer({
-      username, opponentUsername,
-      userTeamDisplay, oppTeamDisplay,
-      statusLine: '', logLine: '',
-      winnerBlock,
-      includeImage: !!attachment,
+    // ── Edit into sleek final container ─────────────────────────────────────
+    const finalContainer = buildFinalBattleContainer({
+      titleText: winnerTitle,
+      lifeStatusText,
+      streakText,
+      rewardText,
       winnerColor,
-      userAvatarUrl
     });
 
     await editExisting(context, sentMsg, {
       components: [finalContainer],
       flags: MessageFlags.IsComponentsV2,
       files: [
-        ...(thumbnailAttachment ? [thumbnailAttachment] : []),
         ...(attachment ? [attachment] : [])
       ]
     });
@@ -917,26 +1089,34 @@ export async function battleCommand(context, { opponentId }) {
 
 export default {
   name: 'animalbattle',
-  description: 'Battle another player with your animals! Up to 3 animals each.',
+  description: 'Battle wild beasts or challenge other players with your animals!',
   aliases: ['abattle', 'ab', 'animalfight', 'afight'],
-  args: '<@opponent>',
-  example: ['animalbattle @user', 'abattle @friend', 'ab @opponent'],
+  args: '[@opponent|wild]',
+  example: ['animalbattle @user', 'abattle wild', 'ab'],
   emoji: '⚔️',
-  cooldown: 30000,
+  cooldown: 15000,
   category: '🦌 Wildlife',
 
   execute: async (args, context) => {
     args.shift();
     let opponentId = null;
+    let isWild = false;
+
     const mentionedUser = context.mentions?.users?.first?.();
     if (mentionedUser) {
       opponentId = mentionedUser.id;
     } else if (args[0]) {
-      const m = args[0].match(/<@!?(\d+)>/);
-      opponentId = m ? m[1] : args[0];
+      const firstArg = args[0].toLowerCase();
+      if (firstArg === 'wild' || firstArg === 'npc' || firstArg === 'solo') {
+        isWild = true;
+      } else {
+        const m = args[0].match(/<@!?(\d+)>/);
+        opponentId = m ? m[1] : args[0];
+      }
+    } else {
+      isWild = true;
     }
-    if (!opponentId)
-      return handleMessage(context, { content: `<:warning:1366050875243757699> Mention an opponent.\n**Usage:** \`kas ab @user\`` });
-    await battleCommand(context, { opponentId });
+
+    await battleCommand(context, { opponentId, isWild });
   }
 };

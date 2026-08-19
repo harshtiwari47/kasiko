@@ -82,6 +82,10 @@ export const categoriesEmoji = {
     name: "lighting_icon_kasiko",
     id: "1354393463931670568"
   },
+  ocean: {
+    name: "betta",
+    id: "1326125169571401758"
+  },
   "ocean life": {
     name: "betta",
     id: "1326125169571401758"

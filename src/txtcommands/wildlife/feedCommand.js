@@ -97,15 +97,25 @@ export async function feedCommand(context, {
     const expGain = foodItem.id === 'premium_food' ? 30 : 15;
     animal.exp += expGain;
 
-    // Level up check
-    const requiredExp = animal.level * 25;
+    // Level up check (level * 30 XP curve)
     let leveledUp = false;
-    if (animal.exp >= requiredExp) {
+    let requiredExp = animal.level * 30;
+    while (animal.exp >= (animal.level || 1) * 30) {
       leveledUp = true;
-      animal.level += 1;
-      animal.hp += 10; // Raise HP each level
-      animal.attack += 2;
-      animal.exp -= requiredExp; // Leftover exp
+      const needed = (animal.level || 1) * 30;
+      animal.level = (animal.level || 1) + 1;
+      animal.exp -= needed;
+      animal.hp = (animal.hp || 30) + 8;
+      animal.attack = (animal.attack || 5) + 2;
+    }
+    requiredExp = (animal.level || 1) * 30;
+
+    // Sync saved team member level if in team
+    if (leveledUp && user.hunt?.team?.length > 0) {
+      const teamIdx = user.hunt.team.findIndex(t => t.name?.toLowerCase() === animal.name?.toLowerCase());
+      if (teamIdx !== -1) {
+        user.hunt.team[teamIdx].level = animal.level;
+      }
     }
 
     // Consume food item

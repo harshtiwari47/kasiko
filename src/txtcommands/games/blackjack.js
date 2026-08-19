@@ -66,7 +66,16 @@ export async function blackjack(id, amount, channel, context) {
     if (!userData) return;
     if (!guild) return;
 
-    if (amount === "all") amount = userData.cash || 0;
+    if (amount === "all") {
+      amount = Math.min(300000, Number(userData.cash || 0));
+    } else {
+      amount = parseInt(amount, 10);
+    }
+
+    if (isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
+      return await handleMessage(context, `⚠️ **${guild.user.username}**, please enter a valid positive bet amount (minimum 1).`);
+    }
+
     if (amount > 300000) amount = 300000;
 
     if (userData.cash < amount) {

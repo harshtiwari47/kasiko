@@ -232,13 +232,32 @@ export async function marry(user, message) {
       return message.channel.send(`<:warning:1366050875243757699> You can not propose yourself!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
 
-    if (userData.family.spouse && userData.family.spouse !== user) {
+    if (guild.user.bot) {
+      return message.channel.send(`<:warning:1366050875243757699> You cannot marry a bot!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+
+    if (userData.family?.spouse && userData.family.spouse !== user) {
       return message.channel.send(`<:warning:1366050875243757699> You are already married! 🔫`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } else if (userData.family.spouse && userData.family.spouse === user) {
+    } else if (userData.family?.spouse && userData.family.spouse === user) {
       return message.channel.send(`<:warning:1366050875243757699> You are __already married__ to each other.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } else if (invitedUserData.family.spouse) {
+    } else if (invitedUserData.family?.spouse) {
       return message.channel.send(`<:warning:1366050875243757699> The user is __already married__.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } else {
+    }
+
+    // Family relationship checks
+    if (userData.family?.adopted?.some(c => c.userId === user) || invitedUserData.family?.parents?.adopter === message.author.id) {
+      return message.channel.send(`❌ You cannot marry your adopted child!`);
+    }
+    if (invitedUserData.family?.adopted?.some(c => c.userId === message.author.id) || userData.family?.parents?.adopter === user) {
+      return message.channel.send(`❌ You cannot marry your adoptive parent!`);
+    }
+    if (
+      userData.family?.parents?.adopter &&
+      invitedUserData.family?.parents?.adopter &&
+      userData.family.parents.adopter === invitedUserData.family.parents.adopter
+    ) {
+      return message.channel.send(`❌ You cannot marry your sibling!`);
+    }
       const title = "💍 𝑴𝒂𝒓𝒓𝒊𝒂𝒈𝒆 𝑷𝒓𝒐𝒑𝒐𝒔𝒂𝒍";
       const description = `<a:lg_flower:1356865948501540914> <@${message.author.id}> has proposed <:Bouquet:1356866221529628792> to you! Do you accept **<@${guild.user.id}>**?`;
       const replyMessage = await sendConfirmation(title, description, "#ee87ca", message, "marry");
@@ -313,7 +332,6 @@ export async function marry(user, message) {
             }
           } catch (e) {}
         });
-    }
   } catch (e) {
     console.error(e);
     return message.channel.send("<:warning:1366050875243757699> Something went wrong while sending proposal.").catch(err => ![50001,

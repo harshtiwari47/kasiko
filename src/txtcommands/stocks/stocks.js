@@ -321,59 +321,11 @@ export async function sendPaginatedStocks(context) {
   }
 }
 
+import { executeMarketCycle } from "./stockEngine.js";
+
 export async function updateStockPrices() {
   try {
-    const companies = await Company.find({});
-    for (const company of companies) {
-      // Calculate a random percentage change between -5% and +5%.
-      if (company.currentPrice < 5) company.currentPrice = 5;
-      const changePercent = Math.random() * 10 - 5; // Range: -5 to +5%
-      let newPrice = company.currentPrice * (1 + changePercent / 100);
-      // Ensure newPrice is at least 0.1 and round to one decimal place.
-      newPrice = Math.max(newPrice, 0.1);
-      newPrice = Math.round(newPrice * 10) / 10;
-
-      company.currentPrice = newPrice;
-
-      // Update last10Prices: add the new price and remove the oldest if there are more than 10 entries.
-      company.last10Prices.push(newPrice);
-      if (company.last10Prices.length > 10) {
-        company.last10Prices.shift();
-      }
-
-      // Recalculate maxPrice and minPrice from the last10Prices array.
-      company.maxPrice = Math.max(...company.last10Prices);
-      company.minPrice = Math.min(...company.last10Prices);
-
-      // Update marketCap as currentPrice * totalSharesOutstanding.
-      company.marketCap = parseFloat(
-        (company.currentPrice * company.totalSharesOutstanding).toFixed(2)
-      );
-      let trendInfo = "stable";
-
-      // Update trend based on the last three prices.
-      if (company.last10Prices.length >= 3) {
-        const len = company.last10Prices.length;
-        const [p1, p2, p3] = company.last10Prices.slice(len - 3);
-        if (p3 > p2 && p2 > p1) {
-          company.trend = "up";
-          trendInfo = "up";
-        } else if (p3 < p2 && p2 < p1) {
-          company.trend = "down";
-          trendInfo = "down";
-        } else {
-          company.trend = "stable";
-          trendInfo = "stable";
-        }
-      } else {
-        company.trend = "stable";
-      }
-
-      // Save the updated company data.
-      await company.save();
-
-      buildNews(company.name, trendInfo, company.toObject());
-    }
+    await executeMarketCycle(Company);
   } catch (err) {
     console.error("Error updating stock prices:", err);
   }

@@ -5,31 +5,31 @@ import {
 import {
   EmbedBuilder
 } from "discord.js";
+import { logAssetChange } from "../../utils/auditLogger.js";
 
 export default {
   name: "badge",
   description: "Add or remove a badge from a user's profile.",
-  aliases: [],
+  aliases: ["emoji"],
   args: "<add|remove> [@user] <badgeID>",
-  example: ["badge add @user 123",
-    "badge remove 123"],
+  example: [
+    "badge add @user 123",
+    "badge remove 123"
+  ],
   emoji: "🏷️",
   cooldown: 10000,
   category: "🧑🏻‍💻 Owner",
   execute: async (args, message) => {
     // Get the operation (should be "add" or "remove")
-    const operation = args[1];
-    if (!operation || !["add", "remove"].includes(operation.toLowerCase())) {
+    const operation = args[1]?.toLowerCase();
+    if (!operation || !["add", "remove"].includes(operation)) {
       return message.channel.send("❌ Please specify a valid operation: `add` or `remove`.");
     }
 
     if (args[3]) {
-      args[3] = args[3].replace("<", "");
-      args[3] = args[3].replace(">", "");
+      args[3] = args[3].replace("<", "").replace(">", "");
     }
 
-    // Determine if a user is mentioned.
-    // If a valid user is mentioned, use that user's ID and shift the badgeID index.
     let targetUser = message.mentions.users.first();
     let badgeId;
     if (targetUser) {
@@ -39,7 +39,7 @@ export default {
       badgeId = "<" + args[2] + ">";
     }
 
-    if (!badgeId) {
+    if (!badgeId || badgeId === "<undefined>") {
       return message.channel.send("❌ Please provide a badge ID.");
     }
 
@@ -55,14 +55,12 @@ export default {
     }
 
     // Process the operation.
-    if (operation.toLowerCase() === "add") {
-      // Check if the user already has the badge.
+    if (operation === "add") {
       if (userData.badges.includes(badgeId)) {
         return message.channel.send("❌ The user already has this badge.");
       }
       userData.badges.push(badgeId);
-    } else if (operation.toLowerCase() === "remove") {
-      // Check if the badge exists.
+    } else if (operation === "remove") {
       if (!userData.badges.includes(badgeId)) {
         return message.channel.send("❌ The user does not have this badge.");
       }
@@ -74,12 +72,24 @@ export default {
       await updateUser(targetUser.id, {
         badges: userData.badges
       });
+
+      // Send Audit Log
+      await logAssetChange({
+        client: message.client,
+        executor: message.author,
+        target: targetUser,
+        assetType: 'badge',
+        action: operation,
+        value: badgeId
+      });
+
       const embed = new EmbedBuilder()
-      .setColor("#ffcc00")
-      .setDescription(
-        operation.toLowerCase() === "add"
-        ? `🏷️ **${message.author.username}** added badge **${badgeId}** to <@${targetUser.id}>!`: `🏷️ **${message.author.username}** removed badge **${badgeId}** from <@${targetUser.id}>!`
-      );
+        .setColor("#ffcc00")
+        .setDescription(
+          operation === "add"
+            ? `🏷️ **${message.author.username}** added badge **${badgeId}** to <@${targetUser.id}>!`
+            : `🏷️ **${message.author.username}** removed badge **${badgeId}** from <@${targetUser.id}>!`
+        );
 
       return message.channel.send({
         embeds: [embed]

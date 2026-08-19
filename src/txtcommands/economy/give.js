@@ -52,6 +52,14 @@ export async function give(context, amount, recipientId) {
       name
     } = discordUser(context);
 
+    const amountNum = parseInt(amount, 10);
+    if (isNaN(amountNum) || amountNum <= 0 || !Number.isInteger(amountNum)) {
+      return await handleMessage(context,
+        `ⓘ **${name}**, the cash amount is invalid! It must be a positive whole number greater than zero.`
+      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+    amount = amountNum;
+
     if (userId === recipientId) {
       return await handleMessage(context,
         "¯⁠\\⁠_⁠(⁠ツ⁠)⁠_⁠/⁠¯ Giving **yourself** <:kasiko_coin:1300141236841086977> 𝑪𝒂𝒔𝒉?\nThat’s like trying to give your own reflection a high five—totally __unnecessary and a little weird__!"

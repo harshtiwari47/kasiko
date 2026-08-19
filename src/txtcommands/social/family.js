@@ -1,5 +1,6 @@
 import {
-  getUserData
+  getUserData,
+  updateUser
 } from '../../../database.js';
 import {
   ContainerBuilder,
@@ -20,27 +21,31 @@ async function removeSelfAdoption(context) {
   } = discordUser(context);
   const childData = await getUserData(childId);
 
-  const parents = childData.family?.parents;
+  const parents = childData?.family?.parents;
   if (!parents || !parents.adopter) {
-    return handleMessage(context, 'You do not have any adoption parents to leave.');
+    return handleMessage(context, 'You do not have any adoptive parents to leave.');
   }
 
   // Remove child from adopter's list
   const adopterId = parents.adopter;
   const adopterData = await getUserData(adopterId);
-  const updatedAdopted = adopterData.family?.adopted?.filter(c => c.userId !== childId) || [];
-  await updateUser(adopterId, {
-    'family.adopted': updatedAdopted
-  });
+  if (adopterData?.family?.adopted) {
+    const updatedAdopted = adopterData.family.adopted.filter(c => c.userId !== childId);
+    await updateUser(adopterId, {
+      'family.adopted': updatedAdopted
+    });
+  }
 
   // If adopter has spouse, update them too
-  if (adopterData.family?.spouse) {
+  if (adopterData?.family?.spouse) {
     const spouseId = adopterData.family.spouse;
     const spouseData = await getUserData(spouseId);
-    const spouseAdopted = spouseData.family?.adopted?.filter(c => c.userId !== childId) || [];
-    await updateUser(spouseId, {
-      'family.adopted': spouseAdopted
-    });
+    if (spouseData?.family?.adopted) {
+      const spouseAdopted = spouseData.family.adopted.filter(c => c.userId !== childId);
+      await updateUser(spouseId, {
+        'family.adopted': spouseAdopted
+      });
+    }
   }
 
   // Remove parents field from child
@@ -48,23 +53,24 @@ async function removeSelfAdoption(context) {
     'family.parents': null
   });
 
-  return handleMessage(context, `**${username}**, you have successfully left your adoptive parent(s).`);
+  return handleMessage(context, `**${username}**, you have successfully left your adoptive family.`);
 }
 
 export default {
   name: 'family',
   aliases: ['fam'],
-  description: 'View your family status or leave your adoptive parents if you have any.',
-  example: ['family',
+  description: 'View your family status or leave your adoptive parents.',
+  example: [
+    'family',
     'family @user',
-    'family left'],
+    'family left'
+  ],
   cooldown: 5000,
   category: '👤 User',
   async execute(args, message) {
     try {
       if (args[1]?.toLowerCase() === "left") {
-        await removeSelfAdoption(message);
-        return;
+        return await removeSelfAdoption(message);
       }
 
       // Determine target (self or mentioned user)
@@ -81,74 +87,91 @@ export default {
         name: authorName
       } = discordUser(message);
 
-      // Basic checks
-      if (!userData.family) {
-        return await handleMessage(message, `**${isSelf ? authorName: `They`}** have no family data.`);
+      if (!userData || !userData.family) {
+        return await handleMessage(message, `**${isSelf ? authorName : `They`}** have no family data.`);
       }
 
-      // Fetch spouse username or placeholder
+      // Fetch spouse username
       let spouseName = 'None';
       if (userData.family.spouse) {
         try {
           const user = await client.users.fetch(userData.family.spouse);
-          spouseName = user.username;
+          spouseName = user ? `<@${user.id}> (${user.username})` : 'None';
         } catch {
-          /* ignore */
+          spouseName = `<@${userData.family.spouse}>`;
         }
       }
 
-      // Children list
+      // Children lists
       const children = userData.family.children || [];
       const adopted = userData.family.adopted || [];
       const parentInfo = userData.family.parents || {};
 
       const Container = new ContainerBuilder()
-      .addTextDisplayComponents(
-        txt => txt.setContent(`### <:family:1390546644918992906> Family Overview`)
-      )
-      .addSeparatorComponents();
+        .addTextDisplayComponents(
+          txt => txt.setContent(`### <:family:1390546644918992906> Family Overview — <@${targetId}>`)
+        )
+        .addSeparatorComponents();
 
       Container.addTextDisplayComponents(
-        txt => txt.setContent(`**Spouse:** ${spouseName}`)
+        txt => txt.setContent(`**💍 Spouse:** ${spouseName}`)
       );
 
       // List Biological Children
-      Container.addTextDisplayComponents(
-        txt => txt.setContent(`**Children:** ${children.length}`),
-        txt => txt.setContent(`${children.map((c, i) => `• ${c.name} (${c.gender === 'B' ? 'Boy': c.gender === 'O' ? 'Other': 'Girl'})`).join('\n') || 'None'}`)
-      );
-
-      // List Adopted
-      const AdoptedUsernames = [];
-
-      if (adopted.length) {
-        for (let i = 0; i < adopted.length; i++) {
-          const user = await client.users.fetch(adopted[i]?.userId);
-          AdoptedUsernames.push(user?.username || "Unknown User");
-        }
+      if (children.length > 0) {
+        const childrenList = children.map(c => `• ${c.name} (${c.gender === 'B' ? 'Boy' : c.gender === 'G' ? 'Girl' : 'Child'}, XP: ${c.xp || 0})`).join('\n');
+        Container.addTextDisplayComponents(
+          txt => txt.setContent(`**👶 Biological Children (${children.length}):**\n${childrenList}`)
+        );
+      } else {
+        Container.addTextDisplayComponents(
+          txt => txt.setContent(`**👶 Biological Children:** None`)
+        );
       }
 
-      Container.addTextDisplayComponents(
-        txt => txt.setContent(`**Adopted:** ${AdoptedUsernames.length}`),
-        txt => txt.setContent(`${AdoptedUsernames.map((c, i) => `• ${c}`).join('\n') || 'None'}`)
-      );
+      // List Adopted Children
+      if (adopted.length > 0) {
+        const adoptedList = await Promise.all(
+          adopted.map(async c => {
+            let uName = c.userId;
+            try {
+              const u = await client.users.fetch(c.userId);
+              uName = u ? u.username : c.userId;
+            } catch (e) {}
+            return `• <@${c.userId}> (${uName}) [${c.gender === 'B' ? 'Boy' : c.gender === 'G' ? 'Girl' : 'Child'}]`;
+          })
+        );
+        Container.addTextDisplayComponents(
+          txt => txt.setContent(`**🧒 Adopted Children (${adopted.length}):**\n${adoptedList.join('\n')}`)
+        );
+      } else {
+        Container.addTextDisplayComponents(
+          txt => txt.setContent(`**🧒 Adopted Children:** None`)
+        );
+      }
 
       // Parent/Adopter info
       const parentParts = [];
       if (parentInfo.adopter && typeof parentInfo.adopter === "string") {
-        const user = await client.users.fetch(parentInfo.spouse);
-        parentParts.push(`Adopted By: ${user.username || 'Unknown'}`);
+        try {
+          const user = await client.users.fetch(parentInfo.adopter);
+          parentParts.push(`Adopted By: <@${parentInfo.adopter}> (${user?.username || 'Unknown'})`);
+        } catch {
+          parentParts.push(`Adopted By: <@${parentInfo.adopter}>`);
+        }
       }
 
       if (parentInfo.spouse && typeof parentInfo.spouse === "string") {
-        const user = await client.users.fetch(parentInfo.spouse)
-        parentParts.push(`Adopter Spouse: ${user.username || 'Unknown'}`);
+        try {
+          const user = await client.users.fetch(parentInfo.spouse);
+          parentParts.push(`Co-Parent: <@${parentInfo.spouse}> (${user?.username || 'Unknown'})`);
+        } catch {
+          parentParts.push(`Co-Parent: <@${parentInfo.spouse}>`);
+        }
       }
 
       Container.addTextDisplayComponents(
-        txt => txt.setContent(`**Parents:** ${
-          parentParts.length ? parentParts.join(' | '): 'None'
-          }`)
+        txt => txt.setContent(`**👪 Parents:** ${parentParts.length ? parentParts.join(' | ') : 'None'}`)
       );
 
       return await handleMessage(message, {
@@ -156,7 +179,7 @@ export default {
         flags: MessageFlags.IsComponentsV2
       });
     } catch (err) {
-      console.error(err);
+      console.error('[Family] Error:', err);
       return await handleMessage(message, '<:warning:1366050875243757699> Something went wrong fetching family info.');
     }
   }

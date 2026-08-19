@@ -50,9 +50,19 @@ export const Bank = {
 
       if (!userData) return;
 
-      if (amount && String(amount).toLowerCase() === "all") amount = Number(userData.cash || 0);
+      if (amount && String(amount).toLowerCase() === "all") {
+        amount = Number(userData.cash || 0);
+      } else {
+        amount = Number(amount);
+      }
 
-      if (userData.cash < Number(amount)) {
+      if (isNaN(amount) || amount <= 0 || !Number.isInteger(amount)) {
+        return await handleMessage(context,
+          `ⓘ **${name}**, please enter a valid positive integer amount to deposit!`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+
+      if (userData.cash < amount) {
         return await handleMessage(context,
           `ⓘ **${name}**, you don't have enough cash to deposit that amount!`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -66,15 +76,19 @@ export const Bank = {
       }
 
       // Deduct cash and increase bank deposit
-      let newDeposit = account.deposit + amount;
-      const bankLimit = account.level * (BankInfo.storage || 300000);
+      let newDeposit = Number(account.deposit || 0) + amount;
+      const bankLimit = (account.level || 1) * (BankInfo.storage || 300000);
 
       if (newDeposit > bankLimit) {
         amount = Math.max(0, amount - (newDeposit - bankLimit));
         newDeposit = bankLimit;
       }
 
-      userData.cash = Math.max(0, userData.cash - Number(amount));
+      if (amount <= 0) {
+        return await handleMessage(context, `ⓘ **${name}**, your bank vault is already at maximum capacity! Upgrade your bank level to store more.`);
+      }
+
+      userData.cash = Math.max(0, userData.cash - amount);
 
       try {
         await updateUser(userId, {
@@ -136,21 +150,29 @@ export const Bank = {
       }
 
       if (String(amount).toLowerCase() === "all") {
-        amount = Math.max(0, account.deposit);
+        amount = Math.max(0, Number(account.deposit || 0));
+      } else {
+        amount = Number(amount);
+      }
+
+      if (isNaN(amount) || amount <= 0 || !Number.isInteger(amount)) {
+        return await handleMessage(context,
+          `ⓘ **${name}**, please enter a valid positive integer amount to withdraw!`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       const totalWithdrawal = amount;
 
-      if (totalWithdrawal > account.deposit) {
+      if (totalWithdrawal > (account.deposit || 0)) {
         return await handleMessage(context,
-          `ⓘ **${name}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit).toLocaleString()}**`
+          `ⓘ **${name}**, you don't have enough funds in your bank account to withdraw <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**. You can withdraw <:kasiko_coin:1300141236841086977> **${(account.deposit || 0).toLocaleString()}**`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       // Calculate the new bank deposit and update the user's cash balance.
-      const newDeposit = Math.max(0, account.deposit - totalWithdrawal);
-      const originalCash = userData.cash; // Save original cash for potential rollback.
-      userData.cash = userData.cash + amount;
+      const newDeposit = Math.max(0, (account.deposit || 0) - totalWithdrawal);
+      const originalCash = userData.cash;
+      userData.cash = Number(userData.cash || 0) + amount;
 
       try {
         await updateUser(userId, {

@@ -13,59 +13,61 @@ import {
   calculateNetWorth
 } from '../../../utils/updateNetworth.js';
 
-
 async function sendUserStat(stat, message) {
   const userData = await getUserData(message.author.id);
+  if (!userData) return;
+
   const {
     name,
     avatar
   } = discordUser(message);
 
   if (stat === "cash") {
-    let cashStatus = "";
-    const currentCash = Number(userData["networth"]);
+    const currentCash = Number(userData["cash"] || 0);
+    const networth = Number(userData["networth"] || 0);
+    let cashStatus = "ɴᴏɴ_ᴍɪʟʟɪᴏɴᴀɪʀᴇ";
+    if (networth >= 1000000) cashStatus = "ᴍɪʟʟɪᴏɴᴀɪʀᴇ";
+    if (networth >= 10000000) cashStatus = "ʙɪʟʟɪᴏɴᴀɪʀᴇ";
+    if (networth >= 50000000) cashStatus = "ᴛʀɪʟʟɪᴏɴᴀɪʀᴇ";
 
-    if (currentCash < 1000000) cashStatus = `ɴᴏɴ_ᴍɪʟʟɪᴏɴᴀɪʀᴇ`;
-    if (currentCash > 1000000) cashStatus = `ᴍɪʟʟɪᴏɴᴀɪʀᴇ`;
-    if (currentCash > 5000000) cashStatus = `ʙɪʟʟɪᴏɴᴀɪʀᴇ`;
-    if (currentCash > 10000000) cashStatus = `ᴛʀɪʟʟɪᴏɴᴀɪʀᴇ`;
-    if (currentCash > 15000000) cashStatus = `ᴄʜɪʟʟɪᴏɴᴀɪʀᴇ`;
-
-    if (currentCash) return message.channel.send(`### 🜲 **${name} 𝐁𝐚𝐥𝐚𝐧𝐜𝐞**\n` + `**<:kasiko_coin:1300141236841086977> ⚡︎ ${userData[stat].toLocaleString()}** 𝑪𝒂𝒔𝒉\n` + `-# ⓘ ${cashStatus}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send(`### 🜲 **${name} 𝐁𝐚𝐥𝐚𝐧𝐜𝐞**\n` + `**<:kasiko_coin:1300141236841086977> ⚡︎ ${currentCash.toLocaleString()}** 𝑪𝒂𝒔𝒉\n` + `-# ⓘ ${cashStatus}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "trust") {
-    return message.channel.send(`**${name}** has total **${userData[stat]}** Trust Score.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send(`**${name}** has total **${userData[stat] || 0}** Trust Score.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  }
+  if (stat === "charity") {
+    const charityAmount = Number(userData["charity"] || 0);
+    return message.channel.send(`**${name}** has donated a total of <:kasiko_coin:1300141236841086977> **${charityAmount.toLocaleString()}** to charity.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "networth") {
     let newNetWorth = await calculateNetWorth(userData);
     if (newNetWorth) {
       userData[stat] = newNetWorth;
     }
-    return message.channel.send(`🜲 **${name}** has total <:kasiko_coin:1300141236841086977>**${userData[stat].toLocaleString()}** net worth.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send(`🜲 **${name}** has total <:kasiko_coin:1300141236841086977>**${Number(userData[stat] || 0).toLocaleString()}** net worth.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "level") {
-    // Calculate experience required for the next level
-    const expRequiredNextLvl = (Math.pow(userData["level"] + 1, 2) * 100) - Number(userData["exp"]);
+    const expRequiredNextLvl = (Math.pow(Number(userData["level"] || 1) + 1, 2) * 100) - Number(userData["exp"] || 0);
 
     return message.channel.send(
-      `亗 **${name}**, your level is <:level:1389092923525824552> **${userData["level"]}**.\n` +
-      `You need <:exp:1389092623477637190> **${expRequiredNextLvl}** more experience points to reach the next level!`
+      `亗 **${name}**, your level is <:level:1389092923525824552> **${userData["level"] || 1}**.\n` +
+      `You need <:exp:1389092623477637190> **${Math.max(0, expRequiredNextLvl)}** more experience points to reach the next level!`
     ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
   if (stat === "exp") {
-    return message.channel.send(`**${name}**'s current experience points are <:exp:1389092623477637190> **${userData[stat].toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return message.channel.send(`**${name}**'s current experience points are <:exp:1389092623477637190> **${Number(userData[stat] || 0).toLocaleString()}**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 
 // Helper function to determine which stat to display
 function handleUserStat(statType, message) {
   let name = statType;
-  if (statType === "c") name = "cash"
-  if (statType === "bal") name = "cash"
-  if (statType === "balance") name = "cash"
-  if (statType === "ts") name = "trust"
-  if (statType === "nw") name = "networth"
-  if (statType === "cy") name = "charity"
+  if (statType === "c") name = "cash";
+  if (statType === "bal") name = "cash";
+  if (statType === "balance") name = "cash";
+  if (statType === "ts") name = "trust";
+  if (statType === "nw") name = "networth";
+  if (statType === "cy") name = "charity";
 
   return sendUserStat(name, message);
 }
@@ -84,10 +86,8 @@ export default {
     "ts",
     "level",
     "exp",
-    "stats",
     "bal",
     "balance"],
-  // These aliases allow calling the command with any of the stats directly
   args: "<type>",
   emoji: "🧗🏻",
   example: [
@@ -95,6 +95,7 @@ export default {
     "stat cash",
     "networth",
     "trust",
+    "charity",
     "level",
     "exp"
   ],

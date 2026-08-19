@@ -5,14 +5,11 @@ import {
 import {
   EmbedBuilder
 } from "discord.js";
-import OwnerModel from "../../models/Owner.js";
-import {
-  client
-} from "../../bot.js";
+import { logBankAction } from "../../utils/auditLogger.js";
 
 export default {
   name: "bank",
-  description: "Check or deduct a user's bank balance (Owner only).",
+  description: "Check or deduct a user's bank balance (Management only).",
   aliases: [],
   args: "<status|deduct> <@user|userId> [amount]",
   example: [
@@ -24,17 +21,9 @@ export default {
   cooldown: 5000,
   category: "🧑🏻‍💻 Owner",
   execute: async (args, message) => {
-    const subcommand = args[1];
+    const subcommand = args[1]?.toLowerCase();
     const target = message.mentions.users.first();
     const targetId = target?.id || args[2];
-
-    // Owner check
-    const ownerDoc = await OwnerModel.findOne({
-      ownerId: message.author.id
-    });
-    if (!ownerDoc) {
-      return message.channel.send("❌ You are not authorized to use this command.");
-    }
 
     if (!["status", "deduct"].includes(subcommand)) {
       return message.channel.send("❌ Invalid subcommand. Use `status` or `deduct`.");
@@ -46,7 +35,7 @@ export default {
 
     let discordUser;
     try {
-      discordUser = target || await client.users.fetch(targetId);
+      discordUser = target || await message.client.users.fetch(targetId);
     } catch {
       return message.channel.send("❌ Could not find a user with that ID.");
     }
@@ -57,17 +46,18 @@ export default {
     }
 
     if (subcommand === "status") {
+      const bankDeposit = userData?.bankAccount?.deposit || 0;
+      const bankInterest = userData?.bankAccount?.interest || 0;
+
       const embed = new EmbedBuilder()
-      .setTitle(`🏦 Bank Status for ${discordUser.username}`)
-      .setColor("Blue")
-      .addFields(
-        {
-          name: "Bank", value: `<:kasiko_coin:1300141236841086977> ${userData?.bankAccount?.deposit?.toLocaleString()}`, inline: true
-        },
-        {
-          name: "Cash", value: `<:kasiko_coin:1300141236841086977> ${userData?.cash?.toLocaleString()}`, inline: true
-        }
-      );
+        .setTitle(`🏦 ${discordUser.username}'s Bank Details`)
+        .setColor("Blue")
+        .setDescription(
+          `👤 **User:** ${discordUser.tag} (\`${discordUser.id}\`)\n` +
+          `💰 **Cash in Hand:** <:kasiko_coin:1300141236841086977> **${(userData.cash || 0).toLocaleString()}**\n` +
+          `🏛️ **Bank Deposit:** <:kasiko_coin:1300141236841086977> **${bankDeposit.toLocaleString()}**\n` +
+          `📈 **Accumulated Interest:** <:kasiko_coin:1300141236841086977> **${bankInterest.toLocaleString()}**`
+        );
 
       return message.channel.send({
         embeds: [embed]
@@ -80,36 +70,30 @@ export default {
       return message.channel.send("❌ Please enter a valid amount to deduct.");
     }
 
-    if (userData.bank < amount) {
-      return message.channel.send(`❌ The user only has <:kasiko_coin:1300141236841086977> ${userData.bank.toLocaleString()} in their bank.`);
+    const currentDeposit = userData?.bankAccount?.deposit || 0;
+    if (currentDeposit < amount) {
+      return message.channel.send(`❌ The user only has <:kasiko_coin:1300141236841086977> ${currentDeposit.toLocaleString()} in their bank deposit.`);
     }
 
     try {
-      userData.bankAccount.deposit = Math.max(userData?.bankAccount?.deposit - amount, 0);
+      const newDeposit = Math.max(currentDeposit - amount, 0);
       await updateUser(discordUser.id, {
-        "bankAccount.deposit": userData.bankAccount.deposit
+        "bankAccount.deposit": newDeposit
       });
 
-      const logChannel = client.channels?.cache?.get('1361928841307623506');
-      const logEmbed = new EmbedBuilder()
-      .setTitle("𝗕𝗔𝗡𝗞 𝗗𝗘𝗗𝗨𝗖𝗧𝗜𝗢𝗡")
-      .setColor("Red")
-      .setDescription([
-        `👤 **User:** ${discordUser.tag}`,
-        `🏦 **Deducted By:** ${message.author.tag}`,
-        `💰 **Amount Deducted:** <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()}`,
-        `🏛️ **New Balance:** <:kasiko_coin:1300141236841086977> ${userData.bankAccount.deposit.toLocaleString()}`
-      ].join("\n"));
-
-      if (logChannel) {
-        logChannel.send({
-          embeds: [logEmbed]
-        });
-      }
+      // Send Audit Log
+      await logBankAction({
+        client: message.client,
+        executor: message.author,
+        target: discordUser,
+        action: 'deduct',
+        amount,
+        newBalance: newDeposit
+      });
 
       const confirmEmbed = new EmbedBuilder()
-      .setDescription(`✅ Successfully deducted <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** from **${discordUser.username}**'s bank.`)
-      .setColor("Green");
+        .setDescription(`✅ Successfully deducted <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** from **${discordUser.username}**'s bank deposit.`)
+        .setColor("Green");
 
       return message.channel.send({
         embeds: [confirmEmbed]

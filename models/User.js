@@ -229,24 +229,32 @@ const userSchema = new mongoose.Schema({
     settings: {
       dm: {
         type: Boolean,
-      default: true
+        default: true
+      },
+      eventAlerts: {
+        type: Boolean,
+        default: true
       }
+    },
+    claimedCampaigns: {
+      type: [String],
+      default: []
     },
     seasonalPasses: {
       type: Array,
-    default: []
+      default: []
     },
     inventory: {
       type: Object,
-    default: {}
+      default: {}
     },
     activeBoosts: {
       type: Object,
-    default: {}
+      default: {}
     },
     tasks: {
       type: Object,
-    default: {}
+      default: {}
     }
   }, {
     timestamps: true, // Adds `createdAt` and `updatedAt` fields

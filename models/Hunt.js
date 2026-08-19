@@ -85,6 +85,18 @@ const teamMemberSchema = new mongoose.Schema({
       unlockedLocations: {
         type: [String], default: ['Forest']
       },
+      winStreak: {
+        type: Number, default: 0
+      },
+      highestWinStreak: {
+        type: Number, default: 0
+      },
+      battlesWon: {
+        type: Number, default: 0
+      },
+      battlesLost: {
+        type: Number, default: 0
+      },
     },
 
     // Achievements, daily tasks, etc.

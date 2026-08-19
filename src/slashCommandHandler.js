@@ -55,6 +55,8 @@ const loadSlashCommands = async (directory, clientId, token, client) => {
 };
 
 
+import { sendErrorLog } from '../utils/errorLogger.js';
+
 /**
 * Handle interaction events for slash commands
 */
@@ -71,9 +73,19 @@ const handleSlashCommand = async (interaction) => {
     await command.execute(interaction);
   } catch (error) {
     console.error(`Error executing command ${interaction.commandName}:`, error);
-    interaction.reply({
-      content: 'There was an error executing this command.', ephemeral: true
-    });
+    sendErrorLog(error, {
+      source: `Slash Command Execution (/${interaction.commandName})`,
+      commandName: interaction.commandName,
+      user: interaction.user,
+      guild: interaction.guild,
+      channel: interaction.channel,
+      interaction
+    }).catch(() => {});
+    if (!interaction.replied && !interaction.deferred) {
+      interaction.reply({
+        content: 'There was an error executing this command.', ephemeral: true
+      }).catch(() => {});
+    }
   }
 };
 

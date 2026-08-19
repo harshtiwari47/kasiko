@@ -80,31 +80,32 @@ const logger = winston.createLogger({
   exitOnError: false // Prevent Winston from exiting on handled exceptions.
 });
 
-/*
-
 // Global error handlers.
 // Catch synchronous errors that aren't caught elsewhere.
 process.on('uncaughtException', (error) => {
   const errorMessage = `Uncaught Exception: ${error.stack || error}`;
   logger.error(errorMessage);
   storeErrorInMemory(errorMessage);
-  // Optionally, exit the process after logging if needed.
+  import('./utils/errorLogger.js')
+    .then(({ sendErrorLog }) => sendErrorLog(error, { source: 'Process Uncaught Exception' }))
+    .catch(() => {});
 });
 
 // Catch unhandled promise rejections.
 process.on('unhandledRejection', (reason, promise) => {
-  const errorMessage = `Unhandled Rejection at: ${promise} Reason: ${reason && reason.stack ? reason.stack: reason}`;
+  const errorMessage = `Unhandled Rejection at: ${promise} Reason: ${reason && reason.stack ? reason.stack : reason}`;
   logger.error(errorMessage);
   storeErrorInMemory(errorMessage);
-  // Optionally, exit the process after logging if needed.
-})
+  const errObj = reason instanceof Error ? reason : new Error(String(reason));
+  import('./utils/errorLogger.js')
+    .then(({ sendErrorLog }) => sendErrorLog(errObj, { source: 'Process Unhandled Rejection' }))
+    .catch(() => {});
+});
 
 process.on('warning', (warning) => {
   if (warning.code === 'DEP0160') return; // Ignore multipleResolves deprecation warning
   console.warn(warning.name, warning.message);
 });
-
-*/
 
 console.log("[AntiCrash] Advanced error handling initialized.");
 

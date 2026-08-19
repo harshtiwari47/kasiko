@@ -6,6 +6,7 @@ import {
 import {
   EmbedBuilder
 } from 'discord.js';
+import redisClient from '../../../../redis.js';
 
 async function handleMessage(context, data) {
   const isInteraction = !!context.isCommand;
@@ -19,8 +20,8 @@ async function handleMessage(context, data) {
 
 export async function sellSharesCommand(message, args) {
   try {
-    const userId = message.user ? message.user.id: message.author.id;
-    const username = message.user ? message.user.username: message.author.username;
+    const userId = message.user ? message.user.id : message.author.id;
+    const username = message.user ? message.user.username : message.author.username;
     
     // Expected usage: stock sell <companyName> <numShares>
     const companyName = args[1];
@@ -77,26 +78,61 @@ export async function sellSharesCommand(message, args) {
     const totalSaleValue = Math.round(currentPrice * numShares * 10) / 10;
 
     // Increase the user's cash by the sale value
-    userData.cash += totalSaleValue;
+    userData.cash = (userData.cash || 0) + totalSaleValue;
     await updateUser(userId, {
       cash: userData.cash
     });
 
-    // Update the shareholder's record
+    // Update the shareholder's record proportionally
+    const avgCostPerShare = (shareholder.cost || 0) / (shareholder.shares || 1);
     shareholder.shares -= numShares;
-    shareholder.cost -= totalSaleValue;
-    // Remove the shareholder entry if they no longer own any shares
-    if (shareholder.shares === 0) {
+    shareholder.cost = Math.max(0, (shareholder.cost || 0) - (avgCostPerShare * numShares));
+
+    if (shareholder.shares <= 0) {
       company.shareholders = company.shareholders.filter(s => s.userId !== userId);
     }
 
-    // Decrease total shares outstanding and update the market cap
-    company.totalSharesOutstanding -= numShares;
-    company.marketCap = currentPrice * company.totalSharesOutstanding;
+    // -----------------------------
+    // Downward Price impact mechanism
+    // -----------------------------
+    const previousSharesOutstanding = Math.max(1, company.totalSharesOutstanding || 1000);
+    const priceImpactFactor = 0.05;
+    const oldPrice = company.currentPrice;
+    const impact = Math.min(0.20, priceImpactFactor * (numShares / previousSharesOutstanding));
+    const newPrice = Math.max(0.1, Math.round(oldPrice * (1 - impact) * 10) / 10);
+
+    company.currentPrice = newPrice;
+    company.totalSharesOutstanding = Math.max(1, previousSharesOutstanding - numShares);
+    company.marketCap = parseFloat((company.currentPrice * company.totalSharesOutstanding).toFixed(2));
+
+    // Update rolling last10Prices array
+    company.last10Prices = company.last10Prices || [];
+    company.last10Prices.push(newPrice);
+    if (company.last10Prices.length > 10) {
+      company.last10Prices.shift();
+    }
+
+    // Append to price history
+    company.priceHistory = company.priceHistory || [];
+    company.priceHistory.push({
+      price: newPrice,
+      date: new Date()
+    });
+    if (company.priceHistory.length > 50) {
+      company.priceHistory.shift();
+    }
+
+    company.maxPrice = Math.max(...company.last10Prices, newPrice);
+    company.minPrice = Math.min(...company.last10Prices, newPrice);
+    company.trend = newPrice < oldPrice ? 'down' : (newPrice > oldPrice ? 'up' : 'stable');
 
     await company.save();
 
-    const description = `## 📊 𝐒𝐡𝐚𝐫𝐞𝐬 𝐒𝐨𝐥𝐝\n\n\n**${username}**, you have sold **${numShares}** shares of **${company.name}** for <:kasiko_coin:1300141236841086977> **${totalSaleValue}** 𝑪𝒂𝒔𝒉.`;
+    // Record trade volume & invalidate portfolio cache
+    await redisClient.incrByFloat(`stock:vol:sell:${company.name}`, numShares).catch(() => {});
+    await redisClient.del(`totalStockPrice:${userId}`).catch(() => {});
+
+    const description = `## 📊 𝐒𝐡𝐚𝐫𝐞𝐬 𝐒𝐨𝐥𝐝\n\n\n**${username}**, you have sold **${numShares}** shares of **${company.name}** for <:kasiko_coin:1300141236841086977> **${totalSaleValue.toLocaleString()}** 𝑪𝒂𝒔𝒉.\nɴᴇᴡ ꜱᴛᴏᴄᴋ ᴘʀɪᴄᴇ: **${company.currentPrice.toFixed(2)}**`;
 
     return handleMessage(message, {
       content: description

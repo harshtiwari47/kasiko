@@ -41,7 +41,8 @@ export const termsAndcondition = async (context) => {
       value:
       '1. **No Spamming**: Spamming commands or messages will result in a warning or ban.\n' +
       '2. **In-Game Currency Only**: Do not engage in real money transactions for in-game goods or services. If we detect this activity, it may result in a permanent ban from the bot.\n' +
-      '3. **Suspicious Activity**: Any attempt to exploit the game system or engage in unfair practices may lead to an immediate investigation and a potential ban.'
+      '3. **Suspicious Activity**: Any attempt to exploit the game system or engage in unfair practices may lead to an immediate investigation and a potential ban.\n' +
+      '4. **Direct Messages & Notifications**: The bot may send direct messages regarding major game events, seasonal rewards, vote reminders, and security notices. You can toggle or opt out of event notifications anytime using `kas event` or `kas notify`.'
     })
     .setFooter({
       text: 'By clicking "Accept", you agree to our Terms and Conditions and acknowledge the consequences for violating them.'

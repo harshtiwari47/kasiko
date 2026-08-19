@@ -18,14 +18,14 @@ import {
   updateExpPoints
 } from './utils/experience.js';
 
-import trackStats, {
-  sendBotStats,
-  sendTopServersEmbed
-} from './utils/stats.js';
+import trackStats from './utils/stats.js';
 
 import {
   OwnerCommands
 } from './src/owner/main.js';
+import {
+  initOwnerManager
+} from './src/owner/ownerManager.js';
 
 import redisClient from './redis.js';
 import {
@@ -59,15 +59,29 @@ import {
 } from "./helper.js";
 
 import {
-  scheduleReminders
+  scheduleReminders,
+  scheduleStatsSync,
+  scheduleGiveaways
 } from "./scheduler.js";
+import { handleGiveawayEntry } from './utils/giveawayEngine.js';
+import {
+  handleClaimBroadcastReward,
+  handleGuideModalOrReply,
+  handleToggleNotification
+} from './utils/broadcastEngine.js';
 
 import LoadEvents from "./events/events.js";
+import {
+  sendErrorLog,
+  initErrorLogger
+} from './utils/errorLogger.js';
 
 dotenv.config();
 
-// Run reminders
+// Run schedulers
 scheduleReminders();
+scheduleStatsSync();
+scheduleGiveaways();
 
 // Bind to port
 const app = express();
@@ -92,6 +106,8 @@ const clientId = developmentMode ? process.env.APP_IDDEV : process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  initErrorLogger(client);
+  await initOwnerManager(client);
   updateStatus(client);
   await loadSlashCommands('./src/slashcommands', clientId, TOKEN, client);
   LoadEvents(client);
@@ -120,11 +136,21 @@ client.on('messageCreate', async (message) => {
       console.error(e);
     }
 
-    if (message.content.toLowerCase().startsWith("kasmem")) return getTotalUser(client, message);
-    if (message.content.toLowerCase().startsWith("kasbstats")) return await sendBotStats(message, redisClient);
-    if (message.content.toLowerCase().startsWith("kastopsv")) return await sendTopServersEmbed(client, message, 10);
     if (message.content.toLowerCase().startsWith("kasupsat")) return updateStatus(client);
-    if (message.content.toLowerCase().startsWith("kasow")) return OwnerCommands(message.content.slice("kasow".toLowerCase().length).trim().split(/ +/), message);
+    if (message.content.toLowerCase().startsWith("kasow")) {
+      const ownerArgs = message.content.slice("kasow".length).trim().split(/ +/).filter(Boolean);
+      return OwnerCommands(ownerArgs, message);
+    }
+    if (message.content.toLowerCase().startsWith("kasbstats") || message.content.toLowerCase().startsWith("kasstats")) {
+      return OwnerCommands(["stats"], message);
+    }
+    if (developmentMode && message.content.toLowerCase().startsWith("kiow")) {
+      const ownerArgs = message.content.slice("kiow".length).trim().split(/ +/).filter(Boolean);
+      return OwnerCommands(ownerArgs, message);
+    }
+    if (developmentMode && (message.content.toLowerCase().startsWith("kistats") || message.content.toLowerCase().startsWith("kibstats"))) {
+      return OwnerCommands(["stats"], message);
+    }
 
     if (!(message.content.toLowerCase().startsWith(prefix) || message.content.toLowerCase().startsWith(BotPrefix))) return
 
@@ -293,10 +319,26 @@ client.on('messageCreate', async (message) => {
       command.execute(args, message);
     } catch (error) {
       console.error(error);
+      sendErrorLog(error, {
+        source: `Text Command Error (${commandName})`,
+        commandName,
+        args,
+        author: message.author,
+        guild: message.guild,
+        channel: message.channel,
+        message
+      }).catch(() => {});
       return message.reply("There was an error executing that command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
   } catch (e) {
     console.error(e);
+    sendErrorLog(e, {
+      source: 'MessageCreate Event Error',
+      author: message?.author,
+      guild: message?.guild,
+      channel: message?.channel,
+      message
+    }).catch(() => {});
     return;
   }
 });
@@ -345,6 +387,14 @@ client.on('interactionCreate', async (interaction) => {
       await handleSlashCommand(interaction);
     } catch (e) {
       console.error(e);
+      sendErrorLog(e, {
+        source: `Slash Command Error (/${interaction.commandName})`,
+        commandName: interaction.commandName,
+        user: interaction.user,
+        guild: interaction.guild,
+        channel: interaction.channel,
+        interaction
+      }).catch(() => {});
 
       if (interaction.replied || interaction.deferred) {
         return;
@@ -367,8 +417,32 @@ client.on('interactionCreate', async (interaction) => {
 
   // Button Interaction Handling
   if (interaction.isButton()) {
-    try { } catch (error) {
+    try {
+      if (interaction.customId.startsWith('giveaway_enter_')) {
+        await handleGiveawayEntry(interaction);
+        return;
+      }
+      if (interaction.customId.startsWith('broadcast_claim_')) {
+        await handleClaimBroadcastReward(interaction);
+        return;
+      }
+      if (interaction.customId === 'broadcast_guide') {
+        await handleGuideModalOrReply(interaction);
+        return;
+      }
+      if (interaction.customId === 'broadcast_toggle_notify') {
+        await handleToggleNotification(interaction);
+        return;
+      }
+    } catch (error) {
       console.error(error);
+      sendErrorLog(error, {
+        source: `Button Interaction Error (${interaction.customId})`,
+        user: interaction.user,
+        guild: interaction.guild,
+        channel: interaction.channel,
+        extra: { customId: interaction.customId }
+      }).catch(() => {});
     }
     return; // Exit after handling button interactions
   }
@@ -390,6 +464,14 @@ client.on('interactionCreate', async (interaction) => {
       await command.autocomplete(interaction);
     } catch (error) {
       console.error("Error handling autocomplete:", error);
+      sendErrorLog(error, {
+        source: `Autocomplete Error (/${interaction.commandName})`,
+        commandName: interaction.commandName,
+        user: interaction.user,
+        guild: interaction.guild,
+        channel: interaction.channel,
+        interaction
+      }).catch(() => {});
     }
   }
 });
@@ -435,11 +517,18 @@ client.on('guildCreate', async (guild) => {
 
   } catch (error) {
     console.error(`Error handling new guild ${guild.name}:`, error);
+    sendErrorLog(error, { source: 'GuildCreate Event Error', guild }).catch(() => {});
   }
 });
 
 client.on('error', (error) => {
   console.error('Discord.js Error:', error);
+  sendErrorLog(error, { source: 'Discord Client Error' }).catch(() => {});
+});
+
+client.on('shardError', (error, shardId) => {
+  console.error(`Discord Shard Error (${shardId}):`, error);
+  sendErrorLog(error, { source: `Discord Shard Error (Shard ${shardId})` }).catch(() => {});
 });
 
 client.on('guildDelete', async (guild) => {
