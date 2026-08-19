@@ -26,7 +26,8 @@ export const DEFAULT_REVIVAL_CAMPAIGN = {
     cash: 250000,
     items: [
       { id: 'scratch_card', amount: 2, name: 'Scratch Cards', emoji: '<:scratch_card:1382990344186105911>' },
-      { id: 'food', amount: 5, name: 'Animal Food', emoji: '<:food:1388844881153360003>' },
+      { id: 'premium_food', amount: 3, name: 'Premium Animal Food', emoji: '🍱' },
+      { id: 'food', amount: 5, name: 'Animal Food', emoji: '🥩' },
       { id: 'rose', amount: 5, name: 'Roses', emoji: '<:rose:1343097565738172488>' },
       { id: 'lollipop', amount: 3, name: 'Lollipops', emoji: '<:lollipop:1385131583333203968>' },
       { id: 'teddy', amount: 2, name: 'Teddy Bears', emoji: '<:teddybear:1385131451321946113>' }
@@ -56,7 +57,8 @@ export function buildBroadcastContainer({
       `🎁 **Your Welcome Back Gift Package:**\n` +
       `• <:kasiko_coin:1300141236841086977> **250,000 Cash**\n` +
       `• <:scratch_card:1382990344186105911> **2× Scratch Cards**\n` +
-      `• <:food:1388844881153360003> **5× Animal Food**\n` +
+      `• 🍱 **3× Premium Animal Food**\n` +
+      `• 🥩 **5× Animal Food**\n` +
       `• <:rose:1343097565738172488> **5× Roses**\n` +
       `• <:lollipop:1385131583333203968> **3× Lollipops**\n` +
       `• <:teddybear:1385131451321946113> **2× Teddy Bears**`
@@ -391,7 +393,8 @@ export async function handleClaimBroadcastReward(interaction) {
         `Your gift package has been added to your account:\n` +
         `• <:kasiko_coin:1300141236841086977> **+${rewards.cash.toLocaleString()} Cash**\n` +
         `• <:scratch_card:1382990344186105911> **+2 Scratch Cards**\n` +
-        `• <:food:1388844881153360003> **+5 Animal Food**\n` +
+        `• 🍱 **+3 Premium Animal Food**\n` +
+        `• 🥩 **+5 Animal Food**\n` +
         `• <:rose:1343097565738172488> **+5 Roses**\n` +
         `• <:lollipop:1385131583333203968> **+3 Lollipops**\n` +
         `• <:teddybear:1385131451321946113> **+2 Teddy Bears**\n\n` +
