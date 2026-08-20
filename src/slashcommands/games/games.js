@@ -4,6 +4,8 @@ import {
 import txtcommands from '../../textCommandHandler.js';
 import { toss } from '../../txtcommands/games/toss.js';
 import { blackjack } from '../../txtcommands/games/blackjack.js';
+import { slots } from '../../txtcommands/games/slots.js';
+import { rouletteGame } from '../../txtcommands/games/roulette.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -75,7 +77,7 @@ export default {
           opt
             .setName('choice')
             .setDescription('Space to bet on (e.g. red, black, green, or 0-36)')
-            .setRequired(true)
+            .setRequired(false)
         )
     ),
 
@@ -92,14 +94,12 @@ export default {
 
       case 'blackjack': {
         const bet = interaction.options.getInteger('bet');
-        return blackjack(userId, interaction, bet, interaction.channel);
+        return blackjack(userId, bet, interaction.channel, interaction);
       }
 
       case 'slots': {
         const bet = interaction.options.getInteger('bet');
-        const slotsCmd = txtcommands.get('slots');
-        if (slotsCmd?.execute) return await slotsCmd.execute(['slots', String(bet)], interaction);
-        return interaction.reply({ content: 'Slots command is currently unavailable.', ephemeral: true });
+        return slots(userId, bet, interaction.channel);
       }
 
       case 'scratch': {
@@ -110,10 +110,7 @@ export default {
 
       case 'roulette': {
         const bet = interaction.options.getInteger('bet');
-        const choice = interaction.options.getString('choice');
-        const rouletteCmd = txtcommands.get('roulette');
-        if (rouletteCmd?.execute) return await rouletteCmd.execute(['roulette', String(bet), choice], interaction);
-        return interaction.reply({ content: 'Roulette command is currently unavailable.', ephemeral: true });
+        return rouletteGame(userId, '1300081477358452756', bet, interaction.channel);
       }
 
       default:
