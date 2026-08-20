@@ -25,6 +25,8 @@ const redisUri = process.env.REDIS_URI;
 // ── In-Memory Fallback TTL Store (Resilience Engine) ──────────────────────────
 const _memKV = new Map(); // key -> { val: string, exp: number | null }
 const _memHash = new Map(); // key -> Map<field, string>
+const _memZSet = new Map(); // key -> Map<member, number>
+const _memHLL = new Map(); // key -> Set<member>
 
 // Periodic cleanup of expired fallback entries every 60s
 setInterval(() => {
@@ -67,6 +69,8 @@ function memDel(keys) {
   for (const k of arr) {
     if (_memKV.delete(k)) count++;
     if (_memHash.delete(k)) count++;
+    if (_memZSet.delete(k)) count++;
+    if (_memHLL.delete(k)) count++;
   }
   return count;
 }
@@ -124,6 +128,80 @@ function memHGetAll(key) {
     obj[f] = v;
   }
   return obj;
+}
+
+function memHIncrBy(key, field, increment) {
+  let hMap = _memHash.get(key);
+  if (!hMap) {
+    hMap = new Map();
+    _memHash.set(key, hMap);
+  }
+  const cur = parseInt(hMap.get(String(field)) || '0', 10);
+  const next = cur + Number(increment);
+  hMap.set(String(field), String(next));
+  return next;
+}
+
+function memZIncrBy(key, increment, member) {
+  let zMap = _memZSet.get(key);
+  if (!zMap) {
+    zMap = new Map();
+    _memZSet.set(key, zMap);
+  }
+  const cur = zMap.get(member) || 0;
+  const next = cur + Number(increment);
+  zMap.set(member, next);
+  return next;
+}
+
+function memZRangeWithScores(key, start, stop, options = {}) {
+  const zMap = _memZSet.get(key);
+  if (!zMap) return [];
+  let entries = Array.from(zMap.entries()).map(([value, score]) => ({ value, score }));
+  if (options.REV) {
+    entries.sort((a, b) => b.score - a.score);
+  } else {
+    entries.sort((a, b) => a.score - b.score);
+  }
+  const s = Math.max(0, start);
+  const e = stop === -1 ? entries.length : stop + 1;
+  return entries.slice(s, e);
+}
+
+function memPfAdd(key, element) {
+  let s = _memHLL.get(key);
+  if (!s) {
+    s = new Set();
+    _memHLL.set(key, s);
+  }
+  const before = s.size;
+  s.add(element);
+  return s.size > before ? 1 : 0;
+}
+
+function memPfCount(key) {
+  const s = _memHLL.get(key);
+  return s ? s.size : 0;
+}
+
+function createMockMulti() {
+  const pipeline = [];
+  const mock = {
+    incr: (k) => { pipeline.push(() => memIncr(k)); return mock; },
+    expire: (k, s) => { pipeline.push(() => memExpire(k, s)); return mock; },
+    zIncrBy: (k, inc, m) => { pipeline.push(() => memZIncrBy(k, inc, m)); return mock; },
+    pfAdd: (k, el) => { pipeline.push(() => memPfAdd(k, el)); return mock; },
+    hIncrBy: (k, f, inc) => { pipeline.push(() => memHIncrBy(k, f, inc)); return mock; },
+    setEx: (k, s, v) => { pipeline.push(() => memSet(k, v, { EX: s })); return mock; },
+    exec: async () => {
+      const results = [];
+      for (const fn of pipeline) {
+        results.push(fn());
+      }
+      return results;
+    }
+  };
+  return mock;
 }
 
 // ── Circuit Breaker & Connection Management ──────────────────────────────────
@@ -187,8 +265,8 @@ if (redisUri) {
   logger.warn('ℹ️ REDIS_URI not configured. Operating with high-speed in-memory store.');
 }
 
-// ── Resilient Proxy Client Export ────────────────────────────────────────────
-const resilientRedisClient = {
+// ── Resilient Base Client ────────────────────────────────────────────────────
+const baseClient = {
   get isOpen() {
     return _realClient ? _realClient.isOpen : true;
   },
@@ -209,7 +287,6 @@ const resilientRedisClient = {
   },
 
   async set(key, val, options = {}) {
-    // Write to memory fallback first for instant consistency
     memSet(key, val, options);
 
     if (this.isReady) {
@@ -320,6 +397,75 @@ const resilientRedisClient = {
     return memHGetAll(key);
   },
 
+  async hIncrBy(key, field, increment) {
+    const memVal = memHIncrBy(key, field, increment);
+    if (this.isReady) {
+      try {
+        return await _realClient.hIncrBy(key, field, increment);
+      } catch (err) {
+        tripCircuit(err);
+      }
+    }
+    return memVal;
+  },
+
+  async zIncrBy(key, increment, member) {
+    const memVal = memZIncrBy(key, increment, member);
+    if (this.isReady) {
+      try {
+        return await _realClient.zIncrBy(key, increment, member);
+      } catch (err) {
+        tripCircuit(err);
+      }
+    }
+    return memVal;
+  },
+
+  async zRangeWithScores(key, start, stop, options = {}) {
+    if (this.isReady) {
+      try {
+        return await _realClient.zRangeWithScores(key, start, stop, options);
+      } catch (err) {
+        tripCircuit(err);
+      }
+    }
+    return memZRangeWithScores(key, start, stop, options);
+  },
+
+  async pfAdd(key, element) {
+    const memVal = memPfAdd(key, element);
+    if (this.isReady) {
+      try {
+        return await _realClient.pfAdd(key, element);
+      } catch (err) {
+        tripCircuit(err);
+      }
+    }
+    return memVal;
+  },
+
+  async pfCount(key) {
+    if (this.isReady) {
+      try {
+        return await _realClient.pfCount(key);
+      } catch (err) {
+        tripCircuit(err);
+      }
+    }
+    return memPfCount(key);
+  },
+
+  multi() {
+    if (this.isReady && _realClient) {
+      try {
+        return _realClient.multi();
+      } catch (err) {
+        tripCircuit(err);
+      }
+    }
+    return createMockMulti();
+  },
+
   on(event, handler) {
     if (_realClient) {
       _realClient.on(event, handler);
@@ -346,6 +492,28 @@ const resilientRedisClient = {
     }
   }
 };
+
+// ── Transparent Proxy with Auto-Forwarding ──────────────────────────────────
+const resilientRedisClient = new Proxy(baseClient, {
+  get(target, prop, receiver) {
+    if (prop in target) {
+      return Reflect.get(target, prop, receiver);
+    }
+    if (_realClient && typeof _realClient[prop] === 'function') {
+      return async (...args) => {
+        if (target.isReady) {
+          try {
+            return await _realClient[prop](...args);
+          } catch (err) {
+            tripCircuit(err);
+          }
+        }
+        return null;
+      };
+    }
+    return undefined;
+  }
+});
 
 // Graceful Shutdown Handling
 const shutdown = async () => {
