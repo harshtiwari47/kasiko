@@ -7,19 +7,32 @@ import {
 } from './database.js';
 
 // A universal function for sending responses both to text commands and slash commands.
-// If it's an interaction (slash command), it will defer/edit reply.
-// If it's a text command, it will just channel.send().
+// Seamlessly adapts to interaction reply/editReply/followUp states and text channel messages.
 export async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
+  if (!context) return null;
+  const isInteraction = typeof context.isCommand === 'function' ? context.isCommand() : !!context.isCommand || !!context.commandName || typeof context.isChatInputCommand === 'function';
+
   if (isInteraction) {
-    // If not already deferred, defer it.
-    if (!context.replied && !context.deferred) {
-      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    try {
+      if (context.deferred || context.replied) {
+        return await context.editReply(data);
+      }
+      return await context.reply(data);
+    } catch (err) {
+      if (err.code === 40060 || err.code === 'InteractionAlreadyReplied' || context.deferred || context.replied) {
+        return await context.editReply(data).catch(e => context.followUp?.(data).catch(() => null));
+      }
+      if (err.code === 'InteractionNotReplied') {
+        return await context.reply(data).catch(() => null);
+      }
+      if (![50001, 50013, 10008].includes(err.code)) console.error(err);
+      return null;
     }
-    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    // For normal text-based usage
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    if (context.channel?.send) {
+      return await context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    }
+    return null;
   }
 }
 

@@ -12,6 +12,7 @@ import {
 } from '../../../utils/giveawayEngine.js';
 import { getOwner, hasOwnerPermission } from '../../owner/ownerManager.js';
 import { CHANNELS, COLORS } from '../../../constants.js';
+import { discordUser, handleMessage } from '../../../helper.js';
 
 function parseAmount(input) {
   if (!input) return null;
@@ -37,14 +38,14 @@ export default {
   execute: async (args, message) => {
     try {
       const sub = (args[1] || 'list').toLowerCase();
-      const userId = message.author.id;
+      const { id: userId } = discordUser(message);
       const ownerInfo = getOwner(userId);
       const isStaff = ownerInfo.isOwner && hasOwnerPermission(userId, 4);
 
       // ── Subcommand: START ─────────────────────────────────────────────────
       if (sub === 'start') {
         if (!isStaff) {
-          return message.reply('<:alert:1366050815089053808> You do not have staff permissions to start giveaways.');
+          return handleMessage(message, '<:alert:1366050815089053808> You do not have staff permissions to start giveaways.');
         }
 
         const prizeInput = args[2];
@@ -53,12 +54,11 @@ export default {
         const durationHours = durationInput ? parseFloat(durationInput) : 24;
 
         if (durationHours <= 0 || isNaN(durationHours)) {
-          return message.reply('<:warning:1366050875243757699> Invalid duration in hours. Example: `kas giveaway start 1m 24`');
+          return handleMessage(message, '<:warning:1366050875243757699> Invalid duration in hours. Example: `kas giveaway start 1m 24`');
         }
 
-        // Always post in the predefined giveaway channel from constants
         const targetChannelId = CHANNELS.GIVEAWAY;
-        const alertRoleMention = message.mentions.roles.first()?.id || (args[3] ? args[3].replace(/[<@&>]/g, '') : undefined);
+        const alertRoleMention = message.mentions?.roles?.first?.()?.id || (args[3] ? args[3].replace(/[<@&>]/g, '') : undefined);
 
         const doc = await startDailyGiveaway(message.client, {
           prize,
@@ -70,52 +70,52 @@ export default {
         });
 
         if (doc) {
-          return message.reply(`✅ **Giveaway launched!** Posted in <#${targetChannelId}> for <:kasiko_coin:1300141236841086977> **${doc.prize.toLocaleString()} Cash** (Duration: ${durationHours}h).`);
+          return handleMessage(message, `✅ **Giveaway launched!** Posted in <#${targetChannelId}> for <:kasiko_coin:1300141236841086977> **${doc.prize.toLocaleString()} Cash** (Duration: ${durationHours}h).`);
         } else {
-          return message.reply('<:alert:1366050815089053808> Failed to launch giveaway. Please check channel permissions.');
+          return handleMessage(message, '<:alert:1366050815089053808> Failed to launch giveaway. Please check channel permissions.');
         }
       }
 
       // ── Subcommand: END ───────────────────────────────────────────────────
       if (sub === 'end') {
         if (!isStaff) {
-          return message.reply('<:alert:1366050815089053808> You do not have staff permissions to end giveaways.');
+          return handleMessage(message, '<:alert:1366050815089053808> You do not have staff permissions to end giveaways.');
         }
 
         const messageId = args[2];
         if (!messageId) {
-          return message.reply('<:warning:1366050875243757699> Please provide the Giveaway Message ID. Usage: `kas giveaway end <messageId>`');
+          return handleMessage(message, '<:warning:1366050875243757699> Please provide the Giveaway Message ID. Usage: `kas giveaway end <messageId>`');
         }
 
         const giveaway = await Giveaway.findOne({ messageId });
         if (!giveaway) {
-          return message.reply('<:warning:1366050875243757699> Giveaway not found.');
+          return handleMessage(message, '<:warning:1366050875243757699> Giveaway not found.');
         }
 
         if (giveaway.ended) {
-          return message.reply('<:warning:1366050875243757699> This giveaway has already ended.');
+          return handleMessage(message, '<:warning:1366050875243757699> This giveaway has already ended.');
         }
 
         await resolveGiveaway(giveaway, message.client);
-        return message.reply(`✅ **Giveaway ended!** Winner has been selected and announced in <#${giveaway.channelId}>.`);
+        return handleMessage(message, `✅ **Giveaway ended!** Winner has been selected and announced in <#${giveaway.channelId}>.`);
       }
 
       // ── Subcommand: REROLL ────────────────────────────────────────────────
       if (sub === 'reroll') {
         if (!isStaff) {
-          return message.reply('<:alert:1366050815089053808> You do not have staff permissions to reroll giveaways.');
+          return handleMessage(message, '<:alert:1366050815089053808> You do not have staff permissions to reroll giveaways.');
         }
 
         const messageId = args[2];
         if (!messageId) {
-          return message.reply('<:warning:1366050875243757699> Please provide the Giveaway Message ID. Usage: `kas giveaway reroll <messageId>`');
+          return handleMessage(message, '<:warning:1366050875243757699> Please provide the Giveaway Message ID. Usage: `kas giveaway reroll <messageId>`');
         }
 
         try {
           const res = await rerollGiveaway(messageId, message.client);
-          return message.reply(`✅ **Giveaway rerolled!** New winner: <@${res.newWinnerId}> for <:kasiko_coin:1300141236841086977> **${res.prize.toLocaleString()} Cash**!`);
+          return handleMessage(message, `✅ **Giveaway rerolled!** New winner: <@${res.newWinnerId}> for <:kasiko_coin:1300141236841086977> **${res.prize.toLocaleString()} Cash**!`);
         } catch (err) {
-          return message.reply(`<:alert:1366050815089053808> ${err.message}`);
+          return handleMessage(message, `<:alert:1366050815089053808> ${err.message}`);
         }
       }
 
@@ -146,11 +146,11 @@ export default {
         .setFooter({ text: isStaff ? 'Staff Commands: kas giveaway start/end/reroll' : 'Click "Enter Giveaway" on active messages to participate!' })
         .setTimestamp();
 
-      return message.reply({ embeds: [embed] });
+      return handleMessage(message, { embeds: [embed] });
 
     } catch (err) {
       console.error('[GiveawayCommand] Error:', err);
-      return message.reply('<:alert:1366050815089053808> An error occurred while processing the giveaway command.');
+      return handleMessage(message, '<:alert:1366050815089053808> An error occurred while processing the giveaway command.');
     }
   }
 };

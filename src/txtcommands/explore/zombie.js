@@ -28,6 +28,7 @@ import {
 import zombieSurvivalBadges from "./zombie/zombieSurvivalBadges.js";
 import weaponsStats from "./zombie/weaponsStats.js";
 import redisClient from "../../../redis.js";
+import { discordUser, handleMessage } from "../../../helper.js";
 
 import locations from "./zombie/locations.js";
 import emojiList from "./zombie/emojiList.js";
@@ -878,19 +879,32 @@ export default {
     "zombie help"],
   category: "🍬 Explore",
 
-  execute: async (args,
-    message) => {
+  execute: async (args, message) => {
     try {
-      let subCommand = args.length ? args[1]: null;
+      const { id: userId, username, name } = discordUser(message);
+      if (!message.author) {
+        message.author = message.user || { id: userId, username, displayAvatarURL: () => '' };
+      }
+      if (!message.author.displayAvatarURL && message.user?.displayAvatarURL) {
+        message.author.displayAvatarURL = (opt) => message.user.displayAvatarURL(opt);
+      }
+      if (message.isCommand || message.isChatInputCommand || !message.channel?.send) {
+        message.channel = {
+          guild: message.guild,
+          send: (data) => handleMessage(message, data)
+        };
+      }
+
+      let subCommand = args.length ? args[1] : null;
 
       let playerInfo = await Zombie.findOne({
-        id: message.author.id
+        id: userId
       });
 
       if (!playerInfo) {
-        playerInfo = new Zombie( {
-          id: message.author.id
-        })
+        playerInfo = new Zombie({
+          id: userId
+        });
       }
 
       if (subCommand === "hunt" || subCommand === "h") {

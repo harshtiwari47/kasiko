@@ -17,7 +17,8 @@ import {
   VoteModel
 } from '../../../models/voteModel.js';
 import {
-  discordUser
+  discordUser,
+  handleMessage
 } from '../../../helper.js';
 
 import {
@@ -28,28 +29,6 @@ const TOKENTG = process.env.TG_TOKEN;
 
 const dbl = new Api(TOKENTG);
 const BOT_ID = process.env.APP_ID; // bot ID
-
-/**
-* Checks the user's vote and either rewards them or sends a vote prompt.
-* Now includes a check on the exact time the user last claimed a vote reward.
-* @param {string} userId Discord user ID.
-* @param {object} user Discord user object.
-* @returns {object} An object with a message string and optionally components (buttons).
-*/
-
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
-  if (isInteraction) {
-    // If not already deferred, defer it.
-    if (!context.deferred) {
-      await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else {
-    // For normal text-based usage
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
 
 export async function voteReward(userId, user, context) {
   try {

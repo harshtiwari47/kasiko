@@ -13,7 +13,10 @@ import {
 } from '../../../logger.js'; // Custom logging function for errors
 import {
   checkTimeGap,
-  formatTTL
+  formatTTL,
+  discordUser,
+  handleMessage,
+  Helper
 } from '../../../helper.js';
 
 import {
@@ -22,15 +25,24 @@ import {
 
 export async function attemptRobbery(userId, targetUserId, message) {
   try {
+    const { username } = discordUser(message);
+    if (!message.author) {
+      message.author = message.user || { id: userId, username, displayAvatarURL: () => '' };
+    }
+    if (message.isCommand || message.isChatInputCommand || !message.channel?.send) {
+      message.channel = {
+        guild: message.guild,
+        send: (data) => handleMessage(message, data)
+      };
+    }
+
     // Get user data (cash) and target data
     const userData = await getUserData(userId);
     const targetData = await getUserData(targetUserId);
 
-    const username = message.author.username;
-
     if (!userData) return;
     if (!targetData) {
-      return message.channel.send(`ⓘ **${username}**, mentioned user is not found!`);
+      return handleMessage(message, `ⓘ **${username}**, mentioned user is not found!`);
     };
 
     const userCash = (userData.cash || 0);
@@ -38,7 +50,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
     // The robber needs more than 5000 cash to attempt a robbery
     if (userCash < 5000) {
-      return message.channel.send(`🚫 **${username}**, 𝘪𝘵 𝘵𝘢𝘬𝘦𝘴 𝘢𝘵 𝘭𝘦𝘢𝘴𝘵 <:kasiko_coin:1300141236841086977> 5,000 𝘵𝘰 𝘱𝘶𝘭𝘭 𝘰𝘧𝘧 𝘢 𝘳𝘰𝘣𝘣𝘦𝘳𝘺. 𝘙𝘪𝘨𝘩𝘵 𝘯𝘰𝘸, 𝘺𝘰𝘶'𝘳𝘦 𝘳𝘶𝘯𝘯𝘪𝘯𝘨 𝘰𝘯 𝘩𝘰𝘱𝘦𝘴 𝘢𝘯𝘥 𝘶𝘯𝘱𝘢𝘪𝘥 𝘣𝘪𝘭𝘭𝘴.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(message, `🚫 **${username}**, 𝘪𝘵 𝘵𝘢𝘬𝘦𝘴 𝘢𝘵 𝘭𝘦𝘢𝘴𝘵 <:kasiko_coin:1300141236841086977> 5,000 𝘵𝘰 𝘱𝘶𝘭𝘭 𝘰𝘧𝘧 𝘢 𝘳𝘰𝘣𝘣𝘦𝘳𝘺. 𝘙𝘪𝘨𝘩𝘵 𝘯𝘰𝘸, 𝘺𝘰𝘶'𝘳𝘦 𝘳𝘶𝘯𝘯𝘪𝘯𝘨 𝘰𝘯 𝘩𝘰𝘱𝘦𝘴 𝘢𝘯𝘥 𝘶𝘯𝘱𝘢𝘪𝘥 𝘣𝘪𝘭𝘭𝘴.`);
     }
 
     if (targetCash < 1000) {
@@ -394,21 +406,27 @@ export default {
       flags: MessageFlags.IsComponentsV2
     };
   },
-  execute: async (args,
-    message) => {
-    const action = args[0] ? args[0].toLowerCase(): null;
+  execute: async (args, message) => {
+    const action = args[0] ? args[0].toLowerCase() : null;
+    const { id: senderId, username } = discordUser(message);
 
     if (action === "rob") {
-      if (!message.mentions.users.size) {
-        return message.channel.send(`ⓘ **${message.author.username}**, please mention a valid user to rob.\n-# **USE**: \`rob @user\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-      const targetUser = message.mentions.users.first();
-      if (targetUser.id === message.author.id) {
-        return message.channel.send(`ⓘ **${message.author.username}**, you cannot rob yourself! 🤷🏻`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      let targetUserId = null;
+      if (message.mentions?.users?.size) {
+        targetUserId = message.mentions.users.first().id;
+      } else if (args[1]) {
+        targetUserId = Helper.extractUserId(args[1]) || args[1].replace(/[<@!>]/g, '');
       }
 
-      // Call a function to attempt robbery with math challenge
-      return attemptRobbery(message.author.id, targetUser.id, message);
+      if (!targetUserId) {
+        return handleMessage(message, `ⓘ **${username}**, please mention a valid user to rob.\n-# **USE**: \`rob @user\``);
+      }
+
+      if (targetUserId === senderId) {
+        return handleMessage(message, `ⓘ **${username}**, you cannot rob yourself! 🤷🏻`);
+      }
+
+      return attemptRobbery(senderId, targetUserId, message);
     }
   }
-}
+};

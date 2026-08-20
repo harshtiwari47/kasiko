@@ -18,7 +18,8 @@ import {
 } from '../../../database.js';
 import {
   Helper,
-  discordUser
+  discordUser,
+  handleMessage
 } from '../../../helper.js';
 
 import {
@@ -27,16 +28,6 @@ import {
 
 const COAL_EMOJI = '<:coal:1312372037058170950>';
 const COAL_VALUE = 300; // 1 coal = 100 cash
-
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
-  if (isInteraction) {
-    if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else {
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
 
 async function startMining(userId, username) {
   try {

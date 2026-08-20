@@ -711,6 +711,20 @@ export default {
 
   execute: async (args, message) => {
     try {
+      const { id: userId, username, name } = discordUser(message);
+      if (!message.author) {
+        message.author = message.user || { id: userId, username, displayAvatarURL: () => '' };
+      }
+      if (!message.author.displayAvatarURL && message.user?.displayAvatarURL) {
+        message.author.displayAvatarURL = (opt) => message.user.displayAvatarURL(opt);
+      }
+      if (message.isCommand || message.isChatInputCommand || !message.channel?.send) {
+        message.channel = {
+          guild: message.guild,
+          send: (data) => handleMessage(message, data)
+        };
+      }
+
       if (args[0] === "marry" || args[0] === "propose") {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.marry(Helper.extractUserId(args[1]), message); // Marry a user
