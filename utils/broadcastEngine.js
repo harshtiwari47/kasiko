@@ -13,15 +13,15 @@ import { COLORS, CHANNELS } from '../constants.js';
 import { sendErrorLog } from './errorLogger.js';
 
 export const DEFAULT_REVIVAL_CAMPAIGN = {
-  campaignId: 'revival_welcome_2026',
-  title: '🌟 KASIKO IS BACK — YOUR WELCOME REWARD HAS ARRIVED!',
+  campaignId: 'events_launch_2026',
+  title: '🎉 KASIKO EVENTS LAUNCHED — CLAIM YOUR REWARDS!',
   description:
-    `Hey there! Kasiko has received massive new gameplay updates & overhauls!\n\n` +
+    `**Kasiko Events are officially launched!** Get ready for exclusive community events, automated cash drops, and real-time updates for all future giveaways!\n\n` +
     `✨ **What's New in Kasiko:**\n` +
-    `• <:spark:1355139233559351326> **Real-Time Stock Market:** Trade shares, build portfolios & track volume dynamics!\n` +
-    `• <:forest_tree:1354366758596776070> **Animal Arena Battles:** Build your 3-animal team and battle wild beasts & players!\n` +
-    `• <:moneybag:1365976001179553792> **Automated Daily Cash Drops:** 500k to 2M Cash giveaways daily in our server!\n` +
-    `• <:cart:1355034533061460060> **Expanded Inventory & Economy:** Smooth purchasing, animal feeds & new items!`,
+    `• <:spark:1355139233559351326> **Real-Time Stock Market:** Trade shares, build portfolios & track market dynamics!\n` +
+    `• <:forest_tree:1354366758596776070> **Animal Arena Battles:** Build your 3-animal squad and battle wild beasts & players!\n` +
+    `• <:moneybag:1365976001179553792> **Automated Daily Cash Drops:** Win between 500k to 2M Cash daily in our server!\n` +
+    `• <:cart:1355034533061460060> **Expanded Inventory & Economy:** Smooth purchasing, animal feeds & rare items!`,
   rewards: {
     cash: 250000,
     items: [
@@ -53,13 +53,14 @@ export function buildBroadcastContainer({
     .addSeparatorComponents(s => s)
     .addTextDisplayComponents(t => t.setContent(
       `Hello **${username}**!\n\n${campaign.description}\n\n` +
-      `🎁 **Your Welcome Back Gift Package:**\n` +
+      `🎁 **Your Event Launch Gift Package:**\n` +
       `• <:kasiko_coin:1300141236841086977> **250,000 Cash**\n` +
       `• <:scratch_card:1382990344186105911> **2× Scratch Cards**\n` +
       `• <:pet_food:1385884583077351464> **5× Pet Food**\n` +
       `• <:rose:1343097565738172488> **5× Roses**\n` +
       `• <:lollipop:1385131583333203968> **3× Lollipops**\n` +
-      `• <:teddybear:1385131451321946113> **2× Teddy Bears**`
+      `• <:teddybear:1385131451321946113> **2× Teddy Bears**\n\n` +
+      `-# 🔔 Keep notifications enabled to receive instant alerts for future events & drops!`
     ))
     .addSeparatorComponents(s => s);
 
@@ -67,7 +68,7 @@ export function buildBroadcastContainer({
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`broadcast_claim_${campaign.campaignId}`)
-      .setLabel(isClaimed ? '✅ Rewards Claimed' : '🎁 Claim Welcome Rewards')
+      .setLabel(isClaimed ? '✅ Rewards Claimed' : '🎁 Claim Event Rewards')
       .setStyle(isClaimed ? ButtonStyle.Secondary : ButtonStyle.Success)
       .setDisabled(isClaimed),
     new ButtonBuilder()
