@@ -10,52 +10,63 @@ import {
   Client,
   Collection
 } from 'discord.js';
+import redisClient from '../redis.js';
+import { sendErrorLog } from '../utils/errorLogger.js';
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname); // Current file directory
-const slashCommands = new Collection(); // Store all loaded slash commands
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const slashCommands = new Collection();
 
 /**
 * Load and register slash commands from the specified directory
 */
 const loadSlashCommands = async (directory, clientId, token, client) => {
-  const commands = []; // To register commands globally
-  const categories = await fs.promises.readdir(directory);
+  const commands = [];
+  try {
+    const categories = await fs.promises.readdir(directory);
 
-  for (const category of categories) {
-    const categoryPath = path.join(directory, category);
-    const commandFiles = await fs.promises.readdir(categoryPath);
+    for (const category of categories) {
+      const categoryPath = path.join(directory, category);
+      const stat = await fs.promises.stat(categoryPath).catch(() => null);
+      if (!stat || !stat.isDirectory()) continue;
 
-    for (const file of commandFiles) {
-      if (file.endsWith('.js')) {
-        const command = await import(`./slashcommands/${category}/${file}`);
-        if (command.default && command.default.data && command.default.execute) {
-          // Add the command to the collection and push it for registration
-          slashCommands.set(command.default.data.name, command.default);
-          commands.push(command.default.data.toJSON()); // Discord.js slash command format
+      const commandFiles = await fs.promises.readdir(categoryPath);
+
+      for (const file of commandFiles) {
+        if (file.endsWith('.js')) {
+          try {
+            const command = await import(`./slashcommands/${category}/${file}`);
+            if (command.default && command.default.data && command.default.execute) {
+              slashCommands.set(command.default.data.name, command.default);
+              commands.push(command.default.data.toJSON());
+            }
+          } catch (fileErr) {
+            console.error(`Error loading slash command file ${category}/${file}:`, fileErr);
+          }
         }
       }
     }
+  } catch (dirErr) {
+    console.error('Error reading slash commands directory:', dirErr);
   }
 
   // Register the commands with Discord
-  const rest = new REST( {
-    version: '10'
-  }).setToken(token);
-  try {
-    console.log('Started refreshing application (/) commands...');
-    await rest.put(Routes.applicationCommands(clientId), {
-      body: commands
-    });
-    console.log('Successfully reloaded application (/) commands.');
-  } catch (error) {
-    console.error('Error registering slash commands:', error);
+  if (token && clientId) {
+    const rest = new REST({
+      version: '10'
+    }).setToken(token);
+    try {
+      console.log('Started refreshing application (/) commands...');
+      await rest.put(Routes.applicationCommands(clientId), {
+        body: commands
+      });
+      console.log(`Successfully reloaded ${commands.length} application (/) commands.`);
+    } catch (error) {
+      console.error('Error registering slash commands with Discord API:', error);
+    }
   }
 
   client.commands = slashCommands;
 };
-
-
-import { sendErrorLog } from '../utils/errorLogger.js';
 
 /**
 * Handle interaction events for slash commands
@@ -67,6 +78,23 @@ const handleSlashCommand = async (interaction) => {
   if (!command) {
     console.error(`Command not found: ${interaction.commandName}`);
     return;
+  }
+
+  // Optional slash command cooldown check
+  if (command.cooldown && command.cooldown > 0) {
+    const userId = interaction.user.id;
+    const cooldownKey = `cooldown:slash:${interaction.commandName}:${userId}`;
+    const duration = Math.ceil(command.cooldown / 1000);
+    const cooldownSet = await redisClient.set(cooldownKey, '1', { NX: true, EX: duration }).catch(() => true);
+
+    if (!cooldownSet) {
+      const ttl = await redisClient.ttl(cooldownKey).catch(() => 5);
+      const remainingSec = ttl > 0 ? ttl : duration;
+      return interaction.reply({
+        content: `<:kasiko_stopwatch:1355056680387481620> You are on cooldown for **/${interaction.commandName}**! Wait \`${remainingSec}s\`.`,
+        ephemeral: true
+      }).catch(() => {});
+    }
   }
 
   try {
@@ -81,9 +109,15 @@ const handleSlashCommand = async (interaction) => {
       channel: interaction.channel,
       interaction
     }).catch(() => {});
+
     if (!interaction.replied && !interaction.deferred) {
       interaction.reply({
-        content: 'There was an error executing this command.', ephemeral: true
+        content: 'There was an error executing this command.',
+        ephemeral: true
+      }).catch(() => {});
+    } else if (interaction.deferred && !interaction.replied) {
+      interaction.editReply({
+        content: 'There was an error executing this command.'
       }).catch(() => {});
     }
   }
