@@ -25,14 +25,11 @@ function parseAmount(input) {
 
 export default {
   name: 'giveaway',
-  description: 'View active daily giveaways or manage community cash drops (Staff).',
-  aliases: ['giveaways', 'gstart', 'greroll', 'gend'],
-  args: '[list|start|end|reroll] [options]',
+  description: 'View active daily giveaways and recent winners.',
+  aliases: ['giveaways'],
+  args: '[list]',
   example: [
-    'giveaway',
-    'giveaway start 1000000 24',
-    'giveaway end 123456789012345678',
-    'giveaway reroll 123456789012345678'
+    'giveaway'
   ],
   cooldown: 5000,
   category: '🏦 Economy',
@@ -59,20 +56,21 @@ export default {
           return message.reply('<:warning:1366050875243757699> Invalid duration in hours. Example: `kas giveaway start 1m 24`');
         }
 
-        const targetChannel = message.mentions.channels.first() || message.channel;
-        const alertRoleMention = message.mentions.roles.first()?.id || (args[4] ? args[4].replace(/[<@&>]/g, '') : undefined);
+        // Always post in the predefined giveaway channel from constants
+        const targetChannelId = CHANNELS.GIVEAWAY;
+        const alertRoleMention = message.mentions.roles.first()?.id || (args[3] ? args[3].replace(/[<@&>]/g, '') : undefined);
 
         const doc = await startDailyGiveaway(message.client, {
           prize,
           durationHours,
-          channelId: targetChannel.id,
+          channelId: targetChannelId,
           guildId: message.guild?.id || null,
           alertRoleId: alertRoleMention,
           isDaily: false
         });
 
         if (doc) {
-          return message.reply(`✅ **Giveaway launched!** Posted in <#${targetChannel.id}> for <:kasiko_coin:1300141236841086977> **${doc.prize.toLocaleString()} Cash** (Duration: ${durationHours}h).`);
+          return message.reply(`✅ **Giveaway launched!** Posted in <#${targetChannelId}> for <:kasiko_coin:1300141236841086977> **${doc.prize.toLocaleString()} Cash** (Duration: ${durationHours}h).`);
         } else {
           return message.reply('<:alert:1366050815089053808> Failed to launch giveaway. Please check channel permissions.');
         }
