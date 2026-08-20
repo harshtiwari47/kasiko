@@ -153,15 +153,15 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
     const C = new ContainerBuilder()
       .setAccentColor(0x5865F2)
       .addTextDisplayComponents(
-        t => t.setContent(`### ⚔️ **${name.toUpperCase()}'S BATTLE SQUAD**`),
-        t => t.setContent(`🏆 **${battlesWon} Wins** · 🔥 **${winStreak} Win Streak** *(Best: ${highestWinStreak})*`)
+        t => t.setContent(`### <:forest_tree:1354366758596776070> **${name.toUpperCase()}'S BATTLE SQUAD**`),
+        t => t.setContent(`<:trophy:1352897371595477084> **${battlesWon} Wins** · <:spark:1355139233559351326> **${winStreak} Win Streak** *(Best: ${highestWinStreak})*`)
       )
       .addSeparatorComponents(s => s);
 
     if (team.length === 0) {
       C.addTextDisplayComponents(
         t => t.setContent(`*No preferred battle squad set! The arena will deploy 3 random animals from your bag.*`),
-        t => t.setContent(`-# 💡 **Set your squad:** \`kas team set <animal1> [animal2] [animal3]\``)
+        t => t.setContent(`-# <:spark:1355139233559351326> **Set your squad:** \`kas team set <animal1> [animal2] [animal3]\``)
       );
     } else {
       for (let i = 0; i < team.length; i++) {
@@ -170,7 +170,7 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
         const stats = computeStats(meta, item.level);
         C.addTextDisplayComponents(
           t => t.setContent(`**#${i + 1}** ${meta.emoji} **${item.name}** (Lvl.${item.level}) — ⭐ \`${meta.type}\``),
-          t => t.setContent(`-# 💚 **${stats.hp} HP** · ⚔️ **${stats.attack} ATK** · Feed: \`kas feed ${i + 1}\``)
+          t => t.setContent(`-# 💚 **${stats.hp} HP** · ⚔️ **${stats.attack} ATK** · Feed: <:pet_food:1385884583077351464> \`kas feed ${i + 1}\``)
         );
       }
     }
@@ -189,7 +189,7 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
       }).join(' · ');
 
       C.addTextDisplayComponents(
-        t => t.setContent(`**🎒 Top Beasts in Bag:**\n${animalBadges}`),
+        t => t.setContent(`**<:cart:1355034533061460060> Top Beasts in Bag:**\n${animalBadges}`),
         t => t.setContent(`-# Use \`kas hunt\` to capture more beasts or \`kas feed <index>\` to level up!`)
       );
     }

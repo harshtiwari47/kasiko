@@ -60,12 +60,14 @@ export default {
         }
 
         const targetChannel = message.mentions.channels.first() || message.channel;
+        const alertRoleMention = message.mentions.roles.first()?.id || (args[4] ? args[4].replace(/[<@&>]/g, '') : undefined);
 
         const doc = await startDailyGiveaway(message.client, {
           prize,
           durationHours,
           channelId: targetChannel.id,
           guildId: message.guild?.id || null,
+          alertRoleId: alertRoleMention,
           isDaily: false
         });
 
@@ -124,18 +126,18 @@ export default {
       const recentGiveaways = await Giveaway.find({ ended: true }).sort({ updatedAt: -1 }).limit(5);
 
       const embed = new EmbedBuilder()
-        .setTitle('🎉 Kasiko Community Cash Giveaways')
+        .setTitle('🎉 **Kasiko Community Cash Giveaways**')
         .setColor(COLORS.GOLD)
         .setDescription(
-          `Participate in our automated daily cash drops for a chance to win between **500,000** and **2,000,000** Cash!\n\n` +
+          `Participate in our automated daily cash drops for a chance to win between <:kasiko_coin:1300141236841086977> **500,000** and **2,000,000** Cash!\n\n` +
           `### 🟢 **Active Giveaways**\n` +
           (activeGiveaways.length > 0
             ? activeGiveaways.map(g =>
-                `• **<:kasiko_coin:1300141236841086977> ${g.prize.toLocaleString()} Cash** in <#${g.channelId}>\n` +
-                `  └ Ends: <t:${Math.floor(g.endsAt.getTime() / 1000)}:R> · **${g.entryCount} entered**`
+                `• **<:moneybag:1365976001179553792> <:kasiko_coin:1300141236841086977> ${g.prize.toLocaleString()} Cash** in <#${g.channelId}>\n` +
+                `  └ <:kasiko_stopwatch:1355056680387481620> Ends: <t:${Math.floor(g.endsAt.getTime() / 1000)}:R> · **${g.entryCount} entered**`
               ).join('\n\n')
             : '*No active giveaways right now. Check back soon for the daily drop!*') +
-          `\n\n### 🏆 **Recent Winners**\n` +
+          `\n\n### <:trophy:1352897371595477084> **Recent Winners**\n` +
           (recentGiveaways.length > 0
             ? recentGiveaways.map(g =>
                 `• **<:kasiko_coin:1300141236841086977> ${g.prize.toLocaleString()} Cash** · Winner: ${g.winnerId ? `<@${g.winnerId}>` : '*None*'}`

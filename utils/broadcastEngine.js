@@ -18,10 +18,10 @@ export const DEFAULT_REVIVAL_CAMPAIGN = {
   description:
     `Hey there! Kasiko has received massive new gameplay updates & overhauls!\n\n` +
     `✨ **What's New in Kasiko:**\n` +
-    `• 📈 **Real-Time Stock Market:** Trade shares, build portfolios & track volume dynamics!\n` +
-    `• ⚔️ **Animal Arena Battles:** Build your 3-animal team and battle wild beasts & players!\n` +
-    `• 💰 **Automated Daily Cash Drops:** 500k to 2M Cash giveaways daily in our server!\n` +
-    `• 🎒 **Expanded Inventory & Economy:** Smooth purchasing, animal feeds & new items!`,
+    `• <:spark:1355139233559351326> **Real-Time Stock Market:** Trade shares, build portfolios & track volume dynamics!\n` +
+    `• <:forest_tree:1354366758596776070> **Animal Arena Battles:** Build your 3-animal team and battle wild beasts & players!\n` +
+    `• <:moneybag:1365976001179553792> **Automated Daily Cash Drops:** 500k to 2M Cash giveaways daily in our server!\n` +
+    `• <:cart:1355034533061460060> **Expanded Inventory & Economy:** Smooth purchasing, animal feeds & new items!`,
   rewards: {
     cash: 250000,
     items: [
