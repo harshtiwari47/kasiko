@@ -13,7 +13,7 @@ export default {
         .setDescription('Action to perform')
         .setRequired(false)
         .addChoices(
-          { name: '⚔️ View Current Squad', value: 'view' },
+          { name: '🐾 View Current Squad', value: 'view' },
           { name: '⚙️ Set Squad Animals', value: 'set' },
           { name: '🧹 Clear Squad', value: 'clear' }
         )

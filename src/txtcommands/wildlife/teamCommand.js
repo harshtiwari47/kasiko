@@ -99,7 +99,7 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
       const C = new ContainerBuilder()
         .setAccentColor(0x57F287)
         .addTextDisplayComponents(
-          t => t.setContent(`### ⚔️ **BATTLE SQUAD UPDATED**`),
+          t => t.setContent(`### <:claw:1493561807091138631> **BATTLE SQUAD UPDATED**`),
           t => t.setContent(`**${name}**, your battle team has been successfully configured:`)
         );
 
@@ -108,8 +108,8 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
         const meta = getAnimalMeta(item.name);
         const stats = computeStats(meta, item.level);
         C.addTextDisplayComponents(
-          t => t.setContent(`**#${i + 1}** ${meta.emoji} **${item.name}** (Lvl.${item.level}) — ⭐ \`${meta.type}\``),
-          t => t.setContent(`-# 💚 **${stats.hp} HP** · ⚔️ **${stats.attack} ATK**`)
+          t => t.setContent(`**#${i + 1}** ${meta.emoji} **${item.name}** (Lvl.${item.level}) — <:hunting_exp:1354384431091290162> \`${meta.type}\``),
+          t => t.setContent(`-# <:heal_heart:1381904903827361905> **${stats.hp} HP** · <:claw:1493561807091138631> **${stats.attack} ATK**`)
         );
       }
 
@@ -168,8 +168,8 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
         const meta = getAnimalMeta(item.name);
         const stats = computeStats(meta, item.level);
         C.addTextDisplayComponents(
-          t => t.setContent(`**#${i + 1}** ${meta.emoji} **${item.name}** (Lvl.${item.level}) — ⭐ \`${meta.type}\``),
-          t => t.setContent(`-# 💚 **${stats.hp} HP** · ⚔️ **${stats.attack} ATK** · Feed: <:pet_food:1385884583077351464> \`kas feed ${i + 1}\``)
+          t => t.setContent(`**#${i + 1}** ${meta.emoji} **${item.name}** (Lvl.${item.level}) — <:hunting_exp:1354384431091290162> \`${meta.type}\``),
+          t => t.setContent(`-# <:heal_heart:1381904903827361905> **${stats.hp} HP** · <:claw:1493561807091138631> **${stats.attack} ATK** · Feed: <:pet_food:1385884583077351464> \`kas feed ${i + 1}\``)
         );
       }
     }

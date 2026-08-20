@@ -484,7 +484,7 @@ function buildBattleContainer({
 }) {
   const C = new ContainerBuilder()
     .setAccentColor(winnerColor)
-    .addTextDisplayComponents(t => t.setContent(`### ⚔️ **Animal Battle Arena**`))
+    .addTextDisplayComponents(t => t.setContent(`### <:claw:1493561807091138631> **Animal Battle Arena**`))
     .addSeparatorComponents(s => s)
     .addSectionComponents(section =>
       section
@@ -1017,8 +1017,8 @@ export async function battleCommand(context, { opponentId = null, isWild = false
         ? `<:trophy:1352897371595477084> **${opponentUsername}** won the battle!`
         : `🤝 **Battle Tied!**`;
 
-    const uIcon = battleResult.userTeamHp > 0 ? '💚' : '💔';
-    const oIcon = battleResult.oppTeamHp > 0 ? '💚' : '💔';
+    const uIcon = battleResult.userTeamHp > 0 ? '<:heal_heart:1381904903827361905>' : '💔';
+    const oIcon = battleResult.oppTeamHp > 0 ? '<:heal_heart:1381904903827361905>' : '💔';
     const lifeStatusText = `${uIcon} **${username}:** \`${battleResult.userTeamHp} HP\` (${battleResult.userTeamAlive} alive)   ·   ${oIcon} **${opponentUsername}:** \`${battleResult.oppTeamHp} HP\` (${battleResult.oppTeamAlive} alive)`;
 
     const streakCount = user.hunt.winStreak || 0;
@@ -1096,7 +1096,7 @@ export default {
   aliases: ['abattle', 'ab', 'animalfight', 'afight'],
   args: '[@opponent|wild]',
   example: ['animalbattle @user', 'abattle wild', 'ab'],
-  emoji: '⚔️',
+  emoji: '<:claw:1493561807091138631>',
   cooldown: 15000,
   category: '🦌 Wildlife',
 
