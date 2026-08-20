@@ -7,7 +7,7 @@ import { feedCommand } from '../../txtcommands/wildlife/feedCommand.js';
 import { sellCommand } from '../../txtcommands/wildlife/sellCommand.js';
 import { teamCommand } from '../../txtcommands/wildlife/teamCommand.js';
 import { battleCommand } from '../../txtcommands/wildlife/battleCommand.js';
-import { zooCommand } from '../../txtcommands/wildlife/zooCommand.js';
+import { achievementsCommand } from '../../txtcommands/wildlife/achievementsCommand.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -123,8 +123,8 @@ export default {
     )
     .addSubcommand(sub =>
       sub
-        .setName('zoo')
-        .setDescription('View the community wildlife sanctuary and global animal rankings.')
+        .setName('achievements')
+        .setDescription('View your hunting achievements and trophy milestones.')
     ),
 
   async execute(interaction) {
@@ -170,11 +170,8 @@ export default {
         return battleCommand(interaction, opponent);
       }
 
-      case 'zoo': {
-        if (typeof zooCommand === 'function') {
-          return zooCommand(interaction);
-        }
-        return interaction.reply({ content: 'Zoo sanctuary is loading...', ephemeral: true });
+      case 'achievements': {
+        return achievementsCommand(interaction);
       }
 
       default:
