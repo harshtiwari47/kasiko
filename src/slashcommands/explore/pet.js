@@ -1,7 +1,7 @@
 import {
   SlashCommandBuilder
 } from '@discordjs/builders';
-import { petCommand } from '../../txtcommands/explore/pet.js';
+import petCommand from '../../txtcommands/explore/pet.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -14,21 +14,29 @@ export default {
         .setRequired(false)
         .addChoices(
           { name: '🐾 View Pets', value: 'view' },
-          { name: '🍖 Feed Pet', value: 'feed' },
-          { name: '🎾 Play with Pet', value: 'play' },
-          { name: '⚔️ Train Pet', value: 'train' }
+          { name: '🍖 Feed Pet', value: 'food' },
+          { name: '📋 Pet List', value: 'list' },
+          { name: '🔄 Switch Active Pet', value: 'switch' }
         )
     )
     .addStringOption(option =>
       option
         .setName('name')
-        .setDescription('Pet name (optional)')
+        .setDescription('Pet name or slot number')
         .setRequired(false)
     ),
 
   async execute(interaction) {
     const action = interaction.options.getString('action') || 'view';
-    const name = interaction.options.getString('name') || '';
-    return petCommand(interaction, name, action);
+    const name = interaction.options.getString('name');
+    const args = ['pet', action];
+    if (name) args.push(name);
+    if (petCommand?.execute) {
+      return await petCommand.execute(args, interaction);
+    }
+    return interaction.reply({
+      content: 'Pet command is currently unavailable.',
+      ephemeral: true
+    });
   }
 };

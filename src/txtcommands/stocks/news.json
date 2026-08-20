@@ -1,19 +1,19 @@
 [
   {
-    "headline": "Rising Operational Costs Impact CALLCENTER's Profit Margins",
-    "description": "Higher costs have affected CALLCENTER's margins, resulting in lower-than-expected profits, with current prices at <:kasiko_coin:1300141236841086977> 1.1.",
+    "headline": "CALLCENTER’s Stock Hits All-Time High at 1.2",
+    "description": "CALLCENTER has reached an all-time high of 1.2, driven by strong demand and performance in the Technology sector.",
+    "stat": "up",
+    "date": ""
+  },
+  {
+    "headline": "KOHINOOR Stock Sees Losses as Economic Uncertainty Grows",
+    "description": "KOHINOOR's stock took a hit this week, reaching <:kasiko_coin:1300141236841086977> 11.3 due to broader economic concerns affecting the Energy market.",
     "stat": "down",
     "date": ""
   },
   {
-    "headline": "KOHINOOR Experiences Decline Amid Sector-Wide Challenges",
-    "description": "Shares of KOHINOOR fell to <:kasiko_coin:1300141236841086977> 12.9, with recent lows approaching 12.9. As volatility in Energy rises, the company faces increased scrutiny.",
-    "stat": "down",
-    "date": ""
-  },
-  {
-    "headline": "AMG Stock Faces Pressure as Price Drops to <:kasiko_coin:1300141236841086977> 0.6",
-    "description": "AMG has seen its stock price fall to <:kasiko_coin:1300141236841086977> 0.6 due to competitive pressures and economic factors in the Technology industry.",
+    "headline": "Downturn in Technology Sector Hits AMG Hard",
+    "description": "As the Technology sector experiences a downturn, AMG's stock has fallen, trading now at <:kasiko_coin:1300141236841086977> 0.6 from highs of 1.3.",
     "stat": "down",
     "date": ""
   }

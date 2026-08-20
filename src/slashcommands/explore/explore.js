@@ -1,11 +1,11 @@
 import {
   SlashCommandBuilder
 } from '@discordjs/builders';
-import { petCommand } from '../../txtcommands/explore/pet.js';
+import petCommand from '../../txtcommands/explore/pet.js';
 import passCommand from '../../txtcommands/explore/pass.js';
 import zombieCommand from '../../txtcommands/explore/zombie.js';
 import iceCreamCommand from '../../txtcommands/explore/icecream.js';
-import { orcaCommand } from '../../txtcommands/explore/orca.js';
+import orcaCommand from '../../txtcommands/explore/orca.js';
 import txtcommands from '../../textCommandHandler.js';
 
 export default {
@@ -73,7 +73,10 @@ export default {
       case 'pet': {
         const action = interaction.options.getString('action') || 'view';
         const name = interaction.options.getString('name') || '';
-        return petCommand(interaction, name, action);
+        const args = ['pet', action];
+        if (name) args.push(name);
+        if (petCommand?.execute) return await petCommand.execute(args, interaction);
+        return interaction.reply({ content: 'Pet command is currently unavailable.', ephemeral: true });
       }
 
       case 'pass': {
@@ -104,9 +107,7 @@ export default {
       }
 
       case 'orca': {
-        if (typeof orcaCommand === 'function') return orcaCommand(interaction);
-        const orcaCmd = txtcommands.get('orca');
-        if (orcaCmd?.execute) return await orcaCmd.execute(['orca'], interaction);
+        if (orcaCommand?.execute) return await orcaCommand.execute(['orca'], interaction);
         return interaction.reply({ content: 'Orca command is currently unavailable.', ephemeral: true });
       }
 
