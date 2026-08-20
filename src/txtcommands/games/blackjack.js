@@ -32,6 +32,7 @@ function getCardValue(card) {
   if (card === "<:club8:1314435090838982678>") return 8;
   if (card === "<:club9:1314435070496342066>") return 9;
   if (card === "<:club10:1314435046450659328>") return 10;
+  return 0;
 }
 
 function calculateHandValue(hand) {
@@ -53,18 +54,18 @@ function calculateHandValue(hand) {
 }
 
 export async function blackjack(id, amount, channel, context) {
+  const ctx = context || channel;
   try {
+    const userMeta = discordUser(ctx);
+    const userId = id || userMeta.id;
+    const name = userMeta.name || userMeta.username || 'Player';
 
-    const {
-      name,
-      avatar: avatarUrl
-    } = discordUser(context);
-
-    const guild = await channel.guild.members.fetch(id);
-    let userData = await getUserData(id);
-
-    if (!userData) return;
-    if (!guild) return;
+    let userData = await getUserData(userId);
+    if (!userData) {
+      return await handleMessage(ctx, {
+        content: `⚠️ Account not found! Please register with \`kas help\`.`
+      });
+    }
 
     if (amount === "all") {
       amount = Math.min(300000, Number(userData.cash || 0));
@@ -73,140 +74,132 @@ export async function blackjack(id, amount, channel, context) {
     }
 
     if (isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
-      return await handleMessage(context, `⚠️ **${guild.user.username}**, please enter a valid positive bet amount (minimum 1).`);
+      return await handleMessage(ctx, `⚠️ **${name}**, please enter a valid positive bet amount (minimum 1).`);
     }
 
     if (amount > 300000) amount = 300000;
 
+    if (userData.cash < 1) {
+      return await handleMessage(ctx, `⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
+    }
+
     if (userData.cash < amount) {
-      return await handleMessage(context, `⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Required: <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`);
+      return await handleMessage(ctx, `⚠️ **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     // Deduct bet amount
     userData.cash -= amount;
-    await updateUser(id, {
+    await updateUser(userId, {
       cash: userData.cash
     });
 
     // Initialize deck and shuffle
-    let deck = [...cardDeck,
-      ...cardDeck,
-      ...cardDeck,
-      ...cardDeck]; // 4x deck (standard deck)
-    deck = deck.sort(() => Math.random() - 0.5); // Shuffle deck
+    let deck = [...cardDeck, ...cardDeck, ...cardDeck, ...cardDeck];
+    deck = deck.sort(() => Math.random() - 0.5);
 
     // Deal cards
-    let playerHand = [deck.pop(),
-      deck.pop()];
-    let botHand = [deck.pop(),
-      deck.pop()];
+    let playerHand = [deck.pop(), deck.pop()];
+    let botHand = [deck.pop(), deck.pop()];
 
     const playerHandValue = calculateHandValue(playerHand);
     const botHandValue = calculateHandValue([botHand[0], "X"]);
 
     const Container = new ContainerBuilder()
-    .addSectionComponents(
-      section => section
+      .addSectionComponents(
+        section => section
+          .addTextDisplayComponents(
+            textDisplay => textDisplay.setContent(`### 🃏 **${name}**'s 𝘽𝙡𝙖𝙘𝙠 𝙅𝙖𝙘𝙠 𝙂𝙖𝙢𝙚`)
+          )
+          .setThumbnailAccessory(
+            thumbnail => thumbnail
+              .setDescription('Blackjack')
+              .setURL("https://harshtiwari47.github.io/kasiko-public/images/blackjack-icon.png")
+          )
+      )
+      .addSeparatorComponents(separate => separate)
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`### 🃏 **${name}**'s 𝘽𝙡𝙖𝙘𝙠 𝙅𝙖𝙘𝙠 𝙂𝙖𝙢𝙚`)
+        textDisplay => textDisplay.setContent(
+          `> ***\`${name}, you are playing Blackjack!\`***`
+        )
       )
-      .setThumbnailAccessory(
-        thumbnail => thumbnail
-        .setDescription('Blackjack')
-        .setURL("https://harshtiwari47.github.io/kasiko-public/images/blackjack-icon.png")
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(
+          `** <:follow_reply:1368224897003946004>𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎** :\n` +
+          `## ${playerHand.join(" ")} (**${playerHandValue}**)\n` +
+          `** <:reply:1368224908307468408> 𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎** :\n` +
+          `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)`
+        )
       )
-    )
-    .addSeparatorComponents(separate => separate)
-    .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(
-        `> ***\`${guild.user.username}, you are playing Blackjack!\`***`
-      )
-    )
-    .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(
-        `** <:follow_reply:1368224897003946004>𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎** :\n` +
-        `## ${playerHand.join(" ")} (**${playerHandValue}**)\n` +
-        `** <:reply:1368224908307468408> 𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎** :\n` +
-        `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)`
-      )
-    )
-    .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`-# **Bet: <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()}**`)
-    )
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`-# **Bet: <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()}**`)
+      );
 
-    // Create buttons for hit and stand
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-      .setCustomId('hit')
-      .setLabel('HIT')
-      .setEmoji({
-        name: "⚡"
-      })
-      .setStyle(ButtonStyle.Secondary),
+        .setCustomId('hit')
+        .setLabel('HIT')
+        .setEmoji({ name: "⚡" })
+        .setStyle(ButtonStyle.Secondary),
       new ButtonBuilder()
-      .setCustomId('stand')
-      .setLabel('STAND')
-      .setEmoji({
-        name: "⭕"
-      })
-      .setStyle(ButtonStyle.Secondary)
+        .setCustomId('stand')
+        .setLabel('STAND')
+        .setEmoji({ name: "⭕" })
+        .setStyle(ButtonStyle.Secondary)
     );
 
-    // Send the embed with buttons
-    const gameMessage = await handleMessage(context, {
+    const gameMessage = await handleMessage(ctx, {
       components: [Container, row],
       flags: MessageFlags.IsComponentsV2
     });
 
-    // Button interaction handler
-    const filter = (interaction) => interaction.user.id === id;
+    if (!gameMessage || typeof gameMessage.createMessageComponentCollector !== 'function') {
+      return;
+    }
+
+    const filter = (btn) => btn.user.id === userId;
     const collector = gameMessage.createMessageComponentCollector({
-      filter, time: 120000
+      filter,
+      time: 120000
     });
 
-    collector.on('collect', async (interaction) => {
+    collector.on('collect', async (btnInteraction) => {
       try {
-        if (interaction.customId === 'hit') {
+        if (btnInteraction.customId === 'hit') {
           playerHand.push(deck.pop());
           const newPlayerValue = calculateHandValue(playerHand);
 
           if (newPlayerValue > 21) {
-            // Simulate dealer's turn even if player busts
             let botHandFinalValue = calculateHandValue(botHand);
             while (botHandFinalValue < 17) {
               botHand.push(deck.pop());
               botHandFinalValue = calculateHandValue(botHand);
             }
 
-            Container.components[2].data.content = `> 🚫 ***\`${guild.user.username}, you busted! Your hand value is over 21.\`***`;
-
+            Container.components[2].data.content = `> 🚫 ***\`${name}, you busted! Your hand value is over 21.\`***`;
             Container.components[3].data.content = `<:follow_reply:1368224897003946004> **𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎:**\n` +
-            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-            `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-            `## ${botHand.join(" ")} (**${botHandFinalValue}**)`;
+              `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+              `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+              `## ${botHand.join(" ")} (**${botHandFinalValue}**)`;
 
-            await interaction.update({
+            await btnInteraction.update({
               components: [Container],
               flags: MessageFlags.IsComponentsV2
             });
             collector.stop("busted");
             return;
           } else {
-            // Update the embed with new player hand
-            Container.components[2].data.content = `> ***\`${guild.user.username}, you hit!\`***`;
-
+            Container.components[2].data.content = `> ***\`${name}, you hit!\`***`;
             Container.components[3].data.content = `<:follow_reply:1368224897003946004> **𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-            `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
-            `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-            `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)`;
+              `## ${playerHand.join(" ")} (**${newPlayerValue}**)\n` +
+              `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+              `## ${botHand[0]} <:unknownCard:1314464932472946768> (**?**)`;
 
-            await interaction.update({
+            await btnInteraction.update({
               components: [Container, row],
               flags: MessageFlags.IsComponentsV2
             });
           }
-        } else if (interaction.customId === 'stand') {
-          // Reveal bot's hand and calculate values
+        } else if (btnInteraction.customId === 'stand') {
           let botHandFinalValue = calculateHandValue(botHand);
           const finalPlayerHandValue = calculateHandValue(playerHand);
 
@@ -215,72 +208,66 @@ export async function blackjack(id, amount, channel, context) {
             botHandFinalValue = calculateHandValue(botHand);
           }
 
-          // Determine winner
           let resultMessage = '';
           let color = "#ed8484";
           if (botHandFinalValue > 21) {
-            resultMessage = `<:wine:1356880010866069562> ***\`${guild.user.username}, the bot busted! You win!\`***`;
+            resultMessage = `<:wine:1356880010866069562> ***\`${name}, the bot busted! You win!\`***`;
             color = "#94edc2";
-            userData.cash += amount * 2; // Player wins double the bet
+            userData.cash += amount * 2;
           } else if (finalPlayerHandValue > botHandFinalValue) {
-            resultMessage = `<:wine:1356880010866069562> ***\`${guild.user.username}, you win!\`***`;
-            userData.cash += amount * 2; // Player wins double the bet
+            resultMessage = `<:wine:1356880010866069562> ***\`${name}, you win!\`***`;
+            userData.cash += amount * 2;
             color = "#94edc2";
           } else if (finalPlayerHandValue < botHandFinalValue) {
-            resultMessage = `🚫 ***\`${guild.user.username}, you lost. Bot wins.\`***`;
+            resultMessage = `🚫 ***\`${name}, you lost. Bot wins.\`***`;
           } else {
             color = "#a0adb7";
-            resultMessage = `🤝 ***\`${guild.user.username}, it's a tie!\`***`;
-            userData.cash += amount; // Refund bet in case of tie
+            resultMessage = `🤝 ***\`${name}, it's a tie!\`***`;
+            userData.cash += amount;
           }
 
-          // Update user data
-          await updateUser(id, {
+          await updateUser(userId, {
             cash: userData.cash
           });
 
-          // Final update to the embed
           Container.components[2].data.content = `> ${resultMessage}`;
           Container.setAccentColor(Number(`0x${color.replace("#", "")}`));
-
           Container.components[3].data.content = `<:follow_reply:1368224897003946004> **𝙔𝙊𝙐𝙍 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-          `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
-          `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
-          `## ${botHand.join(" ")} (**${botHandFinalValue}**)`;
-          await interaction.update({
+            `## ${playerHand.join(" ")} (**${finalPlayerHandValue}**)\n` +
+            `<:reply:1368224908307468408> **𝘿𝙀𝘼𝙇𝙀𝙍'𝙎 𝘾𝘼𝙍𝘿𝙎 :**\n` +
+            `## ${botHand.join(" ")} (**${botHandFinalValue}**)`;
+
+          await btnInteraction.update({
             components: [Container],
             flags: MessageFlags.IsComponentsV2
           });
 
-          collector.stop("result")
+          collector.stop("result");
           return;
         }
       } catch (err) {
-        await interaction.update({
+        await btnInteraction.update({
           content: `ⓘ Something went wrong with your blackjack game!\n-# **Error**: ${err.message}`
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        return;
+        }).catch(e => ![50001, 50013, 10008].includes(e.code) && console.error(e));
       }
     });
 
-    collector.on('end',
-      async (collected, reason) => {
-        // Handle timeout if the game ends with no interaction
-        if (gameMessage && reason === "time") {
-          Container.components[2].data.content = "<:sand_timer:1386589414846631947> Time Out";
-          await gameMessage?.edit({
-            components: [Container],
-            flags: MessageFlags.IsComponentsV2
-          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          return;
-        }
-      });
+    collector.on('end', async (collected, reason) => {
+      if (gameMessage && reason === "time") {
+        Container.components[2].data.content = "<:sand_timer:1386589414846631947> Time Out";
+        await gameMessage.edit({
+          components: [Container],
+          flags: MessageFlags.IsComponentsV2
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+    });
   } catch (error) {
     if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
       console.error(error);
     }
-    await channel.send(`ⓘ Oops! Something went wrong during the Blackjack game.\n**Error**: ${error.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    return;
+    await handleMessage(ctx, {
+      content: `ⓘ Oops! Something went wrong during the Blackjack game.\n**Error**: ${error.message}`
+    }).catch(() => {});
   }
 }
 
@@ -288,43 +275,35 @@ export default {
   name: 'blackjack',
   description: "Play a game of Blackjack! Try your luck and beat the dealer by getting as close to 21 as possible without going over. Will you hit, stand, or go all in?",
   category: '🎲 Games',
-  example: ["blackjack 250",
-    "bj 250"],
+  example: ["blackjack 250", "bj 250"],
   aliases: ["bj"],
   emoji: "🃏",
   cooldown: 10000,
-  execute: async (args, message) => {
+  intract: (interaction) => {
+    const bet = interaction.options?.getInteger?.('bet') || 1;
+    return blackjack(interaction.user.id, bet, null, interaction);
+  },
+  execute: async (args, context) => {
     try {
-      args.shift();
+      const { id } = discordUser(context);
+      let amount = args[1] || args[0] || "1";
 
-      let amount;
-      if (!args[0]) {
-        amount = 1;
-      }
-
-      if (String(args[0]).toLowerCase() !== "all") {
-        amount = parseInt(args[0] ? args[0]: amount);
-        if (isNaN(amount)) {
-          return message.channel.send("Please provide a valid number.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      if (String(amount).toLowerCase() !== "all") {
+        amount = parseInt(amount, 10);
+        if (isNaN(amount) || amount < 1) {
+          return await handleMessage(context, "Please provide a valid bet amount.");
         }
-        if (amount > 300000 || amount < 1) {
-          return message.channel.send(`ⓘ The range for participating in the blackjack is <:kasiko_coin:1300141236841086977> 1 to <:kasiko_coin:1300141236841086977> 300,000.`)
-          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        if (amount > 300000) {
+          return await handleMessage(context, `ⓘ The maximum bet for blackjack is <:kasiko_coin:1300141236841086977> 300,000.`);
         }
       } else {
         amount = "all";
       }
 
-      try {
-        await blackjack(message.author.id, amount, message.channel, message);
-        return;
-      } catch (e) {
-        console.error(e);
-        await message.channel.send(`⚠️ something went wrong with blackjack!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        return;
-      }
+      await blackjack(id, amount, null, context);
     } catch (err) {
       console.error(err);
+      await handleMessage(context, `⚠️ Something went wrong with blackjack!`);
     }
   }
-}
+};

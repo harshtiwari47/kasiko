@@ -89,17 +89,17 @@ export default {
       case 'coinflip': {
         const bet = interaction.options.getInteger('bet');
         const side = interaction.options.getString('side') || 'head';
-        return toss(userId, interaction, bet, interaction.channel, side);
+        return toss(userId, interaction, bet, null, side);
       }
 
       case 'blackjack': {
         const bet = interaction.options.getInteger('bet');
-        return blackjack(userId, bet, interaction.channel, interaction);
+        return blackjack(userId, bet, null, interaction);
       }
 
       case 'slots': {
         const bet = interaction.options.getInteger('bet');
-        return slots(userId, bet, interaction.channel);
+        return slots(userId, bet, null, interaction);
       }
 
       case 'scratch': {

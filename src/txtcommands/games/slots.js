@@ -4,16 +4,22 @@ import {
 } from '../../../database.js';
 
 import {
-  Helper
+  Helper,
+  discordUser,
+  handleMessage
 } from '../../../helper.js';
 
-export async function slots(id, amount, channel) {
+export async function slots(id, amount, channel, context) {
+  const ctx = context || channel;
   try {
-    const guild = await channel.guild.members.fetch(id);
-    let userData = await getUserData(id);
+    const userMeta = discordUser(ctx);
+    const userId = id || userMeta.id;
+    const name = userMeta.name || userMeta.username || 'Player';
 
-    if (!userData) return;
-    if (!guild) return;
+    let userData = await getUserData(userId);
+    if (!userData) {
+      return await handleMessage(ctx, "<:warning:1366050875243757699> User account not found.");
+    }
 
     if (amount === "all") {
       amount = Math.min(300000, Number(userData.cash || 0));
@@ -22,161 +28,127 @@ export async function slots(id, amount, channel) {
     }
 
     if (isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
-      return channel.send("⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **1**.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(ctx, "⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **1**.");
     }
 
     if (amount > 300000) amount = 300000;
 
     if (userData.cash < 1) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(ctx, `⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
     }
 
     if (userData.cash < amount) {
-      return channel.send(`⚠️ **${guild.user.username}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(ctx, `⚠️ **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     // Slots symbols
-    const allSymbols = ['<:sberries:1327950598158417981>',
+    const allSymbols = [
+      '<:sberries:1327950598158417981>',
       '<:slemon:1327950617322459168>',
       '<:sorange:1327950638616678440>',
       '<:sgrapes:1327950719596232704>',
       '<:sdiamond:1327950737963221075>',
-      '<:scash:1327950770657820764>'];
+      '<:scash:1327950770657820764>'
+    ];
 
-    const symbols = Array.from({
-      length: 3
-    }, () =>
+    const spinResult = [
+      '<a:slotsanim:1327959630915047556>',
+      '<a:slotsanim:1327959630915047556>',
+      '<a:slotsanim:1327959630915047556>'
+    ];
+
+    const slotBackground = `🎰 **Slot Machine**\n┌─────────────────┐\n${spinResult.join(' | ')}\n└─────────────────┘\n╚══════════╝`;
+
+    const spinningMessage = await handleMessage(ctx, {
+      content: `${slotBackground}\n**${name}** is spinning for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!`
+    });
+
+    const finalResult = Array.from({ length: 3 }, () =>
       allSymbols[Math.floor(Math.random() * allSymbols.length)]
     );
 
+    await updateUser(userId, {
+      cash: Math.max(0, Number(userData.cash || 0) - amount)
+    });
 
-    // Initial placeholders and message
-    let spinResult = ['<a:slotsanim:1327959630915047556>',
-      '<a:slotsanim:1327959630915047556>',
-      '<a:slotsanim:1327959630915047556>'];
-    const slotBackground = `
-    🎰 **Slot Machine**
-    ┌─────────────────┐
-    ${spinResult.join(' | ')}
-    └─────────────────┘
-    ╚══════════╝
-    `;
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    let spinningMessage = await channel.send(
-      `${slotBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!`
-    );
-
-    // Final spin result
-    let finalResult = [
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)],
-      symbols[Math.floor(Math.random() * symbols.length)],
-    ];
-
-    // Simulate locking each position one by one
-    for (let i = 0; i < spinResult.length; i++) {
-      // Spin animation for this position
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Lock the current position
-      spinResult[i] = finalResult[i];
-      const updatedBackground = `
-      🎰 **Slot Machine**
-      ┌─────────────────┐
-      ${spinResult.join(' | ')}
-      └─────────────────┘
-      ╚══════════╝
-      `;
-      await spinningMessage.edit(
-        `${updatedBackground}\n **${guild.user.username}** is spinning for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!`
-      )
-    }
-
-    // Determine win or loss
-    let winAmount = 0;
+    let winMultiplier = 0;
     if (finalResult[0] === finalResult[1] && finalResult[1] === finalResult[2]) {
-      // Jackpot: all three match
-      winAmount = Number(amount * 2).toFixed(0);
-      userData.cash += Number(winAmount);
-      await updateUser(id, {
-        cash: userData.cash
+      const match = finalResult[0];
+      if (match === '<:scash:1327950770657820764>') winMultiplier = 10;
+      else if (match === '<:sdiamond:1327950737963221075>') winMultiplier = 5;
+      else winMultiplier = 3;
+    } else if (finalResult[0] === finalResult[1] || finalResult[1] === finalResult[2] || finalResult[0] === finalResult[2]) {
+      winMultiplier = 1.5;
+    }
+
+    let endMessage;
+    if (winMultiplier > 0) {
+      const wonAmount = Math.floor(amount * winMultiplier);
+      const fresh = await getUserData(userId);
+      await updateUser(userId, {
+        cash: Number(fresh?.cash || 0) + wonAmount
       });
-      return spinningMessage.edit(
-        `🎰 **${guild.user.username}, you hit a 🏆 JACKPOT!** 🎉\n` +
-        `**Congratulations!** You won extra <:kasiko_coin:1300141236841086977> **${winAmount.toLocaleString()}** 𝑪𝒂𝒔𝒉. 🎊\n` +
-        `**Final Spin result:** ${finalResult.join(' | ')}\n`
-      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      endMessage = `🎉 **JACKPOT!** You won <:kasiko_coin:1300141236841086977> **${wonAmount.toLocaleString()}** cash (*${winMultiplier}x multiplier*)!`;
     } else {
-      // Loss
-      winAmount -= amount;
-      userData.cash += Number(winAmount);
-      await updateUser(id, {
-        cash: userData.cash
-      });
-      return spinningMessage.edit(
-        `🎰 **${guild.user.username}, better luck next time!** 😔\n` +
-        `**Oh no!** You lost <:kasiko_coin:1300141236841086977> **${Math.abs(winAmount).toLocaleString()}** 𝑪𝒂𝒔𝒉.\n` +
-        `**Final Spin result:** ${finalResult.join(' | ')}\n`
-      ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      endMessage = `💔 **No luck this time!** You lost <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`;
     }
-  } catch (e) {
-    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-      console.error(e);
+
+    const finalSlot = `🎰 **Slot Machine**\n┌─────────────────┐\n${finalResult.join(' | ')}\n└─────────────────┘\n╚══════════╝\n${endMessage}`;
+
+    if (spinningMessage?.edit) {
+      await spinningMessage.edit({
+        content: finalSlot
+      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
-    await channel.send(`ⓘ Something went wrong while spinning the slots. Please try again later!\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    return;
+  } catch (err) {
+    console.error("Error during slots:", err);
+    await handleMessage(ctx, {
+      content: "ⓘ Something went wrong during Slots!"
+    }).catch(() => {});
   }
 }
 
 export default {
-  name: "slots",
-  description: "Play a slot machine game by betting an amount. Win or lose based on the result.",
-  aliases: ["s", "slotmachine",
-    "slot"],
-  args: "<amount>",
-  example: ["slots 250"],
-  related: ["dice",
-    "cash",
-    "tosscoin",
-    "guess"],
-  emoji: "<:sorange:1327950638616678440>",
-  cooldown: 10000,
-  // 10 seconds cooldown
-  category: "🎲 Games",
+  name: 'slots',
+  description: 'Spin the slots for a chance to win big rewards!',
+  aliases: ['slot', 'sl'],
+  args: '<amount>',
+  example: ['slots 1000', 'slots all'],
+  related: ['dice', 'cash', 'toss', 'blackjack'],
+  emoji: '🎰',
+  cooldown: 5000,
+  category: '🎲 Games',
 
-  // Main function to execute the slots game logic
-  execute: async (args, message) => {
+  intract: (interaction) => {
+    const bet = interaction.options?.getInteger?.('bet') || 1;
+    return slots(interaction.user.id, bet, null, interaction);
+  },
+
+  execute: async (args, context) => {
     try {
-      // Check if a valid amount argument is provided
-      if ((args[1] && Helper.isNumber(args[1])) || String(args[1]).toLowerCase() === "all") {
-        let amount;
+      const { id, username } = discordUser(context);
+      let amount = args[1] || "1";
 
-        if (String(args[1]).toLowerCase() === "all") {
-          amount = "all";
-        } else {
-          amount = parseInt(args[1], 10);
-        }
-
-        if (amount !== "all" && (isNaN(amount) || amount < 1)) {
-          await message.channel.send("⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
-          return;
-        }
-
-        if (amount !== "all" && amount > 300000) {
-          await message.channel.send(`⚠️ **${message.author.username}**, you can't spin slots with more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
-          return;
-        }
-
-        // Call the slots function
-        await slots(message.author.id, amount, message.channel);
-        return;
+      if (String(amount).toLowerCase() === "all") {
+        amount = "all";
       } else {
-        await message.channel.send("⚠️ Invalid cash amount! Amount should be an integer. Use `slots <amount>`, minimum is 1.");
-        return;
+        amount = parseInt(amount, 10);
       }
+
+      if (amount !== "all" && (isNaN(amount) || amount < 1)) {
+        return await handleMessage(context, "⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
+      }
+
+      if (amount !== "all" && amount > 300000) {
+        return await handleMessage(context, `⚠️ **${username}**, you can't spin slots with more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+      }
+
+      await slots(id, amount, null, context);
     } catch (err) {
-      await message.channel.send(`ⓘ Something went wrong in Slots!\n-# **Error**: ${err.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      return;
+      console.error(err);
+      await handleMessage(context, `ⓘ Something went wrong in Slots!`);
     }
   }
 };

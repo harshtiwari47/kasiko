@@ -28,6 +28,6 @@ export default {
   async execute(interaction) {
     const bet = interaction.options.getInteger('bet');
     const side = interaction.options.getString('side') || 'head';
-    return toss(interaction.user.id, interaction, bet, interaction.channel, side);
+    return toss(interaction.user.id, interaction, bet, null, side);
   }
 };
