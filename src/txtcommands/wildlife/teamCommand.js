@@ -14,26 +14,25 @@ function capitalizeName(name) {
   return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 }
 
-function getAnimalMeta(animalName) {
-  const animal = animalsData.animals.find(a => a.name.toLowerCase() === animalName.toLowerCase());
-  if (!animal) {
-    return {
-      name: animalName,
-      emoji: '🐾',
-      rarity: 1,
-      type: 'Common',
-      baseHp: 30,
-      baseAttack: 5
-    };
-  }
-  return {
+// Precompute O(1) animal lookup Map at module load (avoids linear .find() on every call)
+const _animalMetaMap = new Map();
+for (const animal of (animalsData.animals || [])) {
+  _animalMetaMap.set(animal.name.toLowerCase(), {
     name: animal.name,
     emoji: animal.emoji || '🐾',
     rarity: animal.rarity || 1,
     type: (animal.type || 'Common').toUpperCase(),
     baseHp: animal.baseHp || 30,
     baseAttack: animal.baseAttack || 5
-  };
+  });
+}
+
+const DEFAULT_ANIMAL_META = { emoji: '🐾', rarity: 1, type: 'Common', baseHp: 30, baseAttack: 5 };
+
+function getAnimalMeta(animalName) {
+  const cached = _animalMetaMap.get(animalName.toLowerCase());
+  if (cached) return cached;
+  return { name: animalName, ...DEFAULT_ANIMAL_META };
 }
 
 function computeStats(animalMeta, level = 1) {

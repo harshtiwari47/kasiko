@@ -28,17 +28,32 @@ import {
   AttachmentBuilder
 } from 'discord.js';
 
+// O(1) Lookup Map and Pre-computed arrays initialized after ITEM_DEFINITIONS
+let _itemLookupMap = null;
+let _sellableItemsCache = null;
+let _shopItemsCache = null;
+
+function getItemLookupMap() {
+  if (!_itemLookupMap) {
+    _itemLookupMap = new Map();
+    for (const item of Object.values(ITEM_DEFINITIONS)) {
+      _itemLookupMap.set(item.id.toLowerCase(), item);
+      _itemLookupMap.set(item.id.replace(/_/g, '').toLowerCase(), item);
+      _itemLookupMap.set(item.name.toLowerCase(), item);
+      if (Array.isArray(item.aliases)) {
+        for (const alias of item.aliases) {
+          _itemLookupMap.set(alias.toLowerCase(), item);
+        }
+      }
+    }
+  }
+  return _itemLookupMap;
+}
+
 export function findItemByIdOrAlias(input) {
-  const lower = input.toLowerCase();
-
-  const item = Object.values(ITEM_DEFINITIONS).find(item =>
-    item.id.toLowerCase() === lower ||
-    item.id.replace(/_/g, '').toLowerCase() === lower ||
-    item.name.toLowerCase() === lower ||
-    item.aliases?.some(alias => alias.toLowerCase() === lower)
-  );
-
-  return item || null;
+  if (!input || typeof input !== 'string') return null;
+  const map = getItemLookupMap();
+  return map.get(input.toLowerCase().trim()) || null;
 }
 
 // Example: getItemListByProperty('rarity', 'rare');
@@ -47,11 +62,17 @@ export function getItemListByProperty(key, value) {
 }
 
 export function getSellableItems() {
-  return Object.values(ITEM_DEFINITIONS).filter(item => item.sellable);
+  if (!_sellableItemsCache) {
+    _sellableItemsCache = Object.values(ITEM_DEFINITIONS).filter(item => item.sellable);
+  }
+  return _sellableItemsCache;
 }
 
 export function getShopItems() {
-  return Object.values(ITEM_DEFINITIONS).filter(item => item.purchaseable);
+  if (!_shopItemsCache) {
+    _shopItemsCache = Object.values(ITEM_DEFINITIONS).filter(item => item.purchaseable);
+  }
+  return _shopItemsCache;
 }
 
 // Example: getRandomItem(item => item.rarity === 'rare')
@@ -611,7 +632,7 @@ export const ITEM_DEFINITIONS = {
     id: 'milk',
     name: 'Milk Packet',
     aliases: ["dairy", "milkbottle"],
-    emoji: '🥛',
+    emoji: '<:milk:1388844881153360002>',
     description: 'A fresh packet of milk. Used in recipes, giftable, or can be sold. Found in `work`, `daily`, and `hunt`.',
     source: ["hunt",
       "work",

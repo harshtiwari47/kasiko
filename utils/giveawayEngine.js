@@ -2,12 +2,12 @@ import {
   EmbedBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ActionRowBuilder
-} from 'discord.js';
-import Giveaway from '../models/Giveaway.js';
-import { CHANNELS, COLORS, GIVEAWAY_CONFIG } from '../constants.js';
-import { getUserData, updateUser } from '../database.js';
-import { sendErrorLog } from './errorLogger.js';
+  ActionRowBuilder,
+} from "discord.js";
+import Giveaway from "../models/Giveaway.js";
+import { CHANNELS, COLORS, GIVEAWAY_CONFIG } from "../constants.js";
+import { getUserData, updateUser } from "../database.js";
+import { sendErrorLog } from "./errorLogger.js";
 
 /**
  * Generate a random prize amount between 500k and 2M rounded to 10k intervals.
@@ -17,7 +17,7 @@ export function generateDailyPrize() {
   const max = GIVEAWAY_CONFIG.MAX_PRIZE || 2000000;
   const step = 10000;
   const steps = Math.floor((max - min) / step);
-  return min + (Math.floor(Math.random() * (steps + 1)) * step);
+  return min + Math.floor(Math.random() * (steps + 1)) * step;
 }
 
 /**
@@ -26,78 +26,94 @@ export function generateDailyPrize() {
 export async function startDailyGiveaway(client, options = {}) {
   try {
     if (!client?.isReady()) {
-      console.warn('[GiveawayEngine] Client not ready to start giveaway.');
+      console.warn("[GiveawayEngine] Client not ready to start giveaway.");
       return null;
     }
 
     const channelId = options.channelId || CHANNELS.GIVEAWAY;
     if (!channelId) {
-      console.error('[GiveawayEngine] No giveaway channel configured.');
+      console.error("[GiveawayEngine] No giveaway channel configured.");
       return null;
     }
 
-    const channel = await client.channels.fetch(channelId).catch(err => {
-      console.error(`[GiveawayEngine] Failed to fetch channel ${channelId}:`, err.message);
+    const channel = await client.channels.fetch(channelId).catch((err) => {
+      console.error(
+        `[GiveawayEngine] Failed to fetch channel ${channelId}:`,
+        err.message,
+      );
       return null;
     });
 
     if (!channel || !channel.isTextBased()) {
-      console.error(`[GiveawayEngine] Channel ${channelId} is invalid or not text-based.`);
+      console.error(
+        `[GiveawayEngine] Channel ${channelId} is invalid or not text-based.`,
+      );
       return null;
     }
 
     const prize = options.prize || generateDailyPrize();
-    const durationHours = options.durationHours || GIVEAWAY_CONFIG.DEFAULT_DURATION_HOURS || 24;
-    const alertRoleId = options.alertRoleId !== undefined ? options.alertRoleId : GIVEAWAY_CONFIG.ALERT_ROLE_ID;
+    const durationHours =
+      options.durationHours || GIVEAWAY_CONFIG.DEFAULT_DURATION_HOURS || 24;
+    const alertRoleId =
+      options.alertRoleId !== undefined
+        ? options.alertRoleId
+        : GIVEAWAY_CONFIG.ALERT_ROLE_ID;
 
     const startedAt = new Date();
-    const endsAt = new Date(startedAt.getTime() + (durationHours * 60 * 60 * 1000));
+    const endsAt = new Date(
+      startedAt.getTime() + durationHours * 60 * 60 * 1000,
+    );
     const endTimestamp = Math.floor(endsAt.getTime() / 1000);
 
     // Initial Embed
     const embed = new EmbedBuilder()
-      .setTitle('🎉 **DAILY CASH GIVEAWAY** 🎉')
+      .setTitle("<:reward_box:1366435558011965500> **DAILY CASH GIVEAWAY** 🎉")
       .setColor(COLORS.GOLD)
       .setDescription(
         `A new daily cash drop has landed! Click the **Enter Giveaway** button below for your chance to win!\n\n` +
-        `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${prize.toLocaleString()} Cash**\n` +
-        `<:kasiko_stopwatch:1355056680387481620> **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n` +
-        `<:reply:1368224908307468408> **Entries:** \`0 entered\`\n` +
-        `👑 **Host:** Kasiko Daily Drops`
+          `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${prize.toLocaleString()} Cash**\n` +
+          `<:sand_timer:1386589414846631947> **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n` +
+          `<:reply:1368224908307468408> **Entries:** \`0 entered\`\n` +
+          `<:kasiko_director:1389508823055601725> **Host:** Kasiko Daily Drops`,
       )
-      .setFooter({ text: 'Kasiko Automated Giveaways • 1 Winner Selected at Timer End' })
+      .setFooter({
+        text: "Kasiko Automated Giveaways • 1 Winner Selected at Timer End",
+      })
       .setTimestamp(endsAt);
 
     // Temporary button before sending
     const initialRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setCustomId('giveaway_enter_temp')
-        .setLabel('🎉 Enter Giveaway (0)')
-        .setStyle(ButtonStyle.Success)
+        .setCustomId("giveaway_enter_temp")
+        .setLabel("🎉 Enter Giveaway (0)")
+        .setStyle(ButtonStyle.Success),
     );
 
     // Mention alert role if configured
-    let content = '';
+    let content = "";
     if (alertRoleId) {
       const cleanRole = String(alertRoleId).trim();
-      if (cleanRole.toLowerCase() === 'everyone' || cleanRole === '@everyone') content = '@everyone';
-      else if (cleanRole.toLowerCase() === 'here' || cleanRole === '@here') content = '@here';
-      else if (cleanRole.startsWith('<@&') && cleanRole.endsWith('>')) content = cleanRole;
+      if (cleanRole.toLowerCase() === "everyone" || cleanRole === "@everyone")
+        content = "@everyone";
+      else if (cleanRole.toLowerCase() === "here" || cleanRole === "@here")
+        content = "@here";
+      else if (cleanRole.startsWith("<@&") && cleanRole.endsWith(">"))
+        content = cleanRole;
       else content = `<@&${cleanRole}>`;
     }
 
     const sentMessage = await channel.send({
       content: content.trim() ? content : undefined,
       embeds: [embed],
-      components: [initialRow]
+      components: [initialRow],
     });
 
     // Update customId to include the actual messageId
     const actualRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`giveaway_enter_${sentMessage.id}`)
-        .setLabel('🎉 Enter Giveaway (0)')
-        .setStyle(ButtonStyle.Success)
+        .setLabel("🎉 Enter Giveaway (0)")
+        .setStyle(ButtonStyle.Success),
     );
 
     await sentMessage.edit({ components: [actualRow] }).catch(() => {});
@@ -115,16 +131,19 @@ export async function startDailyGiveaway(client, options = {}) {
       winnerId: null,
       entries: [],
       entryCount: 0,
-      isDaily: options.isDaily !== undefined ? options.isDaily : true
+      isDaily: options.isDaily !== undefined ? options.isDaily : true,
     });
 
     await giveawayDoc.save();
-    console.log(`[GiveawayEngine] ✅ Daily giveaway started: ${prize.toLocaleString()} Cash (Message: ${sentMessage.id})`);
+    console.log(
+      `[GiveawayEngine] ✅ Daily giveaway started: ${prize.toLocaleString()} Cash (Message: ${sentMessage.id})`,
+    );
     return giveawayDoc;
-
   } catch (error) {
-    console.error('[GiveawayEngine] Error starting daily giveaway:', error);
-    sendErrorLog(error, { source: 'GiveawayEngine.startDailyGiveaway' }).catch(() => {});
+    console.error("[GiveawayEngine] Error starting daily giveaway:", error);
+    sendErrorLog(error, { source: "GiveawayEngine.startDailyGiveaway" }).catch(
+      () => {},
+    );
     return null;
   }
 }
@@ -135,22 +154,22 @@ export async function startDailyGiveaway(client, options = {}) {
 export async function handleGiveawayEntry(interaction) {
   try {
     const customId = interaction.customId;
-    const messageId = customId.replace('giveaway_enter_', '');
+    const messageId = customId.replace("giveaway_enter_", "");
     const userId = interaction.user.id;
 
     const giveaway = await Giveaway.findOne({ messageId });
 
     if (!giveaway) {
       return interaction.reply({
-        content: '⚠️ This giveaway could not be found or has expired.',
-        ephemeral: true
+        content: "⚠️ This giveaway could not be found or has expired.",
+        ephemeral: true,
       });
     }
 
     if (giveaway.ended || giveaway.endsAt <= new Date()) {
       return interaction.reply({
-        content: '⚠️ This giveaway has already ended!',
-        ephemeral: true
+        content: "⚠️ This giveaway has already ended!",
+        ephemeral: true,
       });
     }
 
@@ -158,7 +177,7 @@ export async function handleGiveawayEntry(interaction) {
     if (giveaway.entries.includes(userId)) {
       return interaction.reply({
         content: `✅ **You are already entered in this giveaway!**\n💰 **Prize:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n🍀 Good luck!`,
-        ephemeral: true
+        ephemeral: true,
       });
     }
 
@@ -167,64 +186,73 @@ export async function handleGiveawayEntry(interaction) {
       {
         messageId,
         ended: false,
-        entries: { $ne: userId }
+        entries: { $ne: userId },
       },
       {
         $addToSet: { entries: userId },
-        $inc: { entryCount: 1 }
+        $inc: { entryCount: 1 },
       },
-      { new: true }
+      { new: true },
     );
 
     if (!updated) {
       return interaction.reply({
         content: `✅ **You are already entered in this giveaway!**`,
-        ephemeral: true
+        ephemeral: true,
       });
     }
 
     // Send ephemeral confirmation to user
     await interaction.reply({
       content: `🎉 **Entry Confirmed!** You have entered the giveaway for <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**! 🍀`,
-      ephemeral: true
+      ephemeral: true,
     });
 
     // Periodically update the message button label with current entry count
     try {
       const endTimestamp = Math.floor(updated.endsAt.getTime() / 1000);
       const updatedEmbed = new EmbedBuilder()
-        .setTitle('🎉 **DAILY CASH GIVEAWAY** 🎉')
+        .setTitle(
+          "<:reward_box:1366435558011965500> **DAILY CASH GIVEAWAY** 🎉",
+        )
         .setColor(COLORS.GOLD)
         .setDescription(
           `A new daily cash drop has landed! Click the **Enter Giveaway** button below for your chance to win!\n\n` +
-          `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${updated.prize.toLocaleString()} Cash**\n` +
-          `<:kasiko_stopwatch:1355056680387481620> **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n` +
-          `<:reply:1368224908307468408> **Entries:** \`${updated.entryCount} entered\`\n` +
-          `👑 **Host:** Kasiko Daily Drops`
+            `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${updated.prize.toLocaleString()} Cash**\n` +
+            `<:sand_timer:1386589414846631947> **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n` +
+            `<:reply:1368224908307468408> **Entries:** \`${updated.entryCount} entered\`\n` +
+            `<:kasiko_director:1389508823055601725> **Host:** Kasiko Daily Drops`,
         )
-        .setFooter({ text: 'Kasiko Automated Giveaways • 1 Winner Selected at Timer End' })
+        .setFooter({
+          text: "​🇰​​🇦​​🇸​​🇮​​🇰​​🇴​ ​🇦​​🇺​​🇹​​🇴​​🇲​​🇦​​🇹​​🇪​​🇩​ ​🇬​​🇮​​🇻​​🇪​​🇦​​🇼​​🇦​​🇾​​🇸​ • 1️ ​🇼​​🇮​​🇳​​🇳​​🇪​​🇷​ ​🇸​​🇪​​🇱​​🇪​​🇨​​🇹​​🇪​​🇩​ ​🇦​​🇹​ ​🇹​​🇮​​🇲​​🇪​​🇷​ ​🇪​​🇳​​🇩​",
+        })
         .setTimestamp(updated.endsAt);
 
       const updatedRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`giveaway_enter_${updated.messageId}`)
-          .setLabel(`🎉 Enter Giveaway (${updated.entryCount})`)
-          .setStyle(ButtonStyle.Success)
+          .setLabel(`Enter Giveaway (${updated.entryCount})`)
+          .setEmoji("1403061213360951386")
+          .setStyle(ButtonStyle.Success),
       );
 
-      await interaction.message.edit({
-        embeds: [updatedEmbed],
-        components: [updatedRow]
-      }).catch(() => {});
-    } catch (_) { /* ignore edit errors */ }
-
+      await interaction.message
+        .edit({
+          embeds: [updatedEmbed],
+          components: [updatedRow],
+        })
+        .catch(() => {});
+    } catch (_) {
+      /* ignore edit errors */
+    }
   } catch (error) {
-    console.error('[GiveawayEngine] Error handling giveaway entry:', error);
+    console.error("[GiveawayEngine] Error handling giveaway entry:", error);
     try {
       if (!interaction.replied && !interaction.deferred) {
         await interaction.reply({
-          content: '<:warning:1366050875243757699> An error occurred while registering your entry. Please try again.',
-          ephemeral: true
+          content:
+            "<:warning:1366050875243757699> An error occurred while registering your entry. Please try again.",
+          ephemeral: true,
         });
       }
     } catch (_) {}
@@ -236,69 +264,81 @@ export async function handleGiveawayEntry(interaction) {
  */
 export async function resolveGiveaway(giveawayIdOrDoc, client) {
   try {
-    let giveaway = typeof giveawayIdOrDoc === 'string'
-      ? await Giveaway.findById(giveawayIdOrDoc)
-      : giveawayIdOrDoc;
+    let giveaway =
+      typeof giveawayIdOrDoc === "string"
+        ? await Giveaway.findById(giveawayIdOrDoc)
+        : giveawayIdOrDoc;
 
     if (!giveaway || giveaway.ended) return null;
 
     giveaway.ended = true;
 
-    const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
+    const channel = await client.channels
+      .fetch(giveaway.channelId)
+      .catch(() => null);
 
     // ── Scenario A: No Entries ───────────────────────────────────────────────
     if (!giveaway.entries || giveaway.entries.length === 0) {
       await giveaway.save();
-      console.log(`[GiveawayEngine] Giveaway ${giveaway.messageId} ended with 0 entries.`);
+      console.log(
+        `[GiveawayEngine] Giveaway ${giveaway.messageId} ended with 0 entries.`,
+      );
 
       if (channel && channel.isTextBased()) {
         try {
-          const originalMsg = await channel.messages.fetch(giveaway.messageId).catch(() => null);
+          const originalMsg = await channel.messages
+            .fetch(giveaway.messageId)
+            .catch(() => null);
           if (originalMsg) {
             const endedEmbed = new EmbedBuilder()
-              .setTitle('🎉 **DAILY CASH GIVEAWAY [ENDED]** 🎉')
+              .setTitle(
+                "<:reward_box:1366435558011965500> **DAILY CASH GIVEAWAY [ENDED]** 🎉",
+              )
               .setColor(COLORS.DANGER)
               .setDescription(
                 `This giveaway has concluded.\n\n` +
-                `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
-                `<:alert:1366050815089053808> **Winner:** *No entries received*\n` +
-                `<:reply:1368224908307468408> **Total Entries:** \`0\``
+                  `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
+                  `<:alert:1366050815089053808> **Winner:** *No entries received*\n` +
+                  `<:reply:1368224908307468408> **Total Entries:** \`0\``,
               )
-              .setFooter({ text: 'Giveaway Ended' })
+              .setFooter({ text: "Giveaway Ended" })
               .setTimestamp();
 
             const disabledRow = new ActionRowBuilder().addComponents(
               new ButtonBuilder()
                 .setCustomId(`giveaway_ended_${giveaway.messageId}`)
-                .setLabel('Ended (0 entries)')
+                .setLabel("Ended (0 entries)")
                 .setStyle(ButtonStyle.Secondary)
-                .setDisabled(true)
+                .setDisabled(true),
             );
 
-            await originalMsg.edit({ embeds: [endedEmbed], components: [disabledRow] }).catch(() => {});
+            await originalMsg
+              .edit({ embeds: [endedEmbed], components: [disabledRow] })
+              .catch(() => {});
           }
 
           // Follow-up announcement
           const noEntriesEmbed = new EmbedBuilder()
-            .setTitle('📢 **Daily Giveaway Concluded**')
+            .setTitle("📢 **Daily Giveaway Concluded**")
             .setColor(COLORS.WARNING)
             .setDescription(
               `The daily giveaway for <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash** has ended with no participants.\n` +
-              `The prize pool will roll over to the next daily drop!`
+                `The prize pool will roll over to the next daily drop!`,
             )
-            .setFooter({ text: 'Kasiko Automated Giveaways' })
+            .setFooter({ text: "Kasiko Automated Giveaways" })
             .setTimestamp();
 
           await channel.send({ embeds: [noEntriesEmbed] });
         } catch (e) {
-          console.error('[GiveawayEngine] Error sending no-entry message:', e);
+          console.error("[GiveawayEngine] Error sending no-entry message:", e);
         }
       }
       return giveaway;
     }
 
     // ── Scenario B: Winner Selection ─────────────────────────────────────────
-    const winnerId = giveaway.entries[Math.floor(Math.random() * giveaway.entries.length)];
+    const winnerId =
+      giveaway.entries[Math.floor(Math.random() * giveaway.entries.length)];
     giveaway.winnerId = winnerId;
     await giveaway.save();
 
@@ -308,10 +348,15 @@ export async function resolveGiveaway(giveawayIdOrDoc, client) {
       if (userData) {
         const currentCash = userData.cash || 0;
         await updateUser(winnerId, { cash: currentCash + giveaway.prize });
-        console.log(`[GiveawayEngine] ✅ Credited ${giveaway.prize.toLocaleString()} Cash to winner ${winnerId}`);
+        console.log(
+          `[GiveawayEngine] ✅ Credited ${giveaway.prize.toLocaleString()} Cash to winner ${winnerId}`,
+        );
       }
     } catch (cashErr) {
-      console.error(`[GiveawayEngine] Error crediting cash to winner ${winnerId}:`, cashErr);
+      console.error(
+        `[GiveawayEngine] Error crediting cash to winner ${winnerId}:`,
+        cashErr,
+      );
     }
 
     // Update original message and post celebratory follow-up in channel
@@ -324,18 +369,20 @@ export async function resolveGiveaway(giveawayIdOrDoc, client) {
 
         const winnerTag = winnerUser ? winnerUser.username : `<@${winnerId}>`;
 
-        const originalMsg = await channel.messages.fetch(giveaway.messageId).catch(() => null);
+        const originalMsg = await channel.messages
+          .fetch(giveaway.messageId)
+          .catch(() => null);
         if (originalMsg) {
           const endedEmbed = new EmbedBuilder()
-            .setTitle('🎉 **DAILY CASH GIVEAWAY [ENDED]** 🎉')
+            .setTitle("🎉 **DAILY CASH GIVEAWAY [ENDED]** 🎉")
             .setColor(COLORS.SUCCESS)
             .setDescription(
               `This giveaway has concluded!\n\n` +
-              `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
-              `<:trophy:1352897371595477084> **Winner:** <@${winnerId}> (\`${winnerTag}\`)\n` +
-              `<:reply:1368224908307468408> **Total Entries:** \`${giveaway.entries.length} participants\``
+                `<:moneybag:1365976001179553792> **Prize:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
+                `<:trophy:1352897371595477084> **Winner:** <@${winnerId}> (\`${winnerTag}\`)\n` +
+                `<:reply:1368224908307468408> **Total Entries:** \`${giveaway.entries.length} participants\``,
             )
-            .setFooter({ text: 'Giveaway Concluded' })
+            .setFooter({ text: "Giveaway Concluded" })
             .setTimestamp();
 
           const disabledRow = new ActionRowBuilder().addComponents(
@@ -343,42 +390,52 @@ export async function resolveGiveaway(giveawayIdOrDoc, client) {
               .setCustomId(`giveaway_ended_${giveaway.messageId}`)
               .setLabel(`Ended (Winner: ${winnerTag})`)
               .setStyle(ButtonStyle.Success)
-              .setDisabled(true)
+              .setDisabled(true),
           );
 
-          await originalMsg.edit({ embeds: [endedEmbed], components: [disabledRow] }).catch(() => {});
+          await originalMsg
+            .edit({ embeds: [endedEmbed], components: [disabledRow] })
+            .catch(() => {});
         }
 
         // Celebratory follow-up announcement
         const followUpEmbed = new EmbedBuilder()
-          .setTitle('🎉 **CONGRATULATIONS TO THE WINNER!** 🎉')
+          .setTitle("🎉 **CONGRATULATIONS TO THE WINNER!** 🎉")
           .setColor(COLORS.SUCCESS)
           .setDescription(
             `<:trophy:1352897371595477084> <@${winnerId}> has won the **Daily Cash Giveaway**!\n\n` +
-            `<:moneybag:1365976001179553792> **Prize Won:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
-            `<:bank:1352897312606785576> **Deposit Status:** Funds have been deposited directly into your wallet!\n` +
-            `<:reply:1368224908307468408> **Participants:** **${giveaway.entries.length} players**\n\n` +
-            `*Thank you to everyone who entered! Stay tuned for tomorrow's daily drop!* 🍀`
+              `<:moneybag:1365976001179553792> **Prize Won:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
+              `<:bank:1352897312606785576> **Deposit Status:** Funds have been deposited directly into your wallet!\n` +
+              `<:reply:1368224908307468408> **Participants:** **${giveaway.entries.length} players**\n\n` +
+              `*Thank you to everyone who entered! Stay tuned for tomorrow's daily drop!* 🍀`,
           )
-          .setThumbnail(winnerUser?.displayAvatarURL?.({ size: 128, extension: 'png' }) || null)
-          .setFooter({ text: `Kasiko Daily Drops • Message ID: ${giveaway.messageId}` })
+          .setThumbnail(
+            winnerUser?.displayAvatarURL?.({ size: 128, extension: "png" }) ||
+              null,
+          )
+          .setFooter({
+            text: `Kasiko Daily Drops • Message ID: ${giveaway.messageId}`,
+          })
           .setTimestamp();
 
         await channel.send({
           content: `🎉 Congratulations <@${winnerId}>! You won the daily giveaway!`,
-          embeds: [followUpEmbed]
+          embeds: [followUpEmbed],
         });
-
       } catch (postErr) {
-        console.error('[GiveawayEngine] Error posting winner announcement:', postErr);
+        console.error(
+          "[GiveawayEngine] Error posting winner announcement:",
+          postErr,
+        );
       }
     }
 
     return giveaway;
-
   } catch (error) {
-    console.error('[GiveawayEngine] Error resolving giveaway:', error);
-    sendErrorLog(error, { source: 'GiveawayEngine.resolveGiveaway' }).catch(() => {});
+    console.error("[GiveawayEngine] Error resolving giveaway:", error);
+    sendErrorLog(error, { source: "GiveawayEngine.resolveGiveaway" }).catch(
+      () => {},
+    );
     return null;
   }
 }
@@ -393,14 +450,14 @@ export async function checkActiveGiveaways(client) {
     const now = new Date();
     const expiredGiveaways = await Giveaway.find({
       ended: false,
-      endsAt: { $lte: now }
+      endsAt: { $lte: now },
     });
 
     for (const giveaway of expiredGiveaways) {
       await resolveGiveaway(giveaway, client);
     }
   } catch (error) {
-    console.error('[GiveawayEngine] Error checking active giveaways:', error);
+    console.error("[GiveawayEngine] Error checking active giveaways:", error);
   }
 }
 
@@ -410,12 +467,18 @@ export async function checkActiveGiveaways(client) {
 export async function rerollGiveaway(messageId, client) {
   try {
     const giveaway = await Giveaway.findOne({ messageId });
-    if (!giveaway) throw new Error('Giveaway not found.');
-    if (!giveaway.ended) throw new Error('Giveaway is still active. End it first before rerolling.');
-    if (!giveaway.entries || giveaway.entries.length === 0) throw new Error('No entries were registered in this giveaway.');
+    if (!giveaway) throw new Error("Giveaway not found.");
+    if (!giveaway.ended)
+      throw new Error(
+        "Giveaway is still active. End it first before rerolling.",
+      );
+    if (!giveaway.entries || giveaway.entries.length === 0)
+      throw new Error("No entries were registered in this giveaway.");
 
     // Filter out previous winner if possible
-    const availablePool = giveaway.entries.filter(id => id !== giveaway.winnerId);
+    const availablePool = giveaway.entries.filter(
+      (id) => id !== giveaway.winnerId,
+    );
     const pool = availablePool.length > 0 ? availablePool : giveaway.entries;
     const newWinnerId = pool[Math.floor(Math.random() * pool.length)];
 
@@ -425,10 +488,14 @@ export async function rerollGiveaway(messageId, client) {
     // Credit cash to new winner
     const userData = await getUserData(newWinnerId);
     if (userData) {
-      await updateUser(newWinnerId, { cash: (userData.cash || 0) + giveaway.prize });
+      await updateUser(newWinnerId, {
+        cash: (userData.cash || 0) + giveaway.prize,
+      });
     }
 
-    const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
+    const channel = await client.channels
+      .fetch(giveaway.channelId)
+      .catch(() => null);
     if (channel && channel.isTextBased()) {
       let winnerUser = null;
       try {
@@ -436,28 +503,32 @@ export async function rerollGiveaway(messageId, client) {
       } catch (_) {}
 
       const rerollEmbed = new EmbedBuilder()
-        .setTitle('🔄 GIVEAWAY REROLLED! 🔄')
+        .setTitle("🔄 GIVEAWAY REROLLED! 🔄")
         .setColor(COLORS.GOLD)
         .setDescription(
           `A new winner has been selected for the giveaway!\n\n` +
-          `🏆 **New Winner:** <@${newWinnerId}>\n` +
-          `💰 **Prize:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
-          `💳 **Status:** Deposited directly into your wallet!`
+            `🏆 **New Winner:** <@${newWinnerId}>\n` +
+            `💰 **Prize:** <:kasiko_coin:1300141236841086977> **${giveaway.prize.toLocaleString()} Cash**\n` +
+            `💳 **Status:** Deposited directly into your wallet!`,
         )
-        .setThumbnail(winnerUser?.displayAvatarURL?.({ size: 128, extension: 'png' }) || null)
-        .setFooter({ text: `Kasiko Giveaway Reroll • Original Message: ${giveaway.messageId}` })
+        .setThumbnail(
+          winnerUser?.displayAvatarURL?.({ size: 128, extension: "png" }) ||
+            null,
+        )
+        .setFooter({
+          text: `Kasiko Giveaway Reroll • Original Message: ${giveaway.messageId}`,
+        })
         .setTimestamp();
 
       await channel.send({
         content: `🎉 Congratulations <@${newWinnerId}>! You are the new winner!`,
-        embeds: [rerollEmbed]
+        embeds: [rerollEmbed],
       });
     }
 
     return { success: true, newWinnerId, prize: giveaway.prize };
-
   } catch (error) {
-    console.error('[GiveawayEngine] Error rerolling giveaway:', error);
+    console.error("[GiveawayEngine] Error rerolling giveaway:", error);
     throw error;
   }
 }

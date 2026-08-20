@@ -66,18 +66,21 @@ async function editExisting(context, sentMsg, payload) {
   } catch (e) { /* ignore */ }
 }
 
-// ─── Stat helpers ────────────────────────────────────────────────────────────
-
-function getAnimalBaseStats(animalName) {
-  const animal = animalsData.animals.find(a => a.name.toLowerCase() === animalName.toLowerCase());
-  if (!animal) return { baseHp: 30, baseAttack: 5, emoji: '🐾', rarity: 1, type: 'common' };
-  return {
+// Precompute O(1) animal lookup Map (avoids linear .find() on every battle)
+const _animalBaseStatsMap = new Map();
+for (const animal of (animalsData.animals || [])) {
+  _animalBaseStatsMap.set(animal.name.toLowerCase(), {
     baseHp: animal.baseHp || 30,
     baseAttack: animal.baseAttack || 5,
     emoji: animal.emoji || '🐾',
     rarity: animal.rarity || 1,
     type: animal.type || 'common'
-  };
+  });
+}
+const _defaultBaseStats = { baseHp: 30, baseAttack: 5, emoji: '🐾', rarity: 1, type: 'common' };
+
+function getAnimalBaseStats(animalName) {
+  return _animalBaseStatsMap.get(animalName.toLowerCase()) || _defaultBaseStats;
 }
 
 function calculateAnimalStats(animal) {
