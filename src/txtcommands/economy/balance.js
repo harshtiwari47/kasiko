@@ -53,21 +53,21 @@ export default {
       const C = new ContainerBuilder()
         .setAccentColor(0x2B2D31)
         .addTextDisplayComponents(
-          t => t.setContent(`### <:bank_card:1368183874378666096> **${targetName.toUpperCase()}'S FINANCIAL BALANCE**`),
-          t => t.setContent(`-# Financial overview & bank status`)
+          t => t.setContent(`### <:bank_card:1368183874378666096> **${targetName.toUpperCase()}'S BALANCE**`)
         )
         .addSeparatorComponents(s => s)
         .addTextDisplayComponents(
           t => t.setContent(
-            `• <:bank_card:1368183874378666096> **Wallet Cash:** <:kasiko_coin:1300141236841086977> **${cash.toLocaleString()} Cash**\n` +
-            `• <:bank:1352897312606785576> **Bank Deposit:** <:kasiko_coin:1300141236841086977> **${bankDeposit.toLocaleString()} Cash** *(Lvl.${bankLevel})*\n` +
-            `• <:spark:1355139233559351326> **Accumulated Interest:** <:kasiko_coin:1300141236841086977> **${bankInterest.toLocaleString()} Cash**\n` +
-            `• <:moneybag:1365976001179553792> **Total Liquid Wealth:** <:kasiko_coin:1300141236841086977> **${totalWealth.toLocaleString()} Cash**`
+            `<:kasiko_coin:1300141236841086977> **Wallet:** **${cash.toLocaleString()}** Cash\n` +
+            `<:bank:1352897312606785576> **Bank:** **${bankDeposit.toLocaleString()}** Cash *(Lvl.${bankLevel})*\n` +
+            `<:spark:1355139233559351326> **Interest:** **${bankInterest.toLocaleString()}** Cash\n` +
+            `<:moneybag:1365976001179553792> **Liquid Wealth:** **${totalWealth.toLocaleString()}** Cash\n` +
+            `<:trophy:1352897371595477084> **Net Worth:** **${networth.toLocaleString()}** Cash`
           )
         )
         .addSeparatorComponents(s => s)
         .addTextDisplayComponents(
-          t => t.setContent(`-# <:spark:1355139233559351326> Quick Actions: \`kas deposit all\` · \`kas withdraw <amt>\` · \`kas daily\``)
+          t => t.setContent(`-# <:reply:1368224908307468408> \`kas deposit all\` · \`kas withdraw <amt>\` · \`kas daily\``)
         );
 
       return await handleMessage(context, {

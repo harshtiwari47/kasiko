@@ -121,14 +121,15 @@ export default {
 
       // ── Subcommand: LIST (Default) ────────────────────────────────────────
       const activeGiveaways = await Giveaway.find({ ended: false }).sort({ endsAt: 1 }).limit(5);
-      const recentGiveaways = await Giveaway.find({ ended: true }).sort({ updatedAt: -1 }).limit(5);
+      const recentGiveaways = await Giveaway.find({ ended: true }).sort({ updatedAt: -1 }).limit(10);
+      const recentGiveawaysToShow = recentGiveaways.slice(0, 5);
 
       const embed = new EmbedBuilder()
-        .setTitle('🎉 **Kasiko Community Cash Giveaways**')
+        .setTitle('<:reward_box:1366435558011965500> **Kasiko Community Cash Giveaways**')
         .setColor(COLORS.GOLD)
         .setDescription(
-          `Participate in our automated daily cash drops for a chance to win between <:kasiko_coin:1300141236841086977> **500,000** and **2,000,000** Cash!\n\n` +
-          `### 🟢 **Active Giveaways**\n` +
+          `-# Participate in our automated daily cash drops for a chance to win between <:kasiko_coin:1300141236841086977> **500,000** and **2,000,000** Cash!\n\n` +
+          `### <a:SpinningCoin:1326785405399597156> **Active Giveaways**\n` +
           (activeGiveaways.length > 0
             ? activeGiveaways.map(g =>
                 `• **<:moneybag:1365976001179553792> <:kasiko_coin:1300141236841086977> ${g.prize.toLocaleString()} Cash** in <#${g.channelId}>\n` +
@@ -136,8 +137,8 @@ export default {
               ).join('\n\n')
             : '*No active giveaways right now. Check back soon for the daily drop!*') +
           `\n\n### <:trophy:1352897371595477084> **Recent Winners**\n` +
-          (recentGiveaways.length > 0
-            ? recentGiveaways.map(g =>
+          (recentGiveawaysToShow.length > 0
+            ? recentGiveawaysToShow.map(g =>
                 `• **<:kasiko_coin:1300141236841086977> ${g.prize.toLocaleString()} Cash** · Winner: ${g.winnerId ? `<@${g.winnerId}>` : '*None*'}`
               ).join('\n')
             : '*No past giveaways recorded yet.*')
