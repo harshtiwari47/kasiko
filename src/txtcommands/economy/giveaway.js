@@ -35,7 +35,7 @@ export default {
     'giveaway reroll 123456789012345678'
   ],
   cooldown: 5000,
-  category: '💰 Economy',
+  category: '🏦 Economy',
 
   execute: async (args, message) => {
     try {
