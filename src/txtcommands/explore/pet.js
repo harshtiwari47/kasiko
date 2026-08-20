@@ -396,7 +396,7 @@ async function petView(context, userPetData, petId) {
       new StringSelectMenuBuilder()
       .setCustomId("user_pets_options")
       .setPlaceholder("Select Your Pet")
-      .addOptions(...list)
+      .addOptions(...list.slice(0, 25))
     )
 
     return [Container,

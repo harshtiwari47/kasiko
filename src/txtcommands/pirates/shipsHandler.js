@@ -32,10 +32,22 @@ import {
   MessageFlags
 } from 'discord.js';
 
+let _cachedShipsData = null;
+const loadShipsData = () => {
+  try {
+    const data = fs.readFileSync(shipsDatabasePath, 'utf-8');
+    _cachedShipsData = JSON.parse(data);
+  } catch (e) {
+    console.error('Error loading ships data:', e);
+  }
+};
+loadShipsData();
+fs.watchFile(shipsDatabasePath, () => loadShipsData());
+
 export const allShips = () => {
-  const data = fs.readFileSync(shipsDatabasePath, 'utf-8');
-  return JSON.parse(data);
-}
+  if (!_cachedShipsData) loadShipsData();
+  return _cachedShipsData || {};
+};
 
 
 // Fetch all ships for a user

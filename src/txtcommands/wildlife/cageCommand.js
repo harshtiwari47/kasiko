@@ -11,7 +11,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const AnimalsDatabasePath = path.join(__dirname, './animals.json');
-const allAnimalsData = fs.readFileSync(AnimalsDatabasePath, 'utf-8');
+let _parsedAnimals = [];
+try {
+  _parsedAnimals = JSON.parse(fs.readFileSync(AnimalsDatabasePath, 'utf-8')).animals || [];
+} catch (e) {
+  console.error('Error loading animals for cageCommand:', e);
+}
 
 // A helper function for sending or editing replies
 async function handleMessage(context, data) {
@@ -61,12 +66,13 @@ async function showCageOverview(context, user) {
   num.toString().split('').map(digit => subscriptNumbers[digit] || digit).join('');
 
   // All animal emojis with counts
-  const animalEmojis = user.hunt.animals
-  .map(animal => animal.type === 'exclusive' ? '' : `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
+  const commonAnimals = (user.hunt.animals || []).filter(a => a.type !== 'exclusive' && (a.totalAnimals || 0) > 0);
+  const animalEmojis = commonAnimals
+  .map(animal => `${animal.emoji} ${toSubscript(animal.totalAnimals)}`)
   .join(' ');
 
   // Filter for exclusive species
-  const exclusiveAnimals = user.hunt.animals.filter(animal => animal.type === 'exclusive');
+  const exclusiveAnimals = (user.hunt.animals || []).filter(animal => animal.type === 'exclusive' && (animal.totalAnimals || 0) > 0);
   let exclusiveEmojis = '';
   if (exclusiveAnimals.length > 0) {
     exclusiveEmojis = exclusiveAnimals
@@ -75,6 +81,7 @@ async function showCageOverview(context, user) {
   }
 
   const Container = new ContainerBuilder()
+  .setAccentColor(0x57F287)
   .addTextDisplayComponents(
     textDisplay => textDisplay.setContent(`### **${username.toUpperCase()}**'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 <:forest_tree:1354366758596776070>`)
   )
@@ -83,17 +90,17 @@ async function showCageOverview(context, user) {
   )
   .addSeparatorComponents(separate => separate)
   .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`## ${animalEmojis}`)
+      textDisplay => textDisplay.setContent(animalEmojis.trim().length > 0 ? `## ${animalEmojis}` : `*No common animals in cage.*`)
   )
   .addTextDisplayComponents(
     textDisplay => textDisplay.setContent(`<:exclusive:1347533975840882708> EXCLUSIVE SPECIES`)
   )
   .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`${exclusiveAnimals.length > 0 ? "## " + exclusiveEmojis : 'ᴜɴʟᴏᴄᴋ ᴛʜᴇᴍ ᴛʜʀᴏᴜɢʜ ᴛʜᴇ ᴋᴀꜱɪᴋᴏ ᴘᴀꜱꜱ.'}`)
+      textDisplay => textDisplay.setContent(exclusiveAnimals.length > 0 ? `## ${exclusiveEmojis}` : `*No exclusive species owned.*`)
   )
   .addTextDisplayComponents(
-    textDisplay => textDisplay.setContent(`-# Tip: use \` cage \`**\`<name> \`** for details, \` sell \`**\`<name> <amount> \`** to sell.`)
-  )
+    textDisplay => textDisplay.setContent(`-# Tip: use \` cage <name> \` for details, \` sell <name> <amount> \` to sell.`)
+  );
 
   return handleMessage(context, {
     components: [Container],
@@ -105,7 +112,7 @@ async function showCageOverview(context, user) {
 * Show details for one specific animal (by name or partial name, if you want).
 */
 async function showAnimalDetail(context, user, animalName) {
-  const animalsData = JSON.parse(allAnimalsData).animals;
+  const animalsData = _parsedAnimals;
 
   if (!user.hunt.animals || (user.hunt.animals && user.hunt.animals.length === 0)) {
     return handleMessage(context, {

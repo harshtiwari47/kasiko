@@ -37,6 +37,17 @@ function replacePlaceholders(companyName, news, companyData) {
   return JSON.parse(updatedNews);
 }
 
+let _cachedNewspaper = null;
+const loadNewspaper = () => {
+  try {
+    const raw = fs.readFileSync(newsDatabasePath, 'utf-8');
+    _cachedNewspaper = JSON.parse(raw);
+  } catch (e) {
+    _cachedNewspaper = [];
+  }
+};
+loadNewspaper();
+
 /**
  * buildNews:
  * This function retrieves all news from the helper's database, filters by the provided type (either "", "up", or "down"),
@@ -49,8 +60,7 @@ function replacePlaceholders(companyName, news, companyData) {
  */
 export function buildNews(companyName, type, companyData) {
   const allNewsData = Helper.newsDatabase();
-  let newspaper = fs.readFileSync(newsDatabasePath, 'utf-8');
-  newspaper = JSON.parse(newspaper);
+  let newspaper = _cachedNewspaper ? [..._cachedNewspaper] : [];
 
   if (allNewsData) {
     // Allow only "" or "up" or "down" for news type.
@@ -66,16 +76,20 @@ export function buildNews(companyName, type, companyData) {
     if (newspaper.length > 3) {
       newspaper.shift(); // Remove the oldest entry.
     }
-    fs.writeFileSync(newsDatabasePath, JSON.stringify(newspaper, null, 2));
+    _cachedNewspaper = newspaper;
+    try {
+      fs.writeFileSync(newsDatabasePath, JSON.stringify(newspaper, null, 2));
+    } catch (e) {
+      console.error('Error writing news database:', e);
+    }
   }
 }
 
 /**
  * currentNewspaper:
- * Reads and returns the current newspaper (an array of news items) from the news.json file.
+ * Reads and returns the current newspaper (an array of news items) from in-memory cache.
  */
 export function currentNewspaper() {
-  let newspaper = fs.readFileSync(newsDatabasePath, 'utf-8');
-  newspaper = JSON.parse(newspaper);
-  return newspaper;
+  if (!_cachedNewspaper) loadNewspaper();
+  return _cachedNewspaper || [];
 }

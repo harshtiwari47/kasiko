@@ -135,8 +135,26 @@ export const createUser = async (userId) => {
 // ── L1 In-Memory Fast Cache (Ultra-low latency: ~0.001ms) ───────────────────
 const L1_USER_CACHE = new Map();
 const L1_USER_EXISTS_CACHE = new Map();
+const MAX_L1_USERS = 10000;
+const MAX_L1_EXISTS = 20000;
 const L1_USER_TTL_MS = 15000; // 15 seconds L1 TTL for active user objects
 const L1_EXISTS_TTL_MS = 300000; // 5 minutes L1 TTL for user existence
+
+function setL1User(userId, userObject) {
+  if (L1_USER_CACHE.size >= MAX_L1_USERS) {
+    const oldest = L1_USER_CACHE.keys().next().value;
+    if (oldest) L1_USER_CACHE.delete(oldest);
+  }
+  L1_USER_CACHE.set(userId, { userObject, expiresAt: Date.now() + L1_USER_TTL_MS });
+}
+
+function setL1Exists(userId, exists) {
+  if (L1_USER_EXISTS_CACHE.size >= MAX_L1_EXISTS) {
+    const oldest = L1_USER_EXISTS_CACHE.keys().next().value;
+    if (oldest) L1_USER_EXISTS_CACHE.delete(oldest);
+  }
+  L1_USER_EXISTS_CACHE.set(userId, { exists, expiresAt: Date.now() + L1_EXISTS_TTL_MS });
+}
 
 // Periodic cleanup of expired L1 entries every 2 minutes
 setInterval(() => {
@@ -164,10 +182,10 @@ export const getUserData = async (userId) => {
     const cachedUser = await redisClient.get(`user:${userId}`);
 
     if (cachedUser) {
-      const userObject = JSON.parse(cachedUser);
+      const userObject = typeof cachedUser === 'string' ? JSON.parse(cachedUser) : cachedUser;
       // Populate L1 cache
-      L1_USER_CACHE.set(userId, { userObject, expiresAt: now + L1_USER_TTL_MS });
-      L1_USER_EXISTS_CACHE.set(userId, { exists: true, expiresAt: now + L1_EXISTS_TTL_MS });
+      setL1User(userId, userObject);
+      setL1Exists(userId, true);
       return new User(userObject);
     }
 
@@ -179,8 +197,8 @@ export const getUserData = async (userId) => {
     if (user) {
       const userObject = user.toObject();
       // Populate L1 cache
-      L1_USER_CACHE.set(userId, { userObject, expiresAt: now + L1_USER_TTL_MS });
-      L1_USER_EXISTS_CACHE.set(userId, { exists: true, expiresAt: now + L1_EXISTS_TTL_MS });
+      setL1User(userId, userObject);
+      setL1Exists(userId, true);
 
       // Cache in Redis asynchronously
       redisClient.set(`user:${userId}`, JSON.stringify(userObject), {
@@ -194,8 +212,8 @@ export const getUserData = async (userId) => {
     const createdUserData = await createUser(userId);
     if (createdUserData.success) {
       const savedUserObj = createdUserData.user.toObject();
-      L1_USER_CACHE.set(userId, { userObject: savedUserObj, expiresAt: now + L1_USER_TTL_MS });
-      L1_USER_EXISTS_CACHE.set(userId, { exists: true, expiresAt: now + L1_EXISTS_TTL_MS });
+      setL1User(userId, savedUserObj);
+      setL1Exists(userId, true);
       return createdUserData.user;
     }
 
@@ -220,8 +238,8 @@ export const userExists = async (userId) => {
     // 2. Check L2 Redis exists cache
     const cachedExists = await redisClient.get(`user:${userId}:exists`);
     if (cachedExists) {
-      const exists = JSON.parse(cachedExists);
-      L1_USER_EXISTS_CACHE.set(userId, { exists, expiresAt: now + L1_EXISTS_TTL_MS });
+      const exists = typeof cachedExists === 'string' ? JSON.parse(cachedExists) : Boolean(cachedExists);
+      setL1Exists(userId, exists);
       return exists;
     }
 
@@ -231,7 +249,7 @@ export const userExists = async (userId) => {
     });
 
     const hasUser = Boolean(exists);
-    L1_USER_EXISTS_CACHE.set(userId, { exists: hasUser, expiresAt: now + L1_EXISTS_TTL_MS });
+    setL1Exists(userId, hasUser);
 
     if (hasUser) {
       // Cache the existence in Redis
@@ -349,11 +367,10 @@ export const updateUser = async (userId, userData, guildId = null) => {
       session.endSession();
 
       const updatedObj = updatedUser.toObject();
-      const now = Date.now();
 
-      // Synchronously update ultra-fast L1 cache
-      L1_USER_CACHE.set(userId, { userObject: updatedObj, expiresAt: now + L1_USER_TTL_MS });
-      L1_USER_EXISTS_CACHE.set(userId, { exists: true, expiresAt: now + L1_EXISTS_TTL_MS });
+      // Synchronously update ultra-fast bounded L1 cache
+      setL1User(userId, updatedObj);
+      setL1Exists(userId, true);
 
       // Update Redis cache asynchronously without blocking.
       redisClient
@@ -372,8 +389,9 @@ export const updateUser = async (userId, userData, guildId = null) => {
         console.error(`Error updating user after ${attempt} attempts:`, error);
         throw error;
       }
-      // Optionally wait before retrying.
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Fast exponential backoff with jitter (25ms, 50ms, 100ms)
+      const backoffMs = Math.min(25 * Math.pow(2, attempt - 1) + Math.floor(Math.random() * 25), 200);
+      await new Promise((resolve) => setTimeout(resolve, backoffMs));
     }
   }
 };

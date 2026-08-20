@@ -140,22 +140,22 @@ export async function portfolioCommand(context) {
       textDisplay => textDisplay.setContent(`𝙉𝙚𝙩 ${profitLossLabel}`)
     ) */
 
-    // Build a select menu for companies from which the user can sell shares
+    // Build a select menu for companies from which the user can sell shares (Max 25 options allowed by Discord)
     let components = [];
     if (selectOptions.length > 0) {
       const selectMenu = new StringSelectMenuBuilder()
       .setCustomId('company_select')
       .setPlaceholder('Select a company to sell shares')
-      .addOptions(selectOptions);
+      .addOptions(selectOptions.slice(0, 25));
       const row = new ActionRowBuilder().addComponents(selectMenu);
       components.push(row);
     }
 
-    await redisClient.set(cacheKey,
-      (totalPortfolioValue.toString() || 0),
+    redisClient.set(cacheKey,
+      (totalPortfolioValue.toString() || '0'),
       {
         EX: 300
-      });
+      }).catch(() => {});
 
     const replyData = {
       components: [Container,
