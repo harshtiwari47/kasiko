@@ -782,8 +782,8 @@ async function grantBattleRewards({ userId, defeatedTeam = [], winningTeam = [],
       const itemRarity = avgRarity >= 4 ? 'rare' : avgRarity >= 3 ? 'uncommon' : 'common';
       const pools = {
         common: ['food', 'milk'],
-        uncommon: ['food', 'premium_food', 'torch', 'lollipop'],
-        rare: ['premium_food', 'torch', 'drink', 'ticket']
+        uncommon: ['food', 'torch', 'lollipop'],
+        rare: ['torch', 'drink', 'ticket', 'rose']
       };
       const pool = pools[itemRarity] || pools.common;
       const item = ITEM_DEFINITIONS[pool[Math.floor(Math.random() * pool.length)]];

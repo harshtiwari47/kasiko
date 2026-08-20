@@ -231,7 +231,7 @@ export default {
         
         // Random chance for bonus item (30% chance)
         if (Math.random() < 0.3) {
-          const bonusItems = ['premium_food', 'torch', 'ticket'];
+          const bonusItems = ['drink', 'torch', 'ticket'];
           const randomBonus = bonusItems[Math.floor(Math.random() * bonusItems.length)];
           rewardItems.push({ id: randomBonus, amount: 1 });
         }
@@ -256,7 +256,7 @@ export default {
         
         // Random chance for bonus item (30% chance)
         if (Math.random() < 0.3) {
-          const bonusItems = ['premium_food', 'torch', 'ticket'];
+          const bonusItems = ['drink', 'torch', 'ticket'];
           const randomBonus = bonusItems[Math.floor(Math.random() * bonusItems.length)];
           rewardItems.push({ id: randomBonus, amount: 1 });
         }

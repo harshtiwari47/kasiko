@@ -56,45 +56,18 @@ export async function feedCommand(context, {
       });
     }
 
-    // Find food item (check for premium_food first, then food)
-    let foodItem = findItemByIdOrAlias(foodType);
-    if (!foodItem || (foodItem.id !== 'food' && foodItem.id !== 'premium_food')) {
-      // Try to find any available food
-      const hasFood = (userData.inventory?.food || 0) > 0;
-      const hasPremiumFood = (userData.inventory?.premium_food || 0) > 0;
-      
-      if (hasPremiumFood) {
-        foodItem = ITEM_DEFINITIONS.premium_food;
-      } else if (hasFood) {
-        foodItem = ITEM_DEFINITIONS.food;
-      } else {
-        return handleMessage(context, {
-          content: `***${username}***, you don't have any food! Buy some from the shop or get it from tasks/battles.\n-# Use: \`shop buy food\` to purchase animal food.`
-        });
-      }
-    }
-
-    // Check if user has the food item
-    const foodCount = userData.inventory?.[foodItem.id] || 0;
-    if (foodCount < 1) {
-      const hasOtherFood = foodItem.id === 'premium_food' 
-        ? (userData.inventory?.food || 0) > 0
-        : (userData.inventory?.premium_food || 0) > 0;
-      
-      if (hasOtherFood) {
-        const otherFoodId = foodItem.id === 'premium_food' ? 'food' : 'premium_food';
-        foodItem = ITEM_DEFINITIONS[otherFoodId];
-      } else {
-        return handleMessage(context, {
-          content: `***${username}***, you don't have any ${foodItem.name.toLowerCase()}! Buy some from the shop.\n-# Use: \`shop buy food\` to purchase animal food.`
-        });
-      }
+    // Check food from inventory (or UserPet model)
+    const foodItem = ITEM_DEFINITIONS.food;
+    let invFoodCount = userData.inventory?.food || 0;
+    
+    if (invFoodCount < 1) {
+      return handleMessage(context, {
+        content: `<:warning:1366050875243757699> ***${username}***, you don't have any <:pet_food:1385884583077351464> **Pet Food**!\n-# Collect food from \`kas daily\`, \`kas tasks\`, or buy from \`kas buy food\`.`
+      });
     }
 
     const animal = user.hunt.animals[animalIndex];
-
-    // Determine EXP gain based on food type
-    const expGain = foodItem.id === 'premium_food' ? 30 : 15;
+    const expGain = 20;
     animal.exp += expGain;
 
     // Level up check (level * 30 XP curve)
@@ -119,9 +92,9 @@ export async function feedCommand(context, {
     }
 
     // Consume food item
-    const newFoodCount = Math.max((userData.inventory?.[foodItem.id] || 0) - 1, 0);
+    const newFoodCount = Math.max(invFoodCount - 1, 0);
     await updateUser(userId, {
-      [`inventory.${foodItem.id}`]: newFoodCount
+      'inventory.food': newFoodCount
     });
 
     await user.save();
@@ -129,8 +102,8 @@ export async function feedCommand(context, {
     // Build response message
     const Container = new ContainerBuilder()
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`### ${foodItem.emoji} **FEED SUCCESSFUL**`),
-        textDisplay => textDisplay.setContent(`You fed your **${animal.emoji} ${animal.name}** with ${foodItem.emoji} **${foodItem.name}**!`),
+        textDisplay => textDisplay.setContent(`### <:pet_food:1385884583077351464> **FEED SUCCESSFUL**`),
+        textDisplay => textDisplay.setContent(`You fed your **${animal.emoji || '🐾'} ${animal.name}** with <:pet_food:1385884583077351464> **Pet Food**!`),
         textDisplay => textDisplay.setContent(`**+${expGain}** EXP → Now **Lvl.${animal.level}** (EXP: ${animal.exp}/${requiredExp})`)
       );
 
@@ -141,7 +114,7 @@ export async function feedCommand(context, {
     }
 
     Container.addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`-# Remaining ${foodItem.name.toLowerCase()}: ${newFoodCount}`)
+      textDisplay => textDisplay.setContent(`-# Remaining Pet Food: <:pet_food:1385884583077351464> **${newFoodCount}**`)
     );
 
     return handleMessage(context, {

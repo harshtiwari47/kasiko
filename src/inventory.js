@@ -631,11 +631,11 @@ export const ITEM_DEFINITIONS = {
   },
   food: {
     id: 'food',
-    name: 'Animal Food',
-    aliases: ["animalfood", "petfood"],
-    emoji: '🥩',
-    description: 'Basic food for feeding animals. Gives +15 EXP per feed. Can be purchased from shop or found in various activities.',
-    source: ["shop", "work", "daily", "beg", "tasks", "battle"],
+    name: 'Pet Food',
+    aliases: ["pet_food", "petfood", "animalfood", "food"],
+    emoji: '<:pet_food:1385884583077351464>',
+    description: 'Nutritious food for pets and animals. Gives +20 EXP per feed. Earned from daily rewards, fishing, tasks, or purchased from the shop.',
+    source: ["daily", "shop", "work", "tasks", "battle", "fishing"],
     useable: false,
     activatable: false,
     sellable: true,
@@ -646,29 +646,7 @@ export const ITEM_DEFINITIONS = {
     type: "consumable",
     rarity: "common",
     eventsOnly: false,
-    usableIn: ["feed"],
-    async shareHandler(args, context) {
-      await generalShare(args, context, this);
-    }
-  },
-  premium_food: {
-    id: 'premium_food',
-    name: 'Premium Animal Food',
-    aliases: ["premiumfood", "premium", "pfood"],
-    emoji: '🍱',
-    description: 'High-quality food for animals. Gives +30 EXP per feed. Found in tasks, battles, and shop.',
-    source: ["shop", "tasks", "battle", "daily"],
-    useable: false,
-    activatable: false,
-    sellable: true,
-    shareable: true,
-    sellPrice: 5000,
-    purchaseable: true,
-    price: 7500,
-    type: "consumable",
-    rarity: "uncommon",
-    eventsOnly: false,
-    usableIn: ["feed"],
+    usableIn: ["feed", "pet"],
     async shareHandler(args, context) {
       await generalShare(args, context, this);
     }
