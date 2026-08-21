@@ -5,6 +5,7 @@ import {
 } from 'discord.js';
 import Server from '../../../models/Server.js';
 import redisClient from "../../../redis.js";
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -40,18 +41,14 @@ export default {
   ),
 
   async execute(interaction) {
-    // Defer in case of any async DB work
-    await interaction.deferReply({
-      ephemeral: false
-    });
-
     try {
       // Extract user choices
       const subCommand = interaction.options.getString('action'); // 'on' or 'off'
       const target = interaction.options.getChannel('target'); // "#general", etc.
 
       if (!interaction.guild || !(interaction.channel && interaction.channel.id)) {
-        return await interaction.editReply(
+        return await handleMessage(
+          interaction,
           '❌ You are not allowed to use this command here!'
         );
       }

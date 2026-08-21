@@ -10,6 +10,7 @@ import {
   buildBroadcastContainer,
   DEFAULT_REVIVAL_CAMPAIGN
 } from '../../../utils/broadcastEngine.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -29,10 +30,6 @@ export default {
 
   async execute(interaction) {
     try {
-      if (!interaction.deferred) {
-        await interaction.deferReply({ ephemeral: false });
-      }
-
       const userId = interaction.user.id;
       const username = interaction.user.username;
       const action = interaction.options.getString('action') || 'view';
@@ -50,7 +47,7 @@ export default {
       // ── Action: CLAIM ─────────────────────────────────────────────────────
       if (action === 'claim') {
         if (isClaimed) {
-          return await interaction.editReply({
+          return await handleMessage(interaction, {
             content: `⚠️ **${username}**, you have already claimed the rewards for **${campaign.title}**!`
           });
         }
@@ -76,12 +73,12 @@ export default {
         );
 
         if (!updatedUser) {
-          return await interaction.editReply({
+          return await handleMessage(interaction, {
             content: `⚠️ **${username}**, you have already claimed this event reward!`
           });
         }
 
-        return await interaction.editReply({
+        return await handleMessage(interaction, {
           content:
             `🎉 **EVENT REWARDS CLAIMED!**\n\n` +
             `Your gift package has been added to your account:\n` +
@@ -102,7 +99,7 @@ export default {
         user.settings.eventAlerts = newState;
         await user.save();
 
-        return await interaction.editReply({
+        return await handleMessage(interaction, {
           content: newState
             ? `🔔 **Event Notifications Enabled!** You will receive direct messages about special events, drops, and community rewards.`
             : `🔕 **Event Notifications Disabled.** You will no longer receive event broadcast DMs. You can re-enable anytime using \`/event action:Toggle Notifications\`.`
@@ -117,14 +114,14 @@ export default {
         eventAlerts
       });
 
-      return await interaction.editReply({
+      return await handleMessage(interaction, {
         components: [container],
         flags: MessageFlags.IsComponentsV2
       });
 
     } catch (error) {
       console.error('Error executing /event command:', error);
-      return await interaction.editReply({
+      return await handleMessage(interaction, {
         content: '⚠️ An error occurred while fetching event information. Please try again later.'
       });
     }

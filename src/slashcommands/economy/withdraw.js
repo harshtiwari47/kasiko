@@ -6,7 +6,8 @@ import {
   updateUser,
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import bankCommand from '../../txtcommands/economy/bank.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -23,24 +24,18 @@ export default {
     const userId = interaction.user.id;
     const amount = interaction.options.getInteger('amount');
 
-    if (!interaction.deferred) {
-      await interaction.deferReply({
-        ephemeral: false
-      });
-    }
-
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.editReply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`
       });
     }
 
-    if (txtcommands.get("bank")) {
-      return await txtcommands.get("bank").execute(["withdraw", amount], interaction);
+    if (bankCommand?.execute) {
+      return await bankCommand.execute(["withdraw", amount], interaction);
     } else {
-      return await interaction.editReply(`Failed to execute withdraw command!`);
+      return await handleMessage(interaction, `Failed to execute withdraw command!`);
     }
   }
 };

@@ -6,7 +6,8 @@ import {
   updateUser,
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import orcaCommand from '../../txtcommands/explore/orca.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -16,25 +17,19 @@ export default {
   async execute(interaction) {
     const userId = interaction.user.id;
 
-    if (!interaction.deferred) {
-      await interaction.deferReply({
-        ephemeral: false
-      });
-    }
-
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.editReply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`,
         ephemeral: true
       });
     }
 
-    if (txtcommands.get("orca")) {
-      return await txtcommands.get("orca").execute([], interaction);
+    if (orcaCommand?.execute) {
+      return await orcaCommand.execute([], interaction);
     } else {
-      return await interaction.editReply(`Failed to execute orca command!`);
+      return await handleMessage(interaction, `Failed to execute orca command!`);
     }
   }
 };

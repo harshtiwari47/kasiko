@@ -32,15 +32,7 @@ function getDecoration(lvl) {
   return layout[lvl - 1].decoration;
 }
 
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
-  if (isInteraction) {
-    if (!context.deferred) await context.deferReply();
-    return await context.editReply(data);
-  } else {
-    return context.channel.send(data);
-  }
-}
+import { handleMessage, discordUser } from '../../../../helper.js';
 
 export async function playerShopInfo(playerShop, flavors, userId, username, context) {
   try {
@@ -93,41 +85,33 @@ export async function playerShopInfo(playerShop, flavors, userId, username, cont
 
     if (!collector) return;
 
-    let collectorEnded = false;
-
     collector.on('collect', async (interaction) => {
-      if (interaction.replied || interaction.deferred) return; // Do not reply again
       try {
         if (interaction.user.id !== userId) {
           return interaction.reply({
             content: 'You are not allowed to interact!',
             ephemeral: true,
-          });
+          }).catch(() => {});
         }
 
         if (interaction.customId === 'serve_ice') {
-          await interaction.deferReply();
           return await serveIceCream(playerShop, flavors, interaction.user.id, interaction.user.username, interaction);
         }
 
         if (interaction.customId === 'make_ice') {
-          await interaction.deferReply();
           return await makeIceCream(playerShop, flavors, interaction.user.id, interaction.user.username, interaction);
         }
 
         if (interaction.customId === 'ice_help') {
-          await interaction.deferReply({
+          return await handleMessage(interaction, {
+            embeds: [helpEmbed],
             ephemeral: true
           });
-          return await interaction.editReply({
-            embeds: [helpEmbed]
-          })
         }
 
       } catch (err) {
-        console.error(err)
-        if (!interaction.deferred) await interaction.deferReply();
-        await interaction.followUp({
+        console.error(err);
+        await handleMessage(interaction, {
           content: '⚠️ Something went wrong while performing ice cream command button!'
         });
       }

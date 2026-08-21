@@ -12,15 +12,7 @@ function capitalizeFirstLetter(word) {
   return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
 }
 
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
-  if (isInteraction) {
-    if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else {
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
+import { handleMessage, discordUser } from '../../../../helper.js';
 
 function machineImage(level) {
   if (level > 3) level = 3;

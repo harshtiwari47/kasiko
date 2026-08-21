@@ -5,6 +5,7 @@ import txtcommands from '../../textCommandHandler.js';
 import {
   EmbedBuilder
 } from 'discord.js';
+import { handleMessage } from '../../../helper.js';
 
 function getHelpResponse(commandName = null) {
   if (commandName) {
@@ -88,8 +89,6 @@ export default {
 
   async execute(interaction) {
     try {
-      await interaction.deferReply();
-
       const commandName = interaction.options.getString('command');
       const {
         content,
@@ -97,18 +96,16 @@ export default {
       } = getHelpResponse(commandName);
 
       if (content) {
-        return await interaction.editReply(content);
+        return await handleMessage(interaction, content);
       }
-      if (embeds.length > 0) {
-        return await interaction.editReply({
+      if (embeds && embeds.length > 0) {
+        return await handleMessage(interaction, {
           embeds
         });
       }
     } catch (err) {
       console.error(err);
-      if (!interaction.replied) {
-        await interaction.editReply('Error generating command list.');
-      }
+      return await handleMessage(interaction, 'Error generating command list.');
     }
   }
 };

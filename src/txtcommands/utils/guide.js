@@ -11,17 +11,7 @@ import {
   fileURLToPath
 } from 'url';
 
-async function replyOrSend(ctx, options) {
-  try {
-    if (ctx.author || typeof ctx.editReply !== 'function') {
-      return ctx.channel.send(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    if (ctx.deferred || ctx.replied) {
-      return ctx.editReply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    return ctx.reply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } catch (e) {}
-}
+import { handleMessage } from '../../../helper.js';
 
 export default {
   name: "guide",
@@ -35,7 +25,7 @@ export default {
       args.shift();
       // Validate that a command name was provided.
       if (!args[0]) {
-        await replyOrSend(message, {
+        await handleMessage(message, {
           content: "❌ Please specify a command name to view its guide."
         });
         return;
@@ -48,7 +38,7 @@ export default {
       const guideFilePath = path.join(__dirname, "../../help", `${commandName}.js`);
 
       if (!fs.existsSync(guideFilePath)) {
-        await replyOrSend(message, {
+        await handleMessage(message, {
           content: `❌ No guide found for command \`${commandName}\`.`
         });
         return;
@@ -60,7 +50,7 @@ export default {
         guideData = (await import(guideFilePath)).default;
       } catch (err) {
         console.error(err);
-        await replyOrSend(message, {
+        await handleMessage(message, {
           content: `❌ Failed to load guide for command \`${commandName}\`.`
         });
         return;
@@ -70,7 +60,7 @@ export default {
       const subcommands = guideData.subcommands;
       const subcommandKeys = Object.keys(subcommands);
       if (subcommandKeys.length === 0) {
-        await replyOrSend(message, {
+        await handleMessage(message, {
           content: `❌ No guide content available for \`${commandName}\`.`
         });
         return;
@@ -136,7 +126,7 @@ export default {
       // Send the initial guide message.
       let guideMessage;
       try {
-        guideMessage = await replyOrSend(message, {
+        guideMessage = await handleMessage(message, {
           embeds: [guideEmbed],
           components: components
         });
@@ -156,7 +146,7 @@ export default {
 
       collector.on('collect', async (interaction) => {
         if (interaction.user.id !== authorId) {
-          await replyOrSend(interaction, {
+          await handleMessage(interaction, {
             content: `You are not allowed to interact with someone else's help command!`
           });
 

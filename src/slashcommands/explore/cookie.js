@@ -4,7 +4,8 @@ import {
 import {
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import cookieCommand from '../../txtcommands/explore/cookie.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -20,26 +21,19 @@ export default {
     const userId = interaction.user.id;
     const targetUser = interaction.options.getUser('user');
 
-    if (!interaction.deferred) {
-      await interaction.deferReply({
-        ephemeral: false
-      });
-    }
-
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.editReply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`,
         ephemeral: true
       });
     }
 
-    const cmd = txtcommands.get("cookie");
-    if (cmd?.execute) {
-      return await cmd.execute(targetUser ? ['cookie', targetUser] : ['cookie'], interaction);
+    if (cookieCommand?.execute) {
+      return await cookieCommand.execute(targetUser ? ['cookie', targetUser] : ['cookie'], interaction);
     } else {
-      return await interaction.editReply(`Failed to execute cookie command!`);
+      return await handleMessage(interaction, `Failed to execute cookie command!`);
     }
   }
 };

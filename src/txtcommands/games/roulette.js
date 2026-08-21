@@ -13,7 +13,9 @@ import {
 } from 'discord.js';
 
 import {
-  Helper
+  Helper,
+  handleMessage,
+  discordUser
 } from '../../../helper.js';
 
 /**
@@ -28,19 +30,24 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
     // 1) Validate bet
     betAmount = parseInt(betAmount, 10);
     if (isNaN(betAmount) || betAmount < 1) {
-      return channel.send('⚠️ Please enter a valid bet amount (minimum 1).').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(channel, '⚠️ Please enter a valid bet amount (minimum 1).');
     }
     if (betAmount > 1000000) {
-      return channel.send('⚠️ The maximum bet for roulette is <:kasiko_coin:1300141236841086977> 1,000,000. Please lower your bet.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(channel, '⚠️ The maximum bet for roulette is <:kasiko_coin:1300141236841086977> 1,000,000. Please lower your bet.');
     }
 
     // 2) Determine the opponent (either a real user or the bot if no mention/invalid)
     let isBotOpponent = false;
     let opponentMember;
     try {
-      opponentMember = await channel.guild.members.fetch(opponentId);
+      if (channel.guild?.members?.fetch) {
+        opponentMember = await channel.guild.members.fetch(opponentId).catch(() => null);
+      }
     } catch {
-      // If we fail to fetch, treat as bot opponent
+      isBotOpponent = true;
+    }
+
+    if (!opponentMember) {
       isBotOpponent = true;
     }
 
@@ -52,9 +59,14 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
     // Attempt to fetch user data for challenger
     let challengerMember;
     try {
-      challengerMember = await channel.guild.members.fetch(challengerId);
-    } catch (err) {
-      return channel.send('🚨 **Error**: Unable to retrieve challenger data. Please try again.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      if (channel.guild?.members?.fetch) {
+        challengerMember = await channel.guild.members.fetch(challengerId).catch(() => null);
+      }
+    } catch (err) {}
+
+    if (!challengerMember) {
+      const u = channel.user || channel.author || { id: challengerId, username: 'Player' };
+      challengerMember = { user: u, id: challengerId };
     }
 
     // If the opponent is the bot, define placeholders dynamically from client
@@ -79,20 +91,20 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
         opponentData = await getUserData(opponentUserId);
       }
     } catch (error) {
-      return channel.send('🚨 **Error**: Problem retrieving user data. Please try again later.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(channel, '🚨 **Error**: Problem retrieving user data. Please try again later.');
     }
 
     // If the opponent is not the bot, check if the opponent data is valid
     if (!isBotOpponent && !opponentData) {
-      return channel.send(`🚨 **Error**: Could not retrieve data for **${opponentUsername}**. Please try again.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(channel, `🚨 **Error**: Could not retrieve data for **${opponentUsername}**. Please try again.`);
     }
 
     // 4) Check balances
     if (challengerData.cash < betAmount) {
-      return channel.send(`⚠️ **${challengerMember.user.username}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount}**.`);
+      return handleMessage(channel, `⚠️ **${challengerMember.user.username}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount}**.`);
     }
     if (!isBotOpponent && opponentData.cash < betAmount) {
-      return channel.send(`⚠️ **${opponentUsername}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount}**.`);
+      return handleMessage(channel, `⚠️ **${opponentUsername}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount}**.`);
     }
 
     // 5) Ask the challenger to select the number of bullets (1–6) via a select menu
@@ -125,7 +137,7 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
     const cylEmoji = "<:roulette_gc:1325709653421850624>"
     const rubBulletEmoji = "<:rubber_bullet:1325711925656686626>"
 
-    let gameMsg = await channel.send({
+    let gameMsg = await handleMessage(channel, {
       content: `${gunEmoji} **${challengerMember.user.username}** has challenged **${isBotOpponent ? 'kasiko (bot)': `<@${opponentMember.user.id}>`}** to **Roulette** for <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**!\n\n${cylEmoji} Please choose the number of ${rubBulletEmoji} bullets to load in the revolver (1–6).`,
       components: [bulletSelectRow]
     });
@@ -175,7 +187,7 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
 
         await interaction.update({
           components: [disabledRow]
-        });
+        }).catch(() => {});
 
         // Next: ask the opponent (if not bot) to confirm or decline
         if (!isBotOpponent) {
@@ -190,7 +202,7 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
             .setStyle(ButtonStyle.Danger)
           );
 
-          gameMsg = await channel.send({
+          gameMsg = await handleMessage(channel, {
             content: `**${opponentUsername}**, do you accept the ${gunEmoji} Roulette challenge with ${rubBulletEmoji} **${bulletCount} bullet(s)** at stake for <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 𝑪𝒂𝒔𝒉?`,
             components: [confirmRow]
           });
@@ -213,14 +225,14 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
                 await btnInteraction.update({
                   content: `❌ **${opponentUsername}** has declined the roulette challenge.`,
                   components: []
-                });
+                }).catch(() => {});
                 return; // end
               }
 
               // Opponent accepted
               await btnInteraction.update({
                 components: []
-              });
+              }).catch(() => {});
               startRoulette(
                 challengerMember,
                 opponentMember,
@@ -244,7 +256,7 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
                 await gameMsg.edit({
                   content: `⏳ Time’s up! **${opponentUsername}** did not respond to the challenge.`,
                   components: []
-                });
+                }).catch(() => {});
               }
             });
         } else {
@@ -278,7 +290,7 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
             await gameMsg.edit({
               content: '⏳ Time’s up! No bullet selection was made.',
               components: []
-            });
+            }).catch(() => {});
           } catch (e) {}
         }
       });
@@ -287,7 +299,7 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
     if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
       console.error('[Roulette] Error in rouletteGame:', e);
     }
-    return channel.send(`ⓘ Something went wrong starting the roulette game.\n-#**Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return handleMessage(channel, `ⓘ Something went wrong starting the roulette game.\n-#**Error**: ${e.message}`);
   }
 }
 
@@ -325,7 +337,7 @@ async function startRoulette(
           files: [attachment]
         });
       } else {
-        gameMsg = await channel.send({
+        gameMsg = await handleMessage(channel, {
           content: `**${gunEmoji} ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
           `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}**`,
           components: [],
@@ -340,11 +352,9 @@ async function startRoulette(
       }
     }
 
-    let roundMsg = await channel.send(`The game is about to begin.`)
-
+    let roundMsg = await handleMessage(channel, `The game is about to begin.`);
 
     // 2) Load bullets randomly into a 6-chamber cylinder
-    //    Example: array of 6 booleans, bulletCount of them = true
     let chambers = Array(6).fill(false);
     for (let i = 0; i < bulletCount; i++) {
       let placed = false;
@@ -377,49 +387,39 @@ async function startRoulette(
     let loserId = null;
     let shotChamber = null;
 
-    // We'll allow up to 12 total shots (just in case it cycles multiple times)
-    // But realistically, you won't go more than 6 in normal roulette logic
     for (let i = 0; i < 12; i++) {
-      // Current shooter
       if (!roundMsg) continue;
       const shooter = players[turn];
-      // Check chamber
       const hasBullet = chambers[currentIndex];
 
-      // Send a short "firing" message
-      await roundMsg.edit(`# ${gunEmoji}💨 **${shooter.member.user.username}** fires...`);
+      if (roundMsg.edit) {
+        await roundMsg.edit(`# ${gunEmoji}💨 **${shooter.member.user.username}** fires...`).catch(() => {});
+      }
 
       await Helper.wait(3000);
 
       if (hasBullet) {
-        // BANG! Shooter is shot
         isGameOver = true;
         loserId = shooter.userId;
-        // The other player is the winner
         winnerId = turn === 0 ? players[1].userId: players[0].userId;
-        shotChamber = currentIndex + 1; // Just for display
+        shotChamber = currentIndex + 1;
         break;
       } else {
-        // Click! No bullet
-        await roundMsg.edit(`## ${cylEmoji} Click! No bullet ${rubBulletEmoji} in chamber ${currentIndex + 1}.`);
+        if (roundMsg.edit) {
+          await roundMsg.edit(`## ${cylEmoji} Click! No bullet ${rubBulletEmoji} in chamber ${currentIndex + 1}.`).catch(() => {});
+        }
       }
 
-      // Move to next chamber
       currentIndex = (currentIndex + 1) % 6;
-      // Switch turn
       turn = turn === 0 ? 1: 0;
-      // Slight pause for realism
       await Helper.wait(4000);
     }
 
     if (!isGameOver) {
-      // If all chambers fired and no bullet triggered (very unlikely if bulletCount > 0),
-      // treat as a draw or you can repeat. For simplicity, call it a "draw".
-      return channel.send(`${gunEmoji} **Incredible!** No one was shot. The game ends in a draw.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(channel, `${gunEmoji} **Incredible!** No one was shot. The game ends in a draw.`);
     }
 
     // 5) We have a winner and loser
-    //    Deduct bet from loser, add bet to winner
     let loserData,
     winnerData;
     try {
@@ -429,15 +429,12 @@ async function startRoulette(
       if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
         console.error('[Roulette] Error fetching user data at end:', e);
       }
-      return channel.send(`ⓘ Couldn’t fetch user data at the end of the match.\n-# **Error:** ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(channel, `ⓘ Couldn’t fetch user data at the end of the match.\n-# **Error:** ${e.message}`);
     }
 
-    const botId = '1300081477358452756'; // You can define or use any ID placeholder as your 'bot user ID'.
+    const botId = '1300081477358452756';
 
-    // If the loser was the bot, that implies "bot" has infinite or some artificial data
-    // For simplicity, do not adjust if the bot lost, or you can handle it differently
     if (!isBotOpponent || (isBotOpponent && loserId !== botId)) {
-      // Only do normal updates if the loser is a real user
       loserData.cash = Math.max(0, loserData.cash - betAmount);
       await updateUser(loserId, {
         cash: loserData.cash
@@ -445,7 +442,6 @@ async function startRoulette(
     }
 
     if (!isBotOpponent || (isBotOpponent && winnerId !== botId)) {
-      // Only do normal updates if the winner is a real user
       winnerData.cash += betAmount;
       await updateUser(winnerId, {
         cash: winnerData.cash
@@ -461,14 +457,17 @@ async function startRoulette(
     ? challengerMember.user.username: opponentMember.user.username;
 
     try {
-      roundMsg.delete();
+      if (roundMsg?.delete) {
+        await roundMsg.delete().catch(() => {});
+      }
     } catch (err) {}
 
-    return channel.send(
+    return handleMessage(
+      channel,
       `💥${gunEmoji} **BANG!** ${cylEmoji} Chamber **${shotChamber}** had a bullet! ${rubBulletEmoji}\n` +
       `- ⚰︎ **${loserName}** got shot & \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**\n` +
       `- 🜲 **${winnerName}** _survives_ & \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
-    ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    );
   } catch (errx) {
     if (errx.message !== "Unknown Message" && errx.message !== "Missing Permissions") {
       console.error(errx);
@@ -494,24 +493,22 @@ export default {
     'tosscoin',
     'guess'],
   cooldown: 10000,
-  // 8 seconds
   category: '🎲 Games',
 
   execute: async (args, message) => {
     // 1) Parse arguments
-    let opponentId = args[2] ? args[2].replace(/[<@!>]/g, ''): null; // Opponent user ID
+    let opponentId = args[2] ? args[2].replace(/[<@!>]/g, ''): null;
     let bet = parseInt(args[1], 10);
 
     if (isNaN(bet) || bet < 1) {
-      return message.channel.send('⚠️ You must specify a valid bet amount. `roulette <amount>  @opponent`').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(message, '⚠️ You must specify a valid bet amount. `roulette <amount>  @opponent`');
     }
 
-    // If no valid opponent ID provided, we set the game to fight the bot
     if (!opponentId || !/^\d+$/.test(opponentId)) {
-      opponentId = '1300081477358452756'; // "bot ID" or a placeholder
+      opponentId = '1300081477358452756';
     }
 
-    // 2) Start the roulette game
-    rouletteGame(message.author.id, opponentId, bet, message.channel);
+    const userId = message.author?.id || message.user?.id;
+    return rouletteGame(userId, opponentId, bet, message);
   }
 };

@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { getUserData, updateUser, userExists } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import giveCommand from '../../txtcommands/economy/give.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -23,25 +24,19 @@ export default {
     const targetUser = interaction.options.getUser('user');
     const amount = interaction.options.getInteger('amount');
 
-    if (!interaction.deferred) {
-      await interaction.deferReply({
-        ephemeral: false
-      });
-    }
-
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.editReply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`,
         ephemeral: true
       });
     }
 
-    if (txtcommands.get("give")) {
-      return await txtcommands.get("give").execute(["give", amount, targetUser.id], interaction);
+    if (giveCommand?.execute) {
+      return await giveCommand.execute(["give", amount, targetUser.id], interaction);
     } else {
-      return await interaction.editReply(`Failed to execute give command!`);
+      return await handleMessage(interaction, `Failed to execute give command!`);
     }
   }
 };

@@ -4,7 +4,8 @@ import {
 import {
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import bankCommand from '../../txtcommands/economy/bank.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -33,32 +34,25 @@ export default {
     const action = interaction.options.getString('action');
     const upgradeTimes = interaction.options.getInteger('upgrade_times') || 1;
 
-    if (!interaction.deferred) {
-      await interaction.deferReply({
-        ephemeral: false
-      });
-    }
-
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.editReply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`,
         ephemeral: true
       });
     }
 
-    const cmd = txtcommands.get("bank");
-    if (!cmd?.execute) {
-      return await interaction.editReply(`Failed to execute bank command!`);
+    if (!bankCommand?.execute) {
+      return await handleMessage(interaction, `Failed to execute bank command!`);
     }
 
     if (action === 'open') {
-      return await cmd.execute(['bank', 'open'], interaction);
+      return await bankCommand.execute(['bank', 'open'], interaction);
     } else if (action === 'upgrade' || interaction.options.getInteger('upgrade_times')) {
-      return await cmd.execute(['bank', 'upgrade', upgradeTimes], interaction);
+      return await bankCommand.execute(['bank', 'upgrade', upgradeTimes], interaction);
     } else {
-      return await cmd.execute(['bank', 'status'], interaction);
+      return await bankCommand.execute(['bank'], interaction);
     }
   }
 };

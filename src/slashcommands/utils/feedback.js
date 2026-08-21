@@ -8,6 +8,7 @@ import {
   ActionRowBuilder
 } from 'discord.js';
 import { CHANNELS, COLORS } from '../../../constants.js';
+import { handleMessage } from '../../../helper.js';
 import crypto from 'crypto';
 
 const CATEGORY_MAP = {
@@ -46,10 +47,6 @@ export default {
 
   async execute(interaction) {
     try {
-      if (!interaction.deferred) {
-        await interaction.deferReply({ ephemeral: true });
-      }
-
       const user = interaction.user;
       const guild = interaction.guild;
       const categoryKey = interaction.options.getString('category');
@@ -93,7 +90,7 @@ export default {
             .setURL("https://discord.gg/DVFwCqUZnc")
         );
 
-        return await interaction.editReply({
+        return await handleMessage(interaction, {
           embeds: [guideEmbed],
           components: [row]
         });
@@ -102,13 +99,13 @@ export default {
       const category = (categoryKey && CATEGORY_MAP[categoryKey]) ? CATEGORY_MAP[categoryKey] : CATEGORY_MAP.general;
 
       if (feedbackText.length < 10) {
-        return interaction.editReply({
+        return handleMessage(interaction, {
           content: '⚠️ Please provide a more detailed message (minimum 10 characters).'
         });
       }
 
       if (feedbackText.length > 1500) {
-        return interaction.editReply({
+        return handleMessage(interaction, {
           content: '⚠️ Your feedback is too long (maximum 1500 characters). Please keep it concise.'
         });
       }
@@ -175,14 +172,14 @@ export default {
           .setURL("https://discord.gg/DVFwCqUZnc")
       );
 
-      return await interaction.editReply({
+      return await handleMessage(interaction, {
         embeds: [userReceiptEmbed],
         components: [actionRow]
       });
 
     } catch (error) {
       console.error('Error executing /feedback command:', error);
-      return await interaction.editReply({
+      return await handleMessage(interaction, {
         content: '⚠️ An error occurred while submitting your feedback. Please try again later.',
         ephemeral: true,
       });

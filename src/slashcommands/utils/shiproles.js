@@ -4,6 +4,7 @@ import {
 } from 'discord.js';
 import Server from '../../../models/Server.js';
 import redisClient from '../../../redis.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -25,9 +26,6 @@ export default {
   ),
 
   async execute(interaction) {
-    // Defer the reply to allow for async database work
-    await interaction.deferReply();
-
     try {
       // Get the role options for male and female
       const maleRole = interaction.options.getRole('male');
@@ -35,7 +33,7 @@ export default {
 
       // Ensure the command is used in a guild
       if (!interaction.guild) {
-        return await interaction.editReply('❌ This command can only be used in a server.');
+        return await handleMessage(interaction, '❌ This command can only be used in a server.');
       }
 
       // Fetch (or create) the Server document

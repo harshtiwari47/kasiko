@@ -6,7 +6,8 @@ import {
   updateUser,
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import mineCommand from '../../txtcommands/explore/mining.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -16,25 +17,19 @@ export default {
   async execute(interaction) {
     const userId = interaction.user.id;
 
-    if (!interaction.deferred) {
-      await interaction.deferReply({
-        ephemeral: false
-      });
-    }
-
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.editReply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in server.`,
         ephemeral: true
       });
     }
 
-    if (txtcommands.get("mine")) {
-      return await txtcommands.get("mine").execute(["mine"], interaction);
+    if (mineCommand?.execute) {
+      return await mineCommand.execute(["mine"], interaction);
     } else {
-      return await interaction.editReply(`Failed to execute mine command!`);
+      return await handleMessage(interaction, `Failed to execute mine command!`);
     }
   }
 };

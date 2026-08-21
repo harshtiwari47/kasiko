@@ -41,12 +41,6 @@ export async function voteReward(userId, user, context) {
       name
     } = discordUser(context);
 
-    if (context.user) {
-      await context.deferReply({
-        ephemeral: false
-      });
-    }
-
     if (voted) {
       // Get user data from your database
       let userData = await getUserData(userId);

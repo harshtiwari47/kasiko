@@ -28,15 +28,24 @@ import {
 
 async function handleCategoryContext(ctx, options) {
   try {
-    if (ctx.author || typeof ctx.editReply !== 'function') {
-      return ctx.channel.send(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    if (typeof ctx.isStringSelectMenu === 'function' && ctx.isStringSelectMenu()) {
+      if (!ctx.replied && !ctx.deferred) {
+        return await ctx.update(options).catch(() => null);
+      } else {
+        return await ctx.editReply(options).catch(() => null);
+      }
     }
-    if (!ctx.deferred || !ctx.replied) {
-      return ctx.update(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    if (typeof ctx.isButton === 'function' && ctx.isButton()) {
+      if (!ctx.replied && !ctx.deferred) {
+        return await ctx.update(options).catch(() => null);
+      } else {
+        return await ctx.editReply(options).catch(() => null);
+      }
     }
-    return ctx.reply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return await replyOrSend(ctx, options);
   } catch (e) {
     console.error(e);
+    return null;
   }
 }
 

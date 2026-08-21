@@ -1,32 +1,15 @@
 import {
-  EmbedBuilder,
-  ContainerBuilder,
-  MessageFlags,
-  TextDisplayBuilder
+  EmbedBuilder
 } from 'discord.js';
 
 import {
-  discordUser
+  discordUser,
+  handleMessage
 } from '../../../../helper.js';
 
 import { increaseTask } from "../../economy/task.js";
 
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes between interaction and handleMessage
-  if (isInteraction) {
-    if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else {
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
-
-function getUsername(ctx) {
-  return ctx.author ? ctx.author.username: ctx.user.username;
-}
-
 export async function serveIceCream(playerShop, flavors, userId, username, context) {
-
   const {
     name
   } = discordUser(context);
@@ -73,15 +56,14 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
   ];
 
   const randomName = customerNames[Math.floor(Math.random() * customerNames.length)];
-
   const customerPreference = getRandomFlavor();
 
-  const textDisplay = new TextDisplayBuilder()
-  .setContent(`🍨 A customer named **${randomName}** is approaching... Let's see what they want!`);
+  const suspenseEmbed = new EmbedBuilder()
+    .setDescription(`🍨 A customer named **${randomName}** is approaching... Let's see what they want!`)
+    .setColor(0x3498db);
 
-  const suspenseMessage = await await handleMessage(context, {
-    components: [textDisplay],
-    flags: MessageFlags.IsComponentsV2
+  const suspenseMessage = await handleMessage(context, {
+    embeds: [suspenseEmbed]
   });
 
   setTimeout(async () => {
@@ -107,48 +89,30 @@ export async function serveIceCream(playerShop, flavors, userId, username, conte
 
     await playerShop.save();
 
-    const Container = new ContainerBuilder()
-    .setAccentColor(servedSuccessfully ? (customerDislikesIceCream ? 0xe9e346: 0x00d900): 0xdb3939)
-    .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`### 🍧 ${name}, 𝘊𝘶𝘴𝘵𝘰𝘮𝘦𝘳 𝘚𝘦𝘳𝘷𝘦𝘥 *!*`)
-    )
-    .addSectionComponents(
-      section => section
-      .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(
-          servedSuccessfully
-          ? customerDislikesIceCream
-          ? `😬 The customer tried **${customerPreference.icecream}**, but they didn't enjoy it.`: `<:celebration:1368113208023318558> Great job! You served a customer their favorite flavor: **${customerPreference.icecream}**.`: `😅 Oops! The customer wanted **${customerPreference.icecream}**, but you couldn't serve it.`
-        )
-      )
-      .setThumbnailAccessory(
-        thumbnail => thumbnail
-        .setDescription('Ice-cream served')
-        .setURL(customerDislikesIceCream ? "https://harshtiwari47.github.io/kasiko-public/images/icecream-served.png": "https://harshtiwari47.github.io/kasiko-public/images/icecream-served-happily.png"),
-      )
-    )
-    .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(servedSuccessfully && !customerDislikesIceCream
-        ? `💰 **Earned:** <:creamcash:1309495440030302282> ${Math.floor(1.3 * customerPreference.cost)} cash\n✪ **Loyalty Points:** +10\n⭐ **Reputation:** ${playerShop.reputation}`: `⭐ **Reputation:** ${playerShop.reputation}`
-      )
-    )
-    .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(servedSuccessfully
-        ? customerDislikesIceCream
-        ? "-# Not every customer loves the same flavor! Keep improving!": "-# Keep serving customers to grow your reputation!": "-# Try adding more flavors to meet customer preferences."
-      )
-    )
-    
-    if (!customerDislikesIceCream) {
-      const markTask = await increaseTask(userId, "serve");
+    const description = servedSuccessfully
+      ? customerDislikesIceCream
+        ? `😬 The customer tried **${customerPreference.icecream}**, but they didn't enjoy it.\n\n⭐ **Reputation:** ${playerShop.reputation}\n-# Not every customer loves the same flavor! Keep improving!`
+        : `<:celebration:1368113208023318558> Great job! You served a customer their favorite flavor: **${customerPreference.icecream}**.\n\n💰 **Earned:** <:creamcash:1309495440030302282> ${Math.floor(1.3 * customerPreference.cost)} cash\n✪ **Loyalty Points:** +10\n⭐ **Reputation:** ${playerShop.reputation}\n-# Keep serving customers to grow your reputation!`
+      : `😅 Oops! The customer wanted **${customerPreference.icecream}**, but you couldn't serve it.\n\n⭐ **Reputation:** ${playerShop.reputation}\n-# Try adding more flavors to meet customer preferences.`;
+
+    const resultEmbed = new EmbedBuilder()
+      .setTitle(`🍧 ${name}, Customer Served!`)
+      .setDescription(description)
+      .setColor(servedSuccessfully ? (customerDislikesIceCream ? 0xe9e346 : 0x00d900) : 0xdb3939)
+      .setThumbnail(customerDislikesIceCream ? "https://harshtiwari47.github.io/kasiko-public/images/icecream-served.png" : "https://harshtiwari47.github.io/kasiko-public/images/icecream-served-happily.png");
+
+    if (!customerDislikesIceCream && servedSuccessfully) {
+      await increaseTask(userId, "serve").catch(() => {});
     }
 
     try {
-      suspenseMessage.edit({
-        components: [Container],
-        flags: MessageFlags.IsComponentsV2
-      });
-    } catch (err) {}
-  },
-    3000);
+      if (suspenseMessage?.edit) {
+        await suspenseMessage.edit({ embeds: [resultEmbed] }).catch(() => handleMessage(context, { embeds: [resultEmbed] }));
+      } else {
+        await handleMessage(context, { embeds: [resultEmbed] });
+      }
+    } catch (err) {
+      await handleMessage(context, { embeds: [resultEmbed] });
+    }
+  }, 3000);
 }
