@@ -8,8 +8,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  EmbedBuilder,
-  AttachmentBuilder
+  EmbedBuilder
 } from 'discord.js';
 
 import {
@@ -38,44 +37,32 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
 
     // 2) Determine the opponent (either a real user or the bot if no mention/invalid)
     let isBotOpponent = false;
-    let opponentMember;
+    let opponentMember = null;
     try {
-      if (channel.guild?.members?.fetch) {
+      if (channel.guild?.members?.fetch && opponentId) {
         opponentMember = await channel.guild.members.fetch(opponentId).catch(() => null);
       }
     } catch {
       isBotOpponent = true;
     }
 
-    if (!opponentMember) {
-      isBotOpponent = true;
-    }
-
-    // If the ID is the same as the challenger’s ID, automatically use the bot
-    if (challengerId === opponentId) {
+    if (!opponentMember || opponentId === '1300081477358452756' || challengerId === opponentId) {
       isBotOpponent = true;
     }
 
     // Attempt to fetch user data for challenger
-    let challengerMember;
+    let challengerMember = null;
     try {
       if (channel.guild?.members?.fetch) {
         challengerMember = await channel.guild.members.fetch(challengerId).catch(() => null);
       }
     } catch (err) {}
 
-    if (!challengerMember) {
-      const u = channel.user || channel.author || { id: challengerId, username: 'Player' };
-      challengerMember = { user: u, id: challengerId };
-    }
+    const challengerUsername = challengerMember?.user?.username || channel.user?.username || channel.author?.username || 'Challenger';
 
     // If the opponent is the bot, define placeholders dynamically from client
     let opponentUsername = channel.client?.user?.username || 'kasiko';
     let opponentUserId = channel.client?.user?.id || '1300081477358452756';
-
-    if (opponentUserId === opponentId || opponentMember?.user?.bot) {
-      isBotOpponent = true;
-    }
 
     if (!isBotOpponent && opponentMember) {
       opponentUsername = opponentMember.user.username;
@@ -94,17 +81,20 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
       return handleMessage(channel, '🚨 **Error**: Problem retrieving user data. Please try again later.');
     }
 
-    // If the opponent is not the bot, check if the opponent data is valid
+    if (!challengerData) {
+      return handleMessage(channel, '🚨 **Error**: Unable to retrieve challenger account data.');
+    }
+
     if (!isBotOpponent && !opponentData) {
       return handleMessage(channel, `🚨 **Error**: Could not retrieve data for **${opponentUsername}**. Please try again.`);
     }
 
     // 4) Check balances
     if (challengerData.cash < betAmount) {
-      return handleMessage(channel, `⚠️ **${challengerMember.user.username}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount}**.`);
+      return handleMessage(channel, `⚠️ **${challengerUsername}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**.`);
     }
     if (!isBotOpponent && opponentData.cash < betAmount) {
-      return handleMessage(channel, `⚠️ **${opponentUsername}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount}**.`);
+      return handleMessage(channel, `⚠️ **${opponentUsername}** doesn't have enough cash to bet <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**.`);
     }
 
     // 5) Ask the challenger to select the number of bullets (1–6) via a select menu
@@ -112,44 +102,32 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
       new StringSelectMenuBuilder()
       .setCustomId('select_bullet_count')
       .setPlaceholder('Select number of bullets (1–6)')
-      .addOptions([{
-        label: '1 bullet', value: '1'
-      },
-        {
-          label: '2 bullets', value: '2'
-        },
-        {
-          label: '3 bullets', value: '3'
-        },
-        {
-          label: '4 bullets', value: '4'
-        },
-        {
-          label: '5 bullets', value: '5'
-        },
-        {
-          label: '6 bullets', value: '6'
-        },
+      .addOptions([
+        { label: '1 bullet', value: '1', description: '1/6 chance of shot each trigger pull' },
+        { label: '2 bullets', value: '2', description: '2/6 chance of shot each trigger pull' },
+        { label: '3 bullets', value: '3', description: '3/6 chance of shot each trigger pull' },
+        { label: '4 bullets', value: '4', description: '4/6 chance of shot each trigger pull' },
+        { label: '5 bullets', value: '5', description: '5/6 chance of shot each trigger pull' },
+        { label: '6 bullets', value: '6', description: 'Instant shot on first trigger pull' }
       ])
     );
 
-    const gunEmoji = "<:roulette_gun1:1325709544357101660>"
-    const cylEmoji = "<:roulette_gc:1325709653421850624>"
-    const rubBulletEmoji = "<:rubber_bullet:1325711925656686626>"
+    const gunEmoji = "<:roulette_gun1:1325709544357101660>";
+    const cylEmoji = "<:roulette_gc:1325709653421850624>";
+    const rubBulletEmoji = "<:rubber_bullet:1325711925656686626>";
 
     let gameMsg = await handleMessage(channel, {
-      content: `${gunEmoji} **${challengerMember.user.username}** has challenged **${isBotOpponent ? 'kasiko (bot)': `<@${opponentMember.user.id}>`}** to **Roulette** for <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**!\n\n${cylEmoji} Please choose the number of ${rubBulletEmoji} bullets to load in the revolver (1–6).`,
+      content: `${gunEmoji} **${challengerUsername}** has challenged **${isBotOpponent ? 'kasiko (bot)': `<@${opponentUserId}>`}** to **Roulette** for <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**!\n\n${cylEmoji} Please choose the number of ${rubBulletEmoji} bullets to load in the revolver (1–6).`,
       components: [bulletSelectRow]
     });
 
-    // Filter for the bullet count select menu. Only the challenger can pick bullets.
     const selectFilter = (i) =>
-    i.user.id === challengerId && i.customId === 'select_bullet_count';
+      i.user.id === challengerId && i.customId === 'select_bullet_count';
 
     const selectCollector = gameMsg?.createMessageComponentCollector ? gameMsg.createMessageComponentCollector({
       filter: selectFilter,
       max: 1,
-      time: 30000 // 30 seconds
+      time: 60000
     }) : null;
 
     if (!selectCollector) return;
@@ -157,39 +135,8 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
     selectCollector.on('collect', async (interaction) => {
       try {
         const bulletCount = parseInt(interaction.values[0], 10);
+        await interaction.deferUpdate().catch(() => {});
 
-        // Disable the select menu after selection
-        const disabledRow = new ActionRowBuilder().addComponents(
-          new StringSelectMenuBuilder()
-          .setCustomId('select_bullet_count')
-          .setDisabled(true)
-          .setPlaceholder(`Selected bullets: ${bulletCount}`)
-          .addOptions([{
-            label: '1 bullet', value: '1'
-          },
-            {
-              label: '2 bullets', value: '2'
-            },
-            {
-              label: '3 bullets', value: '3'
-            },
-            {
-              label: '4 bullets', value: '4'
-            },
-            {
-              label: '5 bullets', value: '5'
-            },
-            {
-              label: '6 bullets', value: '6'
-            },
-          ])
-        );
-
-        await interaction.update({
-          components: [disabledRow]
-        }).catch(() => {});
-
-        // Next: ask the opponent (if not bot) to confirm or decline
         if (!isBotOpponent) {
           const confirmRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
@@ -202,40 +149,41 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
             .setStyle(ButtonStyle.Danger)
           );
 
-          gameMsg = await handleMessage(channel, {
-            content: `**${opponentUsername}**, do you accept the ${gunEmoji} Roulette challenge with ${rubBulletEmoji} **${bulletCount} bullet(s)** at stake for <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 𝑪𝒂𝒔𝒉?`,
-            components: [confirmRow]
-          });
+          if (gameMsg?.edit) {
+            await gameMsg.edit({
+              content: `**${opponentUsername}**, do you accept the ${gunEmoji} Roulette challenge with ${rubBulletEmoji} **${bulletCount} bullet(s)** at stake for <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** 𝑪𝒂𝒔𝒉?`,
+              components: [confirmRow]
+            }).catch(() => {});
+          }
 
           const confirmFilter = (i) =>
-          i.user.id === opponentMember.user.id &&
-          (i.customId === 'roulette_accept' || i.customId === 'roulette_decline');
+            i.user.id === opponentUserId &&
+            (i.customId === 'roulette_accept' || i.customId === 'roulette_decline');
 
           const confirmCollector = gameMsg?.createMessageComponentCollector ? gameMsg.createMessageComponentCollector({
             filter: confirmFilter,
             max: 1,
-            time: 30000 // 30 seconds to respond
+            time: 45000
           }) : null;
 
           if (!confirmCollector) return;
 
           confirmCollector.on('collect', async (btnInteraction) => {
             try {
+              await btnInteraction.deferUpdate().catch(() => {});
               if (btnInteraction.customId === 'roulette_decline') {
-                await btnInteraction.update({
-                  content: `❌ **${opponentUsername}** has declined the roulette challenge.`,
-                  components: []
-                }).catch(() => {});
-                return; // end
+                if (gameMsg?.edit) {
+                  await gameMsg.edit({
+                    content: `❌ **${opponentUsername}** has declined the roulette challenge.`,
+                    components: []
+                  }).catch(() => {});
+                }
+                return;
               }
 
-              // Opponent accepted
-              await btnInteraction.update({
-                components: []
-              }).catch(() => {});
               startRoulette(
-                challengerMember,
-                opponentMember,
+                { id: challengerId, username: challengerUsername },
+                { id: opponentUserId, username: opponentUsername },
                 betAmount,
                 bulletCount,
                 channel,
@@ -243,31 +191,25 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
                 gameMsg
               );
             } catch (e) {
-              if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-                console.error(e);
-              }
+              console.error(e);
             }
           });
 
-          confirmCollector.on('end',
-            async (collected, reason) => {
-              if (reason === 'time' && collected.size === 0) {
-                if (!gameMsg || !gameMsg?.edit) return;
+          confirmCollector.on('end', async (collected, reason) => {
+            if (reason === 'time' && collected.size === 0) {
+              if (gameMsg?.edit) {
                 await gameMsg.edit({
                   content: `⏳ Time’s up! **${opponentUsername}** did not respond to the challenge.`,
                   components: []
                 }).catch(() => {});
               }
-            });
+            }
+          });
         } else {
-          // If it's the bot, auto-accept
+          // If it's the bot, auto-accept and start immediately
           startRoulette(
-            challengerMember,
-            {
-              user: {
-                id: opponentUserId, username: opponentUsername
-              }
-            },
+            { id: challengerId, username: challengerUsername },
+            { id: opponentUserId, username: opponentUsername },
             betAmount,
             bulletCount,
             channel,
@@ -276,30 +218,26 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
           );
         }
       } catch (e) {
-        if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-          console.error(e);
-        }
+        console.error(e);
       }
     });
 
-    selectCollector.on('end',
-      async (collected, reason) => {
-        if (reason === 'time' && collected.size === 0) {
-          try {
-            if (!gameMsg || !gameMsg.edit) return;
+    selectCollector.on('end', async (collected, reason) => {
+      if (reason === 'time' && collected.size === 0) {
+        try {
+          if (gameMsg?.edit) {
             await gameMsg.edit({
               content: '⏳ Time’s up! No bullet selection was made.',
               components: []
             }).catch(() => {});
-          } catch (e) {}
-        }
-      });
+          }
+        } catch (e) {}
+      }
+    });
 
   } catch (e) {
-    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-      console.error('[Roulette] Error in rouletteGame:', e);
-    }
-    return handleMessage(channel, `ⓘ Something went wrong starting the roulette game.\n-#**Error**: ${e.message}`);
+    console.error('[Roulette] Error in rouletteGame:', e);
+    return handleMessage(channel, `ⓘ Something went wrong starting the roulette game.\n-# **Error**: ${e.message}`);
   }
 }
 
@@ -311,48 +249,33 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
 * Actually start the game logic once both players accept and bullet count is chosen.
 */
 async function startRoulette(
-  challengerMember,
-  opponentMember,
+  challenger,
+  opponent,
   betAmount,
   bulletCount,
   channel,
-  isBotOpponent = false, gameMsgInitial = null
+  isBotOpponent = false,
+  gameMsg = null
 ) {
   try {
-    // 1) Prepare initial message
-    let gameMsg;
-    const gunEmoji = "<:roulette_gun1:1325709544357101660>"
-    const cylEmoji = "<:roulette_gc:1325709653421850624>"
-    const rubBulletEmoji = "<:rubber_bullet:1325711925656686626>"
-    const imageUrl = 'https://harshtiwari47.github.io/kasiko-public/images/rr.jpg';
-    const attachment = new AttachmentBuilder(imageUrl);
+    const gunEmoji = "<:roulette_gun1:1325709544357101660>";
+    const cylEmoji = "<:roulette_gc:1325709653421850624>";
+    const rubBulletEmoji = "<:rubber_bullet:1325711925656686626>";
 
-    try {
-      if (gameMsgInitial && gameMsgInitial.edit) {
-        gameMsg = gameMsgInitial;
-        gameMsg = await gameMsgInitial.edit({
-          content: `**${gunEmoji} ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
-          `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}**`,
-          components: [],
-          files: [attachment]
-        });
-      } else {
-        gameMsg = await handleMessage(channel, {
-          content: `**${gunEmoji} ROULETTE IS STARTING!**\n𖤍 **${challengerMember.user.username}** vs **${opponentMember.user.username}**\n` +
-          `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}**`,
-          components: [],
-          files: [attachment]
-        });
-      }
-    } catch (err) {
-      if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
-        console.error('[Roulette] Error sending game start message:',
-          err);
-        return;
-      }
+    const startText = `**${gunEmoji} ROULETTE IS STARTING!**\n𖤍 **${challenger.username}** vs **${opponent.username}**\n` +
+      `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 · <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}** Cash\n\n` +
+      `*Spinning the cylinder...* ${cylEmoji}`;
+
+    if (gameMsg?.edit) {
+      await gameMsg.edit({
+        content: startText,
+        components: []
+      }).catch(() => handleMessage(channel, { content: startText, components: [] }));
+    } else {
+      gameMsg = await handleMessage(channel, { content: startText, components: [] });
     }
 
-    let roundMsg = await handleMessage(channel, `The game is about to begin.`);
+    await Helper.wait(2500);
 
     // 2) Load bullets randomly into a 6-chamber cylinder
     let chambers = Array(6).fill(false);
@@ -371,107 +294,95 @@ async function startRoulette(
     let currentIndex = Helper.randomInt(0, 5);
 
     // 4) Prepare turn order
-    let turn = 0; // 0 => challenger’s turn, 1 => opponent’s turn
-    const players = [{
-      member: challengerMember,
-      userId: challengerMember.user.id
-    },
-      {
-        member: opponentMember,
-        userId: opponentMember.user.id
-      }];
+    let turn = 0; // 0 => challenger, 1 => opponent
+    const players = [
+      { userId: challenger.id, username: challenger.username },
+      { userId: opponent.id, username: opponent.username }
+    ];
 
-    // Keep firing until one is shot
     let isGameOver = false;
     let winnerId = null;
     let loserId = null;
     let shotChamber = null;
 
     for (let i = 0; i < 12; i++) {
-      if (!roundMsg) continue;
       const shooter = players[turn];
       const hasBullet = chambers[currentIndex];
 
-      if (roundMsg.edit) {
-        await roundMsg.edit(`# ${gunEmoji}💨 **${shooter.member.user.username}** fires...`).catch(() => {});
+      const triggerText = `**${gunEmoji} ROULETTE IN PROGRESS**\n𖤍 **${challenger.username}** vs **${opponent.username}**\n` +
+        `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 · <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}** Cash\n\n` +
+        `# ${gunEmoji}💨 **${shooter.username}** pulls the trigger...`;
+
+      if (gameMsg?.edit) {
+        await gameMsg.edit({ content: triggerText, components: [] }).catch(() => {});
       }
 
-      await Helper.wait(3000);
+      await Helper.wait(2500);
 
       if (hasBullet) {
         isGameOver = true;
         loserId = shooter.userId;
-        winnerId = turn === 0 ? players[1].userId: players[0].userId;
+        winnerId = turn === 0 ? players[1].userId : players[0].userId;
         shotChamber = currentIndex + 1;
         break;
       } else {
-        if (roundMsg.edit) {
-          await roundMsg.edit(`## ${cylEmoji} Click! No bullet ${rubBulletEmoji} in chamber ${currentIndex + 1}.`).catch(() => {});
+        const clickText = `**${gunEmoji} ROULETTE IN PROGRESS**\n𖤍 **${challenger.username}** vs **${opponent.username}**\n` +
+          `-# ${rubBulletEmoji} **Bullets:** **${bulletCount}** / 6 · <:kasiko_coin:1300141236841086977> **Bet:** **${betAmount.toLocaleString()}** Cash\n\n` +
+          `## ${cylEmoji} **Click!** No bullet ${rubBulletEmoji} in chamber ${currentIndex + 1}.`;
+
+        if (gameMsg?.edit) {
+          await gameMsg.edit({ content: clickText, components: [] }).catch(() => {});
         }
       }
 
       currentIndex = (currentIndex + 1) % 6;
-      turn = turn === 0 ? 1: 0;
-      await Helper.wait(4000);
+      turn = turn === 0 ? 1 : 0;
+      await Helper.wait(2500);
     }
 
     if (!isGameOver) {
-      return handleMessage(channel, `${gunEmoji} **Incredible!** No one was shot. The game ends in a draw.`);
+      const drawText = `${gunEmoji} **Incredible!** No one was shot. The game ends in a draw.`;
+      if (gameMsg?.edit) {
+        return await gameMsg.edit({ content: drawText, components: [] }).catch(() => handleMessage(channel, drawText));
+      }
+      return handleMessage(channel, drawText);
     }
 
-    // 5) We have a winner and loser
-    let loserData,
-    winnerData;
-    try {
-      loserData = await getUserData(loserId);
-      winnerData = await getUserData(winnerId);
-    } catch (e) {
-      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-        console.error('[Roulette] Error fetching user data at end:', e);
-      }
-      return handleMessage(channel, `ⓘ Couldn’t fetch user data at the end of the match.\n-# **Error:** ${e.message}`);
-    }
+    // 5) Update balances
+    let loserData = await getUserData(loserId);
+    let winnerData = await getUserData(winnerId);
 
     const botId = '1300081477358452756';
 
     if (!isBotOpponent || (isBotOpponent && loserId !== botId)) {
-      loserData.cash = Math.max(0, loserData.cash - betAmount);
-      await updateUser(loserId, {
-        cash: loserData.cash
-      });
+      if (loserData) {
+        loserData.cash = Math.max(0, (loserData.cash || 0) - betAmount);
+        await updateUser(loserId, { cash: loserData.cash });
+      }
     }
 
     if (!isBotOpponent || (isBotOpponent && winnerId !== botId)) {
-      winnerData.cash += betAmount;
-      await updateUser(winnerId, {
-        cash: winnerData.cash
-      });
+      if (winnerData) {
+        winnerData.cash = (winnerData.cash || 0) + betAmount;
+        await updateUser(winnerId, { cash: winnerData.cash });
+      }
     }
 
     // 6) Announce final result
-    const winnerName =
-    winnerId === challengerMember.user.id
-    ? challengerMember.user.username: opponentMember.user.username;
-    const loserName =
-    loserId === challengerMember.user.id
-    ? challengerMember.user.username: opponentMember.user.username;
+    const winnerName = winnerId === challenger.id ? challenger.username : opponent.username;
+    const loserName = loserId === challenger.id ? challenger.username : opponent.username;
 
-    try {
-      if (roundMsg?.delete) {
-        await roundMsg.delete().catch(() => {});
-      }
-    } catch (err) {}
+    const resultText = `💥 ${gunEmoji} **BANG!** ${cylEmoji} Chamber **${shotChamber}** had a bullet! ${rubBulletEmoji}\n\n` +
+      `- ⚰︎ **${loserName}** got shot & \`loses\` <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** Cash\n` +
+      `- 🜲 **${winnerName}** _survives_ & \`earns\` <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}** Cash`;
 
-    return handleMessage(
-      channel,
-      `💥${gunEmoji} **BANG!** ${cylEmoji} Chamber **${shotChamber}** had a bullet! ${rubBulletEmoji}\n` +
-      `- ⚰︎ **${loserName}** got shot & \`loses\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**\n` +
-      `- 🜲 **${winnerName}** _survives_ & \`earns\`  <:kasiko_coin:1300141236841086977> **${betAmount.toLocaleString()}**`
-    );
-  } catch (errx) {
-    if (errx.message !== "Unknown Message" && errx.message !== "Missing Permissions") {
-      console.error(errx);
+    if (gameMsg?.edit) {
+      await gameMsg.edit({ content: resultText, components: [] }).catch(() => handleMessage(channel, resultText));
+    } else {
+      await handleMessage(channel, resultText);
     }
+  } catch (errx) {
+    console.error(errx);
   }
 }
 
@@ -482,26 +393,20 @@ async function startRoulette(
 export default {
   name: 'roulette',
   description: 'Challenge another player (or the bot) to a game of roulette. Bet your cash, load the revolver, and fire until someone loses!',
-  aliases: ['rr',
-    'shot'],
-  args: '<amount> <opponent_mention_or_id>',
-  example: ['roulette 10000  @Player'],
+  aliases: ['rr', 'shot'],
+  args: '<amount> [opponent_mention_or_id]',
+  example: ['roulette 10000 @Player', 'roulette 5000'],
   emoji: "<:roulette_gun1:1325709544357101660>",
-  related: ['diceduel',
-    'slots',
-    'cash',
-    'tosscoin',
-    'guess'],
+  related: ['diceduel', 'slots', 'cash', 'tosscoin', 'blackjack'],
   cooldown: 10000,
   category: '🎲 Games',
 
   execute: async (args, message) => {
-    // 1) Parse arguments
-    let opponentId = args[2] ? args[2].replace(/[<@!>]/g, ''): null;
+    let opponentId = args[2] ? args[2].replace(/[<@!>]/g, '') : null;
     let bet = parseInt(args[1], 10);
 
     if (isNaN(bet) || bet < 1) {
-      return handleMessage(message, '⚠️ You must specify a valid bet amount. `roulette <amount>  @opponent`');
+      return handleMessage(message, '⚠️ You must specify a valid bet amount. `roulette <amount> [@opponent]`');
     }
 
     if (!opponentId || !/^\d+$/.test(opponentId)) {

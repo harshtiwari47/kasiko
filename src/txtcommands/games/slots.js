@@ -100,7 +100,11 @@ export async function slots(id, amount, channel, context) {
     if (spinningMessage?.edit) {
       await spinningMessage.edit({
         content: finalSlot
-      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }).catch(() => handleMessage(ctx, { content: finalSlot }));
+    } else {
+      await handleMessage(ctx, {
+        content: finalSlot
+      });
     }
   } catch (err) {
     console.error("Error during slots:", err);

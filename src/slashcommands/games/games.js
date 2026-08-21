@@ -88,19 +88,19 @@ export default {
 
     switch (sub) {
       case 'coinflip': {
-        const bet = interaction.options.getInteger('bet');
+        const bet = interaction.options.getInteger('bet') || 10;
         const side = interaction.options.getString('side') || 'head';
         return toss(userId, interaction, bet, null, side);
       }
 
       case 'blackjack': {
-        const bet = interaction.options.getInteger('bet');
+        const bet = interaction.options.getInteger('bet') || 10;
         return blackjack(userId, bet, null, interaction);
       }
 
       case 'slots': {
-        const bet = interaction.options.getInteger('bet');
-        return slots(userId, bet, null, interaction);
+        const bet = interaction.options.getInteger('bet') || 10;
+        return slots(userId, bet, interaction, interaction);
       }
 
       case 'scratch': {
@@ -109,7 +109,7 @@ export default {
       }
 
       case 'roulette': {
-        const bet = interaction.options.getInteger('bet');
+        const bet = interaction.options.getInteger('bet') || 1000;
         return rouletteGame(userId, '1300081477358452756', bet, interaction);
       }
 
