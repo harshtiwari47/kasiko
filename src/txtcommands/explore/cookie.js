@@ -9,8 +9,10 @@ import {
 
 import {
   handleMessage,
-  discordUser
+  discordUser,
+  Helper
 } from '../../../helper.js';
+import { sendErrorLog } from '../../../utils/errorLogger.js';
 
 import {
   EmbedBuilder,
@@ -255,97 +257,126 @@ function buildCookieButtons() {
 // ============ Main Command Execution ==============
 // ==================================================
 
-export async function execute(args, context) {
-  const {
-    username,
-    id: userId,
-    avatar,
-    name
-  } = discordUser(context);
+export async function execute(args = [], context) {
+  try {
+    const {
+      username,
+      id: userId,
+      avatar,
+      name
+    } = discordUser(context);
 
-  const ownerUsername = name;
+    const ownerUsername = name || username;
 
-  // If user typed "!cookie @User" => share logic
-  if ((context?.mentions?.users.size > 0) || (!!context.isCommand && args[0])) {
-    const mentionedUser = context?.mentions?.users?.first() || args[0];
-    const shareResult = await shareCookie(userId, mentionedUser.id, ownerUsername);
-    return await handleMessage(context, {
-      content: shareResult.message
-    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-
-  // Otherwise, show two embeds:
-  //  1) Stats embed
-  //  2) Help embed
-  const statsEmbed = await buildCookieStatsEmbed(userId);
-  const helpEmbed = buildCookieHelpEmbed();
-  const components = buildCookieButtons();
-
-  // Send the two-embed message
-  const controlMessage = await handleMessage(context, {
-    embeds: [statsEmbed, helpEmbed],
-    components
-  });
-
-  // Collector for button clicks (1 minute)
-  const collector = controlMessage?.createMessageComponentCollector ? controlMessage.createMessageComponentCollector({
-    time: 60 * 1000,
-  }) : null;
-
-  if (!collector) return;
-
-  collector.on('collect', async (interaction) => {
-    try {
-      // Only the user who triggered the command can press (optional check)
-      if (interaction.user.id !== userId) {
-        return interaction.reply({
-          content: `These cookies belong to <@${userId}>! Please use your own cookie command.`,
-          ephemeral: true
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      await interaction.deferUpdate();
-
-      if (interaction.customId === 'bake_cookie') {
-        const bakeResult = await bakeCookie(userId);
-
-        // Rebuild the embeds to reflect updated stats
-        const updatedStatsEmbed = await buildCookieStatsEmbed(userId);
-        const updatedHelpEmbed = buildCookieHelpEmbed(bakeResult.message); // Can remain same or add dynamic text
-
-        await interaction.editReply({
-          embeds: [updatedStatsEmbed, updatedHelpEmbed],
-          components
-        });
-
-        return;
-      }
-    } catch (e) {
-      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-        console.error(e);
+    let targetUser = null;
+    if (context?.mentions?.users?.size > 0) {
+      targetUser = context.mentions.users.first();
+    } else if (args && args.length > 0) {
+      const candidate = (args[0] === 'cookie' || args[0] === 'cookies') ? args[1] : args[0];
+      if (candidate) {
+        if (typeof candidate === 'object' && candidate.id) {
+          targetUser = candidate;
+        } else if (typeof candidate === 'string' && candidate !== 'cookie' && candidate !== 'cookies') {
+          const parsedId = Helper.extractUserId(candidate) || candidate.replace(/[<@!>]/g, '');
+          if (parsedId && /^\d+$/.test(parsedId)) {
+            targetUser = context.client?.users?.cache?.get(parsedId) || { id: parsedId, username: 'user' };
+          }
+        }
       }
     }
-  });
 
-  collector.on('end',
-    async () => {
+    // If target user specified => share logic
+    if (targetUser && targetUser.id) {
+      const shareResult = await shareCookie(userId, targetUser.id, ownerUsername);
+      return await handleMessage(context, {
+        content: shareResult.message
+      });
+    }
+
+    // Otherwise, show two embeds:
+    //  1) Stats embed
+    //  2) Help embed
+    const statsEmbed = await buildCookieStatsEmbed(userId);
+    const helpEmbed = buildCookieHelpEmbed();
+    const components = buildCookieButtons();
+
+    // Send the two-embed message
+    const controlMessage = await handleMessage(context, {
+      embeds: [statsEmbed, helpEmbed],
+      components
+    });
+
+    // Collector for button clicks (1 minute)
+    const collector = controlMessage?.createMessageComponentCollector ? controlMessage.createMessageComponentCollector({
+      time: 60 * 1000,
+    }) : null;
+
+    if (!collector) return;
+
+    collector.on('collect', async (interaction) => {
       try {
-        if (!controlMessage) return;
+        // Only the user who triggered the command can press (optional check)
+        if (interaction.user.id !== userId) {
+          return interaction.reply({
+            content: `These cookies belong to <@${userId}>! Please use your own cookie command.`,
+            ephemeral: true
+          }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
 
-        // Disable buttons after time expires
-        const oldComponents = controlMessage?.components;
-        if (!oldComponents.length) return;
+        await interaction.deferUpdate();
 
-        const row = ActionRowBuilder.from(oldComponents[0]);
-        row.components.forEach((btn) => btn.setDisabled(true));
+        if (interaction.customId === 'bake_cookie') {
+          const bakeResult = await bakeCookie(userId);
 
-        await controlMessage?.edit({
-          components: [row],
-        });
-      } catch (err) {
-        console.error('Error disabling cookie buttons:', err);
+          // Rebuild the embeds to reflect updated stats
+          const updatedStatsEmbed = await buildCookieStatsEmbed(userId);
+          const updatedHelpEmbed = buildCookieHelpEmbed(bakeResult.message); // Can remain same or add dynamic text
+
+          await interaction.editReply({
+            embeds: [updatedStatsEmbed, updatedHelpEmbed],
+            components
+          });
+
+          return;
+        }
+      } catch (e) {
+        if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
+          console.error(e);
+        }
       }
     });
+
+    collector.on('end',
+      async () => {
+        try {
+          if (!controlMessage) return;
+
+          // Disable buttons after time expires
+          const oldComponents = controlMessage?.components;
+          if (!oldComponents || !oldComponents.length) return;
+
+          const row = ActionRowBuilder.from(oldComponents[0]);
+          row.components.forEach((btn) => btn.setDisabled(true));
+
+          await controlMessage?.edit({
+            components: [row],
+          }).catch(() => {});
+        } catch (err) {
+          console.error('Error disabling cookie buttons:', err);
+        }
+      });
+  } catch (err) {
+    console.error('Error in cookie command:', err);
+    sendErrorLog(err, {
+      source: 'Cookie Command',
+      commandName: 'cookie',
+      user: context.author || context.user,
+      guild: context.guild,
+      channel: context.channel,
+      interaction: context.isCommand ? context : null
+    }).catch(() => {});
+    return await handleMessage(context, "Oops! Something went wrong with the cookie command.");
+  }
 }
 
 export default {

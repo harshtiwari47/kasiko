@@ -9,6 +9,7 @@ import {
   discordUser,
   handleMessage
 } from '../../../helper.js';
+import { sendErrorLog } from '../../../utils/errorLogger.js';
 
 export async function spyMission(id, channel, user) {
   try {
@@ -120,56 +121,73 @@ export default {
   // 10 seconds cooldown
   category: "🏦 Economy",
   execute: async (args, message) => {
-    const user = discordUser(message);
-    let missionReply = await spyMission(user.id, message.channel, user);
-
-    const finalEmbed = new EmbedBuilder()
-    .setDescription(missionReply)
-    .setAuthor({
-      name: user.name || user.username,
-      iconURL: user.avatar
-    })
-    .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/spy.jpg`)
-    .setColor('Random');
-
-    return await handleMessage(message, {
-      embeds: [finalEmbed]
-    });
-  },
-
-  interact: async (interaction) => {
     try {
-      await interaction.deferReply({
-        ephemeral: false
-      });
-
-      const userId = interaction.user.id;
-      const user = interaction.user;
-      const channel = interaction.channel;
-
-      const missionReply = await spyMission(userId, channel, user);
+      const user = discordUser(message);
+      let missionReply = await spyMission(user.id, message.channel, user);
 
       const finalEmbed = new EmbedBuilder()
       .setDescription(missionReply)
       .setAuthor({
-        name: interaction.user.username,
-        iconURL: interaction.user.displayAvatarURL({
-          dynamic: true
-        })
+        name: user.name || user.username,
+        iconURL: user.avatar
       })
       .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/spy.jpg`)
       .setColor('Random');
 
-      await interaction.editReply({
+      return await handleMessage(message, {
         embeds: [finalEmbed]
       });
-      return;
+    } catch (e) {
+      sendErrorLog(e, {
+        source: 'Spy Mission Command',
+        commandName: 'spy',
+        user: message.author || message.user,
+        guild: message.guild,
+        channel: message.channel,
+        interaction: message.isCommand ? message : null
+      }).catch(() => {});
+      return await handleMessage(message, "Oops! Something went wrong during your spy mission. Please try again later!");
+    }
+  },
+
+  interact: async (interaction) => {
+    try {
+      if (!interaction.deferred) {
+        await interaction.deferReply({
+          ephemeral: false
+        });
+      }
+
+      const user = discordUser(interaction);
+      const channel = interaction.channel;
+
+      const missionReply = await spyMission(user.id, channel, user);
+
+      const finalEmbed = new EmbedBuilder()
+      .setDescription(missionReply)
+      .setAuthor({
+        name: user.name || user.username,
+        iconURL: user.avatar
+      })
+      .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/spy.jpg`)
+      .setColor('Random');
+
+      return await handleMessage(interaction, {
+        embeds: [finalEmbed]
+      });
     } catch (e) {
       console.error(e);
-      await interaction.editReply({
+      sendErrorLog(e, {
+        source: 'Spy Mission Interaction',
+        commandName: 'spy',
+        user: interaction.user,
+        guild: interaction.guild,
+        channel: interaction.channel,
+        interaction
+      }).catch(() => {});
+      return await handleMessage(interaction, {
         content: "Oops! Something went wrong during your spy mission. Please try again later!"
-      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      return;
+      });
     }
   }
 };

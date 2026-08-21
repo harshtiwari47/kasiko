@@ -16,11 +16,11 @@ export default {
   async execute(interaction) {
     const userId = interaction.user.id;
 
-    if (interaction.replied || interaction.deferred) return;
-
-    await interaction.deferReply({
-      ephemeral: false
-    });
+    if (!interaction.deferred) {
+      await interaction.deferReply({
+        ephemeral: false
+      });
+    }
 
     // Ensure user account exists
     const exists = await userExists(userId);

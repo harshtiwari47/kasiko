@@ -2,32 +2,42 @@ import {
   SlashCommandBuilder
 } from '@discordjs/builders';
 import {
-  getUserData,
-  updateUser,
   userExists
 } from '../../../database.js';
 import txtcommands from '../../textCommandHandler.js';
 
 export default {
   data: new SlashCommandBuilder()
-  .setName('bank')
-  .setDescription('Manage your bank account')
-  .addIntegerOption(option =>
-    option.setName('upgrade')
-    .setDescription('Upgrade your bank level. Each level increases capacity by 500k. (COST: 300k/level).')
-    .setMinValue(1)
-    .setMaxValue(100)
-  ),
+    .setName('bank')
+    .setDescription('Manage your bank account: view status, open an account, or upgrade storage.')
+    .addStringOption(option =>
+      option.setName('action')
+        .setDescription('Bank action to perform')
+        .setRequired(false)
+        .addChoices(
+          { name: '📊 View Bank Status', value: 'status' },
+          { name: '🏦 Open Bank Account', value: 'open' },
+          { name: '⚡ Upgrade Bank Capacity', value: 'upgrade' }
+        )
+    )
+    .addIntegerOption(option =>
+      option.setName('upgrade_times')
+        .setDescription('Number of levels to upgrade (default: 1)')
+        .setMinValue(1)
+        .setMaxValue(100)
+        .setRequired(false)
+    ),
 
   async execute(interaction) {
     const userId = interaction.user.id;
-    const upgradeLevel = interaction.options.getInteger('upgrade');
+    const action = interaction.options.getString('action');
+    const upgradeTimes = interaction.options.getInteger('upgrade_times') || 1;
 
-    if (interaction.replied || interaction.deferred) return; // Prevent double replies
-    
-    await interaction.deferReply({
-      ephemeral: false
-    });
+    if (!interaction.deferred) {
+      await interaction.deferReply({
+        ephemeral: false
+      });
+    }
 
     // Ensure user account exists
     const exists = await userExists(userId);
@@ -38,18 +48,17 @@ export default {
       });
     }
 
-    if (upgradeLevel !== null) {
-      if (txtcommands.get("bank")) {
-        return await txtcommands.get("bank").execute(["bank", "upgrade", upgradeLevel], interaction);
-      } else {
-        return await interaction.editReply(`Failed to execute bank upgrade command!`);
-      }
+    const cmd = txtcommands.get("bank");
+    if (!cmd?.execute) {
+      return await interaction.editReply(`Failed to execute bank command!`);
+    }
+
+    if (action === 'open') {
+      return await cmd.execute(['bank', 'open'], interaction);
+    } else if (action === 'upgrade' || interaction.options.getInteger('upgrade_times')) {
+      return await cmd.execute(['bank', 'upgrade', upgradeTimes], interaction);
     } else {
-      if (txtcommands.get("bank")) {
-        return await txtcommands.get("bank").execute(["bank"], interaction);
-      } else {
-        return await interaction.editReply(`Failed to execute bank command!`);
-      }
+      return await cmd.execute(['bank', 'status'], interaction);
     }
   }
 };
