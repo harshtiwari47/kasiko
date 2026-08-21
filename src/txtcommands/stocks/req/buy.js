@@ -12,15 +12,10 @@ import {
 } from "../../explore/pass.js";
 import redisClient from '../../../../redis.js';
 
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand;
-  if (isInteraction) {
-    if (!context.deferred) await context.deferReply();
-    return await context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else {
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
+import {
+  handleMessage,
+  discordUser
+} from '../../../../helper.js';
 
 export async function buySharesCommand(message, args) {
   try {

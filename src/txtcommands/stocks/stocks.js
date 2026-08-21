@@ -15,7 +15,8 @@ import { sellSharesCommand } from "./req/sell.js";
 
 import { handleBuyRequest } from "./req/buyHandler.js";
 
-import { Helper } from "../../../helper.js";
+import { Helper, handleMessage, discordUser } from "../../../helper.js";
+import { sendErrorLog } from "../../../utils/errorLogger.js";
 import { buildNews, currentNewspaper } from "./stockNews.js";
 
 import {
@@ -163,15 +164,10 @@ export async function sendPaginatedStocks(context) {
   try {
     // Query companies from the database, sorted by name.
     const companies = await Company.find({ isPublic: true }).sort({ name: 1 });
-    const user = context.user || context.author;
-    if (!user) return;
+    const user = discordUser(context);
+    if (!user || !user.id) return;
     if (!companies || companies.length === 0) {
-      return context.channel
-        .send("⚠️ No companies found.")
-        .catch(
-          (err) =>
-            ![50001, 50013, 10008].includes(err.code) && console.error(err)
-        );
+      return handleMessage(context, "⚠️ No companies found.");
     }
 
     let currentIndex = 0;
@@ -208,15 +204,11 @@ export async function sendPaginatedStocks(context) {
     );
 
     // Send the initial message.
-    const message = await context.channel
-      .send({
-        embeds: initialEmbed,
-        components: [buttons],
-        fetchReply: true,
-      })
-      .catch(
-        (err) => ![50001, 50013, 10008].includes(err.code) && console.error(err)
-      );
+    const message = await handleMessage(context, {
+      embeds: initialEmbed,
+      components: [buttons],
+      fetchReply: true,
+    });
 
     // Create a collector for button interactions.
     const collector = message?.createMessageComponentCollector ? message.createMessageComponentCollector({
@@ -233,7 +225,7 @@ export async function sendPaginatedStocks(context) {
         return interaction.reply({
           content: "You can't interact with these buttons.",
           ephemeral: true,
-        });
+        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
       try {
@@ -297,10 +289,6 @@ export async function sendPaginatedStocks(context) {
         });
       } catch (err) {
         console.error("Error updating interaction:", err);
-        return interaction.reply({
-          content: "An error occurred while updating. Please try again.",
-          ephemeral: true,
-        });
       }
     });
 
@@ -308,18 +296,22 @@ export async function sendPaginatedStocks(context) {
       // Disable all buttons when the collector ends.
       buttons.components.forEach((button) => button.setDisabled(true));
       try {
-        await message.edit({ components: [buttons] });
+        await message?.edit({ components: [buttons] });
       } catch (err) {
         console.error("Error disabling buttons on collector end:", err);
       }
     });
   } catch (err) {
     console.error(err);
-    return context.channel
-      .send("⚠️ Something went wrong while viewing companies!")
-      .catch(
-        (err) => ![50001, 50013, 10008].includes(err.code) && console.error(err)
-      );
+    sendErrorLog(err, {
+      source: 'Stocks Paginated Command',
+      commandName: 'stocks',
+      user: context.author || context.user,
+      guild: context.guild,
+      channel: context.channel,
+      interaction: context.isCommand ? context : null
+    }).catch(() => {});
+    return handleMessage(context, "⚠️ Something went wrong while viewing companies!");
   }
 }
 
@@ -348,13 +340,9 @@ export async function sendNewspaper(message) {
     .setDescription(newspaper)
     .setColor("#e0e6ed");
 
-  return await message.channel
-    .send({
-      embeds: [newsEmbed],
-    })
-    .catch(
-      (err) => ![50001, 50013, 10008].includes(err.code) && console.error(err)
-    );
+  return await handleMessage(message, {
+    embeds: [newsEmbed],
+  });
 }
 
 // Update stock prices on server start
@@ -456,36 +444,20 @@ export default {
         case "price":
         case "p": {
           if (!args[2]) {
-            return message.channel
-              .send("⚠️ Please specify a stock symbol to check the price.")
-              .catch(
-                (err) =>
-                  ![50001, 50013, 10008].includes(err.code) &&
-                  console.error(err)
-              );
+            return handleMessage(message, "⚠️ Please specify a stock symbol to check the price.");
           }
           const symbol = args[2].toUpperCase();
           const response = await stockPrice(symbol, message);
-          return message.channel
-            .send(response)
-            .catch(
-              (err) =>
-                ![50001, 50013, 10008].includes(err.code) && console.error(err)
-            );
+          return handleMessage(message, response);
         }
 
         case "buy":
         case "b": {
           if (!args[2] || !Helper.isNumber(args[3])) {
-            return message.channel
-              .send(
-                "⚠️ Please specify a valid stock symbol and amount to buy. Example: `stock buy <symbol> <amount>`"
-              )
-              .catch(
-                (err) =>
-                  ![50001, 50013, 10008].includes(err.code) &&
-                  console.error(err)
-              );
+            return handleMessage(
+              message,
+              "⚠️ Please specify a valid stock symbol and amount to buy. Example: `stock buy <symbol> <amount>`"
+            );
           }
           const symbol = args[2].toUpperCase();
           const amount = args[3];
@@ -495,15 +467,10 @@ export default {
         case "sell":
         case "s": {
           if (!args[2] || !Helper.isNumber(args[3])) {
-            return message.channel
-              .send(
-                "⚠️ Please specify a valid stock symbol and amount to sell. Example: `stock sell <symbol> <amount>`"
-              )
-              .catch(
-                (err) =>
-                  ![50001, 50013, 10008].includes(err.code) &&
-                  console.error(err)
-              );
+            return handleMessage(
+              message,
+              "⚠️ Please specify a valid stock symbol and amount to sell. Example: `stock sell <symbol> <amount>`"
+            );
           }
           const symbol = args[2].toUpperCase();
           const amount = args[3];
@@ -554,16 +521,20 @@ export default {
                 inline: true,
               }
             );
-          return message.channel
-            .send({ embeds: [embed] })
-            .catch(
-              (err) =>
-                ![50001, 50013, 10008].includes(err.code) && console.error(err)
-            );
+          return handleMessage(message, { embeds: [embed] });
         }
       }
     } catch (error) {
       console.error(error);
+      sendErrorLog(error, {
+        source: 'Stocks Execute Command',
+        commandName: 'stocks',
+        user: message.author || message.user,
+        guild: message.guild,
+        channel: message.channel,
+        interaction: message.isCommand ? message : null
+      }).catch(() => {});
+      return handleMessage(message, "⚠️ Something went wrong executing the stocks command.");
     }
   },
 };

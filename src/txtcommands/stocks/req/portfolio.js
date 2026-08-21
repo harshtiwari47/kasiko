@@ -17,24 +17,9 @@ import {
   client
 } from '../../../../bot.js';
 import {
-  discordUser
+  discordUser,
+  handleMessage
 } from '../../../../helper.js';
-import {
-  sellSharesCommand
-} from './sell.js';
-
-import redisClient from '../../../../redis.js';
-
-// Helper function to handle messages for interactions vs. plain messages
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand;
-  if (isInteraction) {
-    if (!context.deferred) await context.deferReply().catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    return await context.followUp(data);
-  } else {
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
 
 async function handleNumberInput(interaction, companyName) {
   const numberInput = interaction.fields.getTextInputValue('companySellingInput');
