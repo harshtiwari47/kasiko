@@ -273,7 +273,7 @@ export default {
   aliases: [],
   description: 'Adopt a user into your family.',
   emoji: "👶🏻",
-  category: '👤 User',
+  category: '💍 Social',
   cooldown: 10000,
   async execute(args, message) {
     try {

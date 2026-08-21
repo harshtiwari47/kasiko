@@ -122,7 +122,7 @@ export default {
   aliases: ['feedanimal'],
   args: '[animal_index]',
   example: ['feed 1'],
-  category: '🐾 Wildlife',
+  category: '🦌 Wildlife',
   cooldown: 3000,
   execute: async (args, context) => {
     const animalIndex = args[1] ? parseInt(args[1], 10) - 1 : 0;

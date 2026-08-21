@@ -436,7 +436,7 @@ export default {
   aliases: ['ce-edit',
     'editembed',
     'embedmodify'],
-  category: 'server',
+  category: '🎡 Server',
   emoji: "📦",
   visible: false,
   cooldown: 10000,

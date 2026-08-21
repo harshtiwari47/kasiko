@@ -20,7 +20,7 @@ export default {
   description: 'Create or manage a container message using buttons.',
   args: false,
   aliases: ['ce', 'createembed', 'create-embed', 'embedcreate'],
-  category: 'server',
+  category: '🎡 Server',
   emoji: '📦',
   visible: false,
   cooldown: 10000,

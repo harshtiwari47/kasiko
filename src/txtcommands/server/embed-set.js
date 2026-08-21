@@ -13,7 +13,7 @@ export default {
     'embedtrigger',
     'embed-when',
     'embedtrigger'],
-  category: 'server',
+  category: '🎡 Server',
   emoji: "📦",
   visible: false,
   cooldown: 10000,

@@ -21,7 +21,7 @@ export default {
   description: 'Create or manage a container message using buttons.',
   args: false,
   aliases: ["emb"],
-  category: 'server',
+  category: '🎡 Server',
   emoji: '📦',
   example: [
     "embed create <Name>",

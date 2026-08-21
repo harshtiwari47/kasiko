@@ -4,14 +4,17 @@ export const categoryMappings = {
   utility: "🔧 Utility",
   pass: "⭐ Pass",
   battle: "⚓ Pirates",
+  pirates: "⚓ Pirates",
   explore: "🍬 Explore",
   shop: "🛍️ Shop",
   user: "👤 User",
+  social: "💍 Social",
   games: "🎲 Games",
   wildlife: "🦌 Wildlife",
   ocean: "🌊 Ocean Life",
   horizon: "🐉 Horizon",
   information: "📰 Information",
+  statistics: "📊 Statistics",
   server: "🎡 Server",
   all: "all"
 };
@@ -24,14 +27,16 @@ export const categoriesArray = [
   "explore",
   "shop",
   "user",
+  "social",
   "pass",
   "games",
   "wildlife",
   "ocean",
   "horizon",
   "information",
+  "statistics",
   "server"
-]
+];
 
 export const categoriesEmoji = {
   horizon: {
@@ -41,6 +46,10 @@ export const categoriesEmoji = {
   user: {
     name: "user",
     id: "1385131666011590709"
+  },
+  social: {
+    name: "ring",
+    id: "1356866221529628792"
   },
   economy: {
     name: "bank",
@@ -74,6 +83,10 @@ export const categoriesEmoji = {
     name: "trophy",
     id: "1352897371595477084"
   },
+  statistics: {
+    name: "trophy",
+    id: "1352897371595477084"
+  },
   games: {
     name: "slotsanim",
     id: "1327959630915047556"
@@ -94,4 +107,4 @@ export const categoriesEmoji = {
     name: "bot",
     id: "1359577258959962152"
   }
-}
+};

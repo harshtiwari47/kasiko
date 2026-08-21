@@ -23,7 +23,7 @@ export default {
     "pb",
     "purge bot",
     "purge 30 bot"],
-  category: "server",
+  category: "🎡 Server",
   emoji: "🧹",
   cooldown: 10000,
   async execute(args, message) {

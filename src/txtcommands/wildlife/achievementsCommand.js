@@ -64,7 +64,7 @@ export default {
   aliases: ['achievement', 'ach'],
   args: '',
   example: ['achievements'],
-  category: '🐾 Wildlife',
+  category: '🦌 Wildlife',
   cooldown: 3000,
   execute: async (args, context) => {
     return achievementsCommand(context);

@@ -212,7 +212,7 @@ export default {
   aliases: ["testcon", "testembed", "embedtest"],
   args: false,
   example: ["container"],
-  category: "server",
+  category: "🎡 Server",
   emoji: "📦",
   visible: false,
   cooldown: 10000,

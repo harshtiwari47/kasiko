@@ -15,7 +15,7 @@ export default {
   aliases: ['el',
     'list-embeds',
     'container-list'],
-  category: 'server',
+  category: '🎡 Server',
   emoji: "📦",
   visible: false,
   cooldown: 5000,

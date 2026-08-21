@@ -13,7 +13,7 @@ export default {
     'embeddelete',
     'embedremove',
     'removeembed'],
-  category: 'server',
+  category: '🎡 Server',
   emoji: "📦",
   visible: false,
   cooldown: 10000,

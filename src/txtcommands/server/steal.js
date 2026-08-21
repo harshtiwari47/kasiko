@@ -16,7 +16,7 @@ export default {
     "steal 123456789012345678",
     "steal sticker 987654321098765432"
   ],
-  category: "server",
+  category: "🎡 Server",
   emoji: "🗃️",
   cooldown: 10000,
   async execute(args, message) {

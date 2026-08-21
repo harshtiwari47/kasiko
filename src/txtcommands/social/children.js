@@ -501,7 +501,7 @@ export default {
   example: ["children help"],
   emoji: "<:girl_child:1335131494070489118>",
   cooldown: 10000,
-  category: "👤 User",
+  category: "💍 Social",
   async execute(args,
     message) {
     try {
