@@ -14,32 +14,19 @@ export default {
     .setRequired(false)
   ),
   async execute(interaction) {
-    try {
-      if (!interaction.deferred) {
-        await interaction.deferReply({
-          ephemeral: true
-        });
-      }
+    if (!interaction.deferred) {
+      await interaction.deferReply({
+        ephemeral: true
+      });
+    }
 
-      const commandName = interaction.options.getString('command');
+    const commandName = interaction.options.getString('command');
 
-      if (txtcommands.get("help")) {
-        await txtcommands.get("help").execute(commandName ? ["help", commandName]: ["help"], interaction);
-        return;
-      } else {
-        return await interaction.editReply(`Failed to execute profile command!`);
-      }
-
-    } catch (error) {
-      console.error('Error executing /help command:', error);
-      try {
-        await interaction.editReply({
-          content: '⚠️ An error occurred while fetching help information. Please try again later.',
-          ephemeral: true,
-        });
-      } catch (replyError) {
-        console.error('Error sending error message:', replyError);
-      }
+    if (txtcommands.get("help")) {
+      await txtcommands.get("help").execute(commandName ? ["help", commandName]: ["help"], interaction);
+      return;
+    } else {
+      return await interaction.editReply(`Failed to execute help command!`);
     }
   },
 };

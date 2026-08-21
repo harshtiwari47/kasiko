@@ -19,8 +19,10 @@ import {
 
 import {
   Helper,
-  handleMessage
+  handleMessage,
+  discordUser
 } from '../../../helper.js';
+import { sendErrorLog } from '../../../utils/errorLogger.js';
 
 import {
   getAllJewelry
@@ -717,32 +719,26 @@ export default {
 
   execute: async (args, message) => {
     try {
-      const { id: userId, username, name } = discordUser(message);
+      const { id: userId, username, name, avatar } = discordUser(message);
       if (!message.author) {
-        message.author = message.user || { id: userId, username, displayAvatarURL: () => '' };
+        message.author = message.user || { id: userId, username, displayAvatarURL: () => avatar || '' };
       }
       if (!message.author.displayAvatarURL && message.user?.displayAvatarURL) {
         message.author.displayAvatarURL = (opt) => message.user.displayAvatarURL(opt);
-      }
-      if (message.isCommand || message.isChatInputCommand || !message.channel?.send) {
-        message.channel = {
-          guild: message.guild,
-          send: (data) => handleMessage(message, data)
-        };
       }
 
       if (args[0] === "marry" || args[0] === "propose") {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.marry(Helper.extractUserId(args[1]), message); // Marry a user
         }
-        return message.channel.send("<:warning:1366050875243757699> Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return handleMessage(message, "<:warning:1366050875243757699> Please mention a user to marry. Example: `marry @user`");
       }
 
       if (args[0] === "divorce") {
         if (args[1] && Helper.isUserMention(args[1], message)) {
           return Marriage.divorce(Helper.extractUserId(args[1]), message); // Divorce a user
         }
-        return message.channel.send("<:warning:1366050875243757699> Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return handleMessage(message, "<:warning:1366050875243757699> Please mention a user to divorce. Example: `divorce @user`");
       }
 
       if (args[0] === "forcedivorce") {
@@ -765,13 +761,13 @@ export default {
         if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.marry(Helper.extractUserId(args[2]), message); // Marry a user
         }
-        return message.channel.send("<:warning:1366050875243757699> Please mention a user to marry. Example: `marry @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return handleMessage(message, "<:warning:1366050875243757699> Please mention a user to marry. Example: `marry @user`");
 
       case "divorce":
         if (args[2] && Helper.isUserMention(args[2], message)) {
           return Marriage.divorce(Helper.extractUserId(args[2]), message); // Divorce a user
         }
-        return message.channel.send("<:warning:1366050875243757699> Please mention a user to divorce. Example: `divorce @user`").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return handleMessage(message, "<:warning:1366050875243757699> Please mention a user to divorce. Example: `divorce @user`");
 
       case "forcedivorce":
         return Marriage.forceDivorce(message); // Divorce a user
@@ -783,13 +779,13 @@ export default {
         }
         return Marriage.roses(message); // Show the roses system info if no arguments are provided
       case "daily":
-        return dailyRewards(message.author.id, message.author.username, message);
+        return dailyRewards(userId, username, message);
 
       case "ring":
         const ringId = args[2];
 
         if (!ringId) {
-          return await message.channel.send(`<:warning:1366050875243757699> Please mention the 💍 ring ID you want to set on your marriage profile!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          return await handleMessage(message, `<:warning:1366050875243757699> Please mention the 💍 ring ID you want to set on your marriage profile!`);
         }
 
         return setMarriageRing(message, ringId);
@@ -815,14 +811,23 @@ export default {
           {
             name: '<:rose:1343097565738172488> Send Roses', value: 'roses <@username (optional)> <amount>'
           }
-        )
+        );
 
-        return await message.channel.send({
+        return await handleMessage(message, {
           embeds: [embed]
-        }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        });
       }
     } catch (e) {
       console.error(e);
+      sendErrorLog(e, {
+        source: 'Marriage Command',
+        commandName: 'marriage',
+        user: message.author || message.user,
+        guild: message.guild,
+        channel: message.channel,
+        interaction: message.isCommand ? message : null
+      }).catch(() => {});
+      return handleMessage(message, "Oops! Something went wrong with the marriage command.");
     }
   }
 };

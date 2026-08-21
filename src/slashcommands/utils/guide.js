@@ -41,26 +41,16 @@ export default {
   },
 
   async execute(interaction) {
-    try {
+    if (!interaction.deferred) {
       await interaction.deferReply({ ephemeral: true });
+    }
 
-      const commandName = interaction.options.getString('command');
+    const commandName = interaction.options.getString('command');
 
-      if (txtcommands.get("guide")) {
-        await txtcommands.get("guide").execute(commandName ? ["guide", commandName] : ["guide"], interaction);
-      } else {
-        await interaction.editReply("❌ Could not fetch the guide. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error executing /guide command:", error);
-      try {
-        await interaction.editReply({
-          content: "⚠️ An error occurred while fetching the guide. Please try again later.",
-          ephemeral: true,
-        });
-      } catch (replyError) {
-        console.error("Error sending error message:", replyError);
-      }
+    if (txtcommands.get("guide")) {
+      await txtcommands.get("guide").execute(commandName ? ["guide", commandName] : ["guide"], interaction);
+    } else {
+      await interaction.editReply("❌ Could not fetch the guide. Please try again.");
     }
   },
 };

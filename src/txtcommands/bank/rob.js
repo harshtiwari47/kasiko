@@ -18,6 +18,7 @@ import {
   handleMessage,
   Helper
 } from '../../../helper.js';
+import { sendErrorLog } from '../../../utils/errorLogger.js';
 
 import {
   checkPassValidity
@@ -25,15 +26,9 @@ import {
 
 export async function attemptRobbery(userId, targetUserId, message) {
   try {
-    const { username } = discordUser(message);
+    const { username, avatar } = discordUser(message);
     if (!message.author) {
-      message.author = message.user || { id: userId, username, displayAvatarURL: () => '' };
-    }
-    if (message.isCommand || message.isChatInputCommand || !message.channel?.send) {
-      message.channel = {
-        guild: message.guild,
-        send: (data) => handleMessage(message, data)
-      };
+      message.author = message.user || { id: userId, username, displayAvatarURL: () => avatar || '' };
     }
 
     // Get user data (cash) and target data
@@ -54,15 +49,8 @@ export async function attemptRobbery(userId, targetUserId, message) {
     }
 
     if (targetCash < 1000) {
-      return message.channel.send(`ⓘ **${username}**, the mentioned player needs at least <:kasiko_coin:1300141236841086977> **1000** cash to attempt a robbery!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(message, `ⓘ **${username}**, the mentioned player needs at least <:kasiko_coin:1300141236841086977> **1000** cash to attempt a robbery!`);
     }
-
-    /* if (userData.lastRobbery && checkTimeGap(userData.lastRobbery, Date.now()) < 6) {
-      const remainingTime = 5 - checkTimeGap(userData.lastRobbery, Date.now(), {
-        format: 'hours'
-      }).toFixed(2);
-      return message.channel.send(`🎃 <@${userId}>, you cannot rob again for another ${remainingTime.toFixed(1)} hours.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    } */
 
     userData.lastRobbery = Date.now();
 
@@ -71,11 +59,13 @@ export async function attemptRobbery(userId, targetUserId, message) {
     const num2 = Math.floor(Math.random() * 500) + 1; // Random number under 1000 for difficulty
     const correctAnswer = num1 + num2;
 
+    const victimUser = message.mentions?.users?.first() || (targetUserId ? await message.client?.users?.fetch(targetUserId).catch(() => null) : null) || { username: 'Target' };
+
     // Create the exciting embed for the robbery
     const embed = new EmbedBuilder()
     .setTitle('👀🗝️ **𝐑𝐨𝐛𝐛𝐞𝐫𝐲 𝐀𝐭𝐭𝐞𝐦𝐩𝐭!**')
     .setDescription(
-      `**${username}**, you're attempting to **rob** **${message.mentions.users.first().username}**! 🙀`
+      `**${username}**, you're attempting to **rob** **${victimUser.username}**! 🙀`
     )
     .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/robber.png`)
     .addFields(
@@ -96,18 +86,20 @@ export async function attemptRobbery(userId, targetUserId, message) {
       text: '⚠ Failing risks capture and loss of cash!'
     })
 
-    const robberyMessage = await message.channel.send({
+    const robberyMessage = await handleMessage(message, {
       embeds: [embed, embedQues]
     });
 
     // Start collecting the input from the robber
-    const filter = response => (response.author.id === userId || response.author.id === targetUserId) && Number.isInteger(Number(response.content)); // Only collect the robber's response
-    const collector = message.channel.createMessageCollector({
+    const filter = response => (response.author?.id === userId || response.author?.id === targetUserId) && Number.isInteger(Number(response.content)); // Only collect the robber's response
+    const collector = message.channel?.createMessageCollector ? message.channel.createMessageCollector({
       filter,
       time: 25000, // 25 seconds for the robbery attempt
       max: 1, // Only collect one response
       errors: ['time'] // Handle timeout error
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (response) => {
       try {
@@ -376,7 +368,15 @@ export async function attemptRobbery(userId, targetUserId, message) {
     if (error.message !== "Unknown Message" && error.message !== "Missing Permissions") {
       console.error(error);
     }
-    return message.channel.send("<:alert:1366050815089053808> **An unexpected error occurred. Please try again later.**").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    sendErrorLog(error, {
+      source: 'Robbery Command',
+      commandName: 'rob',
+      user: message.author || message.user,
+      guild: message.guild,
+      channel: message.channel,
+      interaction: message.isCommand ? message : null
+    }).catch(() => {});
+    return handleMessage(message, "<:alert:1366050815089053808> **An unexpected error occurred. Please try again later.**");
   }
 }
 

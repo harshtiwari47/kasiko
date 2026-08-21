@@ -10,7 +10,12 @@ import {
 // Seamlessly adapts to interaction reply/editReply/followUp states and text channel messages.
 export async function handleMessage(context, data) {
   if (!context) return null;
-  const isInteraction = typeof context.isCommand === 'function' ? context.isCommand() : !!context.isCommand || !!context.commandName || typeof context.isChatInputCommand === 'function';
+  const isInteraction = (typeof context.isCommand === 'function' ? context.isCommand() : !!context.isCommand) ||
+    !!context.commandName ||
+    (typeof context.isChatInputCommand === 'function' ? context.isChatInputCommand() : false) ||
+    (typeof context.isButton === 'function' ? context.isButton() : false) ||
+    (typeof context.isStringSelectMenu === 'function' ? context.isStringSelectMenu() : false) ||
+    (typeof context.deferReply === 'function' && typeof context.editReply === 'function');
 
   if (isInteraction) {
     try {
@@ -28,10 +33,11 @@ export async function handleMessage(context, data) {
       if (![50001, 50013, 10008].includes(err.code)) console.error(err);
       return null;
     }
+  } else if (typeof context.send === 'function') {
+    return await context.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  } else if (context.channel?.send) {
+    return await context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
-    if (context.channel?.send) {
-      return await context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
     return null;
   }
 }
