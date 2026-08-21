@@ -124,13 +124,15 @@ client.on('messageCreate', async (message) => {
     const mentionedBots = message.mentions.users.filter(user => user.bot);
 
     try {
-      const key = `prefixs:${message.guild.id}`;
-      const customPrefix = await redisClient.get(key);
+      if (message.guild?.id) {
+        const key = `prefixs:${message.guild.id}`;
+        const customPrefix = await redisClient.get(key);
 
-      if (customPrefix) {
-        prefix = customPrefix;
-      } else {
-        prefix = await getServerPrefix(message);
+        if (customPrefix) {
+          prefix = customPrefix;
+        } else {
+          prefix = await getServerPrefix(message);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -180,22 +182,24 @@ client.on('messageCreate', async (message) => {
 
     let serverDoc;
     // Cache server configuration
-    try {
-      const serverKey = `server:${message.guild.id}`;
-      const cachedServer = await redisClient.get(serverKey);
+    if (message.guild?.id) {
+      try {
+        const serverKey = `server:${message.guild.id}`;
+        const cachedServer = await redisClient.get(serverKey);
 
-      if (cachedServer) {
-        serverDoc = JSON.parse(cachedServer);
-      } else {
-        serverDoc = await Server.findOne({
-          id: message.guild.id
-        });
-        if (serverDoc) {
-          await redisClient.setEx(serverKey, 300, JSON.stringify(serverDoc)); // Cache 5 minutes
+        if (cachedServer) {
+          serverDoc = JSON.parse(cachedServer);
+        } else {
+          serverDoc = await Server.findOne({
+            id: message.guild.id
+          });
+          if (serverDoc) {
+            await redisClient.setEx(serverKey, 300, JSON.stringify(serverDoc)); // Cache 5 minutes
+          }
         }
+      } catch (e) {
+        console.error('Server config error:', e);
       }
-    } catch (e) {
-      console.error('Server config error:', e);
     }
 
     let channelDoc;
@@ -254,7 +258,9 @@ client.on('messageCreate', async (message) => {
     }
 
     // update experience and level
-    updateExpPoints(message.content.toLowerCase(), message.author, message.channel, message?.guild.id, prefix);
+    if (message.guild?.id) {
+      updateExpPoints(message.content.toLowerCase(), message.author, message.channel, message.guild.id, prefix);
+    }
 
     if (channelDoc && channelDoc.category) {
       if (channelDoc && !channelDoc.category.allAllowed) {
@@ -591,6 +597,7 @@ client.on('guildDelete', async (guild) => {
 });
 
 async function getServerPrefix(message) {
+  if (!message?.guild) return BotPrefix;
   const serverId = message.guild.id;
   const serverName = message.guild.name;
   const serverOwnerId = message.guild.ownerId;

@@ -1,4 +1,5 @@
 import Company from '../../../../models/Company.js';
+import redisClient from '../../../../redis.js';
 import {
   EmbedBuilder,
   ActionRowBuilder,

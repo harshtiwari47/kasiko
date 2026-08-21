@@ -812,7 +812,7 @@ async function grantBattleRewards({ userId, defeatedTeam = [], winningTeam = [],
 
 // ─── Main command ──────────────────────────────────────────────────────────────
 
-export async function battleCommand(context, { opponentId = null, isWild = false }) {
+export async function battleCommand(context, { opponentId = null, isWild = false } = {}) {
   try {
     const userId = context.user?.id || context.author?.id;
     const username = context.user?.username || context.author?.username;

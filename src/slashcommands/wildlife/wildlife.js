@@ -169,7 +169,7 @@ export default {
 
       case 'battle': {
         const opponent = interaction.options.getUser('opponent');
-        return battleCommand(interaction, opponent);
+        return battleCommand(interaction, { opponentId: opponent?.id || null, isWild: !opponent });
       }
 
       case 'achievements': {

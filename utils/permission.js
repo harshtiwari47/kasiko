@@ -4,6 +4,9 @@ import {
 } from 'discord.js';
 
 export async function checkPerms(message) {
+  if (!message || !message.guild || !message.channel || typeof message.channel.permissionsFor !== 'function') {
+    return null; // All permissions permitted in DMs
+  }
 
   const permissionNames = {
     1: "CREATE_INSTANT_INVITE",
