@@ -219,11 +219,13 @@ export async function sendPaginatedStocks(context) {
       );
 
     // Create a collector for button interactions.
-    const collector = message.createMessageComponentCollector({
+    const collector = message?.createMessageComponentCollector ? message.createMessageComponentCollector({
       filter: (i) => i.user.id === user.id,
       componentType: ComponentType.Button,
       time: 6 * 60 * 1000, // 6 minutes
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on("collect", async (interaction) => {
       // Ensure only the command invoker can interact.

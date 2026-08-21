@@ -122,10 +122,11 @@ export async function sendPaginatedStructures(context) {
       components: [buttons]
     });
 
-    // Create collector for buttons
-    const collector = messageSent.createMessageComponentCollector({
+    const collector = messageSent?.createMessageComponentCollector ? messageSent.createMessageComponentCollector({
       time: 180000
-    }); // 3 minutes
+    }) : null;
+
+    if (!collector) return;
 
     collector.on("collect", async (buttonInteraction) => {
       // Optional: lock interaction to the same user who triggered the command[thinking]
@@ -290,10 +291,11 @@ export async function userstructures(context, targetUserId) {
       components: [row]
     });
 
-    // Create collector
-    const collector = messageSent.createMessageComponentCollector({
+    const collector = messageSent?.createMessageComponentCollector ? messageSent.createMessageComponentCollector({
       time: 120000
-    }); // 2 minute
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', interaction => {
       // Optional: restrict to the original user if needed

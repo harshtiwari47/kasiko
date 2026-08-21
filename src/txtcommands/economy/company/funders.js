@@ -21,8 +21,8 @@ import {
 */
 export async function viewFundersCommand(message, args) {
   try {
-    const ownerId = message.author.id;
-    const username = message.author.username;
+    const ownerId = message.author?.id || message.user?.id;
+    const username = message.author?.username || message.user?.username;
 
     // Retrieve the company that belongs to the owner.
     const company = await Company.findOne({
@@ -92,11 +92,13 @@ export async function viewFundersCommand(message, args) {
     });
 
     // Create a collector that listens for button interactions from the owner.
-    const collector = fundersMessage.createMessageComponentCollector({
+    const collector = fundersMessage?.createMessageComponentCollector ? fundersMessage.createMessageComponentCollector({
       filter: (i) => i.user.id === ownerId,
       componentType: ComponentType.Button,
       time: 600000 // Collector runs for 10 minutes.
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async interaction => {
       if (interaction.customId === 'prevPage') {

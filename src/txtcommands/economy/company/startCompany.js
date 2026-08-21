@@ -191,12 +191,14 @@ export async function startCompanyCommand(message, args) {
     });
 
     const filter = i => i.customId === 'selectSector' && i.user.id === userId;
-    const collector = menuMessage.createMessageComponentCollector({
+    const collector = menuMessage?.createMessageComponentCollector ? menuMessage.createMessageComponentCollector({
       filter,
       componentType: ComponentType.StringSelect,
       time: 60000, // 1 minute to respond
       max: 1
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       try {

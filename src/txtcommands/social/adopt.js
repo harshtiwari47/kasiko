@@ -119,9 +119,11 @@ async function adoptChild(context, args) {
     flags: MessageFlags.IsComponentsV2
   });
 
-  const collector = prompt.createMessageComponentCollector({
+  const collector = prompt?.createMessageComponentCollector ? prompt.createMessageComponentCollector({
     time: 60000
-  });
+  }) : null;
+
+  if (!collector) return;
 
   let chosen;
 

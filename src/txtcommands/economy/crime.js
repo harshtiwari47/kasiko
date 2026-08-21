@@ -9,7 +9,8 @@ import {
    MessageFlags
 } from 'discord.js';
 import {
-   discordUser
+   discordUser,
+   handleMessage
 } from '../../../helper.js';
 
 export async function crime(id, channel, user) {
@@ -361,14 +362,15 @@ export default {
    cooldown: 10000,
    category: "🏦 Economy",
    execute: async (args, message) => {
-      let crimeReply = await crime(message.author.id, message.channel, message.author);
+      const user = discordUser(message);
+      let crimeReply = await crime(user.id, message.channel, user);
 
       const Container = new ContainerBuilder()
          .setAccentColor(Math.floor(Math.random() * 16777216))
          .addSectionComponents(
             section => section
             .addTextDisplayComponents(
-               textDisplay => textDisplay.setContent(`-# <:user:1385131666011590709> ${message.author.username}`),
+               textDisplay => textDisplay.setContent(`-# <:user:1385131666011590709> ${user.username}`),
                textDisplay => textDisplay.setContent(`### 𝗖𝗥𝗜𝗠𝗘`),
             )
             .setThumbnailAccessory(
@@ -380,14 +382,12 @@ export default {
          .addSeparatorComponents(separate => separate)
          .addTextDisplayComponents(
             textDisplay => textDisplay.setContent(crimeReply)
-         )
+         );
 
-      await message.reply({
-            components: [Container],
-            flags: MessageFlags.IsComponentsV2
-         })
-         .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      return;
+      return await handleMessage(message, {
+         components: [Container],
+         flags: MessageFlags.IsComponentsV2
+      });
    },
 
    // Slash command interaction handler

@@ -166,10 +166,12 @@ export async function portfolioCommand(context) {
     const replyMessage = await handleMessage(context, replyData);
 
     // Create a collector for select menu interactions (active for 30 seconds)
-    const collector = replyMessage.createMessageComponentCollector({
+    const collector = replyMessage?.createMessageComponentCollector ? replyMessage.createMessageComponentCollector({
       filter: i => i.user.id === userId,
       time: 30000
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async interaction => {
       try {

@@ -2,20 +2,8 @@ import User from '../../../models/Hunt.js';
 import {
   EmbedBuilder
 } from 'discord.js';
+import { handleMessage, discordUser } from '../../../helper.js';
 
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
-  if (isInteraction) {
-    // If not already deferred, defer it.
-    if (!context.deferred) {
-      await context.deferReply();
-    }
-    return context.editReply(data);
-  } else {
-    // For normal text-based usage
-    return context.channel.send(data);
-  }
-}
 /**
 * achievementsCommand(context)
 * Show the user's locked & unlocked achievements in an embed.
@@ -69,3 +57,16 @@ export async function achievementsCommand(context) {
     });
   }
 }
+
+export default {
+  name: 'achievements',
+  description: 'View your hunting and wildlife achievements.',
+  aliases: ['achievement', 'ach'],
+  args: '',
+  example: ['achievements'],
+  category: '🐾 Wildlife',
+  cooldown: 3000,
+  execute: async (args, context) => {
+    return achievementsCommand(context);
+  }
+};

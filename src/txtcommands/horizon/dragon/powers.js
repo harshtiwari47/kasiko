@@ -188,11 +188,13 @@ async function myPowers(message) {
         'viewMetals'].includes(interaction.customId);
     };
 
-    const collector = embedMessage.createMessageComponentCollector({
+    const collector = embedMessage?.createMessageComponentCollector ? embedMessage.createMessageComponentCollector({
       filter,
       time: 78000,
       componentType: ComponentType.Button
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       try {

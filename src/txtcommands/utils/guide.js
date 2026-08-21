@@ -148,9 +148,11 @@ export default {
       const authorId = message.author ? message.author.id: message.user.id;
 
       // Create a collector for both button and select menu interactions.
-      const collector = guideMessage.createMessageComponentCollector({
+      const collector = guideMessage?.createMessageComponentCollector ? guideMessage.createMessageComponentCollector({
         time: 300000 // Collector active for 5 minutes.
-      });
+      }) : null;
+
+      if (!collector) return;
 
       collector.on('collect', async (interaction) => {
         if (interaction.user.id !== authorId) {

@@ -322,11 +322,13 @@ const ShipCmd = {
 
       // Create a collector for button interactions (only the invoker may interact).
       const filter = i => i.user.id === invoker.id;
-      const collector = responseMessage.createMessageComponentCollector({
+      const collector = responseMessage?.createMessageComponentCollector ? responseMessage.createMessageComponentCollector({
         filter,
         componentType: ComponentType.Button,
         time: 300000,
-      });
+      }) : null;
+
+      if (!collector) return;
 
       collector.on("collect", async interaction => {
         if (interaction.user.id !== invoker.id) {
@@ -390,39 +392,41 @@ const ShipCmd = {
 
           // Collector for the send roses button.
           const dmCollectorFilter = i => i.user.id === invoker.id && i.customId === "send_roses";
-          const dmCollector = interaction.channel.createMessageComponentCollector({
+          const dmCollector = interaction.channel?.createMessageComponentCollector ? interaction.channel.createMessageComponentCollector({
             filter: dmCollectorFilter,
             max: 1,
             time: 300000,
-          });
+          }) : null;
 
-          dmCollector.on("collect", async btnInteraction => {
-            await btnInteraction.deferUpdate().catch(() => {});
-            try {
-              await user2.send(`💖 **${invoker.username}** 𝘩𝘢𝘴 𝘴𝘦𝘯𝘵 𝘺𝘰𝘶 **5** 𝘳𝘰𝘴𝘦𝘴 <:rose:1343097565738172488>\n` +
-                `𝑌𝑜𝑢𝑟 𝑝𝑜𝑝𝑢𝑙𝑎𝑟𝑖𝑡𝑦 𝑠𝑐𝑜𝑟𝑒 𝑖𝑛𝑐𝑟𝑒𝑎𝑠𝑒𝑑 𝑏𝑦 **+25**!\n` +
-                `-# Don't forget to thank them and spread the love!`);
+          if (dmCollector) {
+            dmCollector.on("collect", async btnInteraction => {
+              await btnInteraction.deferUpdate().catch(() => {});
+              try {
+                await user2.send(`💖 **${invoker.username}** 𝘩𝘢𝘴 𝘴𝘦𝘯𝘵 𝘺𝘰𝘶 **5** 𝘳𝘰𝘴𝘦𝘴 <:rose:1343097565738172488>\n` +
+                  `𝑌𝑜𝑢𝑟 𝑝𝑜𝑝𝑢𝑙𝑎𝑟𝑖𝑡𝑦 𝑠𝑐𝑜𝑟𝑒 𝑖𝑛𝑐𝑟𝑒𝑎𝑠𝑒𝑑 𝑏𝑦 **+25**!\n` +
+                  `-# Don't forget to thank them and spread the love!`);
 
-              if (user2Data && user1Data) {
-                await updateUser(user2?.id, {
-                  popularity: (user2Data?.popularity || 0) + 25
-                });
-                await updateUser(user1?.id, {
-                  'inventory.rose': Math.max((user1Data?.inventory?.['rose'] || 0) - 5, 0)
-                });
+                if (user2Data && user1Data) {
+                  await updateUser(user2?.id, {
+                    popularity: (user2Data?.popularity || 0) + 25
+                  });
+                  await updateUser(user1?.id, {
+                    'inventory.rose': Math.max((user1Data?.inventory?.['rose'] || 0) - 5, 0)
+                  });
+                }
+
+                await btnInteraction.followUp({
+                  content: `<:rose:1343097565738172488> 5 roses have been sent to **${user2.username || user2.user?.username}**!`,
+                  ephemeral: true
+                }).catch(() => {});
+              } catch (err) {
+                await btnInteraction.followUp({
+                  content: `Could not send DM to **${user2.username || user2.user?.username}**. They might have DMs disabled.`,
+                  ephemeral: true
+                }).catch(() => {});
               }
-
-              await btnInteraction.followUp({
-                content: `<:rose:1343097565738172488> 5 roses have been sent to **${user2.username || user2.user?.username}**!`,
-                ephemeral: true
-              }).catch(() => {});
-            } catch (err) {
-              await btnInteraction.followUp({
-                content: `Could not send DM to **${user2.username || user2.user?.username}**. They might have DMs disabled.`,
-                ephemeral: true
-              }).catch(() => {});
-            }
-          });
+            });
+          }
         } else if (interaction.customId === "pass_ship") {
           const randomQuote = shippingQuotes[Math.floor(Math.random() * shippingQuotes.length)];
 

@@ -280,9 +280,11 @@ export async function execute(args, context) {
   });
 
   // Create a collector for button interactions for (e.g.) 60 seconds
-  const collector = controlMessage.createMessageComponentCollector({
+  const collector = controlMessage?.createMessageComponentCollector ? controlMessage.createMessageComponentCollector({
     time: 60 * 1000,
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on('collect', async (interaction) => {
     try {

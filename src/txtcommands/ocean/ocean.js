@@ -349,9 +349,11 @@ async function addToCollection(userId, message, zone = null, forcedAnimal = null
     collectorEnded);
 
   // Create a component collector on that same message
-  const collector = initialMessage.createMessageComponentCollector({
+  const collector = initialMessage?.createMessageComponentCollector ? initialMessage.createMessageComponentCollector({
     time: 120 * 1000 // 2 minute
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on('collect',
     async (interaction) => {

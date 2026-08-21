@@ -61,10 +61,12 @@ async function sendChallenge(args, message) {
   });
 
   // Create an interaction collector for the buttons
-  const collector = requestMessage.createMessageComponentCollector({
+  const collector = requestMessage?.createMessageComponentCollector ? requestMessage.createMessageComponentCollector({
     componentType: ComponentType.Button,
     time: 600000 // 10 minutes
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on('collect', async interaction => {
     try {

@@ -6,6 +6,7 @@ import {
 import {
   EmbedBuilder
 } from "discord.js";
+import { discordUser, handleMessage } from '../../../helper.js';
 
 import HeavenGates from '../../../models/Heaven.js';
 
@@ -162,11 +163,22 @@ export default {
   // 10 seconds cooldown
   category: "🍬 Explore",
 
-  execute: (args, message) => {
+  execute: async (args, message) => {
     try {
-      return playGate(message.author.id, message.channel, message);
+      const user = discordUser(message);
+      if (!message.author) {
+        message.author = message.user || { id: user.id, username: user.username, displayAvatarURL: () => user.avatar };
+      }
+      if (message.isCommand || message.isChatInputCommand || !message.channel?.send) {
+        message.channel = {
+          guild: message.guild,
+          send: (data) => handleMessage(message, data)
+        };
+      }
+      return playGate(user.id, message.channel, message);
     } catch (e) {
-      console.error(e)
+      console.error(e);
+      return handleMessage(message, "Oops! Something went wrong while playing Heaven gates!");
     }
   }
 };

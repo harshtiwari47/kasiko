@@ -352,10 +352,12 @@ export default {
       ephemeral: false,
     });
 
-    const collector = replyMessage.createMessageComponentCollector({
+    const collector = replyMessage?.createMessageComponentCollector ? replyMessage.createMessageComponentCollector({
       componentType: ComponentType.Button,
       time: 180000
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on("collect", async (interaction) => {
       try {

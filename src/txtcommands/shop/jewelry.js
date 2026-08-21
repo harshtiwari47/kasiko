@@ -112,9 +112,11 @@ export async function sendPaginatedJewelry(context) {
       components: [row]
     });
 
-    const collector = messageSent.createMessageComponentCollector({
+    const collector = messageSent?.createMessageComponentCollector ? messageSent.createMessageComponentCollector({
       time: 180000
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== userId) {

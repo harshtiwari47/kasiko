@@ -102,9 +102,11 @@ async function viewShop(context) {
     .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 
-  const collector = messageSent.createMessageComponentCollector({
+  const collector = messageSent?.createMessageComponentCollector ? messageSent.createMessageComponentCollector({
     time: 180000
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on('collect', async (interaction) => {
     if (interaction.isButton()) {
@@ -267,20 +269,21 @@ export default {
         50013,
         10008].includes(err.code) && console.error(err));
 
-    const collectorGuide = shopGuideSent.createMessageComponentCollector({
+    const collectorGuide = shopGuideSent?.createMessageComponentCollector ? shopGuideSent.createMessageComponentCollector({
       time: 180000
-    });
+    }) : null;
 
-    collectorGuide.on('collect',
-      async (interaction) => {
-        if (interaction.customId.includes('shop_view')) {
-          await interaction.deferUpdate();
-          return viewShop(interaction)
-        }
-      });
+    if (collectorGuide) {
+      collectorGuide.on('collect',
+        async (interaction) => {
+          if (interaction.customId.includes('shop_view')) {
+            await interaction.deferUpdate();
+            return viewShop(interaction);
+          }
+        });
 
-    collectorGuide.on('end',
-      async () => {});
+      collectorGuide.on('end', async () => {});
+    }
   }
 };
 

@@ -205,10 +205,12 @@ async function showUserShips(userId, message) {
       flags: MessageFlags.IsComponentsV2
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
-    const collector = sentMessage.createMessageComponentCollector({
-      filter: interaction => interaction.user.id === message.author.id,
+    const collector = sentMessage?.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
+      filter: interaction => interaction.user.id === (message.author?.id || message.user?.id),
       time: 60000 // 1 minute
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', interaction => {
       if (interaction.customId === 'next') {

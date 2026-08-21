@@ -424,10 +424,12 @@ async function petView(context, userPetData, petId) {
   interaction.user.id === (context.user?.id || context.author.id);
 
   // Create collector to handle button clicks for 60 seconds
-  const collector = sentMessage.createMessageComponentCollector({
+  const collector = sentMessage?.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
     filter,
     time: 150000
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on("collect", async interaction => {
     const id = interaction.customId;

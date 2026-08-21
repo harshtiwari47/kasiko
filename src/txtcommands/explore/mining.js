@@ -263,9 +263,11 @@ async function viewMiningStatus(userId, context, username) {
       components: [rowComp]
     });
 
-    const collector = responseMessage.createMessageComponentCollector({
+    const collector = responseMessage?.createMessageComponentCollector ? responseMessage.createMessageComponentCollector({
       time: 120 * 1000,
-    });
+    }) : null;
+
+    if (!collector) return;
 
     let collectorEnded = false;
 

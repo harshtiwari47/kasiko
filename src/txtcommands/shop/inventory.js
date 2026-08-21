@@ -128,7 +128,7 @@ export default {
         flags: MessageFlags.IsComponentsV2
       });
 
-      if (TotalPages <= 1 || !msgReply) return;
+      if (TotalPages <= 1 || !msgReply?.createMessageComponentCollector) return;
 
       const collector = msgReply.createMessageComponentCollector({
         time: 120000

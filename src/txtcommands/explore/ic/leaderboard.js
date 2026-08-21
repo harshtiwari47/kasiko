@@ -334,11 +334,13 @@ export async function iceLeaderboard(context, sortByArg = "money") {
       return i.user.id === invokerId;
     };
 
-    const collector = sentMessage.createMessageComponentCollector({
+    const collector = sentMessage?.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
       filter,
       componentType: ComponentType.Button,
       time: 3 * 60 * 1000, // 3 min
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on("collect", async (interaction) => {
       await interaction.deferUpdate();

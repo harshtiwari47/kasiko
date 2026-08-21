@@ -130,11 +130,13 @@ export async function readStory(chapter, message) {
         'nextPage'].includes(interaction.customId);
     };
 
-    const collector = embedMessage.createMessageComponentCollector({
+    const collector = embedMessage?.createMessageComponentCollector ? embedMessage.createMessageComponentCollector({
       filter,
       time: 60000,
       componentType: ComponentType.Button
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect',
       async (interaction) => {
@@ -362,10 +364,12 @@ export async function zombieSurvival(id, playerInfo, channel) {
 
     // Collect Button Clicks
     const filter = (interaction) => interaction.user.id === id;
-    const collector = gameMessage.createMessageComponentCollector({
+    const collector = gameMessage?.createMessageComponentCollector ? gameMessage.createMessageComponentCollector({
       filter,
       time: 120000 // 2 - minute timeout
-    });
+    }) : null;
+
+    if (!collector) return;
 
     const damageTimer = setInterval(async () => {
       if (currentZombies > 0) {
@@ -727,9 +731,11 @@ async function viewUserLocationCollection(playerInfo, message) {
 
     // Collector to handle button interactions
     const filter = (i) => i.isButton() && i.user.id === message.author.id;
-    const collector = reply.createMessageComponentCollector({
+    const collector = reply?.createMessageComponentCollector ? reply.createMessageComponentCollector({
       filter, time: 60000
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       await interaction.deferUpdate();
@@ -821,9 +827,11 @@ async function viewUserWeaponCollection(playerInfo, message) {
     });
 
     const filter = (interaction) => interaction.isButton() && interaction.user.id === message.author.id;
-    const collector = reply.createMessageComponentCollector({
+    const collector = reply?.createMessageComponentCollector ? reply.createMessageComponentCollector({
       filter, time: 30000,
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       try {
@@ -1164,7 +1172,7 @@ export default {
       if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
         console.error(e);
       }
-      return message.channel.send(`⚠ Something went wrong while your Zombie adventure! 🧟\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(message, `⚠ Something went wrong while your Zombie adventure! 🧟\n-# **Error**: ${e.message}`);
     }
   }
 };

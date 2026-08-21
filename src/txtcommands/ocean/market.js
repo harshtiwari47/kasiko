@@ -146,9 +146,11 @@ export async function openFishMarket(context) {
     }
 
     // Create a collector for these buttons
-    const collector = responseMessage.createMessageComponentCollector({
+    const collector = responseMessage?.createMessageComponentCollector ? responseMessage.createMessageComponentCollector({
       time: 60_000 // 1 minute
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (btnInteraction) => {
       try {

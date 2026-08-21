@@ -28,7 +28,8 @@ import {
 } from "./alien/inventory.js";
 
 import {
-  discordUser
+  discordUser,
+  handleMessage
 } from "../../../helper.js";
 
 const alienResEmo = `<:aliens_resource:1335537435341226024>`;
@@ -64,20 +65,14 @@ const disguises = [
 * Helper: Returns the username from a message or interaction.
 */
 function getUsername(ctx) {
-  return ctx.author ? ctx.author.username: ctx.user.username;
+  return discordUser(ctx).username;
 }
 
 /**
-* Helper: Sends a reply using either message.channel.send or interaction reply/editReply.
+* Helper: Sends a reply using handleMessage.
 */
 async function replyOrSend(ctx, options) {
-  if (ctx.author) {
-    return ctx.channel.send(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-  if (ctx.deferred || ctx.replied) {
-    return ctx.editReply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-  return ctx.reply(options).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+  return await handleMessage(ctx, options);
 }
 
 /**
@@ -632,9 +627,11 @@ async function handleAbilitiesList(ctx) {
     });
 
     // Create a collector for button interactions.
-    const collector = message.createMessageComponentCollector({
+    const collector = message?.createMessageComponentCollector ? message.createMessageComponentCollector({
       time: 60000, // 1 minute timeout
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       try {
@@ -857,9 +854,11 @@ async function handleInventoryList(ctx) {
     });
 
     // Create a collector for button interactions.
-    const collector = message.createMessageComponentCollector({
+    const collector = message?.createMessageComponentCollector ? message.createMessageComponentCollector({
       time: 60000, // Collector active for 1 minute.
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       try {
@@ -1479,11 +1478,13 @@ async function handleBattle(ctx, args) {
       // Create a collector to wait for the challenged user’s response.
       const filter = (i) =>
       i.customId.startsWith("challenge_") && i.user.id === target.userId;
-      const collector = challengeMessage.createMessageComponentCollector({
+      const collector = challengeMessage?.createMessageComponentCollector ? challengeMessage.createMessageComponentCollector({
         filter,
         time: 30000,
         max: 1
-      });
+      }) : null;
+
+      if (!collector) return;
 
       collector.on("collect", async (i) => {
         if (i.customId.startsWith("challenge_accept")) {

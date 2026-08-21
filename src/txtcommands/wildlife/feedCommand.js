@@ -2,20 +2,7 @@ import User from '../../../models/Hunt.js';
 import { getUserData, updateUser } from '../../../database.js';
 import { ITEM_DEFINITIONS, findItemByIdOrAlias } from '../../inventory.js';
 import { ContainerBuilder, MessageFlags } from 'discord.js';
-
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand; // Distinguishes slash command from a normal message
-  if (isInteraction) {
-    // If not already deferred, defer it.
-    if (!context.deferred) {
-      await context.deferReply();
-    }
-    return context.editReply(data);
-  } else {
-    // For normal text-based usage
-    return context.channel.send(data);
-  }
-}
+import { handleMessage, discordUser } from '../../../helper.js';
 
 export async function feedCommand(context, {
   animalIndex = 0,
@@ -128,3 +115,17 @@ export async function feedCommand(context, {
     });
   }
 }
+
+export default {
+  name: 'feed',
+  description: 'Feed your animals to level them up and increase stats.',
+  aliases: ['feedanimal'],
+  args: '[animal_index]',
+  example: ['feed 1'],
+  category: '🐾 Wildlife',
+  cooldown: 3000,
+  execute: async (args, context) => {
+    const animalIndex = args[1] ? parseInt(args[1], 10) - 1 : 0;
+    return feedCommand(context, { animalIndex: isNaN(animalIndex) ? 0 : animalIndex });
+  }
+};

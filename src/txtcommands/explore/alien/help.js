@@ -4,6 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle
 } from "discord.js";
+import { handleMessage } from "../../../helper.js";
 
 /**
 * Sends a multi-page help guide explaining the game,
@@ -139,15 +140,17 @@ async function handleAlienHelp(ctx) {
   const actionRow = new ActionRowBuilder().addComponents(prevButton, nextButton);
 
   // Send the initial embed with pagination buttons.
-  const helpMessage = await ctx.reply({
+  const helpMessage = await handleMessage(ctx, {
     embeds: [pages[currentPage]],
     components: [actionRow]
   });
 
   // Create a collector to handle pagination button interactions.
-  const collector = helpMessage.createMessageComponentCollector({
+  const collector = helpMessage?.createMessageComponentCollector ? helpMessage.createMessageComponentCollector({
     time: 300000 // Active for 5 minutes
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on("collect", async (interaction) => {
     // Ensure that only the user who invoked the help command can interact with these buttons.

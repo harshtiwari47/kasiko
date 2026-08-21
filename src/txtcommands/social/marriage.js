@@ -265,10 +265,12 @@ export async function marry(user, message) {
       const filter = (i) => i.user.id === user &&
       (i.customId === 'confirmmarry' || i.customId === 'cancelmarry');
 
-      const collector = replyMessage.createMessageComponentCollector({
+      const collector = replyMessage?.createMessageComponentCollector ? replyMessage.createMessageComponentCollector({
         filter,
         time: 45000
-      });
+      }) : null;
+
+      if (!collector) return;
 
       collector.on('collect', async (i) => {
         // Disable buttons after selection
@@ -359,10 +361,12 @@ export async function divorce(user, message) {
       const filter = (i) => i.user.id === user &&
       (i.customId === 'confirmdivorce' || i.customId === 'canceldivorce');
 
-      const collector = replyMessage.createMessageComponentCollector({
+      const collector = replyMessage?.createMessageComponentCollector ? replyMessage.createMessageComponentCollector({
         filter,
         time: 45000
-      });
+      }) : null;
+
+      if (!collector) return;
 
       collector.on('collect', async (i) => {
         // Disable buttons after selection
@@ -470,10 +474,12 @@ export async function forceDivorce(message) {
     const filter = (i) => i.user.id === message.author.id &&
     (i.customId === 'confirmforceDivorce' || i.customId === 'cancelforceDivorce');
 
-    const collector = replyMessage.createMessageComponentCollector({
+    const collector = replyMessage?.createMessageComponentCollector ? replyMessage.createMessageComponentCollector({
       filter,
       time: 45000
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (i) => {
       // Disable the buttons once an option is selected.

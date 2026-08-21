@@ -13,6 +13,10 @@ import {
 import {
   checkPassValidity
 } from "../explore/pass.js";
+import {
+  discordUser,
+  handleMessage
+} from '../../../helper.js';
 
 import {
   increaseTask
@@ -159,23 +163,20 @@ export default {
   cooldown: 10000,
   category: "🏦 Economy",
   execute: async (args, message) => {
-    let workReply = await work(message.author.id, message.channel, message.author);
+    const user = discordUser(message);
+    let workReply = await work(user.id, message.channel, user);
 
     const finalEmbed = new ContainerBuilder()
     .setAccentColor(Math.floor(Math.random() * 16777216))
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`${workReply}`),
-      textDisplay => textDisplay.setContent(`-# <:briefcase:1389196495474921492> ${message.author.username}`)
-    )
+      textDisplay => textDisplay.setContent(`-# <:briefcase:1389196495474921492> ${user.username}`)
+    );
 
-    if (finalEmbed) {
-      await message.channel.send({
-        components: [finalEmbed],
-        flags: MessageFlags.IsComponentsV2
-      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-
-    return;
+    return await handleMessage(message, {
+      components: [finalEmbed],
+      flags: MessageFlags.IsComponentsV2
+    });
   },
 
   // Interact function to handle Slash Command interaction

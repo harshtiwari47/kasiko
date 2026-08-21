@@ -146,10 +146,12 @@ export async function give(context, amount, recipientId) {
 
 
     // Create the collector
-    const collector = replyMessage.createMessageComponentCollector({
+    const collector = replyMessage?.createMessageComponentCollector ? replyMessage.createMessageComponentCollector({
       componentType: ComponentType.Button,
       time: 60000, // 15 seconds
-    });
+    }) : null;
+
+    if (!collector) return;
 
     userData = await updateUser(userId, {
       cash: (userData.cash - Number(amount))

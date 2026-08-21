@@ -312,11 +312,13 @@ export async function leaderboard(context) {
       return false;
     };
 
-    const collector = sentMessage.createMessageComponentCollector({
+    const collector = sentMessage?.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
       filter,
       componentType: ComponentType.Button,
       time: 3 * 60 * 1000, // 3 minutes
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on("collect", async (interaction) => {
       try {

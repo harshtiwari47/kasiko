@@ -102,10 +102,11 @@ export async function sendPaginatedCars(context) {
       components: [buttons]
     });
 
-    // Create collector (works for both slash commands & normal messages)
-    const collector = messageSent.createMessageComponentCollector({
+    const collector = messageSent?.createMessageComponentCollector ? messageSent.createMessageComponentCollector({
       time: 180000
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on("collect", async (buttonInteraction) => {
       // Only proceed if the same user who triggered the command clicks
@@ -283,9 +284,11 @@ export async function usercars(context, targetUserId) {
       components: [row]
     });
 
-    const collector = messageSent.createMessageComponentCollector({
+    const collector = messageSent?.createMessageComponentCollector ? messageSent.createMessageComponentCollector({
       time: 120000 // 2-minute timeout
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', interaction => {
       // If the user is not the same who triggered the command, optional check

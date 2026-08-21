@@ -58,11 +58,13 @@ export async function rockPaperScissors(id, opponentId, amount, channel) {
     });
 
     let playerChoice = {};
-    const collector = gameMessage.createMessageComponentCollector({
+    const collector = gameMessage?.createMessageComponentCollector ? gameMessage.createMessageComponentCollector({
       filter: i => [id, opponentId].includes(i.user.id) && i.customId.startsWith('rps_'),
       time: 30000,
       max: 2
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async i => {
       try {

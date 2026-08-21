@@ -358,9 +358,11 @@ export const Bank = {
       }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
       if (!account?.open) {
-        const collector = resMsg.createMessageComponentCollector({
+        const collector = resMsg?.createMessageComponentCollector ? resMsg.createMessageComponentCollector({
           time: 60000,
-        });
+        }) : null;
+
+        if (!collector) return;
 
         collector.on('collect', async (interaction) => {
           if (interaction.replied || interaction.deferred) return; // Do not reply again

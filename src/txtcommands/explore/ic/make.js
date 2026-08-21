@@ -73,10 +73,12 @@ export async function makeIceCream(playerShop, flavors, userId, username, contex
     components: [selectRow]
   });
 
-  const collector = selectMessage.createMessageComponentCollector({
+  const collector = selectMessage?.createMessageComponentCollector ? selectMessage.createMessageComponentCollector({
     filter: i => i.user.id === userId,
     time: 30000
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on('collect', async interaction => {
     try {

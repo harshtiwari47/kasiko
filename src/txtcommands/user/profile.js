@@ -341,6 +341,6 @@ export default {
       return profile(Helper.extractUserId(args[1]), message);
     }
     // Otherwise, display the message author's profile
-    return profile(message.author.id, message);
+    return profile(message.author?.id || message.user?.id, message);
   },
 };

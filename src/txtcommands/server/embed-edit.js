@@ -486,9 +486,11 @@ export default {
       });
 
       // Collector for next 6 minutes
-      const collector = prevMsg.createMessageComponentCollector({
+      const collector = prevMsg?.createMessageComponentCollector ? prevMsg.createMessageComponentCollector({
         time: 360000
-      });
+      }) : null;
+
+      if (!collector) return;
 
       collector.on('collect', async interaction => {
         const [action,

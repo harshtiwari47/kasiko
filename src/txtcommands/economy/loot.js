@@ -96,13 +96,15 @@ export default {
       });
     }
 
-    const collector = promptMsg.createMessageComponentCollector({
+    const collector = promptMsg?.createMessageComponentCollector ? promptMsg.createMessageComponentCollector({
       componentType: ComponentType.StringSelect,
       time: 30_000, // 30 seconds to choose
       filter: (interaction) => {
         return interaction.user.id === userId && interaction.customId === customId;
       }
-    });
+    }) : null;
+
+    if (!collector) return;
 
     let handled = false;
     collector.on('collect', async (selectInteraction) => {

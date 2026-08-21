@@ -134,11 +134,13 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
     const selectFilter = (i) =>
     i.user.id === challengerId && i.customId === 'select_bullet_count';
 
-    const selectCollector = gameMsg.createMessageComponentCollector({
+    const selectCollector = gameMsg?.createMessageComponentCollector ? gameMsg.createMessageComponentCollector({
       filter: selectFilter,
       max: 1,
       time: 30000 // 30 seconds
-    });
+    }) : null;
+
+    if (!selectCollector) return;
 
     selectCollector.on('collect', async (interaction) => {
       try {
@@ -197,11 +199,13 @@ export async function rouletteGame(challengerId, opponentId, betAmount, channel)
           i.user.id === opponentMember.user.id &&
           (i.customId === 'roulette_accept' || i.customId === 'roulette_decline');
 
-          const confirmCollector = gameMsg.createMessageComponentCollector({
+          const confirmCollector = gameMsg?.createMessageComponentCollector ? gameMsg.createMessageComponentCollector({
             filter: confirmFilter,
             max: 1,
             time: 30000 // 30 seconds to respond
-          });
+          }) : null;
+
+          if (!confirmCollector) return;
 
           confirmCollector.on('collect', async (btnInteraction) => {
             try {

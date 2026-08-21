@@ -1,6 +1,8 @@
 import News from '../../../models/News.js';
 import {
-  Helper
+  Helper,
+  handleMessage,
+  discordUser
 } from '../../../helper.js';
 import {
   sendNewspaper
@@ -13,13 +15,13 @@ import {
 } from "discord.js";
 const DEVELOPER_ID = "1223321207743582211"; //Discord user ID
 
-export async function getRecentNews(channel) {
+export async function getRecentNews(context) {
   try {
     const recentNews = await News.find().sort({
       createdAt: -1
     }).limit(5);
     if (recentNews.length === 0) {
-      return channel.send("📰 No recent news available at the moment.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(context, "📰 No recent news available at the moment.");
     }
 
     let newsList = recentNews
@@ -40,35 +42,35 @@ export async function getRecentNews(channel) {
     .setDescription(`📰 **Top 5 Recent Developer News:**\n\n${newsList}`)
     .setColor("#e0e6ed");
 
-    return channel.send({
+    return handleMessage(context, {
       embeds: [newsEmbed]
-    }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    });
   } catch (err) {
     if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
       console.error(err);
     }
-    return channel.send("⚠️ An error occurred while fetching the news.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return handleMessage(context, "⚠️ An error occurred while fetching the news.");
   }
 }
 
-export async function createNews(userId, message, channel) {
+export async function createNews(userId, messageContent, context) {
   try {
-    if (!message || message.trim().length === 0) {
-      return channel.send("⚠️ News message cannot be empty.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    if (!messageContent || messageContent.trim().length === 0) {
+      return handleMessage(context, "⚠️ News message cannot be empty.");
     }
 
-    const newNews = new News( {
+    const newNews = new News({
       userId,
-      message,
+      message: messageContent,
     });
     await newNews.save();
 
-    return channel.send(`✅ News created successfully! 📰\n"${message}" has been added to the developer news.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return handleMessage(context, `✅ News created successfully! 📰\n"${messageContent}" has been added to the developer news.`);
   } catch (err) {
     if (err.message !== "Unknown Message" && err.message !== "Missing Permissions") {
       console.error(err);
     }
-    return channel.send("⚠️ Failed to create news. Please try again.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return handleMessage(context, "⚠️ Failed to create news. Please try again.");
   }
 }
 
@@ -81,29 +83,29 @@ export default {
   emoji: "🗞️",
   category: "📰 Information",
   cooldown: 10000,
-  // 5 seconds cooldown
 
   execute: async (args, message) => {
+    const user = discordUser(message);
     if (args[1] === "list") {
       // Fetch and display the top 5 recent news
-      return getRecentNews(message.channel);
+      return getRecentNews(message);
     } else if (args[1] === "stocks") {
       return sendNewspaper(message);
     } else if (args[1] === "create") {
       // Allow only the developer to create a news entry
-      if (message.author.id !== DEVELOPER_ID) {
-        return message.channel.send("⚠️ You are not authorized to use this command.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      if (user.id !== DEVELOPER_ID) {
+        return handleMessage(message, "⚠️ You are not authorized to use this command.");
       }
 
       if (args.length < 3) {
-        return message.channel.send("⚠️ Usage: `news create <message>` to create a news article.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return handleMessage(message, "⚠️ Usage: `news create <message>` to create a news article.");
       }
 
       const newsMessage = args.slice(2).join(" ");
-      return createNews(message.author.id, newsMessage, message.channel);
+      return createNews(user.id, newsMessage, message);
     } else {
       // Invalid usage
-      return message.channel.send("⚠️ Invalid subcommand! Use `news list` or `news stocks` to view the latest developer news.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return handleMessage(message, "⚠️ Invalid subcommand! Use `news list` or `news stocks` to view the latest developer news.");
     }
   },
 };

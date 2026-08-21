@@ -146,10 +146,12 @@ export default {
           embeds: [embed], components: [row]
         });
 
-        const collector = sentMessage.createMessageComponentCollector({
-          filter: (interaction) => interaction.user.id === message.author.id,
+        const collector = sentMessage?.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
+          filter: (interaction) => interaction.user.id === (message.author?.id || message.user?.id),
           time: 90000, // 1.5-minute timeout
-        });
+        }) : null;
+
+        if (!collector) return;
 
         collector.on("collect", async (interaction) => {
           if (interaction.customId === "prev") {
@@ -936,9 +938,11 @@ export default {
     await doAdventureCycle(message, userId, dragonIndex, initialMessage, collectorEnded);
 
     // Create a component collector
-    const collector = initialMessage.createMessageComponentCollector({
+    const collector = initialMessage?.createMessageComponentCollector ? initialMessage.createMessageComponentCollector({
       time: 120 * 1000,
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       if (interaction.replied || interaction.deferred) return; // Do not reply again
@@ -1284,11 +1288,13 @@ export default {
       return interaction.user.id === message.author.id && ['prevPage', 'nextPage'].includes(interaction.customId);
     };
 
-    const collector = embedMessage.createMessageComponentCollector({
+    const collector = embedMessage?.createMessageComponentCollector ? embedMessage.createMessageComponentCollector({
       filter,
       time: 60000,
       componentType: ComponentType.Button
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect',
       async (interaction) => {

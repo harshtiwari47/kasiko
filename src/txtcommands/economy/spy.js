@@ -5,6 +5,10 @@ import {
 import {
   EmbedBuilder
 } from 'discord.js';
+import {
+  discordUser,
+  handleMessage
+} from '../../../helper.js';
 
 export async function spyMission(id, channel, user) {
   try {
@@ -116,24 +120,21 @@ export default {
   // 10 seconds cooldown
   category: "🏦 Economy",
   execute: async (args, message) => {
-    let missionReply = await spyMission(message.author.id, message.channel, message.author);
+    const user = discordUser(message);
+    let missionReply = await spyMission(user.id, message.channel, user);
 
     const finalEmbed = new EmbedBuilder()
     .setDescription(missionReply)
     .setAuthor({
-      name: message.author.username,
-      iconURL: message.author.displayAvatarURL({
-        dynamic: true
-      })
+      name: user.name || user.username,
+      iconURL: user.avatar
     })
     .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/spy.jpg`)
     .setColor('Random');
 
-    await message.channel.send({
+    return await handleMessage(message, {
       embeds: [finalEmbed]
-    })
-    .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    return;
+    });
   },
 
   interact: async (interaction) => {

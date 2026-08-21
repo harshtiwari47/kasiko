@@ -64,11 +64,13 @@ export async function diceDuel(id, opponentId, amount, channel) {
     };
 
     // Create a collector that will listen for the opponent's interaction
-    const collector = duelMessage.createMessageComponentCollector({
+    const collector = duelMessage?.createMessageComponentCollector ? duelMessage.createMessageComponentCollector({
       filter,
       time: 25000, // 25 seconds for interaction
       max: 1, // Collect only 1 interaction
-    });
+    }) : null;
+
+    if (!collector) return;
 
     const disabledRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()

@@ -98,6 +98,9 @@ const handleSlashCommand = async (interaction) => {
   }
 
   try {
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply().catch(() => {});
+    }
     await command.execute(interaction);
   } catch (error) {
     console.error(`Error executing command ${interaction.commandName}:`, error);
@@ -110,14 +113,14 @@ const handleSlashCommand = async (interaction) => {
       interaction
     }).catch(() => {});
 
-    if (!interaction.replied && !interaction.deferred) {
-      interaction.reply({
-        content: 'There was an error executing this command.',
-        ephemeral: true
-      }).catch(() => {});
-    } else if (interaction.deferred && !interaction.replied) {
+    if (interaction.deferred || interaction.replied) {
       interaction.editReply({
         content: 'There was an error executing this command.'
+      }).catch(() => {});
+    } else {
+      interaction.reply({
+        content: 'There was an error executing this command.',
+        flags: 64
       }).catch(() => {});
     }
   }

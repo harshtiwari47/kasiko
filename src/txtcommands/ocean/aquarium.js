@@ -156,9 +156,11 @@ export async function viewCollection(interactionUserId, context, userDiscordData
       });
     }
 
-    const collector = sentMessage.createMessageComponentCollector({
+    const collector = sentMessage?.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
       time: 60000 // 1 minute timeout
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (response) => {
 
@@ -367,9 +369,11 @@ export async function viewAquarium(userId,
       });
     }
 
-    const collector = responseMessage.createMessageComponentCollector({
+    const collector = responseMessage?.createMessageComponentCollector ? responseMessage.createMessageComponentCollector({
       time: 120 * 1000,
-    });
+    }) : null;
+
+    if (!collector) return;
 
     let collectorEnded = false;
 

@@ -59,9 +59,11 @@ export default {
       flags: MessageFlags.IsComponentsV2
     });
 
-    const collector = responseMessage.createMessageComponentCollector({
+    const collector = responseMessage?.createMessageComponentCollector ? responseMessage.createMessageComponentCollector({
       time: 120 * 1000,
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on('collect', async (interaction) => {
       if (interaction.replied || interaction.deferred) return; // Do not reply again

@@ -255,9 +255,11 @@ export default {
     }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
     // Create a button collector that lasts 60 seconds.
-    const collector = embedMessage.createMessageComponentCollector({
+    const collector = embedMessage?.createMessageComponentCollector ? embedMessage.createMessageComponentCollector({
       time: 60000
-    });
+    }) : null;
+
+    if (!collector) return;
 
     collector.on("collect", async interaction => {
       if (!interaction.isButton()) return;

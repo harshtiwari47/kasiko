@@ -261,10 +261,12 @@ async function showBenefits(context) {
       components: [buttons]
     });
 
-  const collector = replyMsg.createMessageComponentCollector({
+  const collector = replyMsg?.createMessageComponentCollector ? replyMsg.createMessageComponentCollector({
     componentType: ComponentType.Button,
     time: 60000
-  });
+  }) : null;
+
+  if (!collector) return;
 
   collector.on('collect',
     async (interaction) => {
@@ -543,9 +545,11 @@ export async function execute(args,
             embeds: [commandsEmbed, plansEmbed], components: [buttonRow]
           });
           // Create a collector for the "Check Subscription" button.
-          const collector = replyMsg.createMessageComponentCollector({
+          const collector = replyMsg?.createMessageComponentCollector ? replyMsg.createMessageComponentCollector({
             componentType: ComponentType.Button, time: 60000
-          });
+          }) : null;
+
+          if (!collector) return;
 
           collector.on('collect', async (interaction) => {
             if (interaction.customId === 'checkSubscription') {

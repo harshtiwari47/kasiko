@@ -113,9 +113,11 @@ async function handleCategory(authorId, ctx, chosenCategory, commandsByCategory,
     }
 
     // Create a pagination collector for the buttons.
-    const paginationCollector = helpMessage.createMessageComponentCollector({
+    const paginationCollector = helpMessage?.createMessageComponentCollector ? helpMessage.createMessageComponentCollector({
       componentType: ComponentType.Button,
-    });
+    }) : null;
+
+    if (!paginationCollector) return;
 
     paginationCollector.on('collect', async btnInteraction => {
       if (btnInteraction.user.id !== authorId) {
@@ -226,10 +228,13 @@ export default {
         });
 
         // Listen for the guide button (active for 180 seconds)
-        const collector = sentMsg.createMessageComponentCollector({
+        const collector = sentMsg?.createMessageComponentCollector ? sentMsg.createMessageComponentCollector({
           componentType: ComponentType.Button,
           time: 180000
-        });
+        }) : null;
+
+        if (!collector) return;
+
         collector.on('collect', async interaction => {
           try {
             if (interaction.customId === `viewGuide_${command.name}`) {
@@ -361,10 +366,12 @@ export default {
       let activePaginationCollector = null;
 
       // Listen for a category selection.
-      const menuCollector = helpMessage.createMessageComponentCollector({
+      const menuCollector = helpMessage?.createMessageComponentCollector ? helpMessage.createMessageComponentCollector({
         componentType: ComponentType.StringSelect,
         time: 240000
-      });
+      }) : null;
+
+      if (!menuCollector) return;
 
       menuCollector.on('collect',
         async interaction => {
