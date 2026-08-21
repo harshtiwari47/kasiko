@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder
 } from '@discordjs/builders';
 import marriageCommand from '../../txtcommands/social/marriage.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -19,7 +20,7 @@ export default {
     if (marriageCommand?.execute) {
       return await marriageCommand.execute(['marry', `<@${target.id}>`], interaction);
     }
-    return interaction.reply({
+    return handleMessage(interaction, {
       content: 'Marriage command is currently unavailable.',
       ephemeral: true
     });

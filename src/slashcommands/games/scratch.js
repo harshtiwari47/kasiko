@@ -1,7 +1,8 @@
 import {
   SlashCommandBuilder
 } from '@discordjs/builders';
-import txtcommands from '../../textCommandHandler.js';
+import useCommand from '../../txtcommands/shop/use.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -9,11 +10,10 @@ export default {
     .setDescription('Scratch a lottery card from your inventory to win cash prizes!'),
 
   async execute(interaction) {
-    const useCmd = txtcommands.get('use');
-    if (useCmd?.execute) {
-      return await useCmd.execute(['use', 'scratch'], interaction);
+    if (useCommand?.execute) {
+      return await useCommand.execute(['use', 'scratch'], interaction);
     }
-    return interaction.reply({
+    return handleMessage(interaction, {
       content: 'Scratch card command is currently unavailable.',
       ephemeral: true
     });

@@ -4,6 +4,7 @@ import {
 import marriageCommand from '../../txtcommands/social/marriage.js';
 import familyCommand from '../../txtcommands/social/family.js';
 import profileCommand from '../user/profile.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -80,7 +81,7 @@ export default {
         if (marriageCommand?.execute) {
           return await marriageCommand.execute(['marry', `<@${target.id}>`], interaction);
         }
-        return interaction.reply({ content: 'Marriage command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Marriage command is currently unavailable.' });
       }
 
       case 'divorce': {
@@ -90,7 +91,7 @@ export default {
         if (marriageCommand?.execute) {
           return await marriageCommand.execute(args, interaction);
         }
-        return interaction.reply({ content: 'Divorce command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Divorce command is currently unavailable.' });
       }
 
       case 'roses': {
@@ -99,21 +100,21 @@ export default {
         if (marriageCommand?.execute) {
           return await marriageCommand.execute(['roses', String(amount), `<@${target.id}>`], interaction);
         }
-        return interaction.reply({ content: 'Roses command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Roses command is currently unavailable.' });
       }
 
       case 'status': {
         if (marriageCommand?.execute) {
           return await marriageCommand.execute(['marriage'], interaction);
         }
-        return interaction.reply({ content: 'Status command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Status command is currently unavailable.' });
       }
 
       case 'family': {
         if (familyCommand?.execute) {
           return await familyCommand.execute(['family'], interaction);
         }
-        return interaction.reply({ content: 'Family command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Family command is currently unavailable.' });
       }
 
       case 'profile': {
@@ -121,7 +122,7 @@ export default {
       }
 
       default:
-        return interaction.reply({ content: 'Unknown social action.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Unknown social action.' });
     }
   }
 };

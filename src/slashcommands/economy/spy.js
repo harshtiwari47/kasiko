@@ -4,7 +4,8 @@ import {
 import {
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import spyCommand from '../../txtcommands/economy/spy.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -16,21 +17,20 @@ export default {
 
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.reply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in a server.`,
         ephemeral: true
       });
     }
 
-    const cmd = txtcommands.get('spymission') || txtcommands.get('spy');
-    if (cmd?.interact) {
-      return await cmd.interact(interaction);
+    if (spyCommand?.interact) {
+      return await spyCommand.interact(interaction);
     }
-    if (cmd?.execute) {
-      return await cmd.execute(['spy'], interaction);
+    if (spyCommand?.execute) {
+      return await spyCommand.execute(['spy'], interaction);
     }
 
-    return interaction.editReply({
+    return handleMessage(interaction, {
       content: 'Spy mission is currently unavailable.'
     });
   }

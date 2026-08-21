@@ -1,8 +1,11 @@
 import {
   SlashCommandBuilder
 } from '@discordjs/builders';
-import txtcommands from '../../textCommandHandler.js';
+import shopCommand from '../../txtcommands/shop/shop.js';
+import buyCommand from '../../txtcommands/shop/buy.js';
+import useCommand from '../../txtcommands/shop/use.js';
 import inventoryCommand from '../../txtcommands/shop/inventory.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -79,26 +82,23 @@ export default {
     switch (sub) {
       case 'view': {
         const cat = interaction.options.getString('category');
-        const shopCmd = txtcommands.get('shop');
         const args = ['shop'];
         if (cat) args.push(cat);
-        if (shopCmd?.execute) return await shopCmd.execute(args, interaction);
-        return interaction.reply({ content: 'Shop is currently unavailable.', ephemeral: true });
+        if (shopCommand?.execute) return await shopCommand.execute(args, interaction);
+        return handleMessage(interaction, { content: 'Shop is currently unavailable.' });
       }
 
       case 'buy': {
         const item = interaction.options.getString('item');
         const amount = interaction.options.getInteger('amount') || 1;
-        const buyCmd = txtcommands.get('buy');
-        if (buyCmd?.execute) return await buyCmd.execute(['buy', item, String(amount)], interaction);
-        return interaction.reply({ content: 'Buy command is currently unavailable.', ephemeral: true });
+        if (buyCommand?.execute) return await buyCommand.execute(['buy', item, String(amount)], interaction);
+        return handleMessage(interaction, { content: 'Buy command is currently unavailable.' });
       }
 
       case 'use': {
         const item = interaction.options.getString('item');
-        const useCmd = txtcommands.get('use');
-        if (useCmd?.execute) return await useCmd.execute(['use', item], interaction);
-        return interaction.reply({ content: 'Use command is currently unavailable.', ephemeral: true });
+        if (useCommand?.execute) return await useCommand.execute(['use', item], interaction);
+        return handleMessage(interaction, { content: 'Use command is currently unavailable.' });
       }
 
       case 'inventory': {
@@ -106,11 +106,11 @@ export default {
         const args = ['inv'];
         if (targetUser) args.push(`<@${targetUser.id}>`);
         if (inventoryCommand?.execute) return await inventoryCommand.execute(args, interaction);
-        return interaction.reply({ content: 'Inventory is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Inventory is currently unavailable.' });
       }
 
       default:
-        return interaction.reply({ content: 'Unknown shop action.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Unknown shop action.' });
     }
   }
 };

@@ -4,7 +4,8 @@ import {
 import {
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import robCommand from '../../txtcommands/bank/rob.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -23,32 +24,31 @@ export default {
 
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.reply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in a server.`,
         ephemeral: true
       });
     }
 
     if (targetUser.id === userId) {
-      return interaction.reply({
+      return handleMessage(interaction, {
         content: `You cannot rob yourself!`,
         ephemeral: true
       });
     }
 
     if (targetUser.bot) {
-      return interaction.reply({
+      return handleMessage(interaction, {
         content: `You cannot rob bots!`,
         ephemeral: true
       });
     }
 
-    const robCmd = txtcommands.get('rob');
-    if (robCmd?.execute) {
-      return await robCmd.execute(['rob', `<@${targetUser.id}>`], interaction);
+    if (robCommand?.execute) {
+      return await robCommand.execute(['rob', `<@${targetUser.id}>`], interaction);
     }
 
-    return interaction.reply({
+    return handleMessage(interaction, {
       content: 'Rob command is currently unavailable.',
       ephemeral: true
     });

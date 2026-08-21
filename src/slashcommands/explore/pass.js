@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder
 } from '@discordjs/builders';
 import passCommand from '../../txtcommands/explore/pass.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -25,7 +26,7 @@ export default {
     if (passCommand?.execute) {
       return await passCommand.execute(args, interaction);
     }
-    return interaction.reply({
+    return handleMessage(interaction, {
       content: 'Pass command is currently unavailable.',
       ephemeral: true
     });

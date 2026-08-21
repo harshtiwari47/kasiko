@@ -1,11 +1,12 @@
 import {
   SlashCommandBuilder
 } from '@discordjs/builders';
-import txtcommands from '../../textCommandHandler.js';
+import useCommand from '../../txtcommands/shop/use.js';
 import { toss } from '../../txtcommands/games/toss.js';
 import { blackjack } from '../../txtcommands/games/blackjack.js';
 import { slots } from '../../txtcommands/games/slots.js';
 import { rouletteGame } from '../../txtcommands/games/roulette.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -25,7 +26,7 @@ export default {
         .addStringOption(opt =>
           opt
             .setName('side')
-            .setDescription('Side to pick (Head or Tail)')
+            .setDescription('Side of the coin (Head or Tail)')
             .setRequired(false)
             .addChoices(
               { name: '🪙 Head', value: 'head' },
@@ -36,7 +37,7 @@ export default {
     .addSubcommand(sub =>
       sub
         .setName('blackjack')
-        .setDescription('Play a hand of Blackjack 21 against the dealer.')
+        .setDescription('Play Blackjack (21) against the dealer.')
         .addIntegerOption(opt =>
           opt
             .setName('bet')
@@ -48,7 +49,7 @@ export default {
     .addSubcommand(sub =>
       sub
         .setName('slots')
-        .setDescription('Spin the 3-reel slot machine for jackpot multipliers.')
+        .setDescription('Spin the 3x3 slot machine for jackpot payouts.')
         .addIntegerOption(opt =>
           opt
             .setName('bet')
@@ -103,18 +104,17 @@ export default {
       }
 
       case 'scratch': {
-        const useCmd = txtcommands.get('use');
-        if (useCmd?.execute) return await useCmd.execute(['use', 'scratch'], interaction);
-        return interaction.reply({ content: 'Scratch card command is currently unavailable.', ephemeral: true });
+        if (useCommand?.execute) return await useCommand.execute(['use', 'scratch'], interaction);
+        return handleMessage(interaction, { content: 'Scratch card command is currently unavailable.' });
       }
 
       case 'roulette': {
         const bet = interaction.options.getInteger('bet');
-        return rouletteGame(userId, '1300081477358452756', bet, interaction.channel);
+        return rouletteGame(userId, '1300081477358452756', bet, interaction);
       }
 
       default:
-        return interaction.reply({ content: 'Unknown game action.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Unknown game action.' });
     }
   }
 };

@@ -9,6 +9,8 @@ import { teamCommand } from '../../txtcommands/wildlife/teamCommand.js';
 import { battleCommand } from '../../txtcommands/wildlife/battleCommand.js';
 import { achievementsCommand } from '../../txtcommands/wildlife/achievementsCommand.js';
 
+import { handleMessage } from '../../../helper.js';
+
 export default {
   data: new SlashCommandBuilder()
     .setName('wildlife')
@@ -175,7 +177,7 @@ export default {
       }
 
       default:
-        return interaction.reply({ content: 'Unknown wildlife action.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Unknown wildlife action.' });
     }
   }
 };

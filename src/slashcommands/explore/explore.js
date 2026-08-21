@@ -6,7 +6,9 @@ import passCommand from '../../txtcommands/explore/pass.js';
 import zombieCommand from '../../txtcommands/explore/zombie.js';
 import iceCreamCommand from '../../txtcommands/explore/icecream.js';
 import orcaCommand from '../../txtcommands/explore/orca.js';
-import txtcommands from '../../textCommandHandler.js';
+import cookieCommand from '../../txtcommands/explore/cookie.js';
+import mineCommand from '../../txtcommands/explore/mining.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -76,43 +78,41 @@ export default {
         const args = ['pet', action];
         if (name) args.push(name);
         if (petCommand?.execute) return await petCommand.execute(args, interaction);
-        return interaction.reply({ content: 'Pet command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Pet command is currently unavailable.' });
       }
 
       case 'pass': {
         if (passCommand?.execute) return await passCommand.execute(['pass'], interaction);
-        return interaction.reply({ content: 'Pass command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Pass command is currently unavailable.' });
       }
 
       case 'zombie': {
         if (zombieCommand?.execute) return await zombieCommand.execute(['zombie'], interaction);
-        return interaction.reply({ content: 'Zombie exploration is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Zombie exploration is currently unavailable.' });
       }
 
       case 'icecream': {
         if (iceCreamCommand?.execute) return await iceCreamCommand.execute(['icecream'], interaction);
-        return interaction.reply({ content: 'Ice cream minigame is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Ice cream minigame is currently unavailable.' });
       }
 
       case 'mine': {
-        const mineCmd = txtcommands.get('mine');
-        if (mineCmd?.execute) return await mineCmd.execute(['mine'], interaction);
-        return interaction.reply({ content: 'Mining is currently unavailable.', ephemeral: true });
+        if (mineCommand?.execute) return await mineCommand.execute(['mine'], interaction);
+        return handleMessage(interaction, { content: 'Mining is currently unavailable.' });
       }
 
       case 'cookie': {
-        const cookieCmd = txtcommands.get('cookie');
-        if (cookieCmd?.execute) return await cookieCmd.execute(['cookie'], interaction);
-        return interaction.reply({ content: 'Cookie command is currently unavailable.', ephemeral: true });
+        if (cookieCommand?.execute) return await cookieCommand.execute(['cookie'], interaction);
+        return handleMessage(interaction, { content: 'Cookie command is currently unavailable.' });
       }
 
       case 'orca': {
         if (orcaCommand?.execute) return await orcaCommand.execute(['orca'], interaction);
-        return interaction.reply({ content: 'Orca command is currently unavailable.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Orca command is currently unavailable.' });
       }
 
       default:
-        return interaction.reply({ content: 'Unknown exploration action.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Unknown exploration action.' });
     }
   }
 };

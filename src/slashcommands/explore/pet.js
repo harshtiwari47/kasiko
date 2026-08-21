@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder
 } from '@discordjs/builders';
 import petCommand from '../../txtcommands/explore/pet.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -34,7 +35,7 @@ export default {
     if (petCommand?.execute) {
       return await petCommand.execute(args, interaction);
     }
-    return interaction.reply({
+    return handleMessage(interaction, {
       content: 'Pet command is currently unavailable.',
       ephemeral: true
     });

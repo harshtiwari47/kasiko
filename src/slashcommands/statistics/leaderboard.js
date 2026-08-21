@@ -2,6 +2,7 @@ import {
   SlashCommandBuilder
 } from '@discordjs/builders';
 import leaderboardCommand from '../../txtcommands/statistics/leaderboard.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -25,7 +26,7 @@ export default {
     if (leaderboardCommand?.execute) {
       return await leaderboardCommand.execute(args, interaction);
     }
-    return interaction.reply({
+    return handleMessage(interaction, {
       content: 'Leaderboard command is currently unavailable.',
       ephemeral: true
     });

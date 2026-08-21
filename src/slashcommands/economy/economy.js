@@ -4,7 +4,15 @@ import {
 import {
   userExists
 } from '../../../database.js';
-import txtcommands from '../../textCommandHandler.js';
+import workCommand from '../../txtcommands/economy/work.js';
+import crimeCommand from '../../txtcommands/economy/crime.js';
+import begCommand from '../../txtcommands/economy/beg.js';
+import taskCommand from '../../txtcommands/economy/task.js';
+import voteCommand from '../../txtcommands/economy/vote.js';
+import spyCommand from '../../txtcommands/economy/spy.js';
+import lootCommand from '../../txtcommands/economy/loot.js';
+import giveawayCommand from '../../txtcommands/economy/giveaway.js';
+import { handleMessage } from '../../../helper.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -68,7 +76,7 @@ export default {
     // Ensure user account exists
     const exists = await userExists(userId);
     if (!exists) {
-      return interaction.reply({
+      return handleMessage(interaction, {
         content: `You haven't accepted our terms and conditions! Type \`kas help\` to create an account in a server.`,
         ephemeral: true
       });
@@ -76,61 +84,53 @@ export default {
 
     switch (subcommand) {
       case 'work': {
-        const cmd = txtcommands.get('work');
-        if (cmd?.interact) return await cmd.interact(interaction);
-        if (cmd?.execute) return await cmd.execute(['work'], interaction);
-        return interaction.reply({ content: 'Work command is currently unavailable.', ephemeral: true });
+        if (workCommand?.interact) return await workCommand.interact(interaction);
+        if (workCommand?.execute) return await workCommand.execute(['work'], interaction);
+        return handleMessage(interaction, { content: 'Work command is currently unavailable.' });
       }
 
       case 'crime': {
-        const cmd = txtcommands.get('crime');
-        if (cmd?.interact) return await cmd.interact(interaction);
-        if (cmd?.execute) return await cmd.execute(['crime'], interaction);
-        return interaction.reply({ content: 'Crime command is currently unavailable.', ephemeral: true });
+        if (crimeCommand?.interact) return await crimeCommand.interact(interaction);
+        if (crimeCommand?.execute) return await crimeCommand.execute(['crime'], interaction);
+        return handleMessage(interaction, { content: 'Crime command is currently unavailable.' });
       }
 
       case 'beg': {
-        const cmd = txtcommands.get('beg');
-        if (cmd?.execute) return await cmd.execute(['beg'], interaction);
-        return interaction.reply({ content: 'Beg command is currently unavailable.', ephemeral: true });
+        if (begCommand?.execute) return await begCommand.execute(['beg'], interaction);
+        return handleMessage(interaction, { content: 'Beg command is currently unavailable.' });
       }
 
       case 'task': {
-        const cmd = txtcommands.get('task');
-        if (cmd?.execute) return await cmd.execute(['task'], interaction);
-        return interaction.reply({ content: 'Task command is currently unavailable.', ephemeral: true });
+        if (taskCommand?.execute) return await taskCommand.execute(['task'], interaction);
+        return handleMessage(interaction, { content: 'Task command is currently unavailable.' });
       }
 
       case 'vote': {
         const reminder = interaction.options.getString('reminder');
-        const cmd = txtcommands.get('vote');
         const args = ['vote'];
         if (reminder) args.push(reminder);
-        if (cmd?.execute) return await cmd.execute(args, interaction);
-        return interaction.reply({ content: 'Vote command is currently unavailable.', ephemeral: true });
+        if (voteCommand?.execute) return await voteCommand.execute(args, interaction);
+        return handleMessage(interaction, { content: 'Vote command is currently unavailable.' });
       }
 
       case 'spy': {
-        const cmd = txtcommands.get('spy');
-        if (cmd?.interact) return await cmd.interact(interaction);
-        if (cmd?.execute) return await cmd.execute(['spy'], interaction);
-        return interaction.reply({ content: 'Spy mission is currently unavailable.', ephemeral: true });
+        if (spyCommand?.interact) return await spyCommand.interact(interaction);
+        if (spyCommand?.execute) return await spyCommand.execute(['spy'], interaction);
+        return handleMessage(interaction, { content: 'Spy mission is currently unavailable.' });
       }
 
       case 'loot': {
-        const cmd = txtcommands.get('loot');
-        if (cmd?.execute) return await cmd.execute(['loot'], interaction);
-        return interaction.reply({ content: 'Loot mission is currently unavailable.', ephemeral: true });
+        if (lootCommand?.execute) return await lootCommand.execute(['loot'], interaction);
+        return handleMessage(interaction, { content: 'Loot mission is currently unavailable.' });
       }
 
       case 'giveaway': {
-        const cmd = txtcommands.get('giveaway');
-        if (cmd?.execute) return await cmd.execute(['giveaway'], interaction);
-        return interaction.reply({ content: 'Giveaway command is currently unavailable.', ephemeral: true });
+        if (giveawayCommand?.execute) return await giveawayCommand.execute(['giveaway'], interaction);
+        return handleMessage(interaction, { content: 'Giveaway command is currently unavailable.' });
       }
 
       default:
-        return interaction.reply({ content: 'Unknown economy action.', ephemeral: true });
+        return handleMessage(interaction, { content: 'Unknown economy action.' });
     }
   }
 };
