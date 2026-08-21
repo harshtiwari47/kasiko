@@ -3,7 +3,7 @@ import {
 } from '@discordjs/builders';
 import marriageCommand from '../../txtcommands/social/marriage.js';
 import familyCommand from '../../txtcommands/social/family.js';
-import profileCommand from '../user/profile.js';
+import profileCommand from '../../txtcommands/user/profile.js';
 import { handleMessage } from '../../../helper.js';
 
 export default {
@@ -59,6 +59,12 @@ export default {
       sub
         .setName('family')
         .setDescription('View your family tree, spouse, and children.')
+        .addUserOption(opt =>
+          opt
+            .setName('user')
+            .setDescription('View another player’s family (optional)')
+            .setRequired(false)
+        )
     )
     .addSubcommand(sub =>
       sub
@@ -79,7 +85,7 @@ export default {
       case 'marry': {
         const target = interaction.options.getUser('user');
         if (marriageCommand?.execute) {
-          return await marriageCommand.execute(['marry', `<@${target.id}>`], interaction);
+          return await marriageCommand.execute(['marry', target.id], interaction);
         }
         return handleMessage(interaction, { content: 'Marriage command is currently unavailable.' });
       }
@@ -87,7 +93,7 @@ export default {
       case 'divorce': {
         const target = interaction.options.getUser('user');
         const args = ['divorce'];
-        if (target) args.push(`<@${target.id}>`);
+        if (target) args.push(target.id);
         if (marriageCommand?.execute) {
           return await marriageCommand.execute(args, interaction);
         }
@@ -98,7 +104,7 @@ export default {
         const target = interaction.options.getUser('user');
         const amount = interaction.options.getInteger('amount') || 1;
         if (marriageCommand?.execute) {
-          return await marriageCommand.execute(['roses', String(amount), `<@${target.id}>`], interaction);
+          return await marriageCommand.execute(['roses', String(amount), target.id], interaction);
         }
         return handleMessage(interaction, { content: 'Roses command is currently unavailable.' });
       }
@@ -111,14 +117,20 @@ export default {
       }
 
       case 'family': {
+        const target = interaction.options.getUser('user');
+        const args = ['family'];
+        if (target) args.push(target.id);
         if (familyCommand?.execute) {
-          return await familyCommand.execute(['family'], interaction);
+          return await familyCommand.execute(args, interaction);
         }
         return handleMessage(interaction, { content: 'Family command is currently unavailable.' });
       }
 
       case 'profile': {
-        return profileCommand.execute(interaction);
+        if (profileCommand?.intract) {
+          return await profileCommand.intract(interaction);
+        }
+        return handleMessage(interaction, { content: 'Profile command is currently unavailable.' });
       }
 
       default:

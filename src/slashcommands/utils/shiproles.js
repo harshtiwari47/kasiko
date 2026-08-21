@@ -55,7 +55,7 @@ export default {
 
       // Require at least one role option to be provided
       if (!maleRole && !femaleRole) {
-        return await interaction.editReply(
+        return await handleMessage(interaction,
           `You must specify at least one role: Male or Female.\n\n` +
           `CURRENT ROLE STATUS:\n` +
           `<:left:1350355384111468576> **Male**: ${serverDoc?.shipRoles?.male ? "Present": "Not set"}\n` +

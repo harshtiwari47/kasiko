@@ -3,8 +3,7 @@ import {
   updateUser
 } from '../../../database.js';
 import {
-  ContainerBuilder,
-  MessageFlags
+  EmbedBuilder
 } from 'discord.js';
 import {
   handleMessage,
@@ -66,26 +65,27 @@ export default {
     'family left'
   ],
   cooldown: 5000,
-  category: '👤 User',
+  category: '💍 Social',
   async execute(args, message) {
     try {
       if (args[1]?.toLowerCase() === "left") {
         return await removeSelfAdoption(message);
       }
 
-      // Determine target (self or mentioned user)
-      let targetId = message.author.id;
+      const { id: authorId, name: authorName } = discordUser(message);
+      let targetId = authorId;
       let isSelf = true;
-      if (message.mentions.users.size > 0) {
+
+      if (message.mentions?.users?.size > 0) {
         const mentioned = message.mentions.users.first();
         targetId = mentioned.id;
-        isSelf = false;
+        isSelf = targetId === authorId;
+      } else if (args[1] && /^\d+$/.test(args[1].replace(/[<@!>]/g, ''))) {
+        targetId = args[1].replace(/[<@!>]/g, '');
+        isSelf = targetId === authorId;
       }
 
       const userData = await getUserData(targetId);
-      const {
-        name: authorName
-      } = discordUser(message);
 
       if (!userData || !userData.family) {
         return await handleMessage(message, `**${isSelf ? authorName : `They`}** have no family data.`);
@@ -95,8 +95,8 @@ export default {
       let spouseName = 'None';
       if (userData.family.spouse) {
         try {
-          const user = await client.users.fetch(userData.family.spouse);
-          spouseName = user ? `<@${user.id}> (${user.username})` : 'None';
+          const user = await client.users.fetch(userData.family.spouse).catch(() => null);
+          spouseName = user ? `<@${user.id}> (${user.username})` : `<@${userData.family.spouse}>`;
         } catch {
           spouseName = `<@${userData.family.spouse}>`;
         }
@@ -107,26 +107,17 @@ export default {
       const adopted = userData.family.adopted || [];
       const parentInfo = userData.family.parents || {};
 
-      const Container = new ContainerBuilder()
-        .addTextDisplayComponents(
-          txt => txt.setContent(`### <:family:1390546644918992906> Family Overview — <@${targetId}>`)
-        )
-        .addSeparatorComponents();
-
-      Container.addTextDisplayComponents(
-        txt => txt.setContent(`**💍 Spouse:** ${spouseName}`)
-      );
+      const embed = new EmbedBuilder()
+        .setColor(0xFF69B4)
+        .setTitle(`<:family:1390546644918992906> Family Overview — ${isSelf ? authorName : `<@${targetId}>`}`)
+        .addFields({ name: '💍 Spouse', value: spouseName, inline: false });
 
       // List Biological Children
       if (children.length > 0) {
         const childrenList = children.map(c => `• ${c.name} (${c.gender === 'B' ? 'Boy' : c.gender === 'G' ? 'Girl' : 'Child'}, XP: ${c.xp || 0})`).join('\n');
-        Container.addTextDisplayComponents(
-          txt => txt.setContent(`**👶 Biological Children (${children.length}):**\n${childrenList}`)
-        );
+        embed.addFields({ name: `👶 Biological Children (${children.length})`, value: childrenList, inline: false });
       } else {
-        Container.addTextDisplayComponents(
-          txt => txt.setContent(`**👶 Biological Children:** None`)
-        );
+        embed.addFields({ name: '👶 Biological Children', value: 'None', inline: false });
       }
 
       // List Adopted Children
@@ -135,26 +126,22 @@ export default {
           adopted.map(async c => {
             let uName = c.userId;
             try {
-              const u = await client.users.fetch(c.userId);
+              const u = await client.users.fetch(c.userId).catch(() => null);
               uName = u ? u.username : c.userId;
             } catch (e) {}
             return `• <@${c.userId}> (${uName}) [${c.gender === 'B' ? 'Boy' : c.gender === 'G' ? 'Girl' : 'Child'}]`;
           })
         );
-        Container.addTextDisplayComponents(
-          txt => txt.setContent(`**🧒 Adopted Children (${adopted.length}):**\n${adoptedList.join('\n')}`)
-        );
+        embed.addFields({ name: `🧒 Adopted Children (${adopted.length})`, value: adoptedList.join('\n'), inline: false });
       } else {
-        Container.addTextDisplayComponents(
-          txt => txt.setContent(`**🧒 Adopted Children:** None`)
-        );
+        embed.addFields({ name: '🧒 Adopted Children', value: 'None', inline: false });
       }
 
       // Parent/Adopter info
       const parentParts = [];
       if (parentInfo.adopter && typeof parentInfo.adopter === "string") {
         try {
-          const user = await client.users.fetch(parentInfo.adopter);
+          const user = await client.users.fetch(parentInfo.adopter).catch(() => null);
           parentParts.push(`Adopted By: <@${parentInfo.adopter}> (${user?.username || 'Unknown'})`);
         } catch {
           parentParts.push(`Adopted By: <@${parentInfo.adopter}>`);
@@ -163,20 +150,18 @@ export default {
 
       if (parentInfo.spouse && typeof parentInfo.spouse === "string") {
         try {
-          const user = await client.users.fetch(parentInfo.spouse);
+          const user = await client.users.fetch(parentInfo.spouse).catch(() => null);
           parentParts.push(`Co-Parent: <@${parentInfo.spouse}> (${user?.username || 'Unknown'})`);
         } catch {
           parentParts.push(`Co-Parent: <@${parentInfo.spouse}>`);
         }
       }
 
-      Container.addTextDisplayComponents(
-        txt => txt.setContent(`**👪 Parents:** ${parentParts.length ? parentParts.join(' | ') : 'None'}`)
-      );
+      embed.addFields({ name: '👪 Parents', value: parentParts.length ? parentParts.join(' | ') : 'None', inline: false });
+      embed.setFooter({ text: "Use /social status or /social roses to manage relationships" });
 
       return await handleMessage(message, {
-        components: [Container],
-        flags: MessageFlags.IsComponentsV2
+        embeds: [embed]
       });
     } catch (err) {
       console.error('[Family] Error:', err);

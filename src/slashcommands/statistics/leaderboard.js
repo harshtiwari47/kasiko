@@ -21,6 +21,13 @@ export default {
 
   async execute(interaction) {
     const scope = interaction.options.getString('scope') || 'global';
+    if (scope === 'server' && !interaction.guild) {
+      return handleMessage(interaction, {
+        content: '<:warning:1366050875243757699> **Server Required**: Server leaderboard can only be viewed inside a Discord server. Please use Global scope in DMs.',
+        ephemeral: true
+      });
+    }
+
     const args = ['leaderboard'];
     if (scope === 'server') args.push('server');
     if (leaderboardCommand?.execute) {

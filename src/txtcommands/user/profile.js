@@ -333,7 +333,8 @@ export default {
   // Cooldown of 10 seconds
   category: "👤 User",
   intract: (interaction) => {
-    return profile(interaction.user.id, interaction);
+    const target = interaction.options?.getUser?.('user') || interaction.user;
+    return profile(target.id, interaction);
   },
   execute: (args, message) => {
     // If the user mentions someone, display their profile
