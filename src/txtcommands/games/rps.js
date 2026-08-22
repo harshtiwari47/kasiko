@@ -8,142 +8,144 @@ import {
   ButtonStyle
 } from 'discord.js';
 import {
-  Helper
+  Helper,
+  handleMessage,
+  discordUser
 } from '../../../helper.js';
 
-export async function rockPaperScissors(id, opponentId, amount, channel) {
+export async function rockPaperScissors(id, opponentId, amount, context) {
   try {
-    const guild = await channel.guild.members.fetch(id);
-    const opponent = await channel.guild.members.fetch(opponentId);
+    const client = context.client || context.channel?.client;
+    const invokerUser = await client?.users?.fetch(id).catch(() => null) || { username: 'Challenger', id };
+    const opponentUser = await client?.users?.fetch(opponentId).catch(() => null) || { username: 'Opponent', id: opponentId };
 
     // Fetch user data
-    let userData,
-    opponentData;
+    let userData, opponentData;
     try {
       userData = await getUserData(id);
       opponentData = await getUserData(opponentId);
     } catch (e) {
-      return channel.send('🚨 **Error!** There was an issue retrieving user data.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, '🚨 **Error!** There was an issue retrieving user data.');
     }
 
-    if (amount === "all") amount = userData.cash;
+    if (!userData || !opponentData) {
+      return await handleMessage(context, '🚨 **Error!** One or both players do not have registered accounts.');
+    }
+
+    if (amount === "all") amount = Number(userData.cash || 0);
+    amount = parseInt(amount, 10);
+
+    if (isNaN(amount) || amount < 1) {
+      return await handleMessage(context, `⚠️ Invalid bet amount for RPS.`);
+    }
 
     // Validate balances
     if (userData.cash < amount) {
-      return channel.send(`⚠️ **${guild.user.username}** doesn't have enough cash to bet.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `⚠️ **${invokerUser.username}** doesn't have enough cash to bet.`);
     }
     if (opponentData.cash < amount) {
-      return channel.send(`⚠️ **${opponent.user.username}** doesn't have enough cash to play.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `⚠️ **${opponentUser.username}** doesn't have enough cash to play.`);
     }
 
     // Create game buttons
     const buttons = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-      .setCustomId('rps_rock')
-      .setLabel('🪨 Rock')
-      .setStyle(ButtonStyle.Primary),
+        .setCustomId('rps_rock')
+        .setLabel('🪨 Rock')
+        .setStyle(ButtonStyle.Primary),
       new ButtonBuilder()
-      .setCustomId('rps_paper')
-      .setLabel('📄 Paper')
-      .setStyle(ButtonStyle.Success),
+        .setCustomId('rps_paper')
+        .setLabel('📄 Paper')
+        .setStyle(ButtonStyle.Success),
       new ButtonBuilder()
-      .setCustomId('rps_scissors')
-      .setLabel('✂️ Scissors')
-      .setStyle(ButtonStyle.Danger)
+        .setCustomId('rps_scissors')
+        .setLabel('✂️ Scissors')
+        .setStyle(ButtonStyle.Danger)
     );
 
-    const gameMessage = await channel.send({
-      content: `✂️ **${guild.user.username}** challenges **${opponent.user.username}** to Rock Paper Scissors for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\n\nBoth players choose your move!`,
+    const gameMessage = await handleMessage(context, {
+      content: `✂️ **${invokerUser.username}** challenges **${opponentUser.username}** to Rock Paper Scissors for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**!\n\nBoth players choose your move!`,
       components: [buttons]
     });
 
+    if (!gameMessage?.createMessageComponentCollector) return;
+
     let playerChoice = {};
-    const collector = gameMessage?.createMessageComponentCollector ? gameMessage.createMessageComponentCollector({
+    const collector = gameMessage.createMessageComponentCollector({
       filter: i => [id, opponentId].includes(i.user.id) && i.customId.startsWith('rps_'),
       time: 30000,
       max: 2
-    }) : null;
-
-    if (!collector) return;
+    });
 
     collector.on('collect', async i => {
       try {
         if (playerChoice[i.user.id]) {
-          await i.deferUpdate();
+          await i.deferUpdate().catch(() => {});
           return;
         }
 
         playerChoice[i.user.id] = i.customId.split('_')[1];
-        await i.deferUpdate();
+        await i.deferUpdate().catch(() => {});
 
         if (Object.keys(playerChoice).length === 2) {
-          collector.stop();
+          collector.stop('both_selected');
         }
       } catch (e) {}
     });
 
-    collector.on('end',
-      async () => {
-        try {
-          if (!gameMessage || !gameMessage?.edit) return;
-          await gameMessage.edit({
-            components: []
-          });
-
-          const challengerChoice = playerChoice[id];
-          const opponentChoice = playerChoice[opponentId];
-
-          if (!challengerChoice || !opponentChoice) {
-            return gameMessage.edit('⏳ Game cancelled - both players need to choose!').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-
-          // Determine winner
-          const result = Helper.determineRPSWinner(challengerChoice, opponentChoice);
-          let content = `**${guild.user.username}** chose ${challengerChoice}\n` +
-          `**${opponent.user.username}** chose ${opponentChoice}\n\n`;
-
-          if (result === 'tie') {
-            content += "✨ It's a tie! No cash exchanged.";
-          } else {
-            const winnerId = result === 'challenger' ? id: opponentId;
-            const loserId = result === 'challenger' ? opponentId: id;
-            const winner = result === 'challenger' ? guild.user: opponent.user;
-
-            // Update balances
-            const [winnerData,
-              loserData] = await Promise.all([
-                getUserData(winnerId),
-                getUserData(loserId)
-              ]);
-
-            winnerData.cash += amount;
-            loserData.cash -= amount;
-
-            await Promise.all([
-              updateUser(winnerId, {
-                cash: winnerData.cash
-              }),
-              updateUser(loserId, {
-                cash: loserData.cash
-              })
-            ]);
-
-            content += `🎉 **${winner.username}** wins <:kasiko_coin:1300141236841086977> ${amount.toLocaleString()} cash!`;
-          }
-          await gameMessage.edit(content);
-        } catch (e) {
-          if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-            console.error(e);
-          }
-          await channel.send(`ⓘ Oops! Something went wrong during rps game. Please try again!\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    collector.on('end', async (collected, reason) => {
+      try {
+        if (gameMessage?.edit) {
+          await gameMessage.edit({ components: [] }).catch(() => {});
         }
-      });
+
+        const challengerChoice = playerChoice[id];
+        const opponentChoice = playerChoice[opponentId];
+
+        if (!challengerChoice || !opponentChoice) {
+          if (gameMessage?.edit) {
+            return await gameMessage.edit({
+              content: '⏳ Game cancelled - both players need to make a choice in time!',
+              components: []
+            }).catch(() => {});
+          }
+          return;
+        }
+
+        // Determine winner
+        const result = Helper.determineRPSWinner(challengerChoice, opponentChoice);
+        let content = `• **${invokerUser.username}** chose **${challengerChoice}**\n` +
+          `• **${opponentUser.username}** chose **${opponentChoice}**\n\n`;
+
+        if (result === 'tie') {
+          content += "✨ It's a tie! No cash exchanged.";
+        } else {
+          const isChallengerWinner = result === 'challenger';
+          const winnerId = isChallengerWinner ? id : opponentId;
+          const loserId = isChallengerWinner ? opponentId : id;
+          const winnerName = isChallengerWinner ? invokerUser.username : opponentUser.username;
+
+          // Re-fetch fresh balances before updating
+          const freshWinner = await getUserData(winnerId);
+          const freshLoser = await getUserData(loserId);
+
+          await updateUser(winnerId, { cash: Number(freshWinner?.cash || 0) + amount });
+          await updateUser(loserId, { cash: Math.max(0, Number(freshLoser?.cash || 0) - amount) });
+
+          content += `🎉 **${winnerName}** wins <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!`;
+        }
+
+        if (gameMessage?.edit) {
+          await gameMessage.edit({ content, components: [] }).catch(() => {});
+        }
+      } catch (e) {
+        console.error('RPS Resolution Error:', e);
+      }
+    });
 
   } catch (e) {
-    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-      console.error(e);
-    }
-    return channel.send(`ⓘ Oops! Something went wrong during your rps game. Please try again!\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    console.error('RPS Global Error:', e);
+    return await handleMessage(context, `ⓘ Oops! Something went wrong during your RPS game.`);
   }
 }
 
@@ -151,54 +153,41 @@ export default {
   name: "rps",
   description: "Challenge someone to Rock Paper Scissors!",
   aliases: ["rockpaperscissors"],
-  args: "@opponent <amount>",
-  example: ["rps @user 500"],
-  related: ["diceduel",
-    "slots",
-    "cash"],
+  args: "<@opponent|userID> <amount>",
+  example: ["rps @user 500", "rps 123456789012345678 1000"],
+  related: ["diceduel", "slots", "cash"],
   cooldown: 10000,
   emoji: "✂️",
   category: "🎲 Games",
-  execute: (args,
-    message) => {
+
+  execute: async (args, message) => {
     try {
+      const { id: authorId } = discordUser(message);
+      const opponentId = args[1] ? args[1].replace(/[<@!>]/g, '') : null;
 
-      const opponent = message.mentions.users.first();
-
-      if (!opponent) {
-        return message.channel.send("⚠️ Invalid opponent. Usage: `rps @user <amount>`")
-        .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      if (!opponentId || !/^\d+$/.test(opponentId)) {
+        return await handleMessage(message, "⚠️ Invalid opponent. Usage: `rps @user <amount>`");
       }
 
-      const opponentId = opponent.id;
-
-      if (message.author.id === opponentId) {
-        return message.channel.send("⚠️ You can't play against yourself.").catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      if (authorId === opponentId) {
+        return await handleMessage(message, "⚠️ You can't play against yourself.");
       }
 
       let amount;
-
       if (args[2] === "all") {
         amount = "all";
       } else if (args[2]) {
-        amount = parseInt(args[2]);
-        if (isNaN(amount)) {
-          return message.channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **rps**!`)
-          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-        if (amount < 1 || amount > 200000) {
-          return message.channel.send("⚠️ Bet must be between 1 and 200,000 cash.")
-          .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        amount = parseInt(args[2], 10);
+        if (isNaN(amount) || amount < 1 || amount > 200000) {
+          return await handleMessage(message, "⚠️ Bet must be an integer between 1 and 200,000 cash.");
         }
       } else {
         amount = 1;
       }
 
-      rockPaperScissors(message.author.id, opponentId, amount, message.channel);
+      await rockPaperScissors(authorId, opponentId, amount, message);
     } catch (e) {
-      if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-        console.error(e);
-      }
+      console.error('RPS Execute Error:', e);
     }
   }
 };

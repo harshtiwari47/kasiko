@@ -123,12 +123,18 @@ const ShipCmd = {
         } else if (isAll || isRandom) {
           user1 = invoker;
 
-          // Fetch up to 1000 members via REST API to ensure the full active server pool without gateway chunking timeouts
-          let allMembers = context.guild.members.cache;
+          if (!context.guild) {
+            return await handleMessage(context, `<:warning:1366050875243757699> **Server Required**: Shipping random members can only be used inside a Discord server.`);
+          }
+
+          // Fetch up to 1000 members via REST API safely without gateway chunking timeouts
+          let allMembers = context.guild.members?.cache || new Map();
           try {
-            allMembers = await context.guild.members.fetch({ limit: 1000 });
+            if (context.guild.members?.fetch) {
+              allMembers = await context.guild.members.fetch({ limit: 1000 }).catch(() => context.guild.members?.cache || new Map());
+            }
           } catch {
-            allMembers = context.guild.members.cache;
+            allMembers = context.guild.members?.cache || new Map();
           }
 
           // Filter candidates: non-bots, not invoker, and not previously passed in this session

@@ -21,11 +21,16 @@ export default {
 
   execute: async (args, message) => {
     try {
-      const target = message.mentions.users.first() || message.author;
+      const target = message.mentions?.users?.first() || message.author || message.user;
+      if (!target?.id) return;
 
       const fullUser = await message.client.users.fetch(target.id, {
         force: true
-      });
+      }).catch(() => null);
+
+      if (!fullUser) {
+        return await handleMessage(message, "⚠️ Could not retrieve user banner data.");
+      }
 
       const bannerURL = fullUser.bannerURL({
         format: 'png', dynamic: true, size: 2048

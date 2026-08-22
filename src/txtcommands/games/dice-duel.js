@@ -11,274 +11,217 @@ import {
 } from 'discord.js';
 
 import {
-  Helper
+  Helper,
+  handleMessage,
+  discordUser
 } from '../../../helper.js';
 
-export async function diceDuel(id, opponentId, amount, channel) {
+export async function diceDuel(id, opponentId, amount, context) {
   try {
     amount = parseInt(amount, 10);
 
-    if (isNaN(amount)) {
-      return channel.send(`⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **diceduel**!`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    if (isNaN(amount) || amount < 1) {
+      return await handleMessage(context, `⚠️ Please enter a valid integer amount of 𝑪𝒂𝒔𝒉 for **diceduel**!`);
     }
-    // Fetch both players' user data
-    const guild = await channel.guild.members.fetch(id);
-    const opponent = await channel.guild.members.fetch(opponentId);
+
+    // Resolve users safely (works in DMs and Guilds)
+    const client = context.client || context.channel?.client;
+    const invokerUser = await client?.users?.fetch(id).catch(() => null) || { username: 'Challenger', id };
+    const opponentUser = await client?.users?.fetch(opponentId).catch(() => null) || { username: 'Opponent', id: opponentId };
 
     // Fetch user data with error handling
-    let userData,
-    opponentData;
+    let userData, opponentData;
     try {
       userData = await getUserData(id);
       opponentData = await getUserData(opponentId);
     } catch (e) {
-      console.error("Error fetching user data:", e);
-      return channel.send('🚨 **Error!** There was an issue retrieving user data. Please try again later.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      console.error("Error fetching user data in dice duel:", e);
+      return await handleMessage(context, '🚨 **Error!** There was an issue retrieving user data. Please try again later.');
+    }
+
+    if (!userData || !opponentData) {
+      return await handleMessage(context, '🚨 **Error!** One or both players do not have registered accounts.');
     }
 
     // Check if both players have enough balance to proceed
     if (userData.cash < amount) {
-      return channel.send(`⚠️ **${guild.user.username}** don't have enough <:kasiko_coin:1300141236841086977> cash to bet. Please check your balance with \`cash\` and try again.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `⚠️ **${invokerUser.username}** doesn't have enough <:kasiko_coin:1300141236841086977> cash to bet. Please check your balance with \`cash\` and try again.`);
     } else if (opponentData.cash < amount) {
-      return channel.send(`⚠️ Your opponent doesn't have enough <:kasiko_coin:1300141236841086977> cash. Ask them to check their balance.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      return await handleMessage(context, `⚠️ **${opponentUser.username}** doesn't have enough <:kasiko_coin:1300141236841086977> cash to match the bet.`);
     }
 
-    // Create a challenge message and buttons (only the opponent gets a button to roll)
-    const row = new ActionRowBuilder()
-    .addComponents(
+    // Create a challenge message and button (only the opponent gets a button to roll)
+    const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-      .setCustomId('start_roll_opponent') // Custom ID for opponent's button
-      .setLabel('Roll Dice (Opponent)')
-      .setStyle(ButtonStyle.Primary)
+        .setCustomId('start_roll_opponent')
+        .setLabel('Roll Dice (Opponent)')
+        .setStyle(ButtonStyle.Primary)
     );
 
-
-    let duelMessage = await channel.send({
-      content: `🎲 **${guild.user.username}** has challenged **<@${opponent.user.id}>** to a Dice Duel for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!\n\nClick the button to roll the dice!`,
+    const duelMessage = await handleMessage(context, {
+      content: `🎲 **${invokerUser.username}** has challenged **<@${opponentUser.id}>** to a Dice Duel for <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝑪𝒂𝒔𝒉!\n\nClick the button to roll the dice!`,
       components: [row]
     });
 
-    // Create a filter to only collect the opponent's interaction
+    if (!duelMessage?.createMessageComponentCollector) return;
+
+    // Filter to only accept the opponent's interaction
     const filter = (interaction) => {
       return interaction.user.id === opponentId && interaction.customId === 'start_roll_opponent';
     };
 
-    // Create a collector that will listen for the opponent's interaction
-    const collector = duelMessage?.createMessageComponentCollector ? duelMessage.createMessageComponentCollector({
+    const collector = duelMessage.createMessageComponentCollector({
       filter,
-      time: 25000, // 25 seconds for interaction
-      max: 1, // Collect only 1 interaction
-    }) : null;
-
-    if (!collector) return;
+      time: 25000,
+      max: 1
+    });
 
     const disabledRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-      .setCustomId('start_roll_opponent')
-      .setLabel('Roll Dice (Opponent)')
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(true)
+        .setCustomId('start_roll_opponent')
+        .setLabel('Roll Dice (Opponent)')
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true)
     );
 
     collector.on('collect', async (interaction) => {
       try {
-        // Immediately disable the button to prevent further interaction
-
         await interaction.update({
           components: [disabledRow]
-        });
+        }).catch(() => {});
 
-        if (!duelMessage || !duelMessage?.edit) return;
+        let rollingMessage = duelMessage;
 
-        await duelMessage.edit({
-          components: [disabledRow]
-        });
+        // Re-verify balances right before the game begins to prevent race conditions
+        const freshChallenger = await getUserData(id);
+        const freshOpponent = await getUserData(opponentId);
 
-        // Simulate the rolling dice animation
-        let animation = ['🎲',
-          '🎲',
-          '🎲'];
-        let rollingMessage;
-        try {
-          rollingMessage = await duelMessage.edit(
-            `🎲 **𝑹𝒐𝒍𝒍𝒊𝒏𝒈 𝒕𝒉𝒆 𝒅𝒊𝒄𝒆... 𝑳𝒆𝒕'𝒔 𝒔𝒆𝒆 𝒘𝒉𝒐 𝒍𝒖𝒄𝒌 𝒇𝒂𝒗𝒐𝒓𝒔!**\n\n` +
-            `**${guild.user.username}** vs **${opponent.user.username}**\n` +
-            `${animation.join(' | ')}`
-          );
-        } catch (e) {
-          return channel.send('🚨 **Error!** There was an issue while rolling the dice. Please try again.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-        }
-
-        // Simulate dice rolls
-        for (let i = 0; i < 5; i++) {
-          animation = [Helper.randomInt(1, 6),
-            Helper.randomInt(1, 6)];
-          if (rollingMessage && rollingMessage.edit) {
-            await rollingMessage.edit(
-              `🎲 **𝑻𝒉𝒆 𝒅𝒊𝒄𝒆 𝒂𝒓𝒆 𝒓𝒐𝒍𝒍𝒊𝒏𝒈... 𝑯𝒐𝒍𝒅 𝒚𝒐𝒖𝒓 𝒃𝒓𝒆𝒂𝒕𝒉!**\n\n` +
-              `**${guild.user.username}** vs **${opponent.user.username}**\n` +
-              `${animation.join(' | ')}`
-            );
+        if (!freshChallenger || freshChallenger.cash < amount || !freshOpponent || freshOpponent.cash < amount) {
+          if (rollingMessage?.edit) {
+            return await rollingMessage.edit({
+              content: `⚠️ Duel cancelled: One or both players no longer have sufficient balance for this bet.`,
+              components: []
+            }).catch(() => {});
           }
-          await new Promise(resolve => setTimeout(resolve, 500)); // 500ms delay between rolls
+          return;
         }
 
-        // Final roll
-        let userRoll = Helper.randomInt(1, 6);
-        let opponentRoll = Helper.randomInt(1, 6);
-
-        if (!rollingMessage || !rollingMessage?.edit) return;
-
-        await rollingMessage.edit(
-          `🎲 **Final Dice Roll!**\n\n` +
-          `**${guild.user.username}** rolled: **${userRoll}**\n` +
-          `**${opponent.user.username}** rolled: **${opponentRoll}**`
-        );
-
-        // Determine winner and loser
-        let winner,
-        loser;
-        if (userRoll > opponentRoll) {
-          winner = id;
-          loser = opponentId;
-        } else if (userRoll < opponentRoll) {
-          winner = opponentId;
-          loser = id;
-        } else {
-          return rollingMessage.edit(
-            `🎲 **It's a tie!** Both players rolled the same value.\n` +
-            `- **${guild.user.username}** rolled: **${userRoll}**\n` +
-            `- **${opponent.user.username}** rolled: **${opponentRoll}**`
-          ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        // Simulate rolling dice
+        let animation = ['🎲', '🎲'];
+        if (rollingMessage?.edit) {
+          await rollingMessage.edit({
+            content: `🎲 **𝑻𝒉𝒆 𝒅𝒊𝒄𝒆 𝒂𝒓𝒆 𝒓𝒐𝒍𝒍𝒊𝒏𝒈... 𝑯𝒐𝒍𝒅 𝒚𝒐𝒖𝒓 𝒃𝒓𝒆𝒂𝒕𝒉!**\n\n**${invokerUser.username}** vs **${opponentUser.username}**\n${animation.join(' | ')}`,
+            components: [disabledRow]
+          }).catch(() => {});
         }
 
-        // Deduct cash from the loser and give it to the winner
-        let winAmount = amount;
-        let loserData,
-        winnerData;
-        try {
-          loserData = await getUserData(loser);
-          winnerData = await getUserData(winner);
-        } catch (e) {
-          console.error('Error fetching user data after game:', e);
-          return channel.send('🚨 **Error!** There was an issue retrieving user data after the game. Please try again later.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        for (let i = 0; i < 3; i++) {
+          await new Promise(resolve => setTimeout(resolve, 600));
+          animation = [Helper.randomInt(1, 6), Helper.randomInt(1, 6)];
+          if (rollingMessage?.edit) {
+            await rollingMessage.edit({
+              content: `🎲 **𝑻𝒉𝒆 𝒅𝒊𝒄𝒆 𝒂𝒓𝒆 𝒓𝒐𝒍𝒍𝒊𝒏𝒈...**\n\n**${invokerUser.username}** vs **${opponentUser.username}**\n${animation.join(' | ')}`,
+              components: [disabledRow]
+            }).catch(() => {});
+          }
         }
 
-        // Ensure both users have valid data before continuing
-        if (!winnerData || !loserData) {
-          return channel.send('🚨 **Error!** One or both players have invalid data. Please try again.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        // Final rolls
+        const userRoll = Helper.randomInt(1, 6);
+        const opponentRoll = Helper.randomInt(1, 6);
+
+        if (userRoll === opponentRoll) {
+          if (rollingMessage?.edit) {
+            return await rollingMessage.edit({
+              content: `🎲 **It's a tie!** Both players rolled **${userRoll}**.\nNo cash was lost.`,
+              components: []
+            }).catch(() => {});
+          }
+          return;
         }
 
-        // Update user data after the game
-        winnerData.cash += winAmount;
-        loserData.cash -= winAmount;
+        const isUserWinner = userRoll > opponentRoll;
+        const winnerId = isUserWinner ? id : opponentId;
+        const loserId = isUserWinner ? opponentId : id;
+        const winnerName = isUserWinner ? invokerUser.username : opponentUser.username;
+        const loserName = isUserWinner ? opponentUser.username : invokerUser.username;
 
-        try {
-          await updateUser(winner, {
-            cash: winnerData.cash
-          });
-          await updateUser(loser, {
-            cash: loserData.cash
-          });
-        } catch (e) {
-          console.error('Error updating user data:', e);
-          return channel.send('🚨 **Error!** There was an issue updating user data. Please try again later.').catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        // Atomically update balances
+        const freshWinner = await getUserData(winnerId);
+        const freshLoser = await getUserData(loserId);
+
+        await updateUser(winnerId, { cash: Number(freshWinner?.cash || 0) + amount });
+        await updateUser(loserId, { cash: Math.max(0, Number(freshLoser?.cash || 0) - amount) });
+
+        if (rollingMessage?.edit) {
+          await rollingMessage.edit({
+            content: `🎲 **ᗪIᑕE ᗪᑌEᒪ Results**\n\n` +
+              `✨ **${winnerName}** emerges victorious and wins <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash!\n` +
+              `💔 **${loserName}** lost <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.\n\n` +
+              `🎲 **Rolls**:\n` +
+              `• **${invokerUser.username}**: **${userRoll}**\n` +
+              `• **${opponentUser.username}**: **${opponentRoll}**`,
+            components: []
+          }).catch(() => {});
         }
-
-        if (!rollingMessage || !rollingMessage?.edit) return;
-
-        // Final message after the game
-        return rollingMessage.edit(
-          `🎲 **ᗪIᑕE ᗪᑌEᒪ Results**\n` +
-          `✨ **${winner === id ? guild.user.username: opponent.user.username}** emerges victorious and earns **${winAmount} coins**!\n` +
-          `💔 **${winner === opponentId ? guild.user.username: opponent.user.username}** loses **${winAmount} coins**.\n` +
-          `🎲 **Rolls**:\n` +
-          `- **${guild.user.username}**: **${userRoll}**\n` +
-          `- **${opponent.user.username}**: **${opponentRoll}**`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       } catch (error) {
-        console.error("Error In Diceduel: " + error);
+        console.error("Error In Diceduel interaction:", error);
       }
     });
 
-    collector.on('end',
-      (collected, reason) => {
-        // If no interaction or timeout
-        if (reason === 'time') {
-          if (duelMessage && duelMessage.edit) {
-            return duelMessage.edit({
-              content: '⏳ **Time’s up!** The duel timed out because your opponent didn’t interact in time.',
-              components: [] // Removes all components
-            }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
+    collector.on('end', async (collected, reason) => {
+      if (reason === 'time' && collected.size === 0) {
+        if (duelMessage?.edit) {
+          await duelMessage.edit({
+            content: '⏳ **Time’s up!** The duel timed out because the opponent didn’t roll in time.',
+            components: []
+          }).catch(() => {});
         }
-      });
+      }
+    });
 
   } catch (e) {
-    if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
-      console.error(e);
-    }
-    await channel.send(`ⓘ Something went wrong while starting the dice duel. Please check the command format and try again.\n**Error:** ${e.message}`).catch(console.error);
-    return;
+    console.error('DiceDuel Global Error:', e);
+    return await handleMessage(context, '⚠️ An unexpected error occurred while processing the dice duel.');
   }
 }
 
 export default {
   name: "diceduel",
-  description: "Challenge another player to a thrilling dice duel! Bet an amount of your in-game currency and roll the dice to see who wins. The player with the higher roll claims the prize. Test your luck and strategy in this exciting game of chance!",
-  aliases: ["dice",
-    "dd",
-    "diceduel"],
-  args: "<opponent_id> <amount>",
-  example: ["dice @opponent 500"],
-  related: ["slots",
-    "cash",
-    "tosscoin",
-    "guess"],
-  emoji: "🎲",
+  description: "Challenge another player to a dice duel and bet your cash.",
+  aliases: ["dd"],
+  args: "<@user|userID> <amount>",
+  example: ["diceduel @user 500", "dd 123456789012345678 1000"],
   cooldown: 10000,
-  // 10 seconds cooldown
   category: "🎲 Games",
 
-  // Main function to execute the dice duel logic
-  execute: async (args,
-    message) => {
+  execute: async (args, message) => {
     try {
-      const {
-        author,
-        channel
-      } = message;
-
-      // Validate opponent mention or ID
-      const opponentId = args[1] ? args[1].replace(/[<@!>]/g,
-        ''): null;
+      const { id: authorId } = discordUser(message);
+      const opponentId = args[1] ? args[1].replace(/[<@!>]/g, '') : null;
 
       if (!opponentId || !/^\d+$/.test(opponentId)) {
-        return channel.send(`ⓘ ${author}, please mention a **valid opponent** or provide their **user ID**.\n**Usage:** \`diceduel @user <amount>\``).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return await handleMessage(message, `ⓘ Please mention a **valid opponent** or provide their **user ID**.\n**Usage:** \`diceduel @user <amount>\``);
       }
 
-      if (author.id === opponentId) {
-        return channel.send(`⚠️ ${author}, you **cannot** challenge yourself.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      if (authorId === opponentId) {
+        return await handleMessage(message, `⚠️ You **cannot** challenge yourself to a dice duel.`);
       }
 
       const amount = parseInt(args[2] || 1, 10);
 
-      // Validate the amount
       if (isNaN(amount) || amount < 1) {
-        return channel.send(`⚠️ ${author}, the **minimum bet** is <:kasiko_coin:1300141236841086977> **1**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return await handleMessage(message, `⚠️ The **minimum bet** is <:kasiko_coin:1300141236841086977> **1**.`);
       }
 
       if (amount > 200000) {
-        return channel.send(`⚠️ ${author}, the **maximum bet** allowed is <:kasiko_coin:1300141236841086977> **200,000**.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        return await handleMessage(message, `⚠️ The **maximum bet** allowed is <:kasiko_coin:1300141236841086977> **200,000**.`);
       }
 
-      // Proceed with the dice duel
-      await diceDuel(author.id, opponentId, amount, channel);
-      return;
+      await diceDuel(authorId, opponentId, amount, message);
     } catch (error) {
-      console.error(`DiceDuel Error: ${error}`);
-      await message.channel.send(`⚠️ ${message.author}, something **went wrong** while processing your dice duel. Please try again later.\n-# **Error:** ${error.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      return;
+      console.error(`DiceDuel Execute Error: ${error}`);
+      return await handleMessage(message, `⚠️ Something **went wrong** while processing your dice duel. Please try again later.`);
     }
   }
 };

@@ -148,14 +148,10 @@ export async function give(context, amount, recipientId) {
     // Create the collector
     const collector = replyMessage?.createMessageComponentCollector ? replyMessage.createMessageComponentCollector({
       componentType: ComponentType.Button,
-      time: 60000, // 15 seconds
+      time: 60000, // 60 seconds
     }) : null;
 
     if (!collector) return;
-
-    userData = await updateUser(userId, {
-      cash: (userData.cash - Number(amount))
-    });
 
     // Handle button interactions
     collector.on("collect", async (interaction) => {
@@ -181,27 +177,48 @@ export async function give(context, amount, recipientId) {
         );
 
         if (interaction.customId === "confirmgiving") {
-          // Defer and then update
           await interaction.deferUpdate();
 
-          // Perform logic for transferring cash
-          recipientData.cash += Number(amount);
+          // Re-fetch fresh sender balance to prevent race conditions
+          const freshSender = await getUserData(userId);
+          if (!freshSender || Number(freshSender.cash || 0) < Number(amount)) {
+            collector.stop('insufficient_funds');
+            return await interaction.editReply({
+              content: `⚠ **${name}**, you no longer have enough <:kasiko_coin:1300141236841086977> cash to complete this transfer!`,
+              embeds: [],
+              components: [rowDisabled],
+            });
+          }
 
-          recipientData.amountReceivedDaily = {
+          const freshRecipient = await getUserData(recipientId);
+          if (!freshRecipient) {
+            collector.stop('recipient_missing');
+            return await interaction.editReply({
+              content: `⚠ Recipient user profile could not be found.`,
+              embeds: [],
+              components: [rowDisabled],
+            });
+          }
+
+          // Deduct from sender
+          await updateUser(userId, {
+            cash: Math.max(0, Number(freshSender.cash || 0) - Number(amount))
+          });
+
+          // Deposit to recipient
+          const currentReceived = freshRecipient.amountReceivedDaily?.date === todayKey ? Number(freshRecipient.amountReceivedDaily?.amount || 0) : 0;
+          const updatedDaily = {
             date: todayKey,
-            amount: Number((recipientData.amountReceivedDaily?.amount || 0)) + Number(amount)
+            amount: currentReceived + Number(amount)
           };
 
           try {
             await updateUser(recipientId, {
-              cash: recipientData.cash,
-              amountReceivedDaily: recipientData.amountReceivedDaily
+              cash: Number(freshRecipient.cash || 0) + Number(amount),
+              amountReceivedDaily: updatedDaily
             });
           } catch (upErr) {
-            await interaction.editReply({
-              content: "❌ Transaction error.",
-              components: [rowDisabled],
-            }).catch(console.error);
+            console.error('[Give] Recipient update error:', upErr);
           }
 
           // Send confirmation
@@ -209,16 +226,17 @@ export async function give(context, amount, recipientId) {
             content: `✅ **<@${userId}>** 𝘴𝘶𝘤𝘤𝘦𝘴𝘴𝘧𝘶𝘭𝘭𝘺 𝘵𝘳𝘢𝘯𝘴𝘧𝘦𝘳𝘳𝘦𝘥 <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** 𝘵𝘰 **<@${recipientId}>**! 🧾\n-# 𝘛𝘳𝘢𝘯𝘴𝘢𝘤𝘵𝘪𝘰𝘯 𝘤𝘰𝘮𝘱𝘭𝘦𝘵𝘦. 𝘌𝘯𝘫𝘰𝘺 𝘺𝘰𝘶𝘳 𝘒𝘢𝘴𝘪𝘬𝘰!`,
             embeds: [],
             components: [],
-          })
+          });
 
           collector.stop('success_trans');
         } else if (interaction.customId === "cancelgiving") {
           await interaction.deferUpdate();
           await interaction.editReply({
             content: "❌ Transaction cancelled.",
+            embeds: [],
             components: [rowDisabled],
-          })
-          collector.stop();
+          });
+          collector.stop('cancelled');
         }
       } catch (err) {
         console.error("Error handling interaction:", err);
@@ -234,44 +252,34 @@ export async function give(context, amount, recipientId) {
     });
 
     // Handle collector end
-    collector.on("end",
-      async (collected, reason) => {
+    collector.on("end", async (collected, reason) => {
+      if (reason !== 'success_trans' && reason !== 'cancelled') {
         try {
-          if (reason !== "success_trans") {
-            userData = await updateUser(userId, {
-              cash: (userData.cash + Number(amount))
-            });
-          }
-        } catch (ee) {}
+          const rowDisabled = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+            .setCustomId("confirmgiving")
+            .setLabel("✅ YES")
+            .setStyle(ButtonStyle.Success)
+            .setDisabled(true),
+            new ButtonBuilder()
+            .setCustomId("cancelgiving")
+            .setLabel("❌ NO")
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(true)
+          );
 
-        if (collected.size === 0) {
-          try {
-            const rowDisabled = new ActionRowBuilder().addComponents(
-              new ButtonBuilder()
-              .setCustomId("confirmgiving")
-              .setLabel("Yes")
-              .setStyle(ButtonStyle.Success)
-              .setDisabled(true),
-              new ButtonBuilder()
-              .setCustomId("cancelgiving")
-              .setLabel("No")
-              .setStyle(ButtonStyle.Danger)
-              .setDisabled(true)
-            );
-
-            if (!replyMessage || !replyMessage?.edit) return;
-
+          if (replyMessage && replyMessage?.edit) {
             await replyMessage.edit({
               content: `⏱️ Transaction timeout!`,
               embeds: [],
-              components: [],
-            })
-            return;
-          } catch (err) {
-            console.error("Error disabling buttons after timeout:", err);
+              components: [rowDisabled],
+            }).catch(() => {});
           }
+        } catch (err) {
+          console.error("Error disabling buttons after timeout:", err);
         }
-      });
+      }
+    });
   } catch (e) {
     if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
       console.error(e);

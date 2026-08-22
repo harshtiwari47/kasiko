@@ -55,7 +55,9 @@ export async function buildContainerFromData(data, context) {
   const channel = context.channel ?? null;
   const message = isInteraction ? context.message ?? null: context;
 
-  await guild.members.fetch();
+  if (guild?.members?.fetch) {
+    await guild.members.fetch({ limit: 100 }).catch(() => {});
+  }
 
   const allMembers = guild?.members?.cache ?? new Map();
   const humanMembers = [...allMembers.values()].filter(m => !m.user.bot);
@@ -67,7 +69,8 @@ export async function buildContainerFromData(data, context) {
   const randomHuman = humanMembers.length > 0
   ? humanMembers[Math.floor(Math.random() * humanMembers.length)]: null;
 
-  const fetchedUser = await client.users.fetch(member?.user?.id, { force: true });
+  const targetUserId = member?.user?.id || user?.id;
+  const fetchedUser = targetUserId && client?.users?.fetch ? await client.users.fetch(targetUserId, { force: true }).catch(() => null) : null;
 
   const ctx = {
     user: member ? member.user.username: '',

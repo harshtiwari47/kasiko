@@ -22,9 +22,9 @@ export default {
 
   execute: async (args, message) => {
     try {
-      const target = message.mentions.users.first() || message.author;
-      const member = message.guild
-      ? await message.guild.members.fetch(target.id): null;
+      const target = message.mentions?.users?.first() || message.author || message.user;
+      const member = message.guild?.members?.fetch
+      ? await message.guild.members.fetch(target.id).catch(() => null): null;
 
       const globalAvatarURL = target.displayAvatarURL({
         format: 'png', dynamic: true, size: 2048

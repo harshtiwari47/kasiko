@@ -133,21 +133,26 @@ export async function attemptRobbery(userId, targetUserId, message) {
 
           if (caughtChance < (0.3 + additionalReward)) {
             // 30% chance of getting caught
-            const penalty = Math.floor(userCash * 0.1);
-            userData.cash = Math.max(0, userCash - penalty);
-            targetData.cash = targetCash + penalty;
+            const freshUser = await getUserData(userId);
+            const freshTarget = await getUserData(targetUserId);
+            const currUserCash = Number(freshUser?.cash || 0);
+            const currTargetCash = Number(freshTarget?.cash || 0);
+
+            const penalty = Math.floor(currUserCash * 0.1);
+            const updatedUserCash = Math.max(0, currUserCash - penalty);
+            const updatedTargetCash = currTargetCash + penalty;
 
             try {
               await updateUser(userId, {
-                cash: userData.cash,
+                cash: updatedUserCash,
                 lastRobbery: userData.lastRobbery
               });
               await updateUser(targetUserId, {
-                cash: targetData.cash
+                cash: updatedTargetCash
               });
             } catch (updateErr) {
               if (!robberyMessage || !robberyMessage?.edit) return;
-              await robberyMessage.edit(`ⓘ **${username}**, due to unexpected error your robbery attempt is failed!\n-# **Error"": ${updateErr}`).catch(console.error);
+              await robberyMessage.edit(`ⓘ **${username}**, due to unexpected error your robbery attempt is failed!\n-# **Error**: ${updateErr}`).catch(console.error);
               return;
             }
 
@@ -163,7 +168,7 @@ export async function attemptRobbery(userId, targetUserId, message) {
                 name: '<:moneybag:1365976001179553792> **𝙋𝙚𝙣𝙖𝙡𝙩𝙮:**', value: `You lost <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
               },
               {
-                name: '💵 **𝙑𝙞𝙘𝙩𝙞𝙢 𝙍𝙚𝙬𝙖𝙧𝙙𝙚𝙙:**', value: `${message.mentions.users.first().username} received <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
+                name: '💵 **𝙑𝙞𝙘𝙩𝙞𝙢 𝙍𝙚𝙬𝙖𝙧𝙙𝙚𝙙:**', value: `${victimUser.username} received <:kasiko_coin:1300141236841086977> **${penalty.toLocaleString()}** cash.`
               }
             )
             .setFooter({
@@ -177,44 +182,50 @@ export async function attemptRobbery(userId, targetUserId, message) {
             }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           } else {
             // Successful robbery with realistic reward
-            const successAmount = Math.floor(robberyAmount * 0.8); // Robber gets 80% of the victim's loss
-            const randomPercentage = Math.floor(Math.random() * 6) + 5; // Random percentage between 5-10%
-            const bonusReward = Math.floor(targetCash * (randomPercentage / 100));
+            const freshUser = await getUserData(userId);
+            const freshTarget = await getUserData(targetUserId);
+            const currUserCash = Number(freshUser?.cash || 0);
+            const currTargetCash = Number(freshTarget?.cash || 0);
 
-            userData.cash = userCash + successAmount + bonusReward;
-            targetData.cash = Math.max(0, targetCash - robberyAmount);
+            const currRobberyAmount = Math.floor(currTargetCash * 0.1);
+            const successAmount = Math.floor(currRobberyAmount * 0.8);
+            const randomPercentage = Math.floor(Math.random() * 6) + 5; // Random percentage between 5-10%
+            const bonusReward = Math.floor(currTargetCash * (randomPercentage / 100));
+
+            const updatedUserCash = currUserCash + successAmount + bonusReward;
+            const updatedTargetCash = Math.max(0, currTargetCash - currRobberyAmount);
 
             try {
               await updateUser(userId, {
-                cash: userData.cash,
+                cash: updatedUserCash,
                 lastRobbery: userData.lastRobbery
               });
               await updateUser(targetUserId, {
-                cash: targetData.cash
+                cash: updatedTargetCash
               });
             } catch (updateErr) {
               if (!robberyMessage || !robberyMessage?.edit) return;
-              await robberyMessage.edit(`ⓘ **${username}**, due to unexpected error your robbery attempt is failed!\n-# **Error"": ${updateErr}`).catch(console.error);
+              await robberyMessage.edit(`ⓘ **${username}**, due to unexpected error your robbery attempt is failed!\n-# **Error**: ${updateErr}`).catch(console.error);
               return;
             }
 
             const successEmbed = new EmbedBuilder()
             .setTitle('💸 **𝐒𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥 𝐑𝐨𝐛𝐛𝐞𝐫𝐲!**')
             .setDescription(
-              `**${message.author.username}** successfully robbed <:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** from **${message.mentions.users.first().username}**! 💥`
+              `**${username}** successfully robbed <:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** from **${victimUser.username}**! 💥`
             )
             .addFields(
               {
                 name: '<:moneybag:1365976001179553792> **𝙔𝙤𝙪 𝙩𝙤𝙤𝙠:**', value: `<:kasiko_coin:1300141236841086977> **${(successAmount + bonusReward).toLocaleString()}** cash`
               },
               {
-                name: '💵 **𝙑𝙞𝙘𝙩𝙞𝙢 𝙡𝙤𝙨𝙩:**', value: `<:kasiko_coin:1300141236841086977> **${robberyAmount.toLocaleString()}** cash`
+                name: '💵 **𝙑𝙞𝙘𝙩𝙞𝙢 𝙡𝙤𝙨𝙩:**', value: `<:kasiko_coin:1300141236841086977> **${currRobberyAmount.toLocaleString()}** cash`
               }
             )
             .setFooter({
               text: 'ᴇɴᴊᴏʏ ʏᴏᴜʀ ꜱᴘᴏɪʟꜱ! 🤑'
             })
-            .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/robber.png`)
+            .setThumbnail(`https://harshtiwari47.github.io/kasiko-public/images/robber.png`);
 
             if (!robberyMessage || !robberyMessage?.edit) return;
             return robberyMessage.edit({
@@ -222,19 +233,23 @@ export async function attemptRobbery(userId, targetUserId, message) {
             }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
           }
         } else if (response.author.id === targetUserId && answer === correctAnswer) {
-          // Failed robbery attempt
-          const penalty = Math.floor(userCash * 0.1);
+          // Failed robbery attempt - target solved it first
+          const freshUser = await getUserData(userId);
+          const freshTarget = await getUserData(targetUserId);
+          const currUserCash = Number(freshUser?.cash || 0);
+          const currTargetCash = Number(freshTarget?.cash || 0);
 
-          userData.cash = Math.max(0, userCash - penalty);
-          targetData.cash = targetCash + penalty;
+          const penalty = Math.floor(currUserCash * 0.1);
+          const updatedUserCash = Math.max(0, currUserCash - penalty);
+          const updatedTargetCash = currTargetCash + penalty;
 
           try {
             await updateUser(userId, {
-              cash: userData.cash,
+              cash: updatedUserCash,
               lastRobbery: userData.lastRobbery
             });
             await updateUser(targetUserId, {
-              cash: targetData.cash
+              cash: updatedTargetCash
             });
           } catch (updateErr) {
             if (!robberyMessage || !robberyMessage?.edit) return;

@@ -344,7 +344,7 @@ export const updateUser = async (userId, userData, guildId = null) => {
       // Recalculate net worth based on the simulated final state.
       let newNetWorth;
 
-      if (updates.cash) {
+      if (updates.hasOwnProperty('cash')) {
         newNetWorth = await calculateNetWorth(finalUserData);
         updates.networth = newNetWorth;
       }
@@ -364,7 +364,7 @@ export const updateUser = async (userId, userData, guildId = null) => {
 
       // Commit the transaction.
       await session.commitTransaction();
-      session.endSession();
+      await session.endSession().catch(() => {});
 
       const updatedObj = updatedUser.toObject();
 
@@ -382,8 +382,8 @@ export const updateUser = async (userId, userData, guildId = null) => {
       return updatedUser;
     } catch (error) {
       if (session) {
-        await session.abortTransaction();
-        session.endSession();
+        await session.abortTransaction().catch(() => {});
+        await session.endSession().catch(() => {});
       }
       if (attempt >= maxRetries) {
         console.error(`Error updating user after ${attempt} attempts:`, error);

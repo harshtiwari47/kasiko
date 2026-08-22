@@ -85,7 +85,8 @@ export async function startDailyGiveaway(client, options = {}) {
     const initialRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("giveaway_enter_temp")
-        .setLabel("🎉 Enter Giveaway (0)")
+        .setLabel("Enter Giveaway (0)")
+        .setEmoji("1403061213360951386")
         .setStyle(ButtonStyle.Success),
     );
 
@@ -112,7 +113,8 @@ export async function startDailyGiveaway(client, options = {}) {
     const actualRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId(`giveaway_enter_${sentMessage.id}`)
-        .setLabel("🎉 Enter Giveaway (0)")
+        .setLabel("Enter Giveaway (0)")
+        .setEmoji("1403061213360951386")
         .setStyle(ButtonStyle.Success),
     );
 
