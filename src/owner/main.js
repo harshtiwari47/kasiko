@@ -13,6 +13,7 @@ import Ship from './ship.js';
 import Bio from './bio.js';
 import Profile from './profile.js';
 import Stats from './stats.js';
+import BroadcastCmd from './broadcast.js';
 import ownerManager, {
   ROLES,
   POWERS,
@@ -80,6 +81,17 @@ const OWNER_COMMANDS = [
     syntax: 'stats [overview|commands|servers|users|system]',
     description: 'Interactive analytics dashboard (traffic, commands, servers, users, system).',
     execute: (args, message) => Stats.execute(args, message)
+  },
+  {
+    name: 'broadcast',
+    aliases: ['bc', 'eventdm', 'autodm'],
+    category: 'analytics',
+    minRole: 'co_owner',
+    minTier: 2,
+    powerKey: 'BROADCAST_EVENTS',
+    syntax: 'broadcast <test|start|status|pause> [campaignId]',
+    description: 'Trigger, test, monitor, or pause automated community event broadcast DMs.',
+    execute: (args, message) => BroadcastCmd.execute(args, message)
   },
 
   // --- Finance ---
