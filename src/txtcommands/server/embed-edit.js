@@ -531,23 +531,26 @@ export default {
                 txt.setContent(`⚠️ No channel has been set for **${container.name}** in this server.`)
               );
 
-              await interaction.editReply({
+              return await interaction.editReply({
                 components: [containerReply],
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
               });
             }
 
-            const channel = client.channels?.cache?.get(container?.channelId);
+            let channel = client.channels?.cache?.get(container?.channelId);
+            if (!channel && container?.channelId && client.channels?.fetch) {
+              channel = await client.channels.fetch(container.channelId).catch(() => null);
+            }
 
             const containerPrev = await buildContainerFromData(container, context);
 
             if (!channel) {
               const containerReply = new ContainerBuilder()
               .addTextDisplayComponents(txt =>
-                txt.setContent(`⚠️ The designated channel for **${embedName}** could not be found in this server.`)
+                txt.setContent(`⚠️ The designated channel for **${container.name}** could not be found in this server.`)
               );
 
-              await interaction.editReply({
+              return await interaction.editReply({
                 components: [containerReply],
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
               });
@@ -715,7 +718,7 @@ export default {
 
         case 'container_set_channel': {
             const channelMenu = new ChannelSelectMenuBuilder()
-            .setCustomId('select_container_channel')
+            .setCustomId(`select_container_channel:${container.id}`)
             .setPlaceholder('Choose a channel...')
             .setMinValues(1)
             .setMaxValues(1)
@@ -818,12 +821,13 @@ export default {
 
       let currentEditPos = 0;
 
-      // Handle modal submissions
-      client.on('interactionCreate',
-        async i => {
-
+      // Handle modal submissions and select menus
+      const interactionHandler = async (i) => {
+        try {
           if (i.isChannelSelectMenu()) {
-            if (i.customId === 'select_container_channel') {
+            const [menuAction, id] = i.customId.split(':');
+            if (id !== container.id) return;
+            if (menuAction === 'select_container_channel') {
               const selectedChannelId = i.values[0];
 
               container = await ContainerMessage.findOneAndUpdate(
@@ -850,6 +854,7 @@ export default {
                 flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral
               });
             }
+            return;
           }
 
 
@@ -1330,7 +1335,16 @@ export default {
           default:
             break;
           }
-        });
+        } catch (err) {
+          console.error('Error handling embed-edit interaction:', err);
+        }
+      };
+
+      client.on('interactionCreate', interactionHandler);
+
+      collector.on('end', async () => {
+        client.off('interactionCreate', interactionHandler);
+      });
 
     } catch (error) {
       console.error('Error in embed-edit command:',

@@ -77,7 +77,7 @@ const containerSchema = new mongoose.Schema({
     type: String, required: true
   },
   name: {
-    type: String, required: true, unique: true
+    type: String, required: true
   },
   id: {
     type: String,
@@ -123,6 +123,8 @@ const containerSchema = new mongoose.Schema({
       }
     }
   });
+
+  containerSchema.index({ server: 1, name: 1 }, { unique: true });
 
   const ContainerMessage = mongoose.model('ContainerMessage', containerSchema);
   export default ContainerMessage;

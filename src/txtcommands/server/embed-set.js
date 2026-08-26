@@ -36,7 +36,7 @@ export default {
 
       args.shift();
       const triggerType = args?.pop()?.toLowerCase();
-      const embedName = args.shift()?.trim();
+      const embedName = args?.join(' ')?.trim();
 
       if (!embedName || !triggerType) {
         return handleMessage(context, {

@@ -40,7 +40,7 @@ export default {
       }
 
       const list = containers
-      .map((c, i) => `### ${i + 1}. **${c.name}**\n<:reply:1368224908307468408> **Trigger:** ${c.on || 'default'} **Channel:** <#${c.channelId || 'Not Set'}>`)
+      .map((c, i) => `### ${i + 1}. **${c.name}**\n<:reply:1368224908307468408> **Trigger:** \`${c.on || 'default'}\` **Channel:** ${c.channelId ? `<#${c.channelId}>` : '*Not Set*'}`)
       .join('\n');
 
       const containerReply = new ContainerBuilder()

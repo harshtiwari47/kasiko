@@ -20,45 +20,33 @@ function buildContextFromMember(member, channel, message = null) {
   };
 }
 
+async function resolveChannel(client, channelId) {
+  if (!channelId) return null;
+  let channel = client.channels?.cache?.get(channelId);
+  if (!channel && client.channels?.fetch) {
+    channel = await client.channels.fetch(channelId).catch(() => null);
+  }
+  return channel;
+}
+
 export default function MemberEvents(client) {
   client.on("guildMemberRemove", async (member) => {
-    const userId = member.id;
-    const guildId = member.guild.id;
+    try {
+      if (!member?.guild?.id) return;
+      const userId = member.id;
+      const guildId = member.guild.id;
 
-    await UserGuild.deleteOne({
-      userId, guildId
-    });
+      await UserGuild.deleteOne({
+        userId, guildId
+      }).catch(() => {});
 
-    const existingEmbed = await ContainerMessage.findOne({
-      server: guildId,
-      on: "leave"
-    });
-
-    if (existingEmbed) {
-      const channel = client.channels?.cache?.get(existingEmbed?.channelId || null);
-
-      if (!channel?.isTextBased()) return;
-
-      const context = buildContextFromMember(member, channel);
-
-      const containerPrev = await buildContainerFromData(existingEmbed, context);
-
-      await channel.send({
-        components: [containerPrev],
-        flags: MessageFlags.IsComponentsV2
-      }).catch(e => {})
-    }
-  });
-
-  client.on("guildMemberAdd",
-    async (member) => {
       const existingEmbed = await ContainerMessage.findOne({
-        server: member.guild.id,
-        on: "join"
+        server: guildId,
+        on: "leave"
       });
 
       if (existingEmbed) {
-        const channel = client.channels.cache.get(existingEmbed.channelId || "");
+        const channel = await resolveChannel(client, existingEmbed?.channelId);
         if (!channel?.isTextBased()) return;
 
         const context = buildContextFromMember(member, channel);
@@ -67,12 +55,41 @@ export default function MemberEvents(client) {
         await channel.send({
           components: [containerPrev],
           flags: MessageFlags.IsComponentsV2
-        }).catch((er) => {});
+        }).catch(() => {});
       }
-    });
+    } catch (err) {
+      console.error('[guildMemberRemove] Error:', err);
+    }
+  });
 
-  client.on("guildMemberUpdate",
-    async (oldMember, newMember) => {
+  client.on("guildMemberAdd", async (member) => {
+    try {
+      if (!member?.guild?.id) return;
+      const existingEmbed = await ContainerMessage.findOne({
+        server: member.guild.id,
+        on: "join"
+      });
+
+      if (existingEmbed) {
+        const channel = await resolveChannel(client, existingEmbed.channelId);
+        if (!channel?.isTextBased()) return;
+
+        const context = buildContextFromMember(member, channel);
+        const containerPrev = await buildContainerFromData(existingEmbed, context);
+
+        await channel.send({
+          components: [containerPrev],
+          flags: MessageFlags.IsComponentsV2
+        }).catch(() => {});
+      }
+    } catch (err) {
+      console.error('[guildMemberAdd] Error:', err);
+    }
+  });
+
+  client.on("guildMemberUpdate", async (oldMember, newMember) => {
+    try {
+      if (!newMember?.guild?.id) return;
       // Boost detected
       if (!oldMember.premiumSince && newMember.premiumSince) {
         const existingEmbed = await ContainerMessage.findOne({
@@ -81,7 +98,7 @@ export default function MemberEvents(client) {
         });
         
         if (existingEmbed) {
-          const channel = client.channels.cache.get(existingEmbed.channelId || "");
+          const channel = await resolveChannel(client, existingEmbed.channelId);
           if (!channel?.isTextBased()) return;
 
           const context = buildContextFromMember(newMember, channel);
@@ -93,5 +110,8 @@ export default function MemberEvents(client) {
           }).catch(() => {});
         }
       }
-    });
+    } catch (err) {
+      console.error('[guildMemberUpdate] Error:', err);
+    }
+  });
 }

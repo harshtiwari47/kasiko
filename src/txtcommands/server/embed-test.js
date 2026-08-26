@@ -114,7 +114,7 @@ export async function buildContainerFromData(data, context) {
     server_randommember: randomMember?.displayName ?? '',
     server_randommember_tag: randomMember?.user?.tag ?? '',
     server_randommember_nobots: randomHuman?.displayName ?? '',
-    server_owner_tag: (await guild?.fetchOwner())?.user?.tag ?? '',
+    server_owner_tag: (await guild?.fetchOwner().catch(() => null))?.user?.tag ?? '',
 
     channel: channel ? channel.id: '',
     channel_name: channel ? channel.name: '',
@@ -142,8 +142,8 @@ export async function buildContainerFromData(data, context) {
 
   // Add Top-Level Text
   if (Array.isArray(data?.text)) {
-    const modifiedVal = replaceVariables(data?.text, ctx);
     data.text.forEach(content => {
+      const modifiedVal = replaceVariables(content, ctx);
       container.addTextDisplayComponents(text => text.setContent(modifiedVal));
     });
   }
