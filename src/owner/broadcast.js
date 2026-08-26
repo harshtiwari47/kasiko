@@ -73,20 +73,30 @@ export default {
         return message.reply(`ℹ️ No broadcast record found for campaign \`${campaignId}\`. Use \`kasow broadcast test\` or \`kasow broadcast start\` to begin.`);
       }
 
+      const isRunning = status.isRunning;
+      const stateText = isRunning
+        ? '🟢 **Broadcasting Live (Queue Active)**'
+        : (status.status === 'completed'
+            ? '🎉 **Completed**'
+            : '⏸️ **Idle / Paused** — Run `kasow broadcast start` to launch');
+
       const embed = new EmbedBuilder()
         .setTitle('📊 Event Broadcast Campaign Status')
-        .setColor(status.isRunning ? COLORS.SUCCESS : COLORS.PRIMARY)
+        .setColor(isRunning ? COLORS.SUCCESS : COLORS.PRIMARY)
         .setDescription(
           `**Campaign:** \`${status.campaignId}\`\n` +
-          `**State:** ${status.isRunning ? '🟢 **Running**' : '⏸️ **' + status.status.toUpperCase() + '**'}\n\n` +
-          `• ✅ **Sent:** \`${status.sentCount.toLocaleString()}\`\n` +
-          `• 🔒 **Closed DMs:** \`${status.closedDmCount.toLocaleString()}\`\n` +
-          `• 🔕 **Opted-Out:** \`${status.optedOutCount.toLocaleString()}\`\n` +
-          `• ❌ **Failed:** \`${status.failedCount.toLocaleString()}\`\n` +
+          `**Status:** ${stateText}\n\n` +
           `• 👥 **Total Processed:** \`${status.processedCount.toLocaleString()}\` / \`${status.totalTargetUsers.toLocaleString()}\`\n` +
-          `• ⏳ **Remaining:** \`${status.remaining.toLocaleString()}\``
+          `• ⏳ **Remaining in Queue:** \`${status.remaining.toLocaleString()}\`\n\n` +
+          `**Delivery Breakdown:**\n` +
+          `• ✅ **Successfully Sent:** \`${status.sentCount.toLocaleString()}\`\n` +
+          `• 🔒 **Closed DMs:** \`${status.closedDmCount.toLocaleString()}\`\n` +
+          `• 🔕 **Opted-Out Members:** \`${status.optedOutCount.toLocaleString()}\`\n` +
+          `• ❌ **Failed:** \`${status.failedCount.toLocaleString()}\`\n\n` +
+          `**Reward Redemption:**\n` +
+          `• 🎁 **Total Claimed to Date:** \`${(status.claimedCount || 0).toLocaleString()}\` claims`
         )
-        .setFooter({ text: 'Kasiko Broadcast Engine' })
+        .setFooter({ text: isRunning ? 'Rate-limit: 1 DM / 2.5s' : 'Kasiko Broadcast Engine' })
         .setTimestamp();
 
       return message.reply({ embeds: [embed] });

@@ -225,10 +225,15 @@ export async function startBroadcastQueue(client, campaignId = DEFAULT_REVIVAL_C
         campaignDoc.lastProcessedAt = new Date();
         counterSinceLastReport++;
 
+        // Save progress to database every 5 users
+        if (counterSinceLastReport % 5 === 0) {
+          await campaignDoc.save().catch(e => console.error('[BroadcastEngine] Save error:', e.message));
+        }
+
         // Send live status report every 20 users
         if (counterSinceLastReport >= 20) {
           counterSinceLastReport = 0;
-          await campaignDoc.save();
+          await campaignDoc.save().catch(e => console.error('[BroadcastEngine] Save error:', e.message));
 
           if (reportChannel && reportChannel.isTextBased()) {
             const remaining = Math.max(0, campaignDoc.totalTargetUsers - campaignDoc.processedUserIds.length);
@@ -322,6 +327,7 @@ export async function getBroadcastStatus(campaignId = DEFAULT_REVIVAL_CAMPAIGN.c
     closedDmCount: doc.closedDmCount,
     optedOutCount: doc.optedOutCount,
     failedCount: doc.failedCount,
+    claimedCount: doc.claimedCount || 0,
     processedCount: doc.processedUserIds?.length || 0,
     remaining,
     isRunning: isQueueRunning && !isQueuePaused
