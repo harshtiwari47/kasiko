@@ -12,6 +12,7 @@ import {
   sendEventClaimLog
 } from '../../../utils/broadcastEngine.js';
 import { handleMessage } from '../../../helper.js';
+import { createUser } from '../../../database.js';
 
 export default {
   data: new SlashCommandBuilder()
@@ -37,8 +38,8 @@ export default {
 
       let user = await User.findOne({ id: userId });
       if (!user) {
-        user = new User({ id: userId, cash: 1000, inventory: {}, settings: { eventAlerts: true } });
-        await user.save();
+        const res = await createUser(userId);
+        user = res.user;
       }
 
       const campaign = await getLatestCampaign();
