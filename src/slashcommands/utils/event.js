@@ -8,7 +8,8 @@ import User from '../../../models/User.js';
 import {
   getLatestCampaign,
   buildBroadcastContainer,
-  DEFAULT_REVIVAL_CAMPAIGN
+  DEFAULT_REVIVAL_CAMPAIGN,
+  sendEventClaimLog
 } from '../../../utils/broadcastEngine.js';
 import { handleMessage } from '../../../helper.js';
 
@@ -78,9 +79,17 @@ export default {
           });
         }
 
+        // Send log to log channel and increment claim counter
+        const { totalClaimed } = await sendEventClaimLog(interaction.client, {
+          user: interaction.user,
+          campaignId: campaign.campaignId,
+          campaignTitle: campaign.title,
+          rewards
+        });
+
         return await handleMessage(interaction, {
           content:
-            `🎉 **EVENT REWARDS CLAIMED!**\n\n` +
+            `🎉 **EVENT REWARDS CLAIMED!** (Claim #${totalClaimed.toLocaleString()})\n\n` +
             `Your gift package has been added to your account:\n` +
             `• <:kasiko_coin:1300141236841086977> **+${rewards.cash.toLocaleString()} Cash**\n` +
             `• <:scratch_card:1382990344186105911> **+2 Scratch Cards**\n` +

@@ -348,6 +348,81 @@ export async function getLatestCampaign() {
 }
 
 /**
+ * Send an event claim log to the configured log channel and track total claims.
+ */
+export async function sendEventClaimLog(client, { user, campaignId, campaignTitle, rewards }) {
+  try {
+    // Increment claimedCount in MongoDB
+    const broadcastDoc = await Broadcast.findOneAndUpdate(
+      { campaignId },
+      { $inc: { claimedCount: 1 } },
+      { new: true, upsert: true }
+    );
+
+    const totalClaimed = broadcastDoc?.claimedCount || (await User.countDocuments({ claimedCampaigns: campaignId }));
+
+    if (!client) return { totalClaimed };
+
+    const channelId = CHANNELS.TRANSACTIONS || CHANNELS.AUDIT_LOGS;
+    if (!channelId) return { totalClaimed };
+
+    const channel = client.channels?.cache?.get(channelId) || await client.channels?.fetch(channelId).catch(() => null);
+    if (!channel || !channel.isTextBased()) return { totalClaimed };
+
+    const now = new Date();
+    const rewardsList = [];
+    if (rewards.cash) rewardsList.push(`• <:kasiko_coin:1300141236841086977> **+${rewards.cash.toLocaleString()} Cash**`);
+    if (Array.isArray(rewards.items)) {
+      for (const item of rewards.items) {
+        rewardsList.push(`• ${item.emoji || '🎁'} **+${item.amount} ${item.name || item.id}**`);
+      }
+    }
+    const rewardsText = rewardsList.length ? rewardsList.join('\n') : '• *No tangible items*';
+
+    const userId = user?.id || 'Unknown';
+    const userTag = user?.tag || user?.username || userId;
+
+    const logContainer = new ContainerBuilder()
+      .setAccentColor(COLORS.GOLD || 0xF1C40F)
+      .addTextDisplayComponents(t =>
+        t.setContent(`### 🎁 Event Reward Claimed\n-# **Campaign:** \`${campaignId}\` • **Timestamp:** <t:${Math.floor(now.getTime() / 1000)}:R>`)
+      )
+      .addSeparatorComponents(s => s)
+      .addTextDisplayComponents(t =>
+        t.setContent(
+          `**👤 User:** <@${userId}> (\`${userTag}\`)\n` +
+          `**🎉 Event:** **${campaignTitle || campaignId}**\n` +
+          `**🏆 Total Claims to Date:** \`${totalClaimed.toLocaleString()}\` claims\n\n` +
+          `**📦 Package Delivered:**\n${rewardsText}`
+        )
+      );
+
+    await channel.send({
+      components: [logContainer],
+      flags: [4096] // MessageFlags.IsComponentsV2
+    }).catch(async () => {
+      const fallbackEmbed = new EmbedBuilder()
+        .setTitle('🎁 Event Reward Claimed')
+        .setColor(COLORS.GOLD || 0xF1C40F)
+        .setDescription(
+          `**👤 User:** <@${userId}> (\`${userTag}\`)\n` +
+          `**🎉 Event:** **${campaignTitle || campaignId}**\n` +
+          `**🏆 Total Claims to Date:** \`${totalClaimed.toLocaleString()}\` claims\n\n` +
+          `**📦 Package Delivered:**\n${rewardsText}`
+        )
+        .setTimestamp(now);
+
+      await channel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+    });
+
+    return { totalClaimed };
+  } catch (err) {
+    console.error('[BroadcastEngine] Error logging event claim:', err);
+    return { totalClaimed: 1 };
+  }
+}
+
+/**
  * Handle user clicking [ 🎁 Claim Rewards ].
  */
 export async function handleClaimBroadcastReward(interaction) {
@@ -385,10 +460,18 @@ export async function handleClaimBroadcastReward(interaction) {
       });
     }
 
+    // Send log to log channel and increment claim counter
+    const { totalClaimed } = await sendEventClaimLog(interaction.client, {
+      user: interaction.user,
+      campaignId,
+      campaignTitle: campaign.title,
+      rewards
+    });
+
     // Ephemeral confirmation
     await interaction.reply({
       content:
-        `🎉 **EVENT REWARDS CLAIMED!**\n\n` +
+        `🎉 **EVENT REWARDS CLAIMED!** (Claim #${totalClaimed.toLocaleString()})\n\n` +
         `Your gift package has been added to your account:\n` +
         `• <:kasiko_coin:1300141236841086977> **+${rewards.cash.toLocaleString()} Cash**\n` +
         `• <:scratch_card:1382990344186105911> **+2 Scratch Cards**\n` +

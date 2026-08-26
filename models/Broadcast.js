@@ -62,6 +62,10 @@ const broadcastSchema = new mongoose.Schema({
   reportChannelId: {
     type: String,
     default: null
+  },
+  claimedCount: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true
