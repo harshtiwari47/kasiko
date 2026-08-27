@@ -72,16 +72,23 @@ export default {
         .addStringOption(opt =>
           opt
             .setName('action')
-            .setDescription('Zombie action (hunt, weapons, location, heal, help)')
+            .setDescription('Zombie action (hunt, weapons, location, travel, heal, help)')
             .setRequired(false)
             .addChoices(
               { name: '🧟 View Stats & Resources', value: 'stats' },
-              { name: '⚔️ Hunt / Scavenge', value: 'hunt' },
+              { name: '⚔️ Hunt / Scavenge & Bosses', value: 'hunt' },
               { name: '🗡️ View Weapons', value: 'weapons' },
-              { name: '🗺️ View Locations', value: 'location' },
+              { name: '🗺️ Wasteland Locations & Travel Hub', value: 'location' },
+              { name: '🚀 Travel to Territory', value: 'travel' },
               { name: '💉 Instant Heal (3000 Cash)', value: 'heal' },
               { name: '📖 Help Guide', value: 'help' }
             )
+        )
+        .addStringOption(opt =>
+          opt
+            .setName('target')
+            .setDescription('Destination territory or weapon name (for travel/modify/active)')
+            .setRequired(false)
         )
     )
     .addSubcommand(sub =>
@@ -132,7 +139,9 @@ export default {
 
       case 'zombie': {
         const action = interaction.options.getString('action') || 'stats';
+        const target = interaction.options.getString('target') || '';
         const args = action === 'stats' ? ['zombie'] : ['zombie', action];
+        if (target) args.push(target);
         if (zombieCommand?.execute) return await zombieCommand.execute(args, interaction);
         return handleMessage(interaction, { content: 'Zombie exploration is currently unavailable.' });
       }

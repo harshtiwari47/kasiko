@@ -51,6 +51,14 @@ let zombSchema = new mongoose.Schema({
       type: Array,
     default: []
     },
+    currentLocation: {
+      type: String,
+      default: "l1"
+    },
+    bossesDefeated: {
+      type: Array,
+      default: []
+    },
     lastBattle: {
       active: {
         type: Boolean, default: false
