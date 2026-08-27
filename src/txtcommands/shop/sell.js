@@ -75,8 +75,8 @@ export default {
         content:
         "## <:warning:1366050875243757699> 𝗜𝗧𝗘𝗠 𝗡𝗢𝗧 𝗙𝗢𝗨𝗡𝗗\n" +
         "Please make sure you have provided the correct **item ID**.\n\n" +
-        "**USAGE:** `sell <itemId> <?amount>`\n" +
-        "❔ **HELP:** `help sell`"
+        "**USAGE:** `kas sell <itemId> <?amount>`\n" +
+        "❔ **HELP:** `kas help sell`"
       });
     }
 
@@ -172,8 +172,8 @@ export default {
       content:
       "## <:warning:1366050875243757699> 𝗜𝗧𝗘𝗠 𝗡𝗢𝗧 𝗙𝗢𝗨𝗡𝗗\n" +
       "Please make sure you have provided the correct **item ID**.\n\n" +
-      "**USAGE:** ` sell `**`<itemId> <?amount> `**\n" +
-      "❔ **HELP:** ` help sell `"
+      "**USAGE:** `kas sell <itemId> <?amount>`\n" +
+      "❔ **HELP:** `kas help sell`"
     });
   }
 };

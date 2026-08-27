@@ -153,12 +153,12 @@ async function showAnimalDetail(context, user, animalName) {
      // `<:follow_reply:1368224897003946004> **𝗘𝗫𝗣**: **${foundAnimal.exp}**`,
       `<:follow_reply:1368224897003946004> **𝗧𝗢𝗧𝗔𝗟**: **${foundAnimal.totalAnimals}**`,
       `<:reply:1368224908307468408> **𝗧𝗬𝗣𝗘**: *${chosenAnimalData.type === "exclusive" ? "<:exclusive:1347533975840882708> EX": "GEN"}*`,
-      `-# Use \`sell ${foundAnimal.name} all\`  to sell!`
+      `-# Use \`kas sell ${foundAnimal.name} all\` to sell!`
     ].join('\n')
   )
   .setThumbnail(`https://cdn.discordapp.com/emojis/${chosenAnimalData?.emojiId}.png`)
   .setFooter({
-    text: `ᴜꜱᴇ "ᴄᴀɢᴇ" ᴡɪᴛʜ ɴᴏ ᴀʀɢᴜᴍᴇɴᴛꜱ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ʏᴏᴜʀ ᴀɴɪᴍᴀʟꜱ.`
+    text: `ᴜꜱᴇ "ᴋᴀꜱ ᴄᴀɢᴇ" ᴡɪᴛʜ ɴᴏ ᴀʀɢᴜᴍᴇɴᴛꜱ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ʏᴏᴜʀ ᴀɴɪᴍᴀʟꜱ.`
   });
 
   return handleMessage(context, {

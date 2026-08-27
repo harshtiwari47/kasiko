@@ -50,8 +50,8 @@ export default {
           content:
           "## <:warning:1366050875243757699> 𝗜𝗧𝗘𝗠 𝗡𝗢𝗧 𝗦𝗣Ε𝗖𝗜𝗙𝗜𝗘𝗗\n" +
           "Please provide the **item ID** to use.\n\n" +
-          "**USAGE:** `use <itemId> [@targetUser]`\n" +
-          "❔ **HELP:** `help use`"
+          "**USAGE:** `kas use <itemId> [@targetUser]`\n" +
+          "❔ **HELP:** `kas help use`"
         });
       }
 

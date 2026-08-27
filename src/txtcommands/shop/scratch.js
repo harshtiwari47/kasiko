@@ -84,52 +84,93 @@ export async function generateScratchImage(amount) {
 
 export default {
   name: 'scratch',
-  description: 'Buy or scratch cash-only scratch cards.',
+  description: 'Buy or scratch cash-only scratch cards to win big cash prizes.',
+  aliases: ['scratchcard', 'scratches', 'scratchcards'],
   emoji: '<:scratch_card:1382990344186105911>',
   category: '🛍️ Shop',
-  cooldown: 10000,
+  cooldown: 5000,
+  example: [
+    'scratch',
+    'scratch buy 2',
+    'buy scratch 1',
+    'use scratch'
+  ],
   execute: async (args, context) => {
-    args.shift();
-
     try {
       const {
         id,
         name
       } = discordUser(context);
+
+      const sub = args[1]?.toLowerCase();
+
+      // Dynamic import to avoid circular dependency
+      const { ITEM_DEFINITIONS } = await import('../../inventory.js');
+
+      // Subcommand: buy
+      if (sub === 'buy' || sub === 'b') {
+        const amount = parseInt(args[2] || '1', 10);
+        return await ITEM_DEFINITIONS.scratch_card.buyHandler([amount], context);
+      }
+
+      // Subcommand: use
+      if (sub === 'use' || sub === 'u') {
+        return await ITEM_DEFINITIONS.scratch_card.useHandler(['scratch'], context);
+      }
+
       const userData = await getUserData(id);
       if (!userData) {
         return await handleMessage(context, {
-          content: `<:warning:1366050875243757699> ${name}, could not retrieve your data.`
+          content: `<:warning:1366050875243757699> **${name}**, could not retrieve your account data.`
         });
       }
 
-      // Initialize scratch count if missing
-      if (typeof userData.scratchs !== 'number') {
-        userData.scratchs = 0;
+      const remainingCards = userData.inventory?.['scratch_card'] || 0;
+
+      // If player has cards, directly scratch one!
+      if (remainingCards > 0) {
+        return await ITEM_DEFINITIONS.scratch_card.useHandler(['scratch'], context);
       }
 
-      // Subcommand: scratch
-      if (args.length === 0) {
-        const embed = new EmbedBuilder()
-        .setTitle(`${name}'s <:scratch_card:1382990344186105911> Scratch Cards`)
-        .setDescription(`-# To use a scratch card, command \`use scratch\``)
-        .addFields(
-          {
-            name: '<:scratch_card:1382990344186105911> Remaining Cards', value: `${userData?.inventory?.['scratch_card'] || 0}`, inline: true
-          }
-        );
+      // If 0 cards, show helpful card info with clear "kas" prefixes and quick buy button
+      const canAfford = (userData.cash || 0) >= CARD_COST;
 
-        return await handleMessage(context, {
-          embeds: [embed]
-        });
-      }
+      const embed = new EmbedBuilder()
+        .setTitle(`${name.toUpperCase()}'S <:scratch_card:1382990344186105911> SCRATCH CARDS`)
+        .setColor(0xFFA500)
+        .setDescription(
+          `You currently have **0** scratch cards in your inventory.\n\n` +
+          `**💡 How to get & use Scratch Cards:**\n` +
+          `• 🛒 **Buy Cards:** \`kas buy scratch <amount>\` (Cost: <:kasiko_coin:1300141236841086977> **${CARD_COST.toLocaleString()} Cash** each)\n` +
+          `• ✨ **Scratch Card:** \`kas scratch\` or \`kas use scratch\`\n` +
+          `• 🎁 **Prizes:** Win up to <:kasiko_coin:1300141236841086977> **${MAX_WIN.toLocaleString()} Cash**!`
+        )
+        .setFooter({ text: 'Always include the "kas" prefix when typing commands!' });
 
-      // Unknown subcommand
-      return await handleMessage(context, {
-        content: `❓ ${name}, invalid usage. Use:\n`+
-        `• \` buy scratch <number> \` to buy cards (cost <:kasiko_coin:1300141236841086977> ${CARD_COST} each).` +
-        `• \` use scratch \` to scratch a card.`
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`scratch_buy_quick_${id}`)
+          .setLabel(`🛒 Buy 1 Card (${CARD_COST.toLocaleString()} Cash)`)
+          .setStyle(ButtonStyle.Success)
+          .setDisabled(!canAfford)
+      );
+
+      const msg = await handleMessage(context, {
+        embeds: [embed],
+        components: [row]
       });
+
+      if (msg?.createMessageComponentCollector) {
+        const collector = msg.createMessageComponentCollector({
+          filter: i => i.user.id === id && i.customId === `scratch_buy_quick_${id}`,
+          time: 30000,
+          max: 1
+        });
+        collector.on('collect', async (i) => {
+          await i.deferUpdate().catch(() => {});
+          await ITEM_DEFINITIONS.scratch_card.buyHandler([1], context);
+        });
+      }
     } catch (e) {
       console.error('Error in scratch command:', e);
       return await handleMessage(context, {

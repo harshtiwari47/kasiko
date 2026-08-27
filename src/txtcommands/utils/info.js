@@ -144,21 +144,21 @@ export default {
       if (typeof def.useHandler === "function") {
         container.addSeparatorComponents(sep => sep);
         container.addTextDisplayComponents(
-          td => td.setContent(`Do **\`use ${def?.aliases?.[0] || def.id}\`** to use this item.`)
+          td => td.setContent(`Do **\`kas use ${def?.aliases?.[0] || def.id}\`** to use this item.`)
         );
       }
 
       if (typeof def.shareHandler === "function") {
         container.addSeparatorComponents(sep => sep);
         container.addTextDisplayComponents(
-          td => td.setContent(`Do **\`share ${def.aliases?.[0] || def.id} @user\`** to share this item.`)
+          td => td.setContent(`Do **\`kas share ${def.aliases?.[0] || def.id} @user\`** to share this item.`)
         );
       }
 
       if (typeof def.buyHandler === "function") {
         container.addSeparatorComponents(sep => sep);
         container.addTextDisplayComponents(
-          td => td.setContent(`Do **\`buy ${def.aliases?.[0] || def.id} <amount>\`** to buy this item.`)
+          td => td.setContent(`Do **\`kas buy ${def.aliases?.[0] || def.id} <amount>\`** to buy this item.`)
         );
       }
 

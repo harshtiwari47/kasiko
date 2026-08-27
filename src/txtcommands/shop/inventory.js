@@ -80,12 +80,12 @@ export default {
         const Container = new ContainerBuilder()
           .addTextDisplayComponents(
             textDisplay => textDisplay.setContent(`### 🎒 **${name.toUpperCase()}'S INVENTORY**`),
-            textDisplay => textDisplay.setContent(`-# Page ${page}/${TotalPages} · Use \`info <item>\` for details`)
+            textDisplay => textDisplay.setContent(`-# Page ${page}/${TotalPages} · Use \`kas info <item>\` or \`kas use <item>\` for details`)
           );
 
         if (ITEMS.length === 0) {
           Container.addTextDisplayComponents(
-            textDisplay => textDisplay.setContent(`*Your bag is currently empty! Use \`shop\`, \`hunt\`, \`loot\`, or \`tasks\` to collect items.*`)
+            textDisplay => textDisplay.setContent(`*Your bag is currently empty! Use \`kas shop\`, \`kas hunt\`, \`kas loot\`, or \`kas tasks\` to collect items.*`)
           );
         } else {
           for (const item of ITEMS) {

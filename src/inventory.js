@@ -317,8 +317,9 @@ export const ITEM_DEFINITIONS = {
     emoji: '<:scratch_card:1382990344186105911>',
     description: 'Scratch and win random cash. They can be found in ` shop `, ` scavenger `, and during Kasiko server events.',
     source: ["shop", "scavenger"],
-    aliases: ["scratch"],
+    aliases: ["scratch", "scratchcard", "scratches"],
     useable: true,
+    purchaseable: true,
     activatable: false,
     sellable: false,
     shareable: false,
@@ -375,7 +376,7 @@ export const ITEM_DEFINITIONS = {
             media.addItems(
               item => item.setURL("attachment://scratch.png")
             )
-          )
+          );
 
           const files = [];
           if (buffer) {
@@ -401,7 +402,7 @@ export const ITEM_DEFINITIONS = {
           name
         } = discordUser(context);
 
-        const amount = parseInt(args[0]);
+        const amount = parseInt(args[0]) || 1;
 
         if (isNaN(amount) || amount < 1) {
           return handleMessage(context, `<:warning:1366050875243757699> Invalid amount.`);
@@ -413,7 +414,7 @@ export const ITEM_DEFINITIONS = {
         const totalCost = amount * CARD_COST;
         if (userData.cash < totalCost) {
           return await handleMessage(context, {
-            content: `<:warning:1366050875243757699> You need ${totalCost.toLocaleString()} Cash to buy <:kasiko_coin:1300141236841086977> **${amount}** scratch card(s).`, ephemeral: true
+            content: `<:warning:1366050875243757699> You need <:kasiko_coin:1300141236841086977> **${totalCost.toLocaleString()} Cash** to buy **${amount}** scratch card${amount > 1 ? 's' : ''} (Current balance: ${userData.cash.toLocaleString()}).`, ephemeral: true
           });
         }
 
@@ -428,8 +429,8 @@ export const ITEM_DEFINITIONS = {
         .addTextDisplayComponents(
           textDisplay => textDisplay.setContent(`### <:scratch_card:1382990344186105911> 𝗦𝗖𝗥𝗔𝗧𝗖𝗛 𝗖𝗔𝗥𝗗𝗦 𝗣𝗨𝗥𝗖𝗛𝗔𝗦𝗘𝗗`),
           textDisplay => textDisplay.setContent(`🍾 **${name.toUpperCase()}**, you bought **${amount} scratch card${amount > 1 ? "s": ""}** for <:kasiko_coin:1300141236841086977> **${totalCost.toLocaleString()}**. You now have **${userData.inventory['scratch_card']}** scratch card${userData?.inventory?.scratch_card > 1 ? "s": ""}.`),
-          textDisplay => textDisplay.setContent(`-# ❔ **HOW TO SCRATCH**\n-#  \` use scratch \`\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
-        )
+          textDisplay => textDisplay.setContent(`-# ❔ **HOW TO SCRATCH**\n-#  \`kas use scratch\` or \`kas scratch\`\n✦⋆  𓂃⋆.˚ ⊹ ࣪ ﹏𓊝﹏𓂁﹏`)
+        );
 
         return await handleMessage(context, {
           components: [Container],
