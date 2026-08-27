@@ -3,6 +3,7 @@ import {
 } from '@discordjs/builders';
 import petCommand from '../../txtcommands/explore/pet.js';
 import passCommand from '../../txtcommands/explore/pass.js';
+import alienCommand from '../../txtcommands/explore/alien.js';
 import zombieCommand from '../../txtcommands/explore/zombie.js';
 import iceCreamCommand from '../../txtcommands/explore/icecream.js';
 import orcaCommand from '../../txtcommands/explore/orca.js';
@@ -14,6 +15,28 @@ export default {
   data: new SlashCommandBuilder()
     .setName('explore')
     .setDescription('Explore the Kasiko universe, raise pets, level up battle pass, and play minigames.')
+    .addSubcommand(sub =>
+      sub
+        .setName('alien')
+        .setDescription('Cosmic infiltration: disguise, harvest cosmic resources, and wage interstellar battles.')
+        .addStringOption(opt =>
+          opt
+            .setName('action')
+            .setDescription('Alien action')
+            .setRequired(false)
+            .addChoices(
+              { name: '🛸 View Alien Profile', value: 'profile' },
+              { name: '👽 Join Cosmic Infiltration', value: 'join' },
+              { name: '🎭 Change Human Disguise', value: 'disguise' },
+              { name: '🧠 Manipulate Human Minds', value: 'manipulate' },
+              { name: '⚡ Cosmic Resource Harvest', value: 'harvest' },
+              { name: '✨ View Cosmic Abilities', value: 'abilities' },
+              { name: '🎒 View Alien Inventory', value: 'inventory' },
+              { name: '🚀 Upgrade Spaceship & Tech', value: 'upgrade' },
+              { name: '📖 Alien Guide & Help', value: 'help' }
+            )
+        )
+    )
     .addSubcommand(sub =>
       sub
         .setName('pet')
@@ -46,6 +69,20 @@ export default {
       sub
         .setName('zombie')
         .setDescription('Explore the apocalyptic wasteland, scavenge weapons, and survive hordes.')
+        .addStringOption(opt =>
+          opt
+            .setName('action')
+            .setDescription('Zombie action (hunt, weapons, location, heal, help)')
+            .setRequired(false)
+            .addChoices(
+              { name: '🧟 View Stats & Resources', value: 'stats' },
+              { name: '⚔️ Hunt / Scavenge', value: 'hunt' },
+              { name: '🗡️ View Weapons', value: 'weapons' },
+              { name: '🗺️ View Locations', value: 'location' },
+              { name: '💉 Instant Heal (3000 Cash)', value: 'heal' },
+              { name: '📖 Help Guide', value: 'help' }
+            )
+        )
     )
     .addSubcommand(sub =>
       sub
@@ -72,6 +109,13 @@ export default {
     const sub = interaction.options.getSubcommand();
 
     switch (sub) {
+      case 'alien': {
+        const action = interaction.options.getString('action') || 'profile';
+        const args = action === 'profile' ? ['alien'] : ['alien', action];
+        if (alienCommand?.execute) return await alienCommand.execute(args, interaction);
+        return handleMessage(interaction, { content: 'Alien cosmic infiltration is currently unavailable.' });
+      }
+
       case 'pet': {
         const action = interaction.options.getString('action') || 'view';
         const name = interaction.options.getString('name') || '';
@@ -87,7 +131,9 @@ export default {
       }
 
       case 'zombie': {
-        if (zombieCommand?.execute) return await zombieCommand.execute(['zombie'], interaction);
+        const action = interaction.options.getString('action') || 'stats';
+        const args = action === 'stats' ? ['zombie'] : ['zombie', action];
+        if (zombieCommand?.execute) return await zombieCommand.execute(args, interaction);
         return handleMessage(interaction, { content: 'Zombie exploration is currently unavailable.' });
       }
 

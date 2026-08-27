@@ -198,6 +198,8 @@ export async function readStory(chapter, message) {
 
 export async function zombieSurvival(id, playerInfo, context) {
   try {
+    const { username } = discordUser(context);
+    const channel = context.channel || context;
     const guildMember = context.guild?.members?.fetch ? await context.guild.members.fetch(id).catch(() => null) : null;
     let disableOptions = [];
     let gameData = {}
@@ -238,7 +240,7 @@ export async function zombieSurvival(id, playerInfo, context) {
     // Starting game embed
     const introEmbed = new EmbedBuilder()
     .setDescription(
-      `## ${emojiList.zombie} ᤁᴏ꧑ხıɛ ᥉ᤙɾ᥎ı᥎ɑꝇ\n-# **${guild.user.username.toUpperCase()}**, you find yourself surrounded in a zombie-infested world. Your goal: **SURVIVE**!\n\n` +
+      `## ${emojiList.zombie} ᤁᴏ꧑ხıɛ ᥉ᤙɾ᥎ı᥎ɑꝇ\n-# **${username.toUpperCase()}**, you find yourself surrounded in a zombie-infested world. Your goal: **SURVIVE**!\n\n` +
       `**𝗟𝗢𝗖𝗔𝗧𝗜𝗢𝗡**  ${targetLocation?.name}\n` +
       `**𝗧𝗜𝗠𝗘**  2 minutes\n` +
       "> ◎ `𝘠𝘰𝘶 𝘤𝘢𝘯 𝘵𝘢𝘬𝘦 𝘢𝘤𝘵𝘪𝘰𝘯𝘴 𝘭𝘪𝘬𝘦 `**`ꜱᴇᴀʀᴄʜ`**`, `**`ꜰɪɢʜᴛ`**`, `**`ʜɪᴅᴇ`**`, `**`ᴄʀᴀꜰᴛ ᴡᴇᴀᴘᴏɴ`**`, 𝘰𝘳 `**`ꜱᴘᴇᴄɪᴀʟ ᴡᴇᴀᴘᴏɴ`**`. 𝘊𝘩𝘰𝘰𝘴𝘦 𝘸𝘪𝘴𝘦𝘭𝘺 𝘵𝘰 𝘮𝘢𝘯𝘢𝘨𝘦 𝘺𝘰𝘶𝘳 `**`ʜᴇᴀʟᴛʜ`**`, `**`ꜱᴛᴀᴍɪɴᴀ`**`, 𝘢𝘯𝘥 `**`ꜱᴜᴘᴘʟɪᴇꜱ`**.\n" +
@@ -442,7 +444,7 @@ export async function zombieSurvival(id, playerInfo, context) {
             gameData = (dealLocationItemsSearch?.gameData || gameData);
             currentZombies = (dealLocationItemsSearch?.currentZombies || currentZombies);
 
-            outcome = `🔍 **${guild.user.username}** scavenged the area and found **${supplies} supplies**!\n- Stamina reduced by 10.${dealLocationItemsSearch?.message ? dealLocationItemsSearch.message: ""}`;
+            outcome = `🔍 **${username}** scavenged the area and found **${supplies} supplies**!\n- Stamina reduced by 10.${dealLocationItemsSearch?.message ? dealLocationItemsSearch.message: ""}`;
             embedColor = "Blue";
             image = "https://harshtiwari47.github.io/kasiko-public/images/zmb6.jpg";
             lilyHelp = "Use ***search*** to gather supplies to craft your weapon 🛠, but lose stamina! ⚡";
@@ -455,7 +457,7 @@ export async function zombieSurvival(id, playerInfo, context) {
 
             zombieThumb = `https://cdn.discordapp.com/emojis/${zombies[Math.floor(1 + Math.random() * 5)]}.png`
 
-            outcome = `${emojiList.fist} **${guild.user.username}** 𝘣𝘳𝘢𝘷𝘦𝘭𝘺 𝘧𝘰𝘶𝘨𝘩𝘵 𝘢 𝘻𝘰𝘮𝘣𝘪𝘦!\n` +
+            outcome = `${emojiList.fist} **${username}** 𝘣𝘳𝘢𝘷𝘦𝘭𝘺 𝘧𝘰𝘶𝘨𝘩𝘵 𝘢 𝘻𝘰𝘮𝘣𝘪𝘦!\n` +
             `- :boom: 𝗞𝗜𝗟𝗟𝗘𝗗 **1**`;
             embedColor = "Red";
             lilyHelp = "Use ***fight*** to battle zombies, but it risks your HP and weapon durability! 🪤";
@@ -496,7 +498,7 @@ export async function zombieSurvival(id, playerInfo, context) {
             gameData.zombiesKilled += Math.min(currentZombies, killedZombies);
             currentZombies = Math.max(0, currentZombies - killedZombies);
 
-            outcome = `${emojiList.shovel} **${guild.user.username}** used their weapon ${playerInfo.activeWeapon.weapon} and killed ${killedZombies} zombie${killedZombies === 1 ? '': 's'}!\n`;
+            outcome = `${emojiList.shovel} **${username}** used their weapon ${playerInfo.activeWeapon.weapon} and killed ${killedZombies} zombie${killedZombies === 1 ? '': 's'}!\n`;
 
             disableOptions.push("weapon");
             embedColor = "#822fea";
@@ -655,8 +657,8 @@ export async function zombieSurvival(id, playerInfo, context) {
 
           await updateUser(id, userData);
 
-          await channel.send({
-            content: "## ```𝑨 𝒗𝒊𝒄𝒊𝒐𝒖𝒔 𝒉𝒐𝒓𝒅𝒆 𝒐𝒇 𝒛𝒐𝒎𝒃𝒊𝒆𝒔 𝒉𝒂𝒔 𝒂𝒕𝒕𝒂𝒄𝒌𝒆𝒅!```\n" + `<:zombie3:1318799748139974689> \`𝚄𝚗𝚏𝚘𝚛𝚝𝚞𝚗𝚊𝚝𝚎𝚕𝚢, \`**\`${guild.user.username}\`** \`𝚌𝚘𝚞𝚕𝚍𝚗'𝚝 𝚎𝚜𝚌𝚊𝚙𝚎 𝚒𝚗 𝚝𝚒𝚖𝚎.\` ${emojiList.scratch}\n## ${emojiList.reward} **Rewards Earned:**\n${rewardMessage}`,
+          await handleMessage(context, {
+            content: "## ```𝑨 𝒗𝒊𝒄𝒊𝒐𝒖𝒔 𝒉𝒐𝒓𝒅𝒆 𝒐𝒇 𝒛𝒐𝒎𝒃𝒊𝒆𝒔 𝒉𝒂𝒔 𝒂𝒕𝒕𝒂𝒄𝒌𝒆𝒅!```\n" + `<:zombie3:1318799748139974689> \`𝚄𝚗𝚏𝚘𝚛𝚝𝚞𝚗𝚊𝚝𝚎𝚕𝚢, \`**\`${username}\`** \`𝚌𝚘𝚞𝚕𝚍𝚗'𝚝 𝚎𝚜𝚌𝚊𝚙𝚎 𝚒𝚗 𝚝𝚒𝚖𝚎.\` ${emojiList.scratch}\n## ${emojiList.reward} **Rewards Earned:**\n${rewardMessage}`,
             embeds: [
               new EmbedBuilder()
               .setDescription(
@@ -675,7 +677,7 @@ export async function zombieSurvival(id, playerInfo, context) {
     if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
       console.error(e);
     }
-    return channel.send(`⚠ Something went wrong during the zombie survival! Please try again.\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+    return handleMessage(context, `⚠ Something went wrong during the zombie survival! Please try again.\n-# **Error**: ${e.message}`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   }
 }
 

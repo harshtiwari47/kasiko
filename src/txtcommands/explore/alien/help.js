@@ -4,7 +4,7 @@ import {
   ButtonBuilder,
   ButtonStyle
 } from "discord.js";
-import { handleMessage } from "../../../helper.js";
+import { handleMessage } from "../../../../helper.js";
 
 /**
 * Sends a multi-page help guide explaining the game,
