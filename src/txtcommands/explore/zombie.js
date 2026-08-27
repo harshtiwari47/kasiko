@@ -9,7 +9,6 @@ import Zombie from "../../../models/Zombie.js";
 
 import { increaseTask } from "../economy/task.js";
 
-// Load all dragon types from JSON
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +21,8 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
   ComponentType
 } from "discord.js";
 
