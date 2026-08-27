@@ -324,7 +324,7 @@ export default {
   /**
   * SCHEDULING
   *
-  *   import { updateDemandFishes } from './fishmarket.js';
+  *   import { updateDemandFishes } from './market.js';
   *
   *   // Immediately update at startup:
   *   updateDemandFishes();

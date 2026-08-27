@@ -17,9 +17,9 @@ import voteCommand from '../../txtcommands/economy/vote.js';
 import spyCommand from '../../txtcommands/economy/spy.js';
 import lootCommand from '../../txtcommands/economy/loot.js';
 import giveawayCommand from '../../txtcommands/economy/giveaway.js';
-import bankCommand from '../../txtcommands/economy/bank.js';
+import bankCommand from '../../txtcommands/bank/bank.js';
 import giveCommand from '../../txtcommands/economy/give.js';
-import robCommand from '../../txtcommands/economy/rob.js';
+import robCommand from '../../txtcommands/bank/rob.js';
 import { dailylogin } from '../../txtcommands/economy/dailylogin.js';
 import { handleMessage } from '../../../helper.js';
 

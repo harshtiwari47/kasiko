@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 
 import emojiList from "./emojiList.js";
-import { handleMessage } from "../../../helper.js";
+import { handleMessage } from "../../../../helper.js";
 
 /**
  * Renders an interactive, paginated, and category-selectable help guide for Zombie Apocalypse.
