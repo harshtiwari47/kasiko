@@ -33,7 +33,7 @@ const locations = [
     id: "l2",
     killRequired: 100,
     bonousSupplies: 15,
-    description: "A deep geological fracture glowing with eerie radioactive energy.",
+    description: "A deep industrial quarry fracture where infected miners roam amidst cracked concrete and rusted excavators.",
     items: [{
       name: "Bomb",
       type: "damage",
@@ -46,7 +46,7 @@ const locations = [
     maxZombies: 20,
     boss: {
       name: "Plague Goliath",
-      title: "Titan of the Fissure",
+      title: "Titan of the Quarry",
       emoji: "🧌",
       hp: 140,
       attack: 20,
@@ -87,7 +87,7 @@ const locations = [
     id: "l4",
     killRequired: 500,
     bonousSupplies: 60,
-    description: "A red-tinted desert wasteland scorched by chemical weapons and acid rain.",
+    description: "A red-tinted desert wasteland scorched by chemical spills and toxic industrial runoff.",
     items: [{
       name: "Toxic Grenade",
       type: "damage",
@@ -100,7 +100,7 @@ const locations = [
     maxZombies: 40,
     boss: {
       name: "Toxic Abomination",
-      title: "Mutated Acid Lord",
+      title: "Mutated Chemical Lord",
       emoji: "☣️",
       hp: 290,
       attack: 34,
@@ -114,7 +114,7 @@ const locations = [
     id: "l5",
     killRequired: 1000,
     bonousSupplies: 90,
-    description: "A devastated international airfield scattered with burning airplane carcasses.",
+    description: "A devastated international airfield scattered with burning airplane carcasses and broken hangars.",
     items: [{
       name: "Flare Strike",
       type: "damage",
@@ -126,8 +126,8 @@ const locations = [
     color: "#d2dde6",
     maxZombies: 50,
     boss: {
-      name: "Dread Banshee",
-      title: "Screaming Phantom of the Skies",
+      name: "Terminal Stalker",
+      title: "Phantom of the Runways",
       emoji: "🦅",
       hp: 380,
       attack: 42,
@@ -141,7 +141,7 @@ const locations = [
     id: "l6",
     killRequired: 1750,
     bonousSupplies: 130,
-    description: "Flooded subterranean railway tunnels where apex stalkers hunt in pitch black.",
+    description: "Flooded subterranean railway tunnels where predatory infected hunt in pitch black.",
     items: [{
       name: "Adrenaline Shot",
       type: "heal",
@@ -168,7 +168,7 @@ const locations = [
     id: "l7",
     killRequired: 2750,
     bonousSupplies: 180,
-    description: "A heavily fortified military citadel overrun by reanimated cybernetic super-soldiers.",
+    description: "A fortified National Guard military checkpoint and armory overrun by armored infected riot soldiers.",
     items: [{
       name: "Combat Armor Plate",
       type: "heal",
@@ -180,12 +180,12 @@ const locations = [
     color: "#4f5b66",
     maxZombies: 70,
     boss: {
-      name: "Cybernetic Juggernaut",
-      title: "The Ironclad War Engine",
-      emoji: "🤖",
+      name: "Riot Juggernaut",
+      title: "Commander of Outpost 9",
+      emoji: "🛡️",
       hp: 620,
       attack: 64,
-      skills: ["Minigun Barrage", "Titanium Shield Bash"],
+      skills: ["Ballistic Shield Bash", "Heavy Sledgehammer"],
       reward: { kills: 45, cash: 50000, metal: 160, wood: 150, medkit: 4 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg"
     }
@@ -195,7 +195,7 @@ const locations = [
     id: "l8",
     killRequired: 4000,
     bonousSupplies: 240,
-    description: "An overgrown tropical conservatory infested with flesh-eating plant-zombie hybrids.",
+    description: "An overgrown city botanical conservatory where aggressive parasitic vines and fungal spores have infected the dead.",
     items: [{
       name: "Bio-Serum",
       type: "heal",
@@ -207,8 +207,8 @@ const locations = [
     color: "#285943",
     maxZombies: 80,
     boss: {
-      name: "Spore Queen",
-      title: "Matriarch of the Carnivorous Flora",
+      name: "Spore Matriarch",
+      title: "Mother of the Overgrowth",
       emoji: "🥀",
       hp: 780,
       attack: 76,
@@ -218,55 +218,55 @@ const locations = [
     }
   },
   {
-    name: "Obsidian Ridge",
+    name: "Blackwood Refinery",
     id: "l9",
     killRequired: 6000,
     bonousSupplies: 320,
-    description: "A volcanic inferno of smoldering craters where flaming char-walkers emerge from lava.",
+    description: "A massive, smoldering industrial oil refinery with towering rusted smokestacks, burnt pipelines, and charred infected.",
     items: [{
-      name: "Magma Core",
+      name: "Incendiary Charge",
       type: "damage",
       kills: 12,
-      icon: emojiList.bomb || "🌋",
-      message: `You triggered a volatile **Magma Core**, causing a lava geyser that eliminated **12** zombies!`
+      icon: emojiList.bomb || "💥",
+      message: `You detonated an **Incendiary Charge**, triggering an oil reservoir explosion that eliminated **12** zombies!`
     }],
-    url: "https://harshtiwari47.github.io/kasiko-public/images/zombie/obsidianridge.jpg",
-    color: "#802b1f",
+    url: "https://harshtiwari47.github.io/kasiko-public/images/zombie/blackwoodrefinery.jpg",
+    color: "#4a3c31",
     maxZombies: 95,
     boss: {
-      name: "Infernal Behemoth",
-      title: "Living Molten Disaster",
+      name: "Blast Furnace Colossus",
+      title: "Smoldering Industrial Titan",
       emoji: "🔥",
       hp: 960,
       attack: 90,
-      skills: ["Magma Eruption", "Volcanic Ash Storm"],
+      skills: ["Furnace Backdraft", "Scorched Slam"],
       reward: { kills: 70, cash: 100000, metal: 260, wood: 260, medkit: 5 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb4.jpg"
     }
   },
   {
-    name: "Sanctum of the Undead God",
+    name: "Apex Containment Labs",
     id: "l10",
     killRequired: 10000,
     bonousSupplies: 500,
-    description: "The epicenter of the apocalypse. A floating monolithic cathedral holding the master strain.",
+    description: "The subterranean epicenter of the outbreak. A high-security government quarantine research facility where the master pathogen originated.",
     items: [{
-      name: "Godslayer Shard",
+      name: "Prototype Bio-Charge",
       type: "damage",
       kills: 20,
-      icon: emojiList.reward || "✨",
-      message: `You unleashed the raw power of the **Godslayer Shard**, wiping out an entire horde of **20** undead!`
+      icon: emojiList.reward || "🧬",
+      message: `You detonated a **Prototype Bio-Charge**, neutralizing an entire horde of **20** infected with targeted enzymes!`
     }],
-    url: "https://harshtiwari47.github.io/kasiko-public/images/zombie/sanctumundeadgod.jpg",
-    color: "#ffd700",
+    url: "https://harshtiwari47.github.io/kasiko-public/images/zombie/apexcontainment.jpg",
+    color: "#8a1c1c",
     maxZombies: 120,
     boss: {
-      name: "Apex Overlord",
-      title: "The Progenitor of the Plague",
-      emoji: "👑",
+      name: "Patient Zero",
+      title: "The Primary Outbreak Origin",
+      emoji: "☣️",
       hp: 1300,
       attack: 110,
-      skills: ["Void Cataclysm", "Soul Harvest", "Undead Summoning"],
+      skills: ["Berserk Rampage", "Outbreak Infection", "Devastating Ground Slam"],
       reward: { kills: 100, cash: 180000, metal: 400, wood: 400, medkit: 8 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb5.jpg"
     }

@@ -69,17 +69,17 @@ export async function handleZombieHelp(ctx) {
     new EmbedBuilder()
       .setTitle("🗺️ WASTELAND TERRITORIES & TRAVEL")
       .setDescription(
-        `Explore 10 unique apocalyptic zones. Each region offers higher bonus supplies, exclusive loot drops, and a distinct Final Boss:\n\n` +
-        `• **Ashgrove Divide** *(0 Kills)*: Starting suburb · Boss: *Rotting Brute*\n` +
-        `• **Velora Rift** *(100 Kills · +15 Supplies)*: Glowing radioactive fissure · Boss: *Plague Goliath*\n` +
-        `• **City Hospital** *(250 Kills · +35 Supplies)*: Quarantine wards · Boss: *The Mad Surgeon*\n` +
-        `• **Crimson Waste** *(500 Kills · +60 Supplies)*: Scorched chemical desert · Boss: *Toxic Abomination*\n` +
-        `• **Dead Sky Airport** *(1,000 Kills · +90 Supplies)*: Devastated runway · Boss: *Dread Banshee*\n` +
-        `• **Subway Necropolis** *(1,750 Kills · +130 Supplies)*: Subterranean tunnels · Boss: *Subway Stalker*\n` +
-        `• **Fortress Ironhold** *(2,750 Kills · +180 Supplies)*: Armored citadel · Boss: *Cybernetic Juggernaut*\n` +
-        `• **Sunken Bio-Dome** *(4,000 Kills · +240 Supplies)*: Overgrown jungle lab · Boss: *Spore Queen*\n` +
-        `• **Obsidian Ridge** *(6,000 Kills · +320 Supplies)*: Volcanic crater · Boss: *Infernal Behemoth*\n` +
-        `• **Sanctum of the Undead God** *(10,000 Kills · +500 Supplies)*: Master strain cathedral · Boss: *Apex Overlord*\n\n` +
+        `Explore 10 grounded apocalyptic zones. Each region offers higher bonus supplies, exclusive loot drops, and a distinct Final Boss:\n\n` +
+        `• **Ashgrove Divide** *(0 Kills)*: Suburban highway · Boss: *Rotting Brute*\n` +
+        `• **Velora Rift** *(100 Kills · +15 Supplies)*: Industrial quarry · Boss: *Plague Goliath*\n` +
+        `• **City Hospital** *(250 Kills · +35 Supplies)*: Quarantine ward · Boss: *The Mad Surgeon*\n` +
+        `• **Crimson Waste** *(500 Kills · +60 Supplies)*: Chemical runoff desert · Boss: *Toxic Abomination*\n` +
+        `• **Dead Sky Airport** *(1,000 Kills · +90 Supplies)*: Devastated runway · Boss: *Terminal Stalker*\n` +
+        `• **Subway Necropolis** *(1,750 Kills · +130 Supplies)*: Subterranean rail tunnels · Boss: *Subway Stalker*\n` +
+        `• **Fortress Ironhold** *(2,750 Kills · +180 Supplies)*: Military checkpoint · Boss: *Riot Juggernaut*\n` +
+        `• **Sunken Bio-Dome** *(4,000 Kills · +240 Supplies)*: Overgrown botanical lab · Boss: *Spore Matriarch*\n` +
+        `• **Blackwood Refinery** *(6,000 Kills · +320 Supplies)*: Industrial oil refinery · Boss: *Blast Furnace Colossus*\n` +
+        `• **Apex Containment Labs** *(10,000 Kills · +500 Supplies)*: Outbreak epicenter · Boss: *Patient Zero*\n\n` +
         `> 🚀 **How to Travel:** Use \`kas zombie location\` buttons/dropdown or run \`kas zombie travel <name>\`.`
       )
       .setColor("#2b1d1d")
@@ -97,7 +97,7 @@ export async function handleZombieHelp(ctx) {
         `### ⚔️ **BOSS COMBAT MECHANICS**\n` +
         `• When the boss arrives, the **\`[ ⚔️ Strike Boss ]\`** action button activates.\n` +
         `• Striking the boss unleashes your active weapon's full force, dealing heavy damage.\n` +
-        `• Bosses retaliate with unique deadly skills (e.g. *Acid Spray, Minigun Barrage, Soul Harvest*) dealing dangerous counter-damage.\n\n` +
+        `• Bosses retaliate with signature abilities (e.g. *Acid Spray, Furnace Backdraft, Outbreak Infection*) dealing dangerous counter-damage.\n\n` +
         `### 🏆 **VICTORY SPOILS**\n` +
         `Defeating a Final Boss grants massive victory rewards upon finishing the hunt:\n` +
         `• **Bonus Zombie Kills:** **+8 to +100 Kills** towards your milestones!\n` +
