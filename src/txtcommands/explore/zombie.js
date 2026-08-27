@@ -36,6 +36,7 @@ import emojiList from "./zombie/emojiList.js";
 import {
   handleLocItems
 } from "./zombie/handleItems.js";
+import { handleZombieHelp } from "./zombie/help.js";
 
 function getShelterImg(level) {
   if (level > 15) level = 15;
@@ -1104,60 +1105,7 @@ export default {
       }
 
       if (subCommand === "help") {
-
-        const helpEmbed = new EmbedBuilder()
-        .setColor("#261b1b")
-        .setTitle('Zombie Apocalypse Command Help')
-        .setDescription('Use these commands to manage your survival in the apocalypse!')
-        .addFields(
-          {
-            name: 'Basic Usage',
-            value: '`zombie [subcommand] [arguments]`',
-          },
-          {
-            name: 'hunt',
-            value: 'Go on a zombie hunt to gather resources and weapons.\n**Usage:** `zombie hunt`',
-          },
-          {
-            name: 'weapons | weapon',
-            value: 'View the weapons you currently own.\n**Usage:** `zombie weapons`',
-          },
-          {
-            name: 'active',
-            value: 'Set one of your owned weapons as your active weapon.\n**Usage:** `zombie active <weaponName>`',
-          },
-          {
-            name: 'modify',
-            value: 'Upgrade a specific weapon if you have the required metal resources.\n**Usage:** `zombie modify <weaponName>`',
-          },
-          {
-            name: 'upgrade',
-            value: 'Upgrade your shelter level using wood.\n**Usage:** `zombie upgrade <timesToUpgrade>` (e.g., `zombie upgrade 2`)',
-          },
-          {
-            name: 'location',
-            value: 'Hunt at random unlocked locations.\n**Usage:** `zombie location`',
-          },
-          {
-            name: 'cure',
-            value: 'Use medkits to restore your health (+50).\n**Usage:** `zombie cure <numberOfMedkits>`',
-          },
-          {
-            name: 'heal',
-            value: 'Instantly restore your health (+100) for <:kasiko_coin:1300141236841086977> 3000 cash.\n**Usage:** `zombie heal`',
-          },
-          {
-            name: 'eat',
-            value: 'Consume food to restore health (+10).\n**Usage:** `zombie eat <numberOfFoodItems>`',
-          }
-        )
-        .setFooter({
-          text: 'Stay alive out there!'
-        });
-
-        return handleMessage(message, {
-          embeds: [helpEmbed]
-        });
+        return await handleZombieHelp(message);
       }
 
       return handleMessage(message, {
