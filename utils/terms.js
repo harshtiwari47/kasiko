@@ -2,8 +2,7 @@ import {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle,
-  InteractionType
+  ButtonStyle
 } from 'discord.js';
 
 import {
@@ -11,19 +10,69 @@ import {
 } from "../helper.js";
 
 import {
-  client
-} from "../bot.js";
-
-import {
   createUser
 } from "../database.js";
 
-import txtcommands from '../src/textCommandHandler.js';
+/**
+ * Handle user clicking the [ ✅ Accept Rules ] button globally
+ */
+export const handleAcceptTerms = async (interaction) => {
+  try {
+    if (!interaction.deferred && !interaction.replied) {
+      await interaction.deferReply({
+        ephemeral: true
+      });
+    }
 
-import {
-  loadSlashCommands,
-  handleSlashCommand
-} from '../src/slashCommandHandler.js';
+    const userId = interaction.user.id;
+    const res = await createUser(userId);
+
+    if (res && res.success) {
+      await interaction.editReply({
+        content: "<:emoji_35:1332676884093337603> **Thank you** for accepting the __Terms and Conditions__! <:Bouquet:1356866221529628792>\n\n" +
+        "<:left:1350355384111468576> You can start with `kas help` to see all commands.\n\n" +
+        "<:help:1350379705689440358> **Usage:**  \n" +
+        "- `kas help <cmd>` → Get details about a specific command.  \n" +
+        "- `kas guide <cmd>` → View a guide (if available) for the command.\n\n" +
+        "> -# Stack up wealth, outsmart the market, and rule the game economy! 🐦‍🔥",
+        ephemeral: true
+      });
+
+      // Disable button on the original message
+      try {
+        const disabledButton = new ButtonBuilder()
+          .setCustomId('accept_terms_done')
+          .setLabel('✅ Rules Accepted')
+          .setStyle(ButtonStyle.Success)
+          .setDisabled(true);
+        const updatedRow = new ActionRowBuilder().addComponents(disabledButton);
+        await interaction.message?.edit({
+          components: [updatedRow]
+        }).catch(() => {});
+      } catch (_) {}
+    } else {
+      await interaction.editReply({
+        content: '⚠️ Something went wrong while saving your profile! Please try again.',
+        ephemeral: true
+      });
+    }
+  } catch (err) {
+    console.error('Error in handleAcceptTerms:', err);
+    try {
+      if (interaction.deferred) {
+        await interaction.editReply({
+          content: '⚠️ An unexpected error occurred. Please try again.',
+          ephemeral: true
+        });
+      } else if (!interaction.replied) {
+        await interaction.reply({
+          content: '⚠️ An unexpected error occurred. Please try again.',
+          ephemeral: true
+        });
+      }
+    } catch (_) {}
+  }
+};
 
 export const termsAndcondition = async (context) => {
   try {
@@ -58,89 +107,24 @@ export const termsAndcondition = async (context) => {
     const row = new ActionRowBuilder().addComponents(button);
 
     // Send the embed with the button
-    const sentMessage = await handleMessage(context, {
+    return await handleMessage(context, {
       embeds: [embed],
       components: [row]
     });
 
-    // Create an interaction collector for the button
-    const filter = (interaction) =>
-    interaction.isButton() && interaction.customId === 'accept_terms';
-    const collector = sentMessage.createMessageComponentCollector({
-      filter,
-      time: 60000 // Timeout after 60 seconds
-    });
-
-    collector.on('collect', async (interaction, args = null) => {
-      try {
-        if (interaction.customId === 'accept_terms') {
-          await interaction.deferReply({
-            ephemeral: true
-          });
-
-          let user = await createUser(context.author ? context.author.id: context.user.id);
-          if (user) {
-            await interaction.editReply({
-              content: "<:emoji_35:1332676884093337603> **Thank you** for accepting the __Terms and Conditions__! <:Bouquet:1356866221529628792>\n\n" +
-              "<:left:1350355384111468576> You can start with `kas help` to see all commands.\n\n" +
-              "<:help:1350379705689440358> **Usage:**  \n" +
-              "- `kas help <cmd>` → Get details about a specific command.  \n" +
-              "- `kas guide <cmd>` → View a guide (if available) for the command.\n\n" +
-              "> -# Stack up wealth, outsmart the market, and rule the game economy! 🐦‍🔥",
-              ephemeral: true
-            });
-
-            // Disable the button after interaction
-            const updatedButton = ButtonBuilder.from(button).setDisabled(true);
-            const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
-
-            if (!sentMessage || !sentMessage?.edit) return;
-            await sentMessage.edit({
-              components: [updatedRow]
-            });
-            return;
-          } else {
-            await message.editReply({
-              content: '⚠️ Something went wrong! Please contact the support or try again',
-              ephemeral: true
-            });
-          }
-          collector.stop();
-        }
-      } catch(e) {
-        console.error(e)
-      }
-    });
-
-    collector.on('end',
-      async () => {
-        try {
-          // Disable the button when the collector times out
-          const updatedButton = ButtonBuilder.from(button).setDisabled(true);
-          const updatedRow = new ActionRowBuilder().addComponents(updatedButton);
-
-          await sentMessage.edit({
-            components: [updatedRow]
-          });
-          return;
-        } catch (e) {}
-      });
-
   } catch (error) {
-    console.error('Error in termsAndcondition:',
-      error);
-    return await handleMessage(context,
-      'This channel might be missing the following permissions that the bot needs:\n' +
-      '1. **Send Messages**\n' +
-      '2. **Embed Links**\n' +
-      '3. **External stickers | emojis**\n' +
-      '4. **Read Message History**\n' +
-      '5. **Add reactions**\n' +
-      '6. **Use Application Commands**\n' +
-      '7. **Attach Files**\n' +
-      'Please update the bot permissions and try again!'
-    ).catch(err => ![50001,
-        50013,
-        10008].includes(err.code) && console.error(err));
+    console.error('Error in termsAndcondition:', error);
+    return await handleMessage(context, {
+      content:
+        'This channel might be missing the following permissions that the bot needs:\n' +
+        '1. **Send Messages**\n' +
+        '2. **Embed Links**\n' +
+        '3. **External stickers | emojis**\n' +
+        '4. **Read Message History**\n' +
+        '5. **Add reactions**\n' +
+        '6. **Use Application Commands**\n' +
+        '7. **Attach Files**\n' +
+        'Please update the bot permissions and try again!'
+    }).catch(() => null);
   }
 };

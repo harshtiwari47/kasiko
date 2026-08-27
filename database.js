@@ -102,10 +102,14 @@ export const createUser = async (userId) => {
 
     const savedUser = await newUser.save();
 
-    // Cache the new user in Redis
+    // Cache the new user in Redis and L1
+    setL1Exists(userId, true);
+    await redisClient.set(`user:${userId}:exists`, JSON.stringify(true), {
+      EX: 3600,
+    }).catch(() => {});
     await redisClient.set(`user:${userId}`, JSON.stringify(savedUser.toObject()), {
       EX: 60, // Cache for 1 minute
-    });
+    }).catch(() => {});
 
     return {
       success: true,
@@ -115,6 +119,10 @@ export const createUser = async (userId) => {
   } catch (error) {
     // Handle duplicate key error (E11000) gracefully
     if (error.code === 11000) {
+      setL1Exists(userId, true);
+      redisClient.set(`user:${userId}:exists`, JSON.stringify(true), {
+        EX: 3600,
+      }).catch(() => {});
       const existingUser = await User.findOne({
         id: userId
       });

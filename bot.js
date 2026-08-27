@@ -29,7 +29,8 @@ import {
 
 import redisClient from './redis.js';
 import {
-  termsAndcondition
+  termsAndcondition,
+  handleAcceptTerms
 } from './utils/terms.js';
 import {
   checkPerms
@@ -438,6 +439,10 @@ client.on('interactionCreate', async (interaction) => {
       }
       if (interaction.customId === 'broadcast_toggle_notify') {
         await handleToggleNotification(interaction);
+        return;
+      }
+      if (interaction.customId === 'accept_terms') {
+        await handleAcceptTerms(interaction);
         return;
       }
     } catch (error) {
