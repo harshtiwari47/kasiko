@@ -14,9 +14,7 @@ const OwnerSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    default: function() {
-      return this.ownerType || 'staff';
-    }
+    default: 'staff'
   },
   level: {
     type: Number,
