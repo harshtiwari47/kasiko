@@ -576,21 +576,62 @@ function selectRandomTeam(animals, maxSize = 3) {
   return [...available].sort(() => Math.random() - 0.5).slice(0, Math.min(maxSize, available.length));
 }
 
-function generateWildTeam(avgLevel = 1) {
-  const available = animalsData.animals.filter(a => a.type !== 'exclusive');
-  const chosen = [...available].sort(() => Math.random() - 0.5).slice(0, 3);
-  return chosen.map(a => {
-    const level = Math.max(1, avgLevel + Math.floor(Math.random() * 3) - 1);
-    const stats = getAnimalBaseStats(a.name);
+function generateWildTeam(userTeam = [], avgLevel = 1) {
+  const allAnimals = animalsData.animals || [];
+  if (!userTeam || userTeam.length === 0) {
+    const chosen = [...allAnimals].sort(() => Math.random() - 0.5).slice(0, 3);
+    return chosen.map(a => {
+      const stats = getAnimalBaseStats(a.name);
+      const level = Math.max(1, avgLevel);
+      const maxHp = stats.baseHp + ((level - 1) * 8);
+      const attack = stats.baseAttack + ((level - 1) * 2);
+      return {
+        name: a.name,
+        level,
+        hp: maxHp,
+        maxHp,
+        attack,
+        emoji: a.emoji,
+        rarity: stats.rarity,
+        type: stats.type
+      };
+    });
+  }
+
+  const chosenNames = new Set();
+  return userTeam.map(uAnimal => {
+    const uStats = calculateAnimalStats(uAnimal);
+    const uPower = (uStats.baseHp || 30) + ((uStats.baseAttack || 5) * 6);
+
+    const available = allAnimals.filter(a => !chosenNames.has(a.name.toLowerCase()));
+    const pool = available.length >= 1 ? available : allAnimals;
+
+    const scored = pool.map(a => {
+      const stats = getAnimalBaseStats(a.name);
+      const power = (stats.baseHp || 30) + ((stats.baseAttack || 5) * 6);
+      return { animal: a, diff: Math.abs(power - uPower), stats };
+    });
+
+    scored.sort((a, b) => a.diff - b.diff);
+    const candidates = scored.slice(0, Math.min(4, scored.length));
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    chosenNames.add(pick.animal.name.toLowerCase());
+
+    const levelOffsets = [0, 0, -1, 1];
+    const offset = levelOffsets[Math.floor(Math.random() * levelOffsets.length)];
+    const level = Math.max(1, (uStats.level || 1) + offset);
+    const stats = pick.stats;
+
     const maxHp = stats.baseHp + ((level - 1) * 8);
     const attack = stats.baseAttack + ((level - 1) * 2);
+
     return {
-      name: a.name,
+      name: pick.animal.name,
       level,
       hp: maxHp,
       maxHp,
       attack,
-      emoji: a.emoji,
+      emoji: pick.animal.emoji,
       rarity: stats.rarity,
       type: stats.type
     };
@@ -701,12 +742,21 @@ async function runBattleWithProgress(userTeam, oppTeam, onUpdate, delayMs = 1100
   const oFinalAlive = oppAlive.filter(a => a.hp > 0);
 
   let winner;
-  if (uFinalAlive.length > 0 && oFinalAlive.length === 0) winner = 'user';
-  else if (oFinalAlive.length > 0 && uFinalAlive.length === 0) winner = 'opp';
-  else {
-    const uHp = userAlive.reduce((s, a) => s + Math.max(0, a.hp), 0);
-    const oHp = oppAlive.reduce((s, a) => s + Math.max(0, a.hp), 0);
-    winner = uHp > oHp ? 'user' : oHp > uHp ? 'opp' : 'tie';
+  if (uFinalAlive.length > 0 && oFinalAlive.length === 0) {
+    winner = 'user';
+  } else if (oFinalAlive.length > 0 && uFinalAlive.length === 0) {
+    winner = 'opp';
+  } else {
+    const uTotalMax = userAlive.reduce((s, a) => s + a.maxHp, 0);
+    const oTotalMax = oppAlive.reduce((s, a) => s + a.maxHp, 0);
+    const uHpRatio = userAlive.reduce((s, a) => s + Math.max(0, a.hp), 0) / Math.max(1, uTotalMax);
+    const oHpRatio = oppAlive.reduce((s, a) => s + Math.max(0, a.hp), 0) / Math.max(1, oTotalMax);
+
+    if (Math.abs(uHpRatio - oHpRatio) < 0.02) {
+      winner = 'tie';
+    } else {
+      winner = uHpRatio > oHpRatio ? 'user' : 'opp';
+    }
   }
 
   return {
@@ -886,7 +936,7 @@ export async function battleCommand(context, { opponentId = null, isWild = false
         ? buildTeamFromPreferred(opp.hunt.team, oppAnimals, 3)
         : selectRandomTeam(oppAnimals, 3);
     } else {
-      oppTeam = generateWildTeam(userAvgLevel);
+      oppTeam = generateWildTeam(userTeam, userAvgLevel);
     }
 
     const thumbnailAttachment = fs.existsSync(BattleThumbnailPath)
