@@ -23,6 +23,8 @@ import {
   EmbedBuilder,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  ContainerBuilder,
+  MessageFlags,
   ComponentType
 } from "discord.js";
 
@@ -510,27 +512,32 @@ export async function zombieSurvival(id, playerInfo, context) {
           zombiesEmbedShow = zombiesEmbed();
         } else if (choice === "strike_boss") {
           if (bossSpawned && bossHp > 0 && locationBoss) {
-            const baseDmg = Math.floor(Math.random() * (playerInfo.activeWeapon.maxHunt * 4)) + (playerInfo.activeWeapon.minHunt * 2) + 22;
+            const weaponLevel = playerInfo.activeWeapon.level || 1;
+            const minDmg = (playerInfo.activeWeapon.minHunt * 2) + (weaponLevel * 2) + 12;
+            const maxDmg = (playerInfo.activeWeapon.maxHunt * 2) + (weaponLevel * 4) + 22;
+            const baseDmg = Math.floor(Math.random() * (maxDmg - minDmg + 1)) + minDmg;
             bossHp = Math.max(0, bossHp - baseDmg);
             gameData.weaponDurability -= Math.floor(Math.random() * 15) + 10;
             image = locationBoss.image || "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg";
 
             let bossRetaliation = "";
             if (bossHp > 0) {
+              const isEnraged = bossHp <= Math.floor(bossMaxHp * 0.4);
               const skill = locationBoss.skills[Math.floor(Math.random() * locationBoss.skills.length)];
-              const bossDmg = Math.floor(locationBoss.attack * (0.75 + Math.random() * 0.4));
-              gameData.health -= bossDmg;
-              bossRetaliation = `\n💀 **${locationBoss.name}** counter-attacked with **${skill}** for **${bossDmg} damage**!`;
-              outcome = `⚔️ **${username}** unleashed ${playerInfo.activeWeapon.weapon} on **${locationBoss.emoji} ${locationBoss.name}** for **${baseDmg} damage**! (Remaining: **${bossHp}/${bossMaxHp} HP**)${bossRetaliation}`;
-              embedColor = "DarkRed";
+              const bossDmg = Math.floor(locationBoss.attack * (0.8 + Math.random() * 0.45) * (isEnraged ? 1.35 : 1.0));
+              gameData.health = Math.max(0, gameData.health - bossDmg);
+              const enrageAlert = isEnraged ? " 💢 **[ENRAGED]**" : "";
+              bossRetaliation = `\n💀 **${locationBoss.name}**${enrageAlert} retaliated with **${skill}** for **${bossDmg} damage**!`;
+              outcome = `⚔️ **${username}** struck **${locationBoss.emoji} ${locationBoss.name}** with ${playerInfo.activeWeapon.weapon} for **${baseDmg} damage**! (Remaining: **${bossHp.toLocaleString()}/${bossMaxHp.toLocaleString()} HP**)${bossRetaliation}`;
+              embedColor = isEnraged ? "DarkRed" : "Red";
             } else {
               bossDefeatedInHunt = true;
               bossSpawned = false;
               outcome = `🎉 **TERRITORY BOSS DEFEATED!**\nYou crushed **${locationBoss.emoji} ${locationBoss.name}** (*${locationBoss.title}*)!\n` +
-                `🏆 **Spoils:** **+${locationBoss.reward.kills} Kills**, <:kasiko_coin:1300141236841086977> **${locationBoss.reward.cash.toLocaleString()}**, ${emojiList.metal || '🔩'} **${locationBoss.reward.metal} Metal**, ${emojiList.wood || '🪵'} **${locationBoss.reward.wood} Wood**!`;
+                `🏆 **Victory Spoils:** **+${locationBoss.reward.kills} Kills**, <:kasiko_coin:1300141236841086977> **${locationBoss.reward.cash.toLocaleString()}**, ${emojiList.metal || '🔩'} **${locationBoss.reward.metal} Metal**, ${emojiList.wood || '🪵'} **${locationBoss.reward.wood} Wood**!`;
               embedColor = "Gold";
             }
-            lilyHelp = "Target the Boss weakpoints to secure massive territory victory rewards! 💥";
+            lilyHelp = "Target Boss weakpoints while keeping your HP and durability up! 💥";
             zombiesEmbedShow = zombiesEmbed();
           }
         } else if (choice === "hide") {
@@ -768,32 +775,51 @@ async function viewUserLocationCollection(playerInfo, message) {
     const user = discordUser(message);
     const targetUserId = message.author ? message.author.id : message.user?.id;
 
-    const generateEmbed = (page) => {
+    const generateContainer = (page) => {
       const loc = locations[page];
       const unlocked = playerInfo.kill >= loc.killRequired;
       const isActive = (playerInfo.currentLocation || "l1") === loc.id;
+      const statusBadge = isActive
+        ? "⭐ **ACTIVE EXPEDITION CAMP**"
+        : (unlocked ? "🟢 **UNLOCKED TERRITORY**" : `🔒 **LOCKED TERRITORY**`);
 
-      const embed = new EmbedBuilder()
-        .setTitle(`🗺️ ${loc.name.toUpperCase()} ${isActive ? '⭐ [ACTIVE CAMP]' : (unlocked ? '🟢 [UNLOCKED]' : '🔒 [LOCKED]')}`)
-        .setDescription(
-          `*${loc.description}*\n\n` +
-          `### 📊 **TERRITORY INTEL**\n` +
-          `• **Status:** ${unlocked ? '🟢 **Unlocked**' : `🔒 **Locked** (Requires **${loc.killRequired.toLocaleString()} Kills** · Progress: **${playerInfo.kill.toLocaleString()}/${loc.killRequired.toLocaleString()}**)`}\n` +
-          `• **Bonus Supplies:** ${emojiList.supplies || '🎒'} **+${loc.bonousSupplies}**\n` +
-          `• **Wasteland Drops:** ${loc.items?.length ? loc.items.map(item => `${item.icon} **${item.name}**`).join(", ") : "Standard scrap"}\n\n` +
-          `### 👑 **TERRITORY FINAL BOSS**\n` +
-          `• **Boss:** ${loc.boss?.emoji} **${loc.boss?.name}** (*${loc.boss?.title}*)\n` +
-          `• **Vitals:** ❤️ **${loc.boss?.hp} HP** · ⚔️ **${loc.boss?.attack} ATK**\n` +
-          `• **Signature Skills:** *${loc.boss?.skills?.join(', ')}*\n` +
-          `• **Victory Spoils:** **+${loc.boss?.reward?.kills} Kills**, <:kasiko_coin:1300141236841086977> **${loc.boss?.reward?.cash?.toLocaleString()}**, ${emojiList.metal || '🔩'} **${loc.boss?.reward?.metal} Metal**, ${emojiList.wood || '🪵'} **${loc.boss?.reward?.wood} Wood**`
+      const container = new ContainerBuilder()
+        .addTextDisplayComponents(td =>
+          td.setContent(`## 🗺️ **${loc.name.toUpperCase()}** · ${statusBadge}`)
         )
-        .setColor(loc.color || "#2b1d1d")
-        .setImage(loc.url)
-        .setFooter({
-          text: `Page ${page + 1}/${totalPages} · Use buttons or dropdown to travel · kas zombie travel <name>`
-        });
+        .addSectionComponents(section =>
+          section
+            .addTextDisplayComponents(td =>
+              td.setContent(
+                `-# *${loc.description}*\n\n` +
+                `### 📊 **TERRITORY INTEL**\n` +
+                `• **Milestone:** ${unlocked ? '🟢 `UNLOCKED`' : `🔒 \`LOCKED\` (${playerInfo.kill.toLocaleString()}/${loc.killRequired.toLocaleString()} Kills)`}\n` +
+                `• **Scavenge Bonus:** ${emojiList.supplies || '🎒'} **+${loc.bonousSupplies} Supplies**\n` +
+                `• **Exclusive Drops:** ${loc.items?.length ? loc.items.map(item => `${item.icon} **${item.name}**`).join(", ") : "Standard scrap"}`
+              )
+            )
+            .setThumbnailAccessory(thumb =>
+              thumb.setDescription(loc.name).setURL(loc.url)
+            )
+        )
+        .addSeparatorComponents(sep => sep)
+        .addTextDisplayComponents(
+          td => td.setContent(`### 👑 **TERRITORY FINAL BOSS**`),
+          td => td.setContent(
+            `• **Boss:** ${loc.boss?.emoji} **${loc.boss?.name}** (*${loc.boss?.title}*)\n` +
+            `• **Combat Vitals:** ❤️ **${loc.boss?.hp.toLocaleString()} HP** · ⚔️ **${loc.boss?.attack} ATK**\n` +
+            `• **Signature Skills:** *${loc.boss?.skills?.join(', ')}*\n` +
+            `• **Victory Spoils:** **+${loc.boss?.reward?.kills} Kills** · <:kasiko_coin:1300141236841086977> **${loc.boss?.reward?.cash?.toLocaleString()}** · ${emojiList.metal || '🔩'} **${loc.boss?.reward?.metal} Metal** · ${emojiList.wood || '🪵'} **${loc.boss?.reward?.wood} Wood**`
+          )
+        )
+        .addSeparatorComponents(sep => sep)
+        .addTextDisplayComponents(td =>
+          td.setContent(
+            `-# 📄 Page ${page + 1}/${totalPages} · Use dropdown or buttons below to relocate your active camp · \`kas zombie travel <name>\``
+          )
+        );
 
-      return embed;
+      return container;
     };
 
     const getComponents = (page) => {
@@ -841,8 +867,8 @@ async function viewUserLocationCollection(playerInfo, message) {
     };
 
     const reply = await handleMessage(message, {
-      embeds: [generateEmbed(currentPage)],
-      components: getComponents(currentPage)
+      components: [generateContainer(currentPage), ...getComponents(currentPage)],
+      flags: MessageFlags.IsComponentsV2
     });
 
     const collector = reply?.createMessageComponentCollector
@@ -882,15 +908,22 @@ async function viewUserLocationCollection(playerInfo, message) {
       }
 
       await interaction.update({
-        embeds: [generateEmbed(currentPage)],
-        components: getComponents(currentPage)
+        components: [generateContainer(currentPage), ...getComponents(currentPage)],
+        flags: MessageFlags.IsComponentsV2
       }).catch(() => {});
     });
 
     collector.on("end", async () => {
       try {
         if (reply && typeof reply.edit === 'function') {
-          await reply.edit({ components: [] }).catch(() => {});
+          const disabledRows = getComponents(currentPage);
+          disabledRows.forEach(row => {
+            row.components.forEach(comp => comp.setDisabled(true));
+          });
+          await reply.edit({
+            components: [generateContainer(currentPage), ...disabledRows],
+            flags: MessageFlags.IsComponentsV2
+          }).catch(() => {});
         }
       } catch (_) {}
     });

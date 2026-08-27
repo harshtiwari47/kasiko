@@ -21,10 +21,10 @@ const locations = [
       name: "Rotting Brute",
       title: "The Suburb Destroyer",
       emoji: "🧟‍♂️",
-      hp: 75,
-      attack: 14,
+      hp: 260,
+      attack: 18,
       skills: ["Heavy Slam", "Flesh Shield"],
-      reward: { kills: 8, cash: 4000, metal: 15, wood: 25, medkit: 1 },
+      reward: { kills: 8, cash: 5000, metal: 20, wood: 30, medkit: 1 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg"
     }
   },
@@ -48,10 +48,10 @@ const locations = [
       name: "Plague Goliath",
       title: "Titan of the Quarry",
       emoji: "🧌",
-      hp: 140,
-      attack: 20,
+      hp: 480,
+      attack: 25,
       skills: ["Earthquake Stomp", "Rock Barrage"],
-      reward: { kills: 12, cash: 7500, metal: 30, wood: 40, medkit: 1 },
+      reward: { kills: 14, cash: 9000, metal: 35, wood: 45, medkit: 1 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb2.png"
     }
   },
@@ -75,10 +75,10 @@ const locations = [
       name: "The Mad Surgeon",
       title: "Butcher of Ward 9",
       emoji: "👨‍⚕️",
-      hp: 210,
-      attack: 26,
+      hp: 750,
+      attack: 32,
       skills: ["Bone Saw Frenzy", "Toxic Syringe"],
-      reward: { kills: 18, cash: 12000, metal: 45, wood: 50, medkit: 2 },
+      reward: { kills: 20, cash: 15000, metal: 55, wood: 60, medkit: 2 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb3.jpg"
     }
   },
@@ -102,10 +102,10 @@ const locations = [
       name: "Toxic Abomination",
       title: "Mutated Chemical Lord",
       emoji: "☣️",
-      hp: 290,
-      attack: 34,
+      hp: 1100,
+      attack: 40,
       skills: ["Acid Spray", "Acidic Puddle"],
-      reward: { kills: 24, cash: 18000, metal: 65, wood: 70, medkit: 2 },
+      reward: { kills: 28, cash: 24000, metal: 75, wood: 80, medkit: 2 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb4.jpg"
     }
   },
@@ -129,10 +129,10 @@ const locations = [
       name: "Terminal Stalker",
       title: "Phantom of the Runways",
       emoji: "🦅",
-      hp: 380,
-      attack: 42,
+      hp: 1550,
+      attack: 48,
       skills: ["Supersonic Shriek", "Divebomb Talon"],
-      reward: { kills: 30, cash: 25000, metal: 90, wood: 90, medkit: 3 },
+      reward: { kills: 36, cash: 35000, metal: 105, wood: 105, medkit: 3 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb5.jpg"
     }
   },
@@ -156,10 +156,10 @@ const locations = [
       name: "Subway Stalker",
       title: "Shadow of the Deep Rails",
       emoji: "🕷️",
-      hp: 490,
-      attack: 52,
+      hp: 2100,
+      attack: 58,
       skills: ["Cloak of Darkness", "Ambush Lunge"],
-      reward: { kills: 38, cash: 35000, metal: 120, wood: 120, medkit: 3 },
+      reward: { kills: 45, cash: 48000, metal: 140, wood: 140, medkit: 3 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb6.jpg"
     }
   },
@@ -183,10 +183,10 @@ const locations = [
       name: "Riot Juggernaut",
       title: "Commander of Outpost 9",
       emoji: "🛡️",
-      hp: 620,
-      attack: 64,
+      hp: 2800,
+      attack: 70,
       skills: ["Ballistic Shield Bash", "Heavy Sledgehammer"],
-      reward: { kills: 45, cash: 50000, metal: 160, wood: 150, medkit: 4 },
+      reward: { kills: 55, cash: 65000, metal: 180, wood: 175, medkit: 4 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb1.jpg"
     }
   },
@@ -210,10 +210,10 @@ const locations = [
       name: "Spore Matriarch",
       title: "Mother of the Overgrowth",
       emoji: "🥀",
-      hp: 780,
-      attack: 76,
+      hp: 3650,
+      attack: 82,
       skills: ["Spore Cloud Suffocation", "Thorn Whip Swarm"],
-      reward: { kills: 55, cash: 70000, metal: 200, wood: 200, medkit: 4 },
+      reward: { kills: 70, cash: 90000, metal: 230, wood: 230, medkit: 4 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb3.jpg"
     }
   },
@@ -237,10 +237,10 @@ const locations = [
       name: "Blast Furnace Colossus",
       title: "Smoldering Industrial Titan",
       emoji: "🔥",
-      hp: 960,
-      attack: 90,
+      hp: 4800,
+      attack: 95,
       skills: ["Furnace Backdraft", "Scorched Slam"],
-      reward: { kills: 70, cash: 100000, metal: 260, wood: 260, medkit: 5 },
+      reward: { kills: 85, cash: 125000, metal: 300, wood: 300, medkit: 5 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb4.jpg"
     }
   },
@@ -264,10 +264,10 @@ const locations = [
       name: "Patient Zero",
       title: "The Primary Outbreak Origin",
       emoji: "☣️",
-      hp: 1300,
-      attack: 110,
+      hp: 6500,
+      attack: 115,
       skills: ["Berserk Rampage", "Outbreak Infection", "Devastating Ground Slam"],
-      reward: { kills: 100, cash: 180000, metal: 400, wood: 400, medkit: 8 },
+      reward: { kills: 120, cash: 200000, metal: 450, wood: 450, medkit: 8 },
       image: "https://harshtiwari47.github.io/kasiko-public/images/zmb5.jpg"
     }
   }
