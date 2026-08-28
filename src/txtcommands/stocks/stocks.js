@@ -453,28 +453,12 @@ export default {
 
         case "buy":
         case "b": {
-          if (!args[2] || !Helper.isNumber(args[3])) {
-            return handleMessage(
-              message,
-              "⚠️ Please specify a valid stock symbol and amount to buy. Example: `stock buy <symbol> <amount>`"
-            );
-          }
-          const symbol = args[2].toUpperCase();
-          const amount = args[3];
-          return buySharesCommand(message, [null, symbol, amount]);
+          return buySharesCommand(message, args.slice(1));
         }
 
         case "sell":
         case "s": {
-          if (!args[2] || !Helper.isNumber(args[3])) {
-            return handleMessage(
-              message,
-              "⚠️ Please specify a valid stock symbol and amount to sell. Example: `stock sell <symbol> <amount>`"
-            );
-          }
-          const symbol = args[2].toUpperCase();
-          const amount = args[3];
-          return sellSharesCommand(message, [null, symbol, amount]);
+          return sellSharesCommand(message, args.slice(1));
         }
 
         case "portfolio":

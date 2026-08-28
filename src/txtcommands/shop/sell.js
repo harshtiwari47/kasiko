@@ -46,6 +46,10 @@ import {
   ITEM_DEFINITIONS,
   findItemByIdOrAlias
 } from '../../inventory.js';
+import Company from '../../../models/Company.js';
+import {
+  sellSharesCommand
+} from '../stocks/req/sell.js';
 
 export default {
   name: 'sell',
@@ -166,6 +170,20 @@ export default {
         components: [Container],
         flags: MessageFlags.IsComponentsV2
       });
+    }
+
+    // Route to stock selling if user specified "stock" or "stocks"
+    if (itemIdArg === "stock" || itemIdArg === "stocks") {
+      return sellSharesCommand(context, args.slice(2));
+    }
+
+    // Check if the item ID matches an existing Company name/symbol
+    const possibleCompany = await Company.findOne({
+      name: { $regex: new RegExp(`^${itemIdArg.trim()}$`, 'i') }
+    }).catch(() => null);
+
+    if (possibleCompany) {
+      return sellSharesCommand(context, [itemIdArg, amountArg]);
     }
 
     return await handleMessage(context, {

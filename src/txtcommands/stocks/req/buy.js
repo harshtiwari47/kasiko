@@ -20,16 +20,33 @@ import {
 export async function buySharesCommand(message, args) {
   try {
     const userId = message.user ? message.user.id: message.author.id;
-    const username = message.user ? message.user.username: message.author.username;
+    const username = message.user ? (message.user.globalName || message.user.username) : (message.author.globalName || message.author.username);
 
-    // Expected usage: stock buy <companyName> <numShares>
-    const companyName = args[1];
-    const sharesArg = args[2];
-
-    if (!companyName || !sharesArg) {
-      return handleMessage(message, {
-        content: `ⓘ **${username}**, please provide the company name and the number of shares to buy.\n**Usage:** \`stock buy <companyName> <numShares>\``
+    // Clean arguments: remove nulls, undefined, and command name prefixes
+    const cleanArgs = (Array.isArray(args) ? args : [])
+      .filter(a => a !== null && a !== undefined)
+      .map(a => String(a).trim())
+      .filter(a => {
+        const lower = a.toLowerCase();
+        return lower !== 'stock' && lower !== 'stocks' && lower !== 'buy' && lower !== 'b';
       });
+
+    if (cleanArgs.length < 2) {
+      return handleMessage(message, {
+        content: `ⓘ **${username}**, please provide the company name and number of shares to buy.\n-# **Usage:** \`kas stock buy <company> <amount>\` or \`/stocks buy\``
+      });
+    }
+
+    let companyName = null;
+    let sharesArg = null;
+
+    const firstIsNum = !isNaN(parseInt(cleanArgs[0], 10)) && isNaN(parseInt(cleanArgs[1], 10));
+    if (firstIsNum) {
+      sharesArg = cleanArgs[0];
+      companyName = cleanArgs.slice(1).join(' ');
+    } else {
+      companyName = cleanArgs[0];
+      sharesArg = cleanArgs.slice(1).join(' ');
     }
 
     const numShares = parseInt(sharesArg, 10);

@@ -21,19 +21,20 @@ import {
   discordUser,
   handleMessage
 } from '../../../../helper.js';
+import {
+  sellSharesCommand
+} from './sell.js';
 
 async function handleNumberInput(interaction, companyName) {
-  const numberInput = interaction.fields.getTextInputValue('companySellingInput');
-  const numShares = parseInt(numberInput, 10);
-  if (isNaN(numShares) || numShares < 1) {
+  const numberInput = interaction.fields.getTextInputValue('companySellingInput')?.trim();
+  if (!numberInput) {
     return await interaction.reply({
-      content: 'Invalid input! Please enter a number greater than 0.',
+      content: '⚠️ Please enter a valid number of shares to sell (or `all`).',
       ephemeral: true
     });
   }
 
-  // Directly invoke the sell command logic and reply without deferring.
-  return await sellSharesCommand(interaction, [null, companyName, numShares]);
+  return await sellSharesCommand(interaction, [companyName, numberInput]);
 }
 
 // Portfolio command for companies with summary details (Total Portfolio Value, Total Bought Price, Net Profit/Loss)
