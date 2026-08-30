@@ -5,10 +5,32 @@ import { getDashboardLogs, addDashboardLog, clearDashboardLogs } from './dashboa
 import txtcommands from '../textCommandHandler.js';
 import { renderDashboardHtml } from './dashboardHtml.js';
 
+// In-memory cache for high-efficiency, sub-millisecond dashboard responses
+let _cachedTelemetry = null;
+let _cachedTelemetryTime = 0;
+const TELEMETRY_CACHE_TTL_MS = 10000; // 10 seconds
+
 /**
  * Assembles live telemetry and system metrics into a unified payload.
  */
 export async function getTelemetryData(clientInput, redisClient, commandsInput = null) {
+  const now = Date.now();
+  if (_cachedTelemetry && (now - _cachedTelemetryTime) < TELEMETRY_CACHE_TTL_MS) {
+    // Keep logs and memory live
+    return {
+      ..._cachedTelemetry,
+      logs: getDashboardLogs({ limit: 100 }),
+      system: {
+        ..._cachedTelemetry.system,
+        memory: {
+          rssMb: (process.memoryUsage().rss / (1024 * 1024)).toFixed(1),
+          heapUsedMb: (process.memoryUsage().heapUsed / (1024 * 1024)).toFixed(1),
+          heapTotalMb: (process.memoryUsage().heapTotal / (1024 * 1024)).toFixed(1)
+        }
+      }
+    };
+  }
+
   try {
     const client = typeof clientInput === 'function' ? clientInput() : clientInput;
     const analytics = (await getAnalyticsData(client, redisClient).catch(() => null)) || {};
@@ -31,7 +53,7 @@ export async function getTelemetryData(clientInput, redisClient, commandsInput =
       uptime: process.uptime(),
       ping: client?.ws?.ping || overview.ping || 0,
       readyAt: client?.readyAt || null,
-      status: client?.isReady?.() ? 'OPERATIONAL' : 'STARTING',
+      status: client?.isReady?.() ? 'ONLINE' : 'STARTING',
       shardId: client?.shard?.ids?.[0] ?? 0,
       totalShards: client?.shard?.count ?? 1,
       totalGuilds: serverCount,
@@ -53,17 +75,18 @@ export async function getTelemetryData(clientInput, redisClient, commandsInput =
       }
     };
 
-    // Connected Servers array
-    const serversList = client?.guilds?.cache
-      ? Array.from(client.guilds.cache.values()).map(g => ({
-          id: g.id,
-          name: g.name,
-          memberCount: g.memberCount || 0,
-          icon: g.iconURL({ dynamic: true, size: 64 }) || null,
-          joinedAt: g.joinedAt ? g.joinedAt.toISOString() : null,
-          ownerId: g.ownerId
-        }))
-      : [];
+    // Connected Servers array (capped to top 200 for fast network transfer)
+    const serversList = guildArray
+      .map(g => ({
+        id: g.id,
+        name: g.name,
+        memberCount: Number(g.memberCount) || 0,
+        icon: typeof g.iconURL === 'function' ? g.iconURL({ dynamic: true, size: 64 }) : null,
+        joinedAt: g.joinedAt ? g.joinedAt.toISOString() : null,
+        ownerId: g.ownerId
+      }))
+      .sort((a, b) => b.memberCount - a.memberCount)
+      .slice(0, 200);
 
     // Owners & Management Team
     const rawOwners = getAllOwners() || [];
@@ -71,7 +94,7 @@ export async function getTelemetryData(clientInput, redisClient, commandsInput =
       const userObj = client?.users?.cache?.get(o.ownerId);
       return {
         ...o,
-        username: userObj?.username || userObj?.globalName || (o.ownerId === '716262446700593152' ? 'Harsh (Founder)' : 'Management Member'),
+        username: userObj?.username || userObj?.globalName || (o.ownerId === '716262446700593152' ? 'Harsh (Founder)' : 'Team Member'),
         avatar: userObj?.displayAvatarURL?.({ dynamic: true }) || null
       };
     });
@@ -95,7 +118,7 @@ export async function getTelemetryData(clientInput, redisClient, commandsInput =
     }
     commandsList.sort((a, b) => a.name.localeCompare(b.name));
 
-    return {
+    const result = {
       bot: botData,
       system: systemData,
       database: {
@@ -119,12 +142,20 @@ export async function getTelemetryData(clientInput, redisClient, commandsInput =
       },
       topCommandsToday: analytics.topCommandsToday || [],
       topCommandsAlltime: analytics.topCommandsAlltime || [],
+      topUsersToday: analytics.topUsersToday || [],
+      topUsersAlltime: analytics.topUsersAlltime || [],
+      topGuildsToday: analytics.topGuildsToday || [],
+      topGuildsAlltime: analytics.topGuildsAlltime || [],
       servers: serversList,
       owners: resolvedOwners,
       commands: commandsList,
       logs: getDashboardLogs({ limit: 100 }),
-      generatedAt: Date.now()
+      generatedAt: now
     };
+
+    _cachedTelemetry = result;
+    _cachedTelemetryTime = now;
+    return result;
   } catch (err) {
     console.error('[Dashboard] Error compiling telemetry data:', err);
     return {

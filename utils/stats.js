@@ -186,17 +186,21 @@ async function refreshSummaryCache(client, redisClient) {
       alltimeCommandsRaw,
       topCommandsToday,
       topCommandsAlltime,
-      topGuildsAlltime,
-      topUsersAlltime,
+      topUsersTodayRaw,
+      topUsersAlltimeRaw,
+      topGuildsTodayRaw,
+      topGuildsAlltimeRaw,
       monthlyDocs
     ] = await Promise.all([
       redisClient.get(`stats:daily:${today}:total`).catch(() => '0'),
-      redisClient.pfCount(`stats:daily:${today}:users`).catch(() => 0),
+      (typeof redisClient.pfCount === 'function' ? redisClient.pfCount(`stats:daily:${today}:users`) : Promise.resolve(0)).catch(() => 0),
       redisClient.zRangeWithScores('stats:alltime:commands', 0, -1).catch(() => []),
       redisClient.zRangeWithScores(`stats:daily:${today}:commands`, 0, 9, { REV: true }).catch(() => []),
       redisClient.zRangeWithScores('stats:alltime:commands', 0, 9, { REV: true }).catch(() => []),
-      redisClient.zRangeWithScores('stats:alltime:guildUsage', 0, 9, { REV: true }).catch(() => []),
+      redisClient.zRangeWithScores(`stats:daily:${today}:userUsage`, 0, 9, { REV: true }).catch(() => []),
       redisClient.zRangeWithScores('stats:alltime:userUsage', 0, 9, { REV: true }).catch(() => []),
+      redisClient.zRangeWithScores(`stats:daily:${today}:guildUsage`, 0, 9, { REV: true }).catch(() => []),
+      redisClient.zRangeWithScores('stats:alltime:guildUsage', 0, 9, { REV: true }).catch(() => []),
       BotStats.find({ date: new RegExp(`^${monthPrefix}`) }).select('totalCommands activeUsersCount').lean().catch(() => [])
     ]);
 
@@ -204,23 +208,45 @@ async function refreshSummaryCache(client, redisClient) {
     const alltimeCommandsTotal = alltimeCommandsRaw.reduce((sum, item) => sum + item.score, 0);
     const monthCommandsTotal = monthlyDocs.reduce((sum, doc) => sum + (doc.totalCommands || 0), 0) + todayCommands;
 
-    const serverCount = client?.guilds?.cache?.size || 0;
-    const totalMembers = client?.guilds?.cache?.reduce((sum, g) => sum + (g.memberCount || 0), 0) || 0;
+    const serverCount = client?.guilds?.cache ? (client.guilds.cache.size ?? Array.from(client.guilds.cache.values()).length) : 0;
+    const totalMembers = client?.guilds?.cache ? Array.from(client.guilds.cache.values()).reduce((sum, g) => sum + (Number(g.memberCount) || 0), 0) : 0;
 
-    // Resolve top server names
-    const resolvedTopGuilds = await Promise.all(
-      topGuildsAlltime.map(async item => {
-        let name = client?.guilds?.cache?.get(item.value)?.name;
-        if (!name) {
-          name = await redisClient.get(`guild:name:${item.value}`).catch(() => null);
-        }
+    // Helper to resolve guild names
+    const resolveGuilds = async (rawList) => {
+      return Promise.all(
+        rawList.map(async item => {
+          let name = client?.guilds?.cache?.get(item.value)?.name;
+          if (!name) {
+            name = await redisClient.get(`guild:name:${item.value}`).catch(() => null);
+          }
+          return {
+            id: item.value,
+            name: name || `Server (${item.value})`,
+            count: item.score
+          };
+        })
+      );
+    };
+
+    // Helper to resolve usernames
+    const resolveUsers = (rawList) => {
+      return rawList.map(item => {
+        const userObj = client?.users?.cache?.get(item.value);
         return {
-          id: item.value,
-          name: name || `Server (${item.value})`,
+          userId: item.value,
+          username: userObj?.username || userObj?.globalName || `User (${item.value.slice(0, 6)}...)`,
           count: item.score
         };
-      })
-    );
+      });
+    };
+
+    const [resolvedTopGuildsAlltime, resolvedTopGuildsToday] = await Promise.all([
+      resolveGuilds(topGuildsAlltimeRaw),
+      resolveGuilds(topGuildsTodayRaw)
+    ]);
+
+    const resolvedTopUsersAlltime = resolveUsers(topUsersAlltimeRaw);
+    const resolvedTopUsersToday = resolveUsers(topUsersTodayRaw);
 
     const summaryPayload = {
       overview: {
@@ -240,8 +266,10 @@ async function refreshSummaryCache(client, redisClient) {
       },
       topCommandsToday: topCommandsToday.map(i => ({ name: i.value, count: i.score })),
       topCommandsAlltime: topCommandsAlltime.map(i => ({ name: i.value, count: i.score })),
-      topGuildsActivity: resolvedTopGuilds,
-      topUsersActivity: topUsersAlltime.map(i => ({ userId: i.value, count: i.score })),
+      topUsersToday: resolvedTopUsersToday,
+      topUsersAlltime: resolvedTopUsersAlltime,
+      topGuildsToday: resolvedTopGuildsToday,
+      topGuildsAlltime: resolvedTopGuildsAlltime,
       cachedAt: Date.now()
     };
 

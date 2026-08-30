@@ -3,7 +3,7 @@
  * Keeps the most recent 250 log events with timestamp, severity, and context.
  */
 
-const MAX_LOGS = 250;
+const MAX_LOGS = 120;
 const logBuffer = [];
 
 export function addDashboardLog(level, category, message, meta = null) {
