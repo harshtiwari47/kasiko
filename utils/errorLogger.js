@@ -4,6 +4,7 @@ import {
   EmbedBuilder
 } from 'discord.js';
 import logger from '../anticrash.js';
+import { addDashboardLog } from '../src/dashboard/dashboardLogs.js';
 
 let discordClient = null;
 
@@ -116,8 +117,9 @@ function extractContextInfo(context = {}) {
  */
 export async function sendErrorLog(error, context = {}) {
   try {
-    // 1. Log locally to Winston and console
+    // 1. Log locally to Winston, console, and dashboard ring buffer
     const errorMsg = error?.stack || error?.message || String(error);
+    addDashboardLog('ERROR', context.source || 'EXCEPTION', errorMsg, context);
     if (logger && typeof logger.error === 'function') {
       logger.error(`[ErrorLogger] ${context.source || 'Bot Error'}: ${errorMsg}`);
     } else {

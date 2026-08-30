@@ -76,6 +76,8 @@ import {
   sendErrorLog,
   initErrorLogger
 } from './utils/errorLogger.js';
+import { setupDashboard } from './src/dashboard/dashboard.js';
+import { addDashboardLog } from './src/dashboard/dashboardLogs.js';
 
 dotenv.config();
 
@@ -86,10 +88,12 @@ scheduleGiveaways();
 
 // Bind to port
 const app = express();
-// Simulate port binding
 const PORT = process.env.PORT || 3000;
-app.get('/', (req, res) => res.send('Discord bot is running!'));
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+setupDashboard(app, () => client, redisClient, () => txtcommands);
+app.listen(PORT, () => {
+  console.log(`[Dashboard] 🚀 Operational dashboard listening on port ${PORT}`);
+  addDashboardLog('INFO', 'DASHBOARD', `Operational dashboard online on port ${PORT}`);
+});
 
 export const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
@@ -107,6 +111,7 @@ const clientId = developmentMode ? process.env.APP_IDDEV : process.env.APP_ID;
 
 client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
+  addDashboardLog('INFO', 'GATEWAY', `Connected to Discord Gateway as ${client.user.tag} (${client.guilds.cache.size} guilds)`);
   initErrorLogger(client);
   await initOwnerManager(client);
   updateStatus(client);
@@ -322,6 +327,7 @@ client.on('messageCreate', async (message) => {
       await redisClient.del(`violations:${userId}`);
 
       await trackStats(message, redisClient, commandName);
+      addDashboardLog('CMD', 'TEXT_CMD', `[User ${message.author.username || message.author.id}] executed "kas ${commandName}" in ${message.guild ? `guild "${message.guild.name}"` : 'DM'}`);
 
       command.execute(args, message);
     } catch (error) {
@@ -385,6 +391,7 @@ client.on('interactionCreate', async (interaction) => {
   if (interaction.isCommand()) {
     try {
       await trackStats(interaction, redisClient, interaction.commandName);
+      addDashboardLog('CMD', 'SLASH_CMD', `[User ${interaction.user.username || interaction.user.id}] executed "/${interaction.commandName}" in ${interaction.guild ? `guild "${interaction.guild.name}"` : 'DM'}`);
 
       let userExistence = await userExists(interaction.user.id);
       if (!userExistence) {
