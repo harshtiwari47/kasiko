@@ -197,6 +197,7 @@ export const ITEM_DEFINITIONS = {
   rose: {
     id: 'rose',
     name: 'Rose',
+    aliases: ["roses", "flower", "flowers_rose"],
     emoji: '<:rose:1343097565738172488>',
     description: 'A romantic flower. Can be gifted to others. Share it with your spouse to increase your marriage BondXP. They can be found in ` shop ` and ` marriage daily `.',
     source: ["shop",
@@ -234,7 +235,7 @@ export const ITEM_DEFINITIONS = {
 
           await updateUser(userId, {
             cash: userData.cash,
-            'inventory.rose': (userData.inventory['rose'] || 0) + amount
+            'inventory.rose': (userData?.inventory?.['rose'] || 0) + amount
           });
 
           const Container = new ContainerBuilder()

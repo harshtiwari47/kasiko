@@ -336,9 +336,9 @@ export async function crime(id, channel, user) {
          }
       }
 
-      const userDetails = discordUser(user);
+      const userName = (user?.name || user?.username || "YOU").toUpperCase();
       
-      let finalMessage = crimeMessage.replace("{username}", userDetails?.name?.toUpperCase()).replace("{cash}", earnedCash ? earnedCash.toLocaleString() : "").replace("{penalty}", penalty ? penalty.toLocaleString() : "");
+      let finalMessage = crimeMessage.replace("{username}", userName).replace("{cash}", earnedCash ? earnedCash.toLocaleString() : "").replace("{penalty}", penalty ? penalty.toLocaleString() : "");
       
       // Add drink boost notification if used
       if (drinkUsed && earnedCash > 0) {

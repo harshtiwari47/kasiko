@@ -48,29 +48,45 @@ export function discordUser(context) {
     id: null,
     avatar: null,
     name: null
+  };
+
+  if (!context) return data;
+
+  // If context is already an extracted discordUser object
+  if (context.id && context.username && !context.user && !context.author && !context.member) {
+    data.id = context.id;
+    data.username = context.username;
+    data.avatar = context.avatar || null;
+    data.name = context.name || context.username;
+    return data;
   }
 
-  if (!context.user && !context.author && context.id && context.username) {
-    context.user = context;
+  const userObj = (typeof context.displayAvatarURL === 'function')
+    ? context
+    : (context.user || context.author || null);
+
+  if (typeof userObj?.displayAvatarURL === 'function') {
+    try {
+      data.avatar = userObj.displayAvatarURL({ dynamic: true });
+    } catch (e) {
+      data.avatar = null;
+    }
+  } else if (context.avatar) {
+    data.avatar = context.avatar;
   }
 
-  const avatarUrl = context.user
-  ? context.user?.displayAvatarURL({
-    dynamic: true
-  }): context?.author?.displayAvatarURL({
-    dynamic: true
-  });
-
-  if (avatarUrl) data.avatar = avatarUrl;
-  if (context?.author) {
+  if (context.author) {
     data.username = context.author.username;
     data.id = context.author.id;
   } else if (context.user) {
     data.username = context.user.username;
     data.id = context.user.id;
+  } else if (context.id) {
+    data.id = context.id;
+    data.username = context.username || context.id;
   }
 
-  data.name = context?.member?.displayName ?? data.username;
+  data.name = context?.member?.displayName ?? context?.user?.globalName ?? context?.author?.globalName ?? data.username;
 
   return data;
 }

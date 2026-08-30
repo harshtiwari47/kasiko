@@ -50,76 +50,85 @@ export const Bank = {
 
       if (!userData) return;
 
-      if (amount && String(amount).toLowerCase() === "all") {
-        amount = Number(userData.cash || 0);
-      } else {
-        amount = Number(amount);
-      }
-
-      if (isNaN(amount) || amount <= 0 || !Number.isInteger(amount)) {
-        return await handleMessage(context,
-          `ⓘ **${name}**, please enter a valid positive integer amount to deposit!`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
-      if (userData.cash < amount) {
-        return await handleMessage(context,
-          `ⓘ **${name}**, you don't have enough cash to deposit that amount!`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
-
       const account = userData.bankAccount;
       if (!account || !account?.open) {
         return await handleMessage(context,
-          `ⓘ **${name}**, you don't have a bank account yet. Open one first!\nOpen through **\`bank\`** or *USE*: **\`bank open\`**\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
+          `ⓘ **${name}**, you don't have a bank account yet. Open one first!\nOpen through **\`bank\`** or *USE*: **\`bank open\`**\n**COST**: <:kasiko_coin:1300141236841086977> 1,000`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      // Deduct cash and increase bank deposit
-      let newDeposit = Number(account.deposit || 0) + amount;
-      const bankLimit = (account.level || 1) * (BankInfo.storage || 300000);
+      const walletCash = Math.max(0, Number(userData.cash || 0));
+      const currentDeposit = Math.max(0, Number(account.deposit || 0));
+      const bankLimit = (account.level || 1) * (BankInfo.storage || 500000);
+      const spaceAvailable = Math.max(0, bankLimit - currentDeposit);
 
-      if (newDeposit > bankLimit) {
-        amount = Math.max(0, amount - (newDeposit - bankLimit));
-        newDeposit = bankLimit;
+      if (spaceAvailable <= 0) {
+        return await handleMessage(context, `ⓘ **${name}**, your bank vault is already at maximum capacity (<:kasiko_coin:1300141236841086977> **${bankLimit.toLocaleString()}**)! Upgrade your bank level (\`kas bank upgrade\`) to store more.`);
       }
 
-      if (amount <= 0) {
+      if (walletCash <= 0) {
+        return await handleMessage(context, `ⓘ **${name}**, you have no cash in your wallet to deposit!`);
+      }
+
+      let depositAmount;
+      const isAll = (amount === "all" || String(amount).toLowerCase() === "all" || String(amount).toLowerCase() === "max");
+
+      if (isAll) {
+        depositAmount = Math.min(walletCash, spaceAvailable);
+      } else {
+        const parsed = parseInt(amount, 10);
+        if (isNaN(parsed) || parsed <= 0) {
+          return await handleMessage(context,
+            `ⓘ **${name}**, please enter a valid positive integer amount to deposit (or \`all\`)!`
+          ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+
+        if (walletCash < parsed) {
+          return await handleMessage(context,
+            `ⓘ **${name}**, you don't have enough cash to deposit that amount! (Wallet: <:kasiko_coin:1300141236841086977> ${walletCash.toLocaleString()})`
+          ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        }
+
+        depositAmount = Math.min(parsed, spaceAvailable);
+      }
+
+      if (depositAmount <= 0) {
         return await handleMessage(context, `ⓘ **${name}**, your bank vault is already at maximum capacity! Upgrade your bank level to store more.`);
       }
 
-      userData.cash = Math.max(0, userData.cash - amount);
+      const newDeposit = currentDeposit + depositAmount;
+      const remainingCash = walletCash - depositAmount;
 
       try {
         await updateUser(userId, {
-          cash: Math.max(0, userData.cash),
-          'bankAccount.deposit': Math.abs(newDeposit)
+          cash: remainingCash,
+          'bankAccount.deposit': newDeposit
         });
 
         const Container = new ContainerBuilder()
         .addTextDisplayComponents(td =>
-          td.setContent(`### <:bank:1352897312606785576> **${name}** __deposited__ <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}**.`)
+          td.setContent(`### <:bank:1352897312606785576> **${name}** __deposited__ <:kasiko_coin:1300141236841086977> **${depositAmount.toLocaleString()}**.`)
         )
         .addSeparatorComponents(sep => sep)
         .addTextDisplayComponents(td =>
           td.setContent(
             `-# ⇆ ᴛʀᴀɴꜱᴀᴄᴛɪᴏɴ ꜱᴜᴍᴍᴀʀʏ\n` +
-            `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}**\n` +
-            `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${Math.abs(userData.cash).toLocaleString()}**`
+            `**ɴᴇᴡ ʙᴀɴᴋ ʙᴀʟᴀɴᴄᴇ ┊ <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()} / ${bankLimit.toLocaleString()}**\n` +
+            `**ʀᴇᴍᴀɪɴɪɴɢ ᴄᴀꜱʜ ┊ <:kasiko_coin:1300141236841086977> ${remainingCash.toLocaleString()}**`
           )
-        )
+        );
 
         return await handleMessage(context, {
           components: [Container],
           flags: MessageFlags.IsComponentsV2
-        })
+        });
 
       } catch (err) {
         console.error(`❌ Error updating bank details for ${username}:`, err);
 
         // Rollback: If updating the bank fails, refund the cash amount back to the user
         await updateUser(userId, {
-          cash: userData.cash
+          cash: walletCash
         });
 
         return await handleMessage(context, `<:warning:1366050875243757699> **${name}**, an error occurred while processing your deposit. Your cash balance has been restored.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
@@ -504,38 +513,42 @@ export default {
 
       switch (action) {
       case "deposit":
-      case "dep":
+      case "dep": {
         let depositAmount;
-        if (String(args[1]).toLowerCase() !== "all") {
-          depositAmount = parseInt(args[1], 10);
-          if (isNaN(depositAmount) || depositAmount <= 0) {
-            return await handleMessage(context, `ⓘ **${username}**, please specify a valid amount to deposit.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-        } else {
+        const depArg = args[1] ? String(args[1]).toLowerCase().trim() : "all";
+        if (depArg === "all" || depArg === "max" || depArg === "a") {
           depositAmount = "all";
+        } else {
+          depositAmount = parseInt(depArg, 10);
+          if (isNaN(depositAmount) || depositAmount <= 0) {
+            return await handleMessage(context, `ⓘ **${username}**, please specify a valid amount to deposit (or \`all\`).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
         }
 
         // Call a function to deposit the amount
         return Bank.deposit(depositAmount, context);
+      }
 
       case "bs":
       case "ba":
         return Bank.showStatus(context);
 
       case "withdraw":
-      case "with":
+      case "with": {
         let withdrawAmount;
-        if (String(args[1]).toLowerCase() !== "all") {
-          withdrawAmount = parseInt(args[1], 10);
-          if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
-            return await handleMessage(context, `ⓘ **${username}**, please specify a valid amount to withdraw.`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-          }
-        } else {
+        const withArg = args[1] ? String(args[1]).toLowerCase().trim() : "all";
+        if (withArg === "all" || withArg === "max" || withArg === "a") {
           withdrawAmount = "all";
+        } else {
+          withdrawAmount = parseInt(withArg, 10);
+          if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
+            return await handleMessage(context, `ⓘ **${username}**, please specify a valid amount to withdraw (or \`all\`).`).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+          }
         }
 
         // Call a function to withdraw the amount
         return Bank.withdraw(withdrawAmount, context);
+      }
 
       case "bank":
         let subcommand = args[1] ? args[1].toLowerCase(): null;
