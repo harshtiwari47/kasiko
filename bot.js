@@ -390,8 +390,18 @@ client.on('interactionCreate', async (interaction) => {
   // Slash Command Handling
   if (interaction.isCommand()) {
     try {
-      await trackStats(interaction, redisClient, interaction.commandName);
-      addDashboardLog('CMD', 'SLASH_CMD', `[User ${interaction.user.username || interaction.user.id}] executed "/${interaction.commandName}" in ${interaction.guild ? `guild "${interaction.guild.name}"` : 'DM'}`);
+      const slashCmdName = interaction.commandName;
+      let subCmd = null;
+      try {
+        subCmd = interaction.options?.getSubcommand(false);
+      } catch (err) {}
+      const fullCmdName = subCmd ? `${slashCmdName} ${subCmd}` : slashCmdName;
+
+      await trackStats(interaction, redisClient, fullCmdName);
+      addDashboardLog('CMD', 'SLASH_CMD', `[User ${interaction.user.username || interaction.user.id}] executed "/${fullCmdName}" in ${interaction.guild ? `guild "${interaction.guild.name}"` : 'DM'}`);
+
+      // Award EXP for slash command execution
+      updateExpPoints(`/${fullCmdName}`, interaction.user, interaction.channel, interaction.guild?.id || 'DM', '/').catch(err => console.error('[XP Error (Slash)]', err));
 
       let userExistence = await userExists(interaction.user.id);
       if (!userExistence) {

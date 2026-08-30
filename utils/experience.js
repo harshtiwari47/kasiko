@@ -76,19 +76,24 @@ async function generateLevelUpImage(user, lvlUpReward, lvl, expRequiredNextLvl, 
   }
 }
 
-export async function updateExpPoints(content, user, channel, guildId, prefix) {
+export async function updateExpPoints(content = '', user, channel, guildId, prefix = '') {
+  if (!user || !user.id) return;
   try {
     const userId = user.id.toString();
     const redisKey = `xp:${userId}`;
-    let dataRaw = await redisClient.get(redisKey);
-    let userData;
-    if (dataRaw) {
-      try {
-        userData = JSON.parse(dataRaw);
-      } catch (e) {
-        userData = null;
+    let userData = null;
+
+    if (redisClient && redisClient.isOpen) {
+      const dataRaw = await redisClient.get(redisKey).catch(() => null);
+      if (dataRaw) {
+        try {
+          userData = JSON.parse(dataRaw);
+        } catch (e) {
+          userData = null;
+        }
       }
     }
+
     if (!userData) {
       const dbData = await getUserData(userId);
       if (dbData) {
@@ -106,43 +111,37 @@ export async function updateExpPoints(content, user, channel, guildId, prefix) {
       }
     }
 
+    // Standard +10 EXP, with +10 bonus (+20 total) when command prefix or slash command is used
     let gain = 10;
-    if (prefix && content.includes(prefix)) gain += 10;
-    userData.exp += gain;
+    if ((prefix && content.includes(prefix)) || content.startsWith('/') || prefix === '/') {
+      gain += 10;
+    }
+    userData.exp = (userData.exp || 0) + gain;
 
-    //  Increment command count
+    // Increment command count
     userData.count = (userData.count || 0) + 1;
 
-    //  Check for level-up
+    // Check for level-up
     const threshold = 100;
     const newLevel = Math.floor(Math.sqrt(userData.exp / threshold)) || 0;
     let lvlUp = false;
     let lvlUpReward = 0;
-    if (newLevel > userData.level) {
+    if (newLevel > (userData.level || 0)) {
       lvlUp = true;
       lvlUpReward = 2000 + newLevel * 1250;
       userData.level = newLevel;
     }
 
-    // Decide whether to flush to DB: every 10 commands or on level-up
+    // Flush to DB: every 10 commands or immediately on level-up
     if (lvlUp || userData.count >= 10) {
       try {
-
-        // If level-up reward, increment cash in DB
         if (lvlUp && lvlUpReward) {
           await User.findOneAndUpdate(
-            {
-              id: userId
-            },
-            {
-              $inc: {
-                cash: lvlUpReward
-              }
-            }
+            { id: userId },
+            { $inc: { cash: lvlUpReward } }
           );
         }
 
-        // Update exp and level
         await updateUser(userId, {
           exp: userData.exp,
           level: userData.level
@@ -153,35 +152,37 @@ export async function updateExpPoints(content, user, channel, guildId, prefix) {
       userData.count = 0;
     }
 
-    //  Save back to Redis with 6-hour TTL
-    // Store JSON including exp, level, count
-    // TTL: 6 hours = 6 * 3600 = 21600 seconds
-    try {
-      await redisClient.set(redisKey, JSON.stringify(userData), {
-        EX: 6 * 3600
-      });
-    } catch (rErr) {
-      console.error('Error saving to Redis:', rErr);
+    // Save back to Redis with 6-hour TTL
+    if (redisClient && redisClient.isOpen) {
+      try {
+        await redisClient.set(redisKey, JSON.stringify(userData), {
+          EX: 6 * 3600
+        });
+      } catch (rErr) {
+        console.error('Error saving to Redis:', rErr);
+      }
     }
 
     // If level-up, generate & send image
     if (lvlUp) {
       const expRequiredNextLvl = (Math.pow(newLevel + 1, 2) * threshold) - userData.exp;
       try {
+        const avatarUrl = typeof user.displayAvatarURL === 'function'
+          ? user.displayAvatarURL({ dynamic: true })
+          : (user.avatarURL || user.avatar || 'https://harshtiwari47.github.io/kasiko-public/images/logo.png');
+
         const attachment = await generateLevelUpImage(
           user,
           lvlUpReward,
           newLevel,
           expRequiredNextLvl,
-          user.displayAvatarURL({
-            dynamic: true
-          })
+          avatarUrl
         );
-        if (attachment) {
+        if (attachment && channel && typeof channel.send === 'function') {
           await channel.send({
-            content: `𓇼 **${user.username}**, congratulations! You've leveled up to **${newLevel}**! 🎉`,
+            content: `𓇼 **${user.username || 'Traveler'}**, congratulations! You've leveled up to **${newLevel}**! 🎉`,
             files: [attachment]
-          });
+          }).catch(() => {});
         }
       } catch (imgErr) {
         console.error('Error generating/sending level-up image:', imgErr);
