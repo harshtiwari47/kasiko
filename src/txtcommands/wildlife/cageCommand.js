@@ -2,7 +2,11 @@ import User from '../../../models/Hunt.js';
 import {
   EmbedBuilder,
   ContainerBuilder,
-  MessageFlags
+  MessageFlags,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ComponentType
 } from 'discord.js';
 import fs from 'fs';
 import path from 'path';
@@ -33,6 +37,8 @@ for (const a of _parsedAnimals) {
     description: a.description || 'A wild creature of the arena.'
   });
 }
+
+const TOTAL_ANIMAL_SPECIES = _parsedAnimals.length;
 
 function getAnimalMeta(name) {
   return _animalMetaMap.get((name || '').toLowerCase()) || {
@@ -70,11 +76,12 @@ async function handleMessage(context, data) {
 }
 
 /**
- * Show general cage info: display only the emojis of the user's animals,
- * plus an embed field for exclusive species.
+ * Show general cage info: collection overview with counts, collection %, rarity breakdown.
+ * This is the COLLECTION / ZOO view — not battle stats.
  */
 async function showCageOverview(context, user) {
   const username = context.user?.username || context.author?.username || 'Player';
+  const userId = context.user?.id || context.author?.id;
 
   if (!user.hunt?.animals || user.hunt.animals.length === 0) {
     return handleMessage(context, {
@@ -89,24 +96,40 @@ async function showCageOverview(context, user) {
   const toSubscript = (num) =>
     num.toString().split('').map(digit => subscriptNumbers[digit] || digit).join('');
 
-  const commonAnimals = (user.hunt.animals || []).filter(a => a.type !== 'exclusive' && (a.totalAnimals || 0) > 0);
+  const allAnimals = (user.hunt.animals || []).filter(a => (a.totalAnimals || 0) > 0);
+  const commonAnimals = allAnimals.filter(a => a.type !== 'exclusive');
+  const exclusiveAnimals = allAnimals.filter(a => a.type === 'exclusive');
+
+  // Collection stats
+  const uniqueSpecies = allAnimals.length;
+  const totalAnimals = allAnimals.reduce((sum, a) => sum + (a.totalAnimals || 0), 0);
+  const collectionPercent = TOTAL_ANIMAL_SPECIES > 0 ? Math.floor((uniqueSpecies / TOTAL_ANIMAL_SPECIES) * 100) : 0;
+  const avgLevel = allAnimals.length > 0 ? (allAnimals.reduce((sum, a) => sum + (a.level || 1), 0) / allAnimals.length).toFixed(1) : '1.0';
+
+  // Rarity breakdown
+  const rarityGroups = { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0, exclusive: 0 };
+  for (const a of allAnimals) {
+    const meta = getAnimalMeta(a.name);
+    const type = (a.type || meta.type || 'common').toLowerCase();
+    if (rarityGroups[type] !== undefined) rarityGroups[type]++;
+    else rarityGroups.common++;
+  }
+  const rarityLine = Object.entries(rarityGroups)
+    .filter(([, count]) => count > 0)
+    .map(([type, count]) => `**${count}** ${type}`)
+    .join(' · ');
+
   const animalEmojis = commonAnimals
     .map(animal => `${animal.emoji || getAnimalMeta(animal.name).emoji} ${toSubscript(animal.totalAnimals)}`)
     .join(' ');
-
-  const exclusiveAnimals = (user.hunt.animals || []).filter(animal => animal.type === 'exclusive' && (animal.totalAnimals || 0) > 0);
-  let exclusiveEmojis = '';
-  if (exclusiveAnimals.length > 0) {
-    exclusiveEmojis = exclusiveAnimals
-      .map(animal => `${animal.emoji || getAnimalMeta(animal.name).emoji} ${toSubscript(animal.totalAnimals)}`)
-      .join(' ');
-  }
 
   const Container = new ContainerBuilder()
     .setAccentColor(0x57F287)
     .addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`### **${username.toUpperCase()}**'𝕤 𝔸𝕟𝕚𝕞𝕒𝕝 ℂ𝕒𝕘𝕖 <:forest_tree:1354366758596776070>`),
-      textDisplay => textDisplay.setContent(`<:hunting_exp:1354384431091290162> 𝘏𝘜𝘕𝘛𝘐𝘕𝘎 𝘌𝘟𝘗: **${user.globalExp || 0}** <:rifle1:1352119137421234187><:rifle2:1352119217687625799> 𝘓𝘝𝘓: **${user.globalLevel || 1}**`)
+      textDisplay => textDisplay.setContent(
+        `📋 **${uniqueSpecies}**/${TOTAL_ANIMAL_SPECIES} species (**${collectionPercent}%**) · **${totalAnimals}** total · Avg Lv.**${avgLevel}**`
+      )
     )
     .addSeparatorComponents(separate => separate)
     .addTextDisplayComponents(
@@ -114,31 +137,75 @@ async function showCageOverview(context, user) {
     );
 
   if (exclusiveAnimals.length > 0) {
+    const exclusiveEmojis = exclusiveAnimals
+      .map(animal => `${animal.emoji || getAnimalMeta(animal.name).emoji} ${toSubscript(animal.totalAnimals)}`)
+      .join(' ');
     Container.addTextDisplayComponents(
       textDisplay => textDisplay.setContent(`<:exclusive:1347533975840882708> **EXCLUSIVE SPECIES**`),
       textDisplay => textDisplay.setContent(`## ${exclusiveEmojis}`)
     );
   }
 
-  Container.addSeparatorComponents(separate => separate);
-  Container.addTextDisplayComponents(
-    textDisplay => textDisplay.setContent(
-      `**Quick Commands:**\n` +
-      `• \`kas cage stats\` — 📊 View all animal stats, levels & battle power rankings\n` +
-      `• \`kas cage <animal>\` — 🔍 View specific animal stats (e.g. \`kas cage tiger\`)\n` +
-      `• \`kas feed <animal>\` — 🍖 Feed an animal to level it up (e.g. \`kas feed tiger 5\`)\n` +
-      `• \`kas team set <a1> <a2> <a3>\` — ⚔️ Optimize and deploy your 3-animal battle squad`
-    )
-  );
+  if (rarityLine) {
+    Container.addSeparatorComponents(separate => separate);
+    Container.addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`-# ${rarityLine}`)
+    );
+  }
 
-  return handleMessage(context, {
-    components: [Container],
+  // Help button
+  const helpBtn = new ButtonBuilder()
+    .setCustomId(`cage_help_${userId}`)
+    .setLabel('Help')
+    .setEmoji('❓')
+    .setStyle(ButtonStyle.Secondary);
+
+  const row = new ActionRowBuilder().addComponents(helpBtn);
+
+  const sent = await handleMessage(context, {
+    components: [Container, row],
     flags: MessageFlags.IsComponentsV2
   });
+
+  // Collector for the help button (ephemeral reply)
+  if (sent) {
+    const collector = sent.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      filter: i => i.customId === `cage_help_${userId}`,
+      time: 60_000
+    });
+
+    collector.on('collect', async (i) => {
+      await i.reply({
+        content:
+          `### 🐾 Cage & Wildlife Commands\n` +
+          `• \`kas cage\` — 🏠 View your animal collection\n` +
+          `• \`kas cage stats\` — 📊 View all animals ranked by level & rarity\n` +
+          `• \`kas cage <animal>\` — 🔍 View specific animal stats *(e.g. \`kas cage tiger\`)*\n` +
+          `• \`kas feed <animal>\` — 🍖 Feed an animal to level it up *(e.g. \`kas feed tiger 5\`)*\n` +
+          `• \`kas feed\` — 📦 See available food & who to feed\n` +
+          `• \`kas team\` — ⚔️ View battle squad, record & optimization\n` +
+          `• \`kas team set <a1> <a2> <a3>\` — 🛡️ Deploy your 3-animal battle squad\n` +
+          `• \`kas team clear\` — 🧹 Reset squad to random selection\n` +
+          `• \`kas hunt\` — 🏹 Hunt for new animals\n` +
+          `• \`kas ab\` — ⚔️ Battle in the arena\n` +
+          `• \`kas sell <animal> [count]\` — 💰 Sell animals from your cage`,
+        flags: MessageFlags.Ephemeral
+      }).catch(() => {});
+    });
+
+    collector.on('end', () => {
+      if (sent.editable) {
+        helpBtn.setDisabled(true);
+        sent.edit({ components: [Container, new ActionRowBuilder().addComponents(helpBtn)], flags: MessageFlags.IsComponentsV2 }).catch(() => {});
+      }
+    });
+  }
 }
 
 /**
- * Show ranked roster of all captured animals with their stats, levels, and team optimization tips.
+ * Show ranked collection stats — focuses on LEVELS, RARITY, EXP PROGRESS, COLLECTION.
+ * This is distinct from `kas team` which focuses on battle readiness.
  */
 async function showCageStats(context, user) {
   const username = context.user?.username || context.author?.username || 'Player';
@@ -146,75 +213,91 @@ async function showCageStats(context, user) {
 
   if (userAnimals.length === 0) {
     return handleMessage(context, {
-      content: `<:forest_tree:1354366758596776070> **${username}**, your cage is empty! Capture animals with \`kas hunt\` to build your battle squad.`
+      content: `<:forest_tree:1354366758596776070> **${username}**, your cage is empty! Capture animals with \`kas hunt\` to build your collection.`
     });
   }
 
-  // Calculate stats for all animals
+  // Group by rarity/type for a cleaner display
   const teamNames = new Set((user.hunt?.team || []).map(t => (t.name || '').toLowerCase()));
+
   const statsList = userAnimals.map(a => {
     const s = computeAnimalStats(a.name, a.level || 1);
     const inSquad = teamNames.has(a.name.toLowerCase());
+    const reqExp = (a.level || 1) * 30;
+    const curExp = a.exp || 0;
+    const expPercent = Math.min(100, Math.floor((curExp / reqExp) * 100));
     return {
       name: a.name,
       level: a.level || 1,
-      exp: a.exp || 0,
+      exp: curExp,
+      reqExp,
+      expPercent,
       total: a.totalAnimals || 1,
       hp: s.hp,
       attack: s.attack,
       power: s.power,
       emoji: a.emoji || s.meta.emoji,
       type: s.meta.type,
+      rarity: s.meta.rarity || 1,
       inSquad
     };
   });
 
-  // Sort descending by Power
-  statsList.sort((a, b) => b.power - a.power);
+  // Sort by LEVEL (desc), then by rarity (desc), then by total count (desc)
+  statsList.sort((a, b) => b.level - a.level || b.rarity - a.rarity || b.total - a.total);
+
+  // Collection summary
+  const totalAnimals = statsList.reduce((sum, a) => sum + a.total, 0);
+  const highestLevel = statsList[0]?.level || 1;
+  const maxLevelAnimal = statsList[0];
 
   const C = new ContainerBuilder()
-    .setAccentColor(0x5865F2)
+    .setAccentColor(0x57F287)
     .addTextDisplayComponents(
-      t => t.setContent(`### 📊 **${username.toUpperCase()}'S ANIMAL ROSTER & STATS**`),
-      t => t.setContent(`*Ranked by Battle Power (\`HP + ATK × 6\`). Animals with highest power deal more damage and survive longer!*`)
+      t => t.setContent(`### 📊 **${username.toUpperCase()}'S COLLECTION STATS**`),
+      t => t.setContent(
+        `**${statsList.length}** species · **${totalAnimals}** total animals · Peak: ${maxLevelAnimal ? `${maxLevelAnimal.emoji} **${maxLevelAnimal.name}** Lv.${maxLevelAnimal.level}` : 'N/A'}`
+      )
     )
     .addSeparatorComponents(s => s);
 
-  // Display top animals (up to 10 in card)
-  const displayLimit = Math.min(10, statsList.length);
+  // Display animals grouped by level tiers
+  const displayLimit = Math.min(12, statsList.length);
   for (let i = 0; i < displayLimit; i++) {
     const item = statsList[i];
-    const reqExp = item.level * 30;
-    const squadTag = item.inSquad ? ` · **[⚔️ IN SQUAD]**` : '';
+    const squadTag = item.inSquad ? ` ⚔️` : '';
+    const rarityStars = '★'.repeat(Math.min(5, item.rarity));
+
+    const filledBlocks = Math.floor(item.expPercent / 20);
+    const miniBar = '▓'.repeat(filledBlocks) + '░'.repeat(5 - filledBlocks);
+
     C.addTextDisplayComponents(
-      t => t.setContent(`**#${i + 1}** ${item.emoji} **${item.name}** (Lvl.${item.level}) — \`${item.type.toUpperCase()}\`${squadTag}`),
-      t => t.setContent(`-# <:heal_heart:1381904903827361905> **${item.hp} HP** · <:claw:1493561807091138631> **${item.attack} ATK** · ⚡ **${item.power} Power** · EXP: \`${item.exp}/${reqExp}\``)
+      t => t.setContent(
+        `${item.emoji} **${item.name}**${squadTag} — Lv.**${item.level}** · ×${item.total} · \`${item.type.toUpperCase()}\` ${rarityStars}\n` +
+        `-# EXP [${miniBar}] ${item.expPercent}% · \`${item.exp}/${item.reqExp}\` · <:heal_heart:1381904903827361905> ${item.hp} · <:claw:1493561807091138631> ${item.attack}`
+      )
     );
   }
 
   if (statsList.length > displayLimit) {
     C.addTextDisplayComponents(
-      t => t.setContent(`*...and ${statsList.length - displayLimit} more animal${statsList.length - displayLimit > 1 ? 's' : ''} in cage.*`)
+      t => t.setContent(`-# ...and **${statsList.length - displayLimit}** more species in cage.`)
     );
   }
 
-  // Team optimization recommendation
-  C.addSeparatorComponents(s => s);
-  const top3 = statsList.slice(0, 3);
-  const top3Names = top3.map(a => `${a.emoji} **${a.name}**`).join(' · ');
-  const setCmd = `kas team set ${top3.map(a => a.name).join(' ')}`;
+  // Animals closest to leveling up
+  const closestToLevelUp = [...statsList]
+    .filter(a => a.expPercent > 0)
+    .sort((a, b) => b.expPercent - a.expPercent)
+    .slice(0, 3);
 
-  const isCurrentSquadOptimal = top3.every(a => a.inSquad);
-
-  if (isCurrentSquadOptimal) {
+  if (closestToLevelUp.length > 0) {
+    C.addSeparatorComponents(s => s);
+    const closeLines = closestToLevelUp.map(a =>
+      `${a.emoji} **${a.name}** — **${a.expPercent}%** to Lv.${a.level + 1} (\`${a.reqExp - a.exp}\` EXP needed · \`kas feed ${a.name}\`)`
+    ).join('\n');
     C.addTextDisplayComponents(
-      t => t.setContent(`🌟 **Squad Status:** Your active battle squad is fully optimized with your top 3 strongest beasts!`),
-      t => t.setContent(`-# Level up your beasts with \`kas feed <animal> [amount]\` to make them even stronger.`)
-    );
-  } else {
-    C.addTextDisplayComponents(
-      t => t.setContent(`💡 **Recommended Optimal Squad:**\n${top3Names}`),
-      t => t.setContent(`👉 **Optimize Now:** \`${setCmd}\`\n-# Level up beasts with \`kas feed <animal>\` to increase HP and Attack!`)
+      t => t.setContent(`🔥 **Close to Level Up:**\n${closeLines}`)
     );
   }
 
@@ -303,7 +386,7 @@ async function showAnimalDetail(context, user, animalName) {
 /**
  * Main command function:
  *  - If 'feed' -> delegates to feedCommand
- *  - If 'stats' or 'list' -> show ranked stats of all animals
+ *  - If 'stats' or 'list' -> show collection stats
  *  - If an animal argument -> show that animal's details
  *  - If no argument -> show cage overview
  */
