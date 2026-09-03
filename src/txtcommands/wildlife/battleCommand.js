@@ -10,7 +10,9 @@ import {
 } from '../../../database.js';
 import { ITEM_DEFINITIONS } from '../../inventory.js';
 import { checkPassValidity } from '../explore/pass.js';
-import { createCanvas, loadImage } from '@napi-rs/canvas';
+import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
+import registerGlobalFonts from '../../../utils/canvasFont.js';
+registerGlobalFonts();
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from "url";
@@ -195,7 +197,7 @@ async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageC
   ctx.strokeStyle = color;
   ctx.lineWidth = 1;
   ctx.stroke();
-  ctx.font = `bold ${Math.floor(size * 0.55)}px sans-serif`;
+  ctx.font = `bold ${Math.floor(size * 0.55)}px Roboto, sans-serif`;
   ctx.fillStyle = color;
   ctx.textAlign = 'center';
   ctx.fillText(letter, cx, cy + Math.floor(size * 0.2));
@@ -228,7 +230,7 @@ async function drawTextWithEmoji(ctx, text, startX, baselineY, fontSize, color, 
   const cleaned = (text || '').replace(/<a?:[\w]+:\d+>/g, '').replace(/\s+/g, ' ').trim();
   const EMOJI_RE = /\p{Emoji_Presentation}|\p{Extended_Pictographic}/gu;
 
-  ctx.font = `${fontSize}px sans-serif`;
+  ctx.font = `${fontSize}px Roboto, sans-serif`;
   ctx.fillStyle = color;
   ctx.textAlign = 'left';
 
@@ -327,7 +329,7 @@ async function generateBattleImage({
   ctx.fillRect(0, 0, W, H);
 
   // ── Header Title & Winner Banner ──────────────────────────────────────────
-  ctx.font = 'bold 10px sans-serif';
+  ctx.font = 'bold 10px Roboto, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.4)';
   ctx.textAlign = 'center';
   ctx.fillText('W I L D L I F E   A R E N A', W / 2, 18);
@@ -347,7 +349,7 @@ async function generateBattleImage({
 
   {
     const bannerFullText = winner === 'tie' ? '🤝 ' + bannerText : '🏆 ' + bannerText;
-    ctx.font = 'bold 15px sans-serif';
+    ctx.font = 'bold 15px Roboto, sans-serif';
     const textWidth = ctx.measureText(bannerText).width;
     const emojiWidth = 15 * 1.1 + 4;
     const totalWidth = emojiWidth + textWidth;
@@ -374,12 +376,12 @@ async function generateBattleImage({
     ctx.stroke();
 
     // Card Header: Name + Life Status
-    ctx.font = 'bold 13px sans-serif';
+    ctx.font = 'bold 13px Roboto, sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'left';
     ctx.fillText(teamName, px + 14, panelY + 22);
 
-    ctx.font = '10px sans-serif';
+    ctx.font = '10px Roboto, sans-serif';
     ctx.fillStyle = aliveCount > 0 ? '#81c784' : '#e57373';
     ctx.textAlign = 'right';
     ctx.fillText(`${totalHp} HP · ${aliveCount}/3 alive`, px + panelW - 14, panelY + 22);
@@ -408,16 +410,16 @@ async function generateBattleImage({
       await drawAnimalIcon(ctx, stats.emoji, stats.name, px + 18, ay + 14, 34, imageCache);
 
       // Animal name & stats
-      ctx.font = 'bold 13px sans-serif';
+      ctx.font = 'bold 13px Roboto, sans-serif';
       ctx.fillStyle = isAlive ? '#f0f4f8' : 'rgba(255,255,255,0.35)';
       ctx.fillText(stats.name, px + 62, ay + 26);
 
-      ctx.font = '10px sans-serif';
+      ctx.font = '10px Roboto, sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,0.45)';
       ctx.fillText(`Lv.${stats.level} · ${stats.attack} ATK`, px + 62, ay + 44);
 
       // HP status text & HP bar (right side)
-      ctx.font = 'bold 10px sans-serif';
+      ctx.font = 'bold 10px Roboto, sans-serif';
       ctx.fillStyle = isAlive ? '#81c784' : '#e57373';
       ctx.textAlign = 'right';
       ctx.fillText(isAlive ? `${curHp}/${maxHp} HP` : 'FAINTED', px + panelW - 20, ay + 26);
@@ -442,7 +444,7 @@ async function generateBattleImage({
   ctx.strokeStyle = 'rgba(255,255,255,0.15)';
   ctx.stroke();
 
-  ctx.font = 'bold 11px sans-serif';
+  ctx.font = 'bold 11px Roboto, sans-serif';
   ctx.fillStyle = 'rgba(255,255,255,0.6)';
   ctx.textAlign = 'center';
   ctx.fillText('VS', vsX, vsY + 4);
@@ -458,7 +460,7 @@ async function generateBattleImage({
   ctx.stroke();
 
   ctx.textAlign = 'left';
-  ctx.font = '11px sans-serif';
+  ctx.font = '11px Roboto, sans-serif';
 
   let line1 = '';
   if (winner !== 'tie') {

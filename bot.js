@@ -1,4 +1,5 @@
 import './anticrash.js';
+import './utils/canvasFont.js';
 import {
   Client,
   GatewayIntentBits,
