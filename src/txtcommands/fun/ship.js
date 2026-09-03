@@ -10,6 +10,8 @@ import {
   createCanvas,
   loadImage
 } from "@napi-rs/canvas";
+import registerGlobalFonts from '../../../utils/canvasFont.js';
+registerGlobalFonts();
 import fs from "fs";
 import path from "path";
 import redisClient from '../../../redis.js';
@@ -279,7 +281,7 @@ const ShipCmd = {
       } catch {}
 
       ctx.fillStyle = "rgb(196,0,0)";
-      ctx.font = "30px sans-serif";
+      ctx.font = "30px Roboto, sans-serif";
       ctx.fillText(`${score}%`, circleX - 35, circleY + 70);
 
       const attachment = new AttachmentBuilder(await canvas.encode("png"), {

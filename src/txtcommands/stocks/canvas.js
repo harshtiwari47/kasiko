@@ -1,8 +1,11 @@
 import { createCanvas } from '@napi-rs/canvas';
+import registerGlobalFonts from '../../../utils/canvasFont.js';
+registerGlobalFonts();
 import { Chart, registerables } from 'chart.js';
 
 // Register all necessary components
 Chart.register(...registerables);
+Chart.defaults.font.family = 'Roboto, sans-serif';
 
 /**
  * Generate a stock price chart with values shown at each data point
@@ -76,7 +79,7 @@ export async function generateStockChart(stockData) {
     const x = chart.scales.x.getPixelForValue(index);
     const y = chart.scales.y.getPixelForValue(value);
     ctx.fillStyle = '#000000'; // Text color
-    ctx.font = '12px Arial';
+    ctx.font = '12px Roboto, Arial, sans-serif';
     ctx.fillText(`$${value.toFixed(2)}`, x + 5, y - 10); // Draw price slightly above the point
   });
 

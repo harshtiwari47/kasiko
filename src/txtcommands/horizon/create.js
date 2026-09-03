@@ -28,6 +28,8 @@ import {
   createCanvas,
   loadImage
 } from '@napi-rs/canvas';
+import registerGlobalFonts from '../../../utils/canvasFont.js';
+registerGlobalFonts();
 
 // Background Image path
 const imagePath = 'https://harshtiwari47.github.io/kasiko-public/images/dragons/horizon-new.jpg';
@@ -41,7 +43,7 @@ async function generateEditedImage(code) {
   ctx.drawImage(image, 0, 0);
 
   // Common text styles
-  ctx.font = 'bold 36px Arial';
+  ctx.font = 'bold 36px Roboto, Arial, sans-serif';
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'left';
 

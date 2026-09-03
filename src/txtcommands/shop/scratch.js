@@ -17,6 +17,8 @@ import {
   createCanvas,
   loadImage
 } from '@napi-rs/canvas';
+import registerGlobalFonts from '../../../utils/canvasFont.js';
+registerGlobalFonts();
 
 import {
   ALLITEMS
@@ -71,7 +73,7 @@ export async function generateScratchImage(amount) {
 
   // Overlay text
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 28px Sans';
+  ctx.font = 'bold 28px Roboto, sans-serif';
   const text = amount > 0 ? `You won $${amount.toLocaleString()}!`: 'No Luck';
   const textMetrics = ctx.measureText(text);
   const textX = (width - textMetrics.width) / 2;
