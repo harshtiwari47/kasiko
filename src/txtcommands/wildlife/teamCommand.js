@@ -2,10 +2,7 @@ import User from '../../../models/Hunt.js';
 import animalsData from './animals.json' with { type: 'json' };
 import {
   ContainerBuilder,
-  MessageFlags,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle
+  MessageFlags
 } from 'discord.js';
 import { handleMessage, discordUser } from '../../../helper.js';
 
@@ -14,7 +11,7 @@ function capitalizeName(name) {
   return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
 }
 
-// Precompute O(1) animal lookup Map at module load (avoids linear .find() on every call)
+// Precompute O(1) animal lookup Map
 const _animalMetaMap = new Map();
 for (const animal of (animalsData.animals || [])) {
   _animalMetaMap.set(animal.name.toLowerCase(), {
@@ -27,19 +24,20 @@ for (const animal of (animalsData.animals || [])) {
   });
 }
 
-const DEFAULT_ANIMAL_META = { emoji: '🐾', rarity: 1, type: 'Common', baseHp: 30, baseAttack: 5 };
+const DEFAULT_ANIMAL_META = { emoji: '🐾', rarity: 1, type: 'COMMON', baseHp: 30, baseAttack: 5 };
 
 function getAnimalMeta(animalName) {
-  const cached = _animalMetaMap.get(animalName.toLowerCase());
+  const cached = _animalMetaMap.get((animalName || '').toLowerCase());
   if (cached) return cached;
-  return { name: animalName, ...DEFAULT_ANIMAL_META };
+  return { name: animalName || 'Unknown', ...DEFAULT_ANIMAL_META };
 }
 
 function computeStats(animalMeta, level = 1) {
   const lvl = Math.max(1, level);
   const hp = (animalMeta.baseHp || 30) + ((lvl - 1) * 8);
   const attack = (animalMeta.baseAttack || 5) + ((lvl - 1) * 2);
-  return { hp, attack };
+  const power = hp + (attack * 6);
+  return { hp, attack, power };
 }
 
 export async function teamCommand(context, { action = 'view', names = [] } = {}) {
@@ -103,19 +101,22 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
           t => t.setContent(`**${name}**, your battle team has been successfully configured:`)
         );
 
+      let totalTeamPower = 0;
       for (let i = 0; i < requested.length; i++) {
         const item = requested[i];
         const meta = getAnimalMeta(item.name);
         const stats = computeStats(meta, item.level);
+        totalTeamPower += stats.power;
         C.addTextDisplayComponents(
           t => t.setContent(`**#${i + 1}** ${meta.emoji} **${item.name}** (Lvl.${item.level}) — <:hunting_exp:1354384431091290162> \`${meta.type}\``),
-          t => t.setContent(`-# <:heal_heart:1381904903827361905> **${stats.hp} HP** · <:claw:1493561807091138631> **${stats.attack} ATK**`)
+          t => t.setContent(`-# <:heal_heart:1381904903827361905> **${stats.hp} HP** · <:claw:1493561807091138631> **${stats.attack} ATK** · ⚡ **${stats.power} Power** · Feed: \`kas feed ${item.name}\``)
         );
       }
 
       C.addSeparatorComponents(s => s);
       C.addTextDisplayComponents(
-        t => t.setContent(`-# Jump into battle using \`kas ab\` or challenge friends with \`kas ab @user\`!`)
+        t => t.setContent(`⚡ **Combined Squad Power:** **${totalTeamPower}**\n` +
+          `Jump into battle using \`kas ab\` or challenge a friend with \`kas ab @user\`!`)
       );
 
       return handleMessage(context, {
@@ -133,7 +134,7 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
         .setAccentColor(0xFEE75C)
         .addTextDisplayComponents(
           t => t.setContent(`### 🧹 **BATTLE SQUAD CLEARED**`),
-          t => t.setContent(`**${name}**, your preferred battle team has been reset. Battles will now automatically choose 3 random animals from your bag.`),
+          t => t.setContent(`**${name}**, your preferred battle squad has been reset. Battles will now automatically choose 3 random animals from your bag.`),
           t => t.setContent(`-# Set a new team anytime using \`kas team set <animal1> <animal2> <animal3>\`.`)
         );
 
@@ -143,7 +144,7 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
       });
     }
 
-    // ── Action: VIEW (Default) ──────────────────────────────────────────────
+    // ── Action: VIEW / STATS (Default) ──────────────────────────────────────
     const team = user.hunt?.team || [];
     const battlesWon = user.hunt?.battlesWon || 0;
     const winStreak = user.hunt?.winStreak || 0;
@@ -157,6 +158,7 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
       )
       .addSeparatorComponents(s => s);
 
+    let currentTeamPower = 0;
     if (team.length === 0) {
       C.addTextDisplayComponents(
         t => t.setContent(`*No preferred battle squad set! The arena will deploy 3 random animals from your bag.*`),
@@ -167,29 +169,60 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
         const item = team[i];
         const meta = getAnimalMeta(item.name);
         const stats = computeStats(meta, item.level);
+        currentTeamPower += stats.power;
         C.addTextDisplayComponents(
           t => t.setContent(`**#${i + 1}** ${meta.emoji} **${item.name}** (Lvl.${item.level}) — <:hunting_exp:1354384431091290162> \`${meta.type}\``),
-          t => t.setContent(`-# <:heal_heart:1381904903827361905> **${stats.hp} HP** · <:claw:1493561807091138631> **${stats.attack} ATK** · Feed: <:pet_food:1385884583077351464> \`kas feed ${i + 1}\``)
+          t => t.setContent(`-# <:heal_heart:1381904903827361905> **${stats.hp} HP** · <:claw:1493561807091138631> **${stats.attack} ATK** · ⚡ **${stats.power} Power** · Feed: \`kas feed ${item.name}\``)
         );
       }
+      C.addTextDisplayComponents(
+        t => t.setContent(`⚡ **Total Squad Power:** **${currentTeamPower}**`)
+      );
     }
 
-    // Show available top animals if bag has animals
+    // ── Team Optimization Analysis ──────────────────────────────────────────
     const userAnimals = (user.hunt?.animals || []).filter(a => (a.totalAnimals || 1) > 0);
     if (userAnimals.length > 0) {
       C.addSeparatorComponents(s => s);
-      const topAnimals = [...userAnimals]
-        .sort((a, b) => (b.level || 1) - (a.level || 1))
-        .slice(0, 5);
 
-      const animalBadges = topAnimals.map(a => {
+      // Rank all animals by power
+      const rankedAnimals = userAnimals.map(a => {
         const meta = getAnimalMeta(a.name);
-        return `${meta.emoji} **${a.name}** (Lvl.${a.level || 1})`;
-      }).join(' · ');
+        const stats = computeStats(meta, a.level || 1);
+        return {
+          name: a.name,
+          level: a.level || 1,
+          hp: stats.hp,
+          attack: stats.attack,
+          power: stats.power,
+          emoji: a.emoji || meta.emoji
+        };
+      }).sort((a, b) => b.power - a.power);
 
+      const top3 = rankedAnimals.slice(0, 3);
+      const activeTeamNames = new Set(team.map(t => (t.name || '').toLowerCase()));
+      const isOptimal = top3.length > 0 && top3.every(a => activeTeamNames.has(a.name.toLowerCase()));
+
+      if (isOptimal && team.length === top3.length) {
+        C.addTextDisplayComponents(
+          t => t.setContent(`🌟 **Optimization:** Your squad is already set to your highest power beasts!`),
+          t => t.setContent(`-# Feed them using \`kas feed <animal> [amount]\` to level them up and push your stats higher!`)
+        );
+      } else {
+        const recList = top3.map(a => `${a.emoji} **${a.name}** (Lvl.${a.level}, ${a.hp} HP, ${a.attack} ATK)`).join('\n');
+        const setCmd = `kas team set ${top3.map(a => a.name).join(' ')}`;
+        C.addTextDisplayComponents(
+          t => t.setContent(`💡 **Recommended Optimal Squad:**\n${recList}`),
+          t => t.setContent(`👉 **Optimize Now:** \`${setCmd}\`\n-# Maximize your win streak by deploying your highest stat beasts!`)
+        );
+      }
+
+      C.addSeparatorComponents(s => s);
       C.addTextDisplayComponents(
-        t => t.setContent(`**<:cart:1355034533061460060> Top Beasts in Bag:**\n${animalBadges}`),
-        t => t.setContent(`-# Use \`kas hunt\` to capture more beasts or \`kas feed <index>\` to level up!`)
+        t => t.setContent(`**Helpful Commands:**\n` +
+          `• \`kas cage stats\` — 📊 See all your beasts ranked by battle stats\n` +
+          `• \`kas feed <name> [amount]\` — 🍖 Level up your beasts (+8 HP, +2 ATK per lvl)\n` +
+          `• \`kas ab\` — ⚔️ Jump into the battle arena`)
       );
     }
 
@@ -208,7 +241,7 @@ export async function teamCommand(context, { action = 'view', names = [] } = {})
 
 export default {
   name: 'team',
-  description: 'Manage and customize your 3-animal battle squad: set, view, or clear.',
+  description: 'Manage, inspect, and optimize your 3-animal battle squad for maximum arena success.',
   aliases: ['setteam', 'myteam', 'squad'],
   args: '[set|view|clear] [animals]',
   example: [

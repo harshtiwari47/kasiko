@@ -142,6 +142,13 @@ function discordEmojiUrl(emojiId) {
   return `https://cdn.discordapp.com/emojis/${emojiId}.png?size=64`;
 }
 
+async function loadImageWithTimeout(url, timeoutMs = 1200) {
+  return Promise.race([
+    loadImage(url),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Image fetch timeout')), timeoutMs))
+  ]);
+}
+
 async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageCache = new Map()) {
   const emojiId = getDiscordEmojiId(rawEmoji);
 
@@ -149,7 +156,7 @@ async function drawAnimalIcon(ctx, rawEmoji, animalName, x, y, size = 24, imageC
     let img = imageCache.get(emojiId);
     if (!img) {
       try {
-        img = await loadImage(discordEmojiUrl(emojiId));
+        img = await loadImageWithTimeout(discordEmojiUrl(emojiId));
         imageCache.set(emojiId, img);
       } catch (_) {
         imageCache.set(emojiId, 'failed');
@@ -208,7 +215,7 @@ function emojiToTwemojiUrl(char) {
 async function loadTwemojiImg(char, cache) {
   if (cache.has(char)) return cache.get(char);
   try {
-    const img = await loadImage(emojiToTwemojiUrl(char));
+    const img = await loadImageWithTimeout(emojiToTwemojiUrl(char));
     cache.set(char, img);
     return img;
   } catch (_) {
@@ -508,15 +515,28 @@ function buildBattleContainer({
 
 function buildFinalBattleContainer({
   titleText,
+  username,
+  opponentUsername,
+  userTeamDisplay,
+  oppTeamDisplay,
   lifeStatusText = '',
   streakText = '',
   rewardText = '',
   winnerColor = 0x00c853,
+  includeImage = false
 }) {
   const C = new ContainerBuilder()
     .setAccentColor(winnerColor)
     .addTextDisplayComponents(t => t.setContent(`### ${titleText}`))
     .addSeparatorComponents(s => s);
+
+  if (userTeamDisplay && oppTeamDisplay) {
+    C.addTextDisplayComponents(
+      t => t.setContent(`**${username}'s Squad:**\n${userTeamDisplay}`),
+      t => t.setContent(`**${opponentUsername}'s Squad:**\n${oppTeamDisplay}`)
+    );
+    C.addSeparatorComponents(s => s);
+  }
 
   if (lifeStatusText && lifeStatusText.trim()) {
     C.addTextDisplayComponents(t => t.setContent(lifeStatusText));
@@ -530,9 +550,11 @@ function buildFinalBattleContainer({
     C.addTextDisplayComponents(t => t.setContent(rewardText));
   }
 
-  C.addMediaGalleryComponents(
-    media => media.addItems(item => item.setURL('attachment://battle-result.png'))
-  );
+  if (includeImage) {
+    C.addMediaGalleryComponents(
+      media => media.addItems(item => item.setURL('attachment://battle-result.png'))
+    );
+  }
 
   return C;
 }
@@ -641,8 +663,8 @@ function generateWildTeam(userTeam = [], avgLevel = 1) {
 function formatTeamDisplay(team) {
   return team.map(a => {
     const s = calculateAnimalStats(a);
-    const hpStr = s.hp > 0 ? `\`${s.hp}/${s.maxHp} HP\`` : `\`FAINTED\``;
-    return `${s.emoji} **${s.name}** (Lv.${s.level}) · ${hpStr}`;
+    const hpStr = s.hp > 0 ? `<:heal_heart:1381904903827361905> \`${s.hp}/${s.maxHp} HP\`` : `\`FAINTED\``;
+    return `${s.emoji} **${s.name}** (Lv.${s.level}) · ${hpStr} · <:claw:1493561807091138631> **${s.attack} ATK**`;
   }).join('\n');
 }
 
@@ -1118,10 +1140,15 @@ export async function battleCommand(context, { opponentId = null, isWild = false
     // ── Edit into sleek final container ─────────────────────────────────────
     const finalContainer = buildFinalBattleContainer({
       titleText: winnerTitle,
+      username,
+      opponentUsername,
+      userTeamDisplay: formatTeamDisplay(battleResult.userFinalTeam),
+      oppTeamDisplay: formatTeamDisplay(battleResult.oppFinalTeam),
       lifeStatusText,
       streakText,
       rewardText,
       winnerColor,
+      includeImage: !!attachment
     });
 
     await editExisting(context, sentMsg, {
