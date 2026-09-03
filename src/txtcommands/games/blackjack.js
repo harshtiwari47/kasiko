@@ -13,7 +13,8 @@ import {
 import {
   Helper,
   discordUser,
-  handleMessage
+  handleMessage,
+  parseAmount
 } from '../../../helper.js';
 
 const cardDeck = [
@@ -67,28 +68,36 @@ export async function blackjack(id, amount, channel, context) {
       });
     }
 
-    if (amount === "all") {
-      amount = Math.min(300000, Number(userData.cash || 0));
+    const userCash = Math.floor(Number(userData.cash || 0));
+
+    if (amount === "all" || String(amount).toLowerCase() === "all" || String(amount).toLowerCase() === "max") {
+      if (userCash < 1) {
+        return await handleMessage(ctx, `⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
+      }
+      amount = Math.min(300000, userCash);
     } else {
-      amount = parseInt(amount, 10);
+      const parsed = typeof amount === 'number' ? Math.floor(amount) : parseAmount(amount);
+      amount = (parsed === 'all' || parsed === 'max') ? Math.min(300000, userCash) : parsed;
     }
 
-    if (isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
+    if (amount === null || isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
       return await handleMessage(ctx, `⚠️ **${name}**, please enter a valid positive bet amount (minimum 1).`);
     }
 
-    if (amount > 300000) amount = 300000;
+    if (amount > 300000) {
+      return await handleMessage(ctx, `ⓘ **${name}**, the maximum bet for blackjack is <:kasiko_coin:1300141236841086977> 300,000.`);
+    }
 
-    if (userData.cash < 1) {
+    if (userCash < 1) {
       return await handleMessage(ctx, `⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
     }
 
-    if (userData.cash < amount) {
+    if (userCash < amount) {
       return await handleMessage(ctx, `⚠️ **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     // Deduct bet amount
-    userData.cash -= amount;
+    userData.cash = userCash - amount;
     await updateUser(userId, {
       cash: userData.cash
     });
@@ -285,22 +294,19 @@ export default {
   },
   execute: async (args, context) => {
     try {
-      const { id } = discordUser(context);
-      let amount = args[1] || args[0] || "1";
+      const { id, username } = discordUser(context);
+      const rawArg = args[1] || "1";
 
-      if (String(amount).toLowerCase() !== "all") {
-        amount = parseInt(amount, 10);
-        if (isNaN(amount) || amount < 1) {
-          return await handleMessage(context, "Please provide a valid bet amount.");
-        }
-        if (amount > 300000) {
-          return await handleMessage(context, `ⓘ The maximum bet for blackjack is <:kasiko_coin:1300141236841086977> 300,000.`);
-        }
-      } else {
-        amount = "all";
+      const parsedAmount = parseAmount(rawArg);
+      if (parsedAmount === null) {
+        return await handleMessage(context, "⚠️ Please provide a valid bet amount (e.g. `blackjack 250`, `bj all`, `bj 50k`).");
       }
 
-      await blackjack(id, amount, null, context);
+      if (typeof parsedAmount === 'number' && parsedAmount > 300000) {
+        return await handleMessage(context, `ⓘ **${username}**, the maximum bet for blackjack is <:kasiko_coin:1300141236841086977> 300,000.`);
+      }
+
+      await blackjack(id, parsedAmount, null, context);
     } catch (err) {
       console.error(err);
       await handleMessage(context, `⚠️ Something went wrong with blackjack!`);

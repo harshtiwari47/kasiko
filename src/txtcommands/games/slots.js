@@ -6,7 +6,8 @@ import {
 import {
   Helper,
   discordUser,
-  handleMessage
+  handleMessage,
+  parseAmount
 } from '../../../helper.js';
 
 export async function slots(id, amount, channel, context) {
@@ -21,23 +22,31 @@ export async function slots(id, amount, channel, context) {
       return await handleMessage(ctx, "<:warning:1366050875243757699> User account not found.");
     }
 
-    if (amount === "all") {
-      amount = Math.min(300000, Number(userData.cash || 0));
+    const userCash = Math.floor(Number(userData.cash || 0));
+
+    if (amount === "all" || String(amount).toLowerCase() === "all" || String(amount).toLowerCase() === "max") {
+      if (userCash < 1) {
+        return await handleMessage(ctx, `⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
+      }
+      amount = Math.min(300000, userCash);
     } else {
-      amount = parseInt(amount, 10);
+      const parsed = typeof amount === 'number' ? Math.floor(amount) : parseAmount(amount);
+      amount = (parsed === 'all' || parsed === 'max') ? Math.min(300000, userCash) : parsed;
     }
 
-    if (isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
+    if (amount === null || isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
       return await handleMessage(ctx, "⚠️ Minimum bet to play the slots is <:kasiko_coin:1300141236841086977> **1**.");
     }
 
-    if (amount > 300000) amount = 300000;
+    if (amount > 300000) {
+      return await handleMessage(ctx, `⚠️ **${name}**, you can't spin slots with more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+    }
 
-    if (userData.cash < 1) {
+    if (userCash < 1) {
       return await handleMessage(ctx, `⚠️ **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
     }
 
-    if (userData.cash < amount) {
+    if (userCash < amount) {
       return await handleMessage(ctx, `⚠️ **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
@@ -68,7 +77,7 @@ export async function slots(id, amount, channel, context) {
     );
 
     await updateUser(userId, {
-      cash: Math.max(0, Number(userData.cash || 0) - amount)
+      cash: Math.max(0, userCash - amount)
     });
 
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -119,7 +128,7 @@ export default {
   description: 'Spin the slots for a chance to win big rewards!',
   aliases: ['slot', 'sl'],
   args: '<amount>',
-  example: ['slots 1000', 'slots all'],
+  example: ['slots 1000', 'slots all', 'slots max', 'slots 50k'],
   related: ['dice', 'cash', 'toss', 'blackjack'],
   emoji: '🎰',
   cooldown: 5000,
@@ -133,23 +142,18 @@ export default {
   execute: async (args, context) => {
     try {
       const { id, username } = discordUser(context);
-      let amount = args[1] || "1";
+      const rawArg = args[1] || "1";
 
-      if (String(amount).toLowerCase() === "all") {
-        amount = "all";
-      } else {
-        amount = parseInt(amount, 10);
+      const parsedAmount = parseAmount(rawArg);
+      if (parsedAmount === null) {
+        return await handleMessage(context, "⚠️ Please provide a valid bet amount (e.g. `slots 1000`, `slots all`, `slots 50k`).");
       }
 
-      if (amount !== "all" && (isNaN(amount) || amount < 1)) {
-        return await handleMessage(context, "⚠️ Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
-      }
-
-      if (amount !== "all" && amount > 300000) {
+      if (typeof parsedAmount === 'number' && parsedAmount > 300000) {
         return await handleMessage(context, `⚠️ **${username}**, you can't spin slots with more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
       }
 
-      await slots(id, amount, null, context);
+      await slots(id, parsedAmount, null, context);
     } catch (err) {
       console.error(err);
       await handleMessage(context, `ⓘ Something went wrong in Slots!`);

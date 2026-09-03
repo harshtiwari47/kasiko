@@ -115,6 +115,31 @@ function isNumber(value) {
   return !isNaN(value) && Number.isInteger(Number(value));
 }
 
+export function parseAmount(input) {
+  if (input === null || input === undefined) return null;
+  if (typeof input === 'number') {
+    return isNaN(input) || input <= 0 ? null : Math.floor(input);
+  }
+  const str = String(input).toLowerCase().trim().replace(/,/g, '');
+  if (str === 'all' || str === 'max' || str === 'a' || str === 'm') {
+    return 'all';
+  }
+  if (str.endsWith('k')) {
+    const val = parseFloat(str.slice(0, -1));
+    return isNaN(val) || val <= 0 ? null : Math.floor(val * 1000);
+  }
+  if (str.endsWith('m')) {
+    const val = parseFloat(str.slice(0, -1));
+    return isNaN(val) || val <= 0 ? null : Math.floor(val * 1000000);
+  }
+  if (str.endsWith('b')) {
+    const val = parseFloat(str.slice(0, -1));
+    return isNaN(val) || val <= 0 ? null : Math.floor(val * 1000000000);
+  }
+  const num = parseInt(str, 10);
+  return isNaN(num) || num <= 0 ? null : num;
+}
+
 function newsDatabase() {
   try {
     const newsDataPath = path.join(process.cwd(), 'data', 'stocknews.json');
@@ -254,6 +279,7 @@ export const Helper = {
   isUserMention,
   extractUserId,
   isNumber,
+  parseAmount,
   newsDatabase,
   checkTimeGap,
   randomInt,

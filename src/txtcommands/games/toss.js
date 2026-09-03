@@ -12,7 +12,8 @@ import {
 import {
   Helper,
   discordUser,
-  handleMessage
+  handleMessage,
+  parseAmount
 } from '../../../helper.js';
 
 export async function toss(id, context, amount, channel, choice = "head") {
@@ -27,38 +28,48 @@ export async function toss(id, context, amount, channel, choice = "head") {
       return await handleMessage(ctx, "<:warning:1366050875243757699> User account not found.");
     }
 
-    if (amount === "all") {
-      amount = Math.min(300000, Number(userData.cash || 0));
+    const userCash = Math.floor(Number(userData.cash || 0));
+
+    if (amount === "all" || String(amount).toLowerCase() === "all" || String(amount).toLowerCase() === "max") {
+      if (userCash < 1) {
+        return await handleMessage(ctx, `<:warning:1366050875243757699> **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
+      }
+      amount = Math.min(300000, userCash);
     } else {
-      amount = parseInt(amount, 10);
+      const parsed = typeof amount === 'number' ? Math.floor(amount) : parseAmount(amount);
+      amount = (parsed === 'all' || parsed === 'max') ? Math.min(300000, userCash) : parsed;
     }
 
-    if (isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
+    if (amount === null || isNaN(amount) || amount < 1 || !Number.isInteger(amount)) {
       return await handleMessage(ctx, "<:warning:1366050875243757699> Minimum cash to toss the 🪙 coin is <:kasiko_coin:1300141236841086977> **1**.");
     }
 
-    if (amount > 300000) amount = 300000;
+    if (amount > 300000) {
+      return await handleMessage(ctx, `<:warning:1366050875243757699> **${name}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+    }
 
-    if (userData.cash < 1) {
+    if (userCash < 1) {
       return await handleMessage(ctx, `<:warning:1366050875243757699> **${name}**, you don't have enough <:kasiko_coin:1300141236841086977> cash. Minimum is **1**.`);
     }
 
-    if (userData.cash < amount) {
+    if (userCash < amount) {
       return await handleMessage(ctx, `<:warning:1366050875243757699> **${name}**, you don't have <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** cash.`);
     }
 
     // Deduct bet amount
     await updateUser(userId, {
-      cash: Math.max(0, Number(userData.cash || 0) - amount)
+      cash: Math.max(0, userCash - amount)
     });
 
     const spiningCoin = `<a:SpinningCoin:1326785405399597156>`;
     const stillCoin = `<:StillCoin:1326414822841253980>`;
     const stillCoinTails = `<:StillTails:1326786766438400113>`;
 
+    const normalizedChoice = (choice === "t" || choice === "tails" || choice === "tail") ? "tail" : "head";
+
     const Container = new ContainerBuilder()
       .addTextDisplayComponents(text =>
-        text.setContent(`**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\n` +
+        text.setContent(`**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** on **${normalizedChoice}s**\n` +
           `The *coin* spins... ${spiningCoin}\n` +
           `⚡︎ Your 𝘧𝘢𝘵𝘦 𝘪𝘴 𝘰𝘯 𝘵𝘩𝘦 𝘭𝘪𝘯𝘦! `
         )
@@ -77,10 +88,10 @@ export async function toss(id, context, amount, channel, choice = "head") {
     let winamount = 0;
     let won = false;
 
-    if (random === 1 && choice === "head") {
+    if (random === 1 && normalizedChoice === "head") {
       winamount = amount * 2;
       won = true;
-    } else if (random === 0 && choice === "tail") {
+    } else if (random === 0 && normalizedChoice === "tail") {
       winamount = amount * 2;
       won = true;
     }
@@ -92,12 +103,12 @@ export async function toss(id, context, amount, channel, choice = "head") {
     }
 
     let content = "";
-    if (random === 1 && choice === "head") {
-      content = `**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\nThe *coin* ${stillCoin} landed on **heads**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`;
-    } else if (random === 0 && choice === "tail") {
-      content = `**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\nThe *coin* ${stillCoinTails} landed on **tails**!\n***✦ You won <:kasiko_coin:1300141236841086977>*** **${Number(winamount).toLocaleString()}** ***𝑪𝒂𝒔𝒉***.`;
+    if (random === 1 && normalizedChoice === "head") {
+      content = `**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** on **${normalizedChoice}s**\nThe *coin* ${stillCoin} landed on **heads**!\n***✦ You won <:kasiko_coin:1300141236841086977> ${Number(winamount).toLocaleString()} 𝑪𝒂𝒔𝒉***.`;
+    } else if (random === 0 && normalizedChoice === "tail") {
+      content = `**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** on **${normalizedChoice}s**\nThe *coin* ${stillCoinTails} landed on **tails**!\n***✦ You won <:kasiko_coin:1300141236841086977>*** **${Number(winamount).toLocaleString()}** ***𝑪𝒂𝒔𝒉***.`;
     } else {
-      content = `**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount}** on **${choice}s**\nThe *coin* ${choice === "tail" ? stillCoin : stillCoinTails} landed on **${choice === "tail" ? "heads" : "tails"}**...\n***⚠ You lost the bet.***`;
+      content = `**${name}** 𝗋𝗂𝗌𝗄𝖾𝖽 <:kasiko_coin:1300141236841086977> **${amount.toLocaleString()}** on **${normalizedChoice}s**\nThe *coin* ${normalizedChoice === "tail" ? stillCoin : stillCoinTails} landed on **${normalizedChoice === "tail" ? "heads" : "tails"}**...\n***⚠ You lost the bet.***`;
     }
 
     Container.components[0].data.content = content;
@@ -120,7 +131,7 @@ export default {
   description: "Toss a coin with heads and tails!",
   aliases: ["toss", "coinflip", "cf", "flipcoin"],
   args: "<amount> <choice: h/t>",
-  example: ["tosscoin 250 heads", "toss 500 t", "coinflip all h"],
+  example: ["tosscoin 250 heads", "toss 500 t", "coinflip all h", "cf all", "cf max t", "cf 50k tail"],
   related: ["dice", "cash", "slots", "guess"],
   emoji: "🪙",
   cooldown: 10000,
@@ -135,25 +146,46 @@ export default {
   execute: async (args, context) => {
     try {
       const { id, username } = discordUser(context);
-      if ((args[1] && Helper.isNumber(args[1])) || String(args[1]).toLowerCase() === "all") {
-        let amount = String(args[1]).toLowerCase() === "all" ? "all" : parseInt(args[1], 10);
+      const rawArgs = args.slice(1);
 
-        if (amount !== "all" && (isNaN(amount) || amount < 1)) {
-          return await handleMessage(context, "<:warning:1366050875243757699> Minimum bet amount is <:kasiko_coin:1300141236841086977> 1.");
-        }
-
-        if (amount !== "all" && amount > 300000) {
-          return await handleMessage(context, `<:warning:1366050875243757699> **${username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
-        }
-
-        let choice = args[2] && (args[2] === "t" || args[2] === "tails" || args[2] === "tail") ? "tail" : "head";
-        await toss(id, context, amount, null, choice);
-      } else {
-        await handleMessage(context, "⨳ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘤𝘢𝘴𝘩 𝘢𝘮𝘰𝘶𝘯𝘵*!*\n\n"
+      if (rawArgs.length === 0) {
+        return await handleMessage(context, "⨳ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘤𝘢𝘴𝘩 𝘢𝘮𝘰𝘶𝘯𝘵*!*\n\n"
           + "**Use:** `tosscoin <`**`amount`**`> <`**`choice`**`>`\n"
-          + "- **Choice**: `heads(h) | tails(t)`\n"
+          + "- **Amount**: `1 - 300,000` | `all` | `max` (e.g. `50k`, `300k`)\n"
+          + "- **Choice**: `heads (h) | tails (t)`\n"
           + "-# ᴅᴇꜰᴀᴜʟᴛ ᴄʜᴏɪᴄᴇ ɪꜱ ʜᴇᴀᴅꜱ.");
       }
+
+      let parsedAmount = null;
+      let choice = "head";
+
+      for (const arg of rawArgs) {
+        const lower = String(arg).toLowerCase().trim();
+        if (["t", "tail", "tails"].includes(lower)) {
+          choice = "tail";
+        } else if (["h", "head", "heads"].includes(lower)) {
+          choice = "head";
+        } else if (parsedAmount === null) {
+          const parsed = parseAmount(lower);
+          if (parsed !== null) {
+            parsedAmount = parsed;
+          }
+        }
+      }
+
+      if (parsedAmount === null) {
+        return await handleMessage(context, "⨳ 𝘐𝘯𝘷𝘢𝘭𝘪𝘥 𝘤𝘢𝘴𝘩 𝘢𝘮𝘰𝘶𝘯𝘵*!*\n\n"
+          + "**Use:** `tosscoin <`**`amount`**`> <`**`choice`**`>`\n"
+          + "- **Amount**: `1 - 300,000` | `all` | `max` (e.g. `50k`, `300k`)\n"
+          + "- **Choice**: `heads (h) | tails (t)`\n"
+          + "-# ᴅᴇꜰᴀᴜʟᴛ ᴄʜᴏɪᴄᴇ ɪꜱ ʜᴇᴀᴅꜱ.");
+      }
+
+      if (typeof parsedAmount === 'number' && parsedAmount > 300000) {
+        return await handleMessage(context, `<:warning:1366050875243757699> **${username}**, you can't tosscoin more than <:kasiko_coin:1300141236841086977> 300,000 cash.`);
+      }
+
+      await toss(id, context, parsedAmount, null, choice);
     } catch (err) {
       console.error(err);
     }
