@@ -165,7 +165,7 @@ export async function buySharesCommand(message, args) {
     const priceImpactFactor = 0.05; // For example, a 5% impact if traded shares equal the pre-trade outstanding shares.
     const oldPrice = company.currentPrice;
     const impact = priceImpactFactor * (numShares / previousSharesOutstanding);
-    const newPrice = oldPrice * (1 + impact);
+    const newPrice = Math.min(25000, Math.round(oldPrice * (1 + impact) * 10) / 10);
 
     // Update the current price (the schema's setter will round it)
     company.currentPrice = newPrice;

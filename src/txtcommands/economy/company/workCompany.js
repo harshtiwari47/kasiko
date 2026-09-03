@@ -69,7 +69,7 @@ export async function workCommand(message, args) {
     // Apply a growth boost to the company due to work:
     // Increase the current price by a fixed percentage and update the market cap.
     const growthRate = 0.005; // 0.5% growth per work action
-    company.currentPrice = Math.max(1, Math.round(company.currentPrice * (1 + growthRate) * 10) / 10);
+    company.currentPrice = Math.min(25000, Math.max(1, Math.round(company.currentPrice * (1 + growthRate) * 10) / 10));
     company.marketCap = Math.round((company.currentPrice * company.totalSharesOutstanding) * 10) / 10;
 
     // Update price history arrays.

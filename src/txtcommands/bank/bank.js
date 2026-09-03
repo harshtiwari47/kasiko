@@ -38,8 +38,8 @@ const BankInfo = {
 
 export function getSingleLevelBankUpgradeCost(lvl, additionalReward = 0) {
   const baseCost = BankInfo.levelUpCost || 300000;
-  // After level 50, cost increases according to level: +2,500 per level above 50
-  const extra = lvl > 50 ? (lvl - 50) * 2500 : 0;
+  // After level 50, cost increases according to level: +8,000 per level above 50
+  const extra = lvl > 50 ? (lvl - 50) * 8000 : 0;
   return Math.max(50000, baseCost + extra - additionalReward);
 }
 

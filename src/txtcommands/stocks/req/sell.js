@@ -138,7 +138,7 @@ export async function sellSharesCommand(message, args) {
     const priceImpactFactor = 0.05;
     const oldPrice = company.currentPrice;
     const impact = Math.min(0.20, priceImpactFactor * (numShares / previousSharesOutstanding));
-    const newPrice = Math.max(0.1, Math.round(oldPrice * (1 - impact) * 10) / 10);
+    const newPrice = Math.min(25000, Math.max(0.5, Math.round(oldPrice * (1 - impact) * 10) / 10));
 
     company.currentPrice = newPrice;
     company.totalSharesOutstanding = Math.max(1, previousSharesOutstanding - numShares);

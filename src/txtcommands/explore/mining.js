@@ -194,10 +194,13 @@ function mineHelp() {
 }
 
 function generateMiningMessage(userMining, userLevel) {
+  const MAX_MINE_LEVEL = 20;
   const storageCapacity = 10 + userMining.level * 5;
   let upgradeCost;
 
-  if (userMining.level < 10) {
+  if (userMining.level >= MAX_MINE_LEVEL) {
+    upgradeCost = `MAX (Level ${MAX_MINE_LEVEL})`;
+  } else if (userMining.level < 10) {
     upgradeCost = `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`;
   } else {
     const requiredUserLevel = 30 + ((userMining.level - 10) * 10);
@@ -388,7 +391,14 @@ async function upgradeMine(userId, username) {
       }
     }
 
+    const MAX_MINE_LEVEL = 20;
     const currentLevel = userMining.level;
+
+    if (currentLevel >= MAX_MINE_LEVEL) {
+      return {
+        content: `⛏️ **${username}**, your mine has already reached the maximum level of **Level ${MAX_MINE_LEVEL}** (Max Storage: **${10 + MAX_MINE_LEVEL * 5} coal**)!`
+      };
+    }
 
     // Levels 1-10: coin-only upgrades
     if (currentLevel < 10) {
@@ -445,10 +455,14 @@ async function upgradeMine(userId, username) {
     const newCapacity = `${10 + userMining.level * 5}`;
     await userMining.save();
 
-    const nextRequiredLevel = 30 + ((userMining.level - 10) * 10);
+    const isNowMax = userMining.level >= MAX_MINE_LEVEL;
+    const nextRequiredLevel = isNowMax ? null : 30 + ((userMining.level - 10) * 10);
+    const nextInfo = isNowMax
+      ? `\n🏆 **Congratulations! Your mine has reached MAX LEVEL (Level ${MAX_MINE_LEVEL})!**`
+      : ` · Next upgrade requires Level **${nextRequiredLevel}**`;
 
     return {
-      content: `Congratulations! **${username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**.\n-# Cost: <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** · Next upgrade requires Level **${nextRequiredLevel}**`,
+      content: `Congratulations! **${username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**.\n-# Cost: <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}**${nextInfo}`,
       upgraded: true,
       level: userMining.level,
       newCost: 5000 * userMining.level,
