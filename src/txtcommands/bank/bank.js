@@ -32,7 +32,23 @@ const BankInfo = {
   security: 1,
   charge: 0,
   levelUpCost: 300000,
-  storage: 500000
+  storage: 500000,
+  maxLevel: 2700
+};
+
+export function getSingleLevelBankUpgradeCost(lvl, additionalReward = 0) {
+  const baseCost = BankInfo.levelUpCost || 300000;
+  // After level 50, cost increases according to level: +2,500 per level above 50
+  const extra = lvl > 50 ? (lvl - 50) * 2500 : 0;
+  return Math.max(50000, baseCost + extra - additionalReward);
+}
+
+export function getTotalBankUpgradeCost(startLevel, times, additionalReward = 0) {
+  let total = 0;
+  for (let i = 0; i < times; i++) {
+    total += getSingleLevelBankUpgradeCost(startLevel + i, additionalReward);
+  }
+  return total;
 }
 
 export const Bank = {
@@ -331,12 +347,14 @@ export const Bank = {
         .setStyle(ButtonStyle.Secondary)
       );
 
+      const isMaxLevel = account.level >= (BankInfo.maxLevel || 2700);
+
       const Container = new ContainerBuilder()
       .addSectionComponents(
         section => section
         .addTextDisplayComponents(
           textDisplay => textDisplay.setContent(`### <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤`),
-          textDisplay => textDisplay.setContent(`-# <:spark:1355139233559351326> **LEVEL:** **${account.level}**`)
+          textDisplay => textDisplay.setContent(`-# <:spark:1355139233559351326> **LEVEL:** **${account.level}**${isMaxLevel ? ' (MAX)' : ` / ${BankInfo.maxLevel}`}`)
         )
         .setThumbnailAccessory(
           thumbnail => thumbnail
@@ -360,6 +378,19 @@ export const Bank = {
         textDisplay => textDisplay.setContent(`<:bank_card:1368183874378666096>  **𝘊𝘈𝘚𝘏 𝘐𝘕 𝘏𝘈𝘕𝘋**`),
         textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`)
       )
+
+      if (!isMaxLevel) {
+        const nextUpgradeCost = getSingleLevelBankUpgradeCost(account.level, additionalReward);
+        Container.addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`**𝘕𝘌𝘟𝘛 𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
+          textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${nextUpgradeCost.toLocaleString()} (to Lv.${account.level + 1}) · \`kas bank upgrade\``)
+        );
+      } else {
+        Container.addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`**𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
+          textDisplay => textDisplay.setContent(`-# 🏆 Bank Vault is at MAX LEVEL (${(BankInfo.maxLevel || 2700).toLocaleString()})!`)
+        );
+      }
 
       const resMsg = await handleMessage(context, {
         components: !account?.open ? [Container, rowComp] : [Container],
@@ -432,7 +463,21 @@ export const Bank = {
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
-      if (!times || times < 0 || !Number.isInteger(Number(times))) times = 1;
+      const currentLevel = account.level || 1;
+      const MAX_LEVEL = BankInfo.maxLevel || 2700;
+
+      if (currentLevel >= MAX_LEVEL) {
+        return await handleMessage(context,
+          `<:bank:1352897312606785576> **${name}**, your bank vault has already reached the maximum level of ***${MAX_LEVEL.toLocaleString()}*** (Max Storage: <:kasiko_coin:1300141236841086977> **${(MAX_LEVEL * BankInfo.storage).toLocaleString()}**)!`
+        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      }
+
+      if (!times || times < 1 || !Number.isInteger(Number(times))) times = 1;
+
+      // Prevent exceeding MAX_LEVEL
+      if (currentLevel + times > MAX_LEVEL) {
+        times = MAX_LEVEL - currentLevel;
+      }
 
       const passInfo = await checkPassValidity(userId);
 
@@ -447,12 +492,11 @@ export const Bank = {
         }
       }
 
-      const currentLevel = account.level;
-      const upgradeCost = (BankInfo.levelUpCost - additionalReward) * times;
+      const upgradeCost = getTotalBankUpgradeCost(currentLevel, times, additionalReward);
 
       if (account.deposit < upgradeCost) {
         return await handleMessage(context,
-          `<:warning:1366050875243757699> **${name}**, you need <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** cash in Bank to upgrade to the next level.`
+          `<:warning:1366050875243757699> **${name}**, you need <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** cash in Bank to upgrade ${times > 1 ? `**${times}** levels` : `to Level ${currentLevel + 1}`}. (Current Deposit: <:kasiko_coin:1300141236841086977> **${account.deposit.toLocaleString()}**)`
         ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
       }
 
@@ -463,8 +507,12 @@ export const Bank = {
         level: newLevel, deposit: newDeposit
       });
 
+      const nextLevelNotice = newLevel >= MAX_LEVEL
+        ? `\n🏆 **Your bank has reached MAX LEVEL (${MAX_LEVEL.toLocaleString()})!**`
+        : `\n-# Next upgrade cost: <:kasiko_coin:1300141236841086977> ${getSingleLevelBankUpgradeCost(newLevel, additionalReward).toLocaleString()} · Max Lv.${MAX_LEVEL.toLocaleString()}`;
+
       return await handleMessage(context,
-        `<:bank:1352897312606785576> **${name}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n**COST**: <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()}\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}`
+        `<:bank:1352897312606785576> **${name}** upgraded their bank to level ***${newLevel}*** successfully! ▲\n\n**COST**: <:kasiko_coin:1300141236841086977> ${upgradeCost.toLocaleString()}\n𖢻 **Remaining bank balance**: <:kasiko_coin:1300141236841086977> ${newDeposit.toLocaleString()}\n𖢻 **New Storage Capacity**: <:kasiko_coin:1300141236841086977> ${(newLevel * BankInfo.storage).toLocaleString()}${nextLevelNotice}`
       ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     } catch (err) {
       return await handleMessage(context, `Error upgrading bank: ${err.message}`).catch(console.error);
@@ -574,7 +622,7 @@ export default {
             '**`deposit <amount>`**\n- Deposit funds into your bank.\n' +
             '**`withdraw <amount>`**\n- Withdraw funds from your bank.\n' +
             '**`bank`**\n- Check your bank status (you can use **bs** or **ba**).\n' +
-            '**`bank upgrade <times (default 1)>`**\n- Upgrade your bank level. Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level).'
+            '**`bank upgrade <times (default 1)>`**\n- Upgrade your bank level (Max Lv.2,700). Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level; increases scalingly after Lv.50).'
           )
           .setFooter({
             text: 'Use your bank wisely!'

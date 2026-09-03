@@ -193,10 +193,18 @@ function mineHelp() {
   }
 }
 
-function generateMiningMessage(userMining) {
+function generateMiningMessage(userMining, userLevel) {
   const storageCapacity = 10 + userMining.level * 5;
-  const upgradeCost = userMining.level >= 10
-  ? "MAX": `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`;
+  let upgradeCost;
+
+  if (userMining.level < 10) {
+    upgradeCost = `<:kasiko_coin:1300141236841086977> ${(5000 * userMining.level).toLocaleString()}`;
+  } else {
+    const requiredUserLevel = 30 + ((userMining.level - 10) * 10);
+    const coinCost = 5000 * userMining.level;
+    const meetsLevel = (userLevel || 1) >= requiredUserLevel;
+    upgradeCost = `<:kasiko_coin:1300141236841086977> ${coinCost.toLocaleString()} + Lv.${requiredUserLevel}${meetsLevel ? ' ✓' : ''}`;
+  }
 
   return (
     `𝙇𝙚𝙫𝙚𝙡:** ${userMining.level}** <:aliens_hammer:1336344266242527294> 𝙐𝙥𝙜𝙧𝙖𝙙𝙚:** ${upgradeCost}**\n\n` +
@@ -216,6 +224,9 @@ async function viewMiningStatus(userId, context, username) {
       userId
     });
 
+    const userData = await getUserData(userId);
+    const userLevel = userData?.level || 1;
+
     const timeElapsed = Math.floor((Date.now() - new Date(userMining.startTime)) / 600000); // Minutes divided by 10
     const availableCoal = Math.min(timeElapsed + userMining.level, 10 + userMining.level * 5 - userMining.collected);
 
@@ -227,7 +238,7 @@ async function viewMiningStatus(userId, context, username) {
     const embed = new EmbedBuilder()
     .setColor(`#ab6c38`)
     .setImage(`https://harshtiwari47.github.io/kasiko-public/images/mining-site.jpg`)
-    .setDescription(generateMiningMessage(userMining))
+    .setDescription(generateMiningMessage(userMining, userLevel))
 
     let canCollect = true;
 
@@ -295,7 +306,7 @@ async function viewMiningStatus(userId, context, username) {
           }
 
           return await interaction.editReply({
-            embeds: [mineHeader, embed.setDescription(generateMiningMessage(userMining))]
+            embeds: [mineHeader, embed.setDescription(generateMiningMessage(userMining, userLevel))]
           })
         }
 
@@ -312,7 +323,7 @@ async function viewMiningStatus(userId, context, username) {
           }
 
           return await interaction.editReply({
-            embeds: [mineHeader, embed.setDescription(generateMiningMessage(userMining))]
+            embeds: [mineHeader, embed.setDescription(generateMiningMessage(userMining, userLevel))]
           })
         }
 
@@ -329,7 +340,7 @@ async function viewMiningStatus(userId, context, username) {
           }
 
           return await interaction.editReply({
-            embeds: [mineHeader, embed.setDescription(generateMiningMessage(userMining))]
+            embeds: [mineHeader, embed.setDescription(generateMiningMessage(userMining, userLevel))]
           })
         }
 
@@ -377,36 +388,67 @@ async function upgradeMine(userId, username) {
       }
     }
 
-    const maxLevel = 10;
-    if (userMining.level >= maxLevel) {
+    const currentLevel = userMining.level;
+
+    // Levels 1-10: coin-only upgrades
+    if (currentLevel < 10) {
+      const upgradeCost = 5000 * currentLevel;
+      const userData = await getUserData(userId);
+
+      if (userData.cash < upgradeCost) {
+        return {
+          content: `⛏️ **${username}**, you don't have enough cash to upgrade your mine. You need <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** cash.`
+        }
+      }
+
+      userData.cash -= upgradeCost;
+      await updateUser(userId, userData);
+
+      userMining.level += 1;
+      const newCapacity = `${10 + userMining.level * 5}`;
+      await userMining.save();
+
       return {
-        content: `⛏️ **${username}**, you have already reached the maximum mining level!`
+        content: `Congratulations! **${username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**. You spent <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()} cash** on the upgrade.`,
+        upgraded: true,
+        level: userMining.level,
+        newCost: 5000 * userMining.level,
+        newCapacity
+      };
+    }
+
+    // Levels 10+: require user level + coin cost
+    // Level 11 needs user level 30, level 12 needs 40, level 13 needs 50, etc.
+    const requiredUserLevel = 30 + ((currentLevel - 10) * 10);
+    const userData = await getUserData(userId);
+    const userLevel = userData.level || 1;
+
+    if (userLevel < requiredUserLevel) {
+      return {
+        content: `⛏️ **${username}**, you need to be **Level ${requiredUserLevel}** to upgrade your mine to **Level ${currentLevel + 1}**. You are currently Level **${userLevel}**.\n-# Keep using commands to earn EXP and level up!`
       }
     }
 
-    const upgradeCost = 5000 * userMining.level;
+    // Coin cost scales: 5000 * level for levels 11+
+    const upgradeCost = 5000 * currentLevel;
 
-    const userData = await getUserData(userId);
-
-    // Check if the user has enough cash for the upgrade
     if (userData.cash < upgradeCost) {
       return {
-        content: `⛏️ **${username}**, you don't have enough cash to upgrade your mine. You need **${upgradeCost} cash**.`
+        content: `⛏️ **${username}**, you don't have enough cash to upgrade your mine to **Level ${currentLevel + 1}**. You need <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** cash and **Level ${requiredUserLevel}**.`
       }
     }
 
-    // Deduct the cash for the upgrade
     userData.cash -= upgradeCost;
     await updateUser(userId, userData);
 
     userMining.level += 1;
-
     const newCapacity = `${10 + userMining.level * 5}`;
-
     await userMining.save();
 
+    const nextRequiredLevel = 30 + ((userMining.level - 10) * 10);
+
     return {
-      content: `Congratulations! **${username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**. You spent <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()} cash** on the upgrade.`,
+      content: `Congratulations! **${username}**, your mining level has increased to **Level ${userMining.level}**. Your new storage capacity is **${newCapacity} coal**.\n-# Cost: <:kasiko_coin:1300141236841086977> **${upgradeCost.toLocaleString()}** · Next upgrade requires Level **${nextRequiredLevel}**`,
       upgraded: true,
       level: userMining.level,
       newCost: 5000 * userMining.level,
