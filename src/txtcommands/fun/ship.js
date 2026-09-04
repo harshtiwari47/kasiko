@@ -1,10 +1,11 @@
 import {
   AttachmentBuilder,
-  EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  ContainerBuilder,
+  MessageFlags,
 } from "discord.js";
 import {
   createCanvas,
@@ -441,35 +442,37 @@ const ShipCmd = {
             });
           }
 
-          const likeEmbed = new EmbedBuilder()
-          .setTitle(`<a:red_heart:1356865968164569158> 𝒀𝑶𝑼 𝑳𝑰𝑲𝑬𝑫 ${user2.username || user2.user?.username}!`)
-          .setDescription(`𝗞𝗔𝗦𝗜𝗞𝗢 𝗠𝗘𝗠𝗕𝗘𝗥: ${user2Data ? "YES": "NO"}\n𝗠𝗔𝗥𝗥𝗜𝗘𝗗: ${user2Data?.family?.spouse ? "YES": "NO"}\n𝗣𝗢𝗣𝗨𝗟𝗔𝗥𝗜𝗧𝗬: <:popularity:1359565087341543435> ${user2Data?.popularity ? user2Data.popularity + 1: "0"}`)
-          .setFooter({
-            text: `Each like contributes +1 popularity`
-          })
-          .setThumbnail(user2.displayAvatarURL ? user2.displayAvatarURL({ extension: "png", size: 512 }) : defaultAvatar)
-          .setColor(0xff69b4);
-
-          const likeEmbed2 = new EmbedBuilder()
-          .setDescription(`𝗥𝗢𝗦𝗘𝗦 𝗬𝗢𝗨 𝗛𝗔𝗩𝗘: <:rose:1343097565738172488> ${user1Data?.inventory?.['rose'] || 0}\n` +
-            `-# ᥫ᭡ You can buy roses using **\`kas buy roses <amount>\`**\n` +
-            `-# ᥫ᭡ When you send someone roses, if their DMs are open, they will receive a notification\n` +
-            `-# ᥫ᭡ Roses also contribute to someone's popularity (+25)\n` +
-            `-# ᥫ᭡ You can propose to them using **\`kas marry @user\`**\n` +
-            `-# ᴜꜱᴇ ᴘʀᴇꜰɪx ~ BETA FEATURE`)
-          .setColor("#f29adf");
+          const likeContainer = new ContainerBuilder()
+            .setAccentColor(0xff69b4)
+            .addTextDisplayComponents(
+              textDisplay => textDisplay.setContent(`### <a:red_heart:1356865968164569158> **YOU LIKED ${user2.username || user2.user?.username}!**`),
+              textDisplay => textDisplay.setContent(
+                `**Kasiko Member:** ${user2Data ? "YES" : "NO"}\n` +
+                `**Married:** ${user2Data?.family?.spouse ? "YES" : "NO"}\n` +
+                `**Popularity:** <:popularity:1359565087341543435> ${user2Data?.popularity ? user2Data.popularity + 1 : "1"}`
+              )
+            )
+            .addSeparatorComponents(separate => separate)
+            .addTextDisplayComponents(
+              textDisplay => textDisplay.setContent(
+                `**ROSES YOU HAVE:** <:rose:1343097565738172488> \`${user1Data?.inventory?.['rose'] || 0}\`\n` +
+                `-# ᥫ᭡ You can buy roses using **\`kas buy roses <amount>\`**\n` +
+                `-# ᥫ᭡ Sending roses increases their popularity (+25) and sends a DM notification\n` +
+                `-# ᥫ᭡ Propose to them using **\`kas marry @user\`**`
+              )
+            );
 
           const rosesButton = new ButtonBuilder()
-          .setCustomId("send_roses")
-          .setDisabled((!user2Data || (user1Data?.inventory?.['rose'] || 0) < 5) ? true: false)
-          .setLabel("𝙎𝙀𝙉𝘿 𝙋𝙍𝙄𝙑𝘼𝙏𝙀 𝙍𝙊𝙎𝙀𝙎 (𝟓)")
-          .setEmoji(`1343097565738172488`)
-          .setStyle(ButtonStyle.Primary);
+            .setCustomId("send_roses")
+            .setDisabled((!user2Data || (user1Data?.inventory?.['rose'] || 0) < 5) ? true : false)
+            .setLabel("𝙎𝙀𝙉𝘿 𝙋𝙍𝙄𝙑𝘼𝙏𝙀 𝙍𝙊𝙎𝙀𝙎 (𝟓)")
+            .setEmoji(`1343097565738172488`)
+            .setStyle(ButtonStyle.Primary);
           const rosesRow = new ActionRowBuilder().addComponents(rosesButton);
 
           await interaction.followUp({
-            embeds: [likeEmbed, likeEmbed2],
-            components: [rosesRow],
+            components: [likeContainer, rosesRow],
+            flags: MessageFlags.IsComponentsV2,
             ephemeral: true,
           }).catch(() => {});
 
@@ -559,16 +562,22 @@ const ShipCmd = {
                   ephemeral: true,
                 }).catch(() => {});
               } else {
-                // Send friend request in the channel
-                const requestEmbed = new EmbedBuilder()
-                  .setTitle("👥 Friend Request")
-                  .setDescription(
-                    `**${invoker.username}** wants to be friends with **${user2.username || user2.user?.username}**!\n\n` +
-                    `**${user2.username || user2.user?.username}**, click below to accept!\n\n` +
-                    `-# 💫 Friends get a **+20% ship score boost** and **higher item drop rates**!`
+                // Send friend request in the channel using Discord Containers
+                const requestContainer = new ContainerBuilder()
+                  .setAccentColor(0x5865f2)
+                  .addTextDisplayComponents(
+                    textDisplay => textDisplay.setContent(`### 👥 **FRIEND REQUEST**`),
+                    textDisplay => textDisplay.setContent(
+                      `**${invoker.username}** wants to be friends with **${user2.username || user2.user?.username}**!\n\n` +
+                      `**${user2.username || user2.user?.username}**, click below to accept!`
+                    )
                   )
-                  .setColor(0x5865f2)
-                  .setFooter({ text: "Expires in 60 seconds" });
+                  .addSeparatorComponents(separate => separate)
+                  .addTextDisplayComponents(
+                    textDisplay => textDisplay.setContent(
+                      `-# 💫 Friends get a **+20% ship score boost** and **higher item drop rates**! · Expires in 60s`
+                    )
+                  );
 
                 const acceptBtn = new ButtonBuilder()
                   .setCustomId("ship_friend_accept")
@@ -584,8 +593,8 @@ const ShipCmd = {
 
                 const reqMsg = await interaction.followUp({
                   content: `<@${user2.id}>`,
-                  embeds: [requestEmbed],
-                  components: [friendReqRow],
+                  components: [requestContainer, friendReqRow],
+                  flags: MessageFlags.IsComponentsV2,
                 }).catch(() => null);
 
                 if (reqMsg) {
@@ -610,18 +619,22 @@ const ShipCmd = {
                       if (btnI.customId === "ship_friend_accept") {
                         const result = await addFriend(invoker.id, user2.id);
                         if (result.success) {
-                          const successEmbed = new EmbedBuilder()
-                            .setTitle("💖 Friendship Formed!")
-                            .setDescription(
-                              `**${invoker.username}** and **${user2.username || user2.user?.username}** are now friends! 🎉\n\n` +
-                              `-# 💫 Ship together for a +20% score boost and higher item drops!`
-                            )
-                            .setColor(0x57f287);
+                          const successContainer = new ContainerBuilder()
+                            .setAccentColor(0x57f287)
+                            .addTextDisplayComponents(
+                              textDisplay => textDisplay.setContent(`### 💖 **FRIENDSHIP FORMED!**`),
+                              textDisplay => textDisplay.setContent(
+                                `**${invoker.username}** and **${user2.username || user2.user?.username}** are now friends! 🎉`
+                              ),
+                              textDisplay => textDisplay.setContent(
+                                `-# 💫 Ship together for a +20% score boost and higher item drops!`
+                              )
+                            );
 
                           await reqMsg.edit({
                             content: null,
-                            embeds: [successEmbed],
-                            components: [disabledFriendRow],
+                            components: [successContainer, disabledFriendRow],
+                            flags: MessageFlags.IsComponentsV2,
                           }).catch(() => {});
                         } else {
                           await btnI.followUp({
@@ -631,30 +644,34 @@ const ShipCmd = {
                           await reqMsg.edit({ components: [disabledFriendRow] }).catch(() => {});
                         }
                       } else {
-                        const declineEmbed = new EmbedBuilder()
-                          .setDescription(`❌ **${user2.username || user2.user?.username}** declined the friend request.`)
-                          .setColor(0xed4245);
+                        const declineContainer = new ContainerBuilder()
+                          .setAccentColor(0xed4245)
+                          .addTextDisplayComponents(
+                            textDisplay => textDisplay.setContent(`❌ **${user2.username || user2.user?.username}** declined the friend request.`)
+                          );
                         await reqMsg.edit({
                           content: null,
-                          embeds: [declineEmbed],
-                          components: [disabledFriendRow],
+                          components: [declineContainer, disabledFriendRow],
+                          flags: MessageFlags.IsComponentsV2,
                         }).catch(() => {});
                       }
                     });
 
                     friendCollector.on("end", async (collected) => {
                       if (collected.size === 0) {
-                        const timeoutEmbed = new EmbedBuilder()
-                          .setDescription(`⏰ Friend request expired.`)
-                          .setColor(0x99aab5);
+                        const timeoutContainer = new ContainerBuilder()
+                          .setAccentColor(0x99aab5)
+                          .addTextDisplayComponents(
+                            textDisplay => textDisplay.setContent(`⏰ Friend request expired.`)
+                          );
                         const disabledFriendRow = new ActionRowBuilder().addComponents(
                           acceptBtn.setDisabled(true),
                           declineBtn.setDisabled(true)
                         );
                         await reqMsg.edit({
                           content: null,
-                          embeds: [timeoutEmbed],
-                          components: [disabledFriendRow],
+                          components: [timeoutContainer, disabledFriendRow],
+                          flags: MessageFlags.IsComponentsV2,
                         }).catch(() => {});
                       }
                     });

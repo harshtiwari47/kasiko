@@ -1,9 +1,10 @@
 import {
-  EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  ContainerBuilder,
+  MessageFlags,
 } from "discord.js";
 
 import {
@@ -131,17 +132,23 @@ async function handleAddFriend(args, context, invoker) {
     return handleMessage(context, `⚠️ **${targetUser.username}**'s friends list is full! (${MAX_FRIENDS}/${MAX_FRIENDS}).`);
   }
 
-  // Send confirmation request
-  const confirmEmbed = new EmbedBuilder()
-    .setTitle("👥 Friend Request")
-    .setDescription(
-      `**${invoker.username}** wants to add **${targetUser.username}** as a friend!\n\n` +
-      `**${targetUser.username}**, do you accept this friend request?\n\n` +
-      `-# 💫 Friends get a **+20% ship score boost** and **higher item drop rates** when shipping!`
+  // Send confirmation request using Discord Containers (Components V2)
+  const confirmContainer = new ContainerBuilder()
+    .setAccentColor(0x5865f2)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`### 👥 **FRIEND REQUEST**`),
+      textDisplay => textDisplay.setContent(
+        `**${invoker.username}** wants to add **${targetUser.username}** as a friend!\n\n` +
+        `**${targetUser.username}**, do you accept this friend request?`
+      )
     )
-    .setColor(0x5865f2)
-    .setThumbnail(targetUser.displayAvatarURL({ extension: "png", size: 128 }))
-    .setFooter({ text: `Friends: ${friendsList.length}/${MAX_FRIENDS} • Expires in 60s` });
+    .addSeparatorComponents(separate => separate)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(
+        `-# 💫 Friends get a **+20% ship score boost** and **higher item drop rates** when shipping!\n` +
+        `-# 👥 Friends: ${friendsList.length}/${MAX_FRIENDS} · Expires in 60s`
+      )
+    );
 
   const acceptBtn = new ButtonBuilder()
     .setCustomId("friend_accept")
@@ -158,8 +165,8 @@ async function handleAddFriend(args, context, invoker) {
   const row = new ActionRowBuilder().addComponents(acceptBtn, declineBtn);
 
   const responseMsg = await handleMessage(context, {
-    embeds: [confirmEmbed],
-    components: [row],
+    components: [confirmContainer, row],
+    flags: MessageFlags.IsComponentsV2,
   });
 
   if (!responseMsg) return;
@@ -184,13 +191,13 @@ async function handleAddFriend(args, context, invoker) {
       const result = await addFriend(invoker.id, targetUser.id);
 
       if (result.success) {
-        const successEmbed = new EmbedBuilder()
-          .setTitle("💖 Friendship Formed!")
-          .setDescription(
-            `**${invoker.username}** and **${targetUser.username}** are now friends! 🎉\n\n` +
-            `-# 💫 Ship together for a +20% score boost and higher item drops!`
-          )
-          .setColor(0x57f287);
+        const successContainer = new ContainerBuilder()
+          .setAccentColor(0x57f287)
+          .addTextDisplayComponents(
+            textDisplay => textDisplay.setContent(`### 💖 **FRIENDSHIP FORMED!**`),
+            textDisplay => textDisplay.setContent(`**${invoker.username}** and **${targetUser.username}** are now friends! 🎉`),
+            textDisplay => textDisplay.setContent(`-# 💫 Ship together for a +20% score boost and higher item drops!`)
+          );
 
         const disabledRow = new ActionRowBuilder().addComponents(
           acceptBtn.setDisabled(true),
@@ -198,8 +205,8 @@ async function handleAddFriend(args, context, invoker) {
         );
 
         await responseMsg.edit({
-          embeds: [successEmbed],
-          components: [disabledRow],
+          components: [successContainer, disabledRow],
+          flags: MessageFlags.IsComponentsV2,
         }).catch(() => {});
       } else if (result.error === 'already_friends') {
         await interaction.followUp({
@@ -213,9 +220,11 @@ async function handleAddFriend(args, context, invoker) {
         }).catch(() => {});
       }
     } else {
-      const declineEmbed = new EmbedBuilder()
-        .setDescription(`❌ **${targetUser.username}** declined the friend request.`)
-        .setColor(0xed4245);
+      const declineContainer = new ContainerBuilder()
+        .setAccentColor(0xed4245)
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`❌ **${targetUser.username}** declined the friend request.`)
+        );
 
       const disabledRow = new ActionRowBuilder().addComponents(
         acceptBtn.setDisabled(true),
@@ -223,17 +232,19 @@ async function handleAddFriend(args, context, invoker) {
       );
 
       await responseMsg.edit({
-        embeds: [declineEmbed],
-        components: [disabledRow],
+        components: [declineContainer, disabledRow],
+        flags: MessageFlags.IsComponentsV2,
       }).catch(() => {});
     }
   });
 
   collector.on("end", async (collected) => {
     if (collected.size === 0) {
-      const timeoutEmbed = new EmbedBuilder()
-        .setDescription(`⏰ Friend request from **${invoker.username}** to **${targetUser.username}** expired.`)
-        .setColor(0x99aab5);
+      const timeoutContainer = new ContainerBuilder()
+        .setAccentColor(0x99aab5)
+        .addTextDisplayComponents(
+          textDisplay => textDisplay.setContent(`⏰ Friend request from **${invoker.username}** to **${targetUser.username}** expired.`)
+        );
 
       const disabledRow = new ActionRowBuilder().addComponents(
         acceptBtn.setDisabled(true),
@@ -241,8 +252,8 @@ async function handleAddFriend(args, context, invoker) {
       );
 
       await responseMsg.edit({
-        embeds: [timeoutEmbed],
-        components: [disabledRow],
+        components: [timeoutContainer, disabledRow],
+        flags: MessageFlags.IsComponentsV2,
       }).catch(() => {});
     }
   });
@@ -287,17 +298,24 @@ async function handleViewFriends(context, invoker) {
   const friendsList = await getCachedFriends(invoker.id);
 
   if (friendsList.length === 0) {
-    const emptyEmbed = new EmbedBuilder()
-      .setTitle("👥 Friends List")
-      .setDescription(
-        `You don't have any friends yet!\n\n` +
-        `Use \`kas friends add @user\` to send a friend request.\n` +
-        `-# 💫 Friends get a +20% ship score boost and higher item drops!`
+    const emptyContainer = new ContainerBuilder()
+      .setAccentColor(0x99aab5)
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`### 👥 **FRIENDS LIST**`),
+        textDisplay => textDisplay.setContent(
+          `*You don't have any friends yet!*\n\n` +
+          `Use \`kas friends add @user\` to send a friend request.`
+        )
       )
-      .setColor(0x99aab5)
-      .setFooter({ text: `0/${MAX_FRIENDS} friends` });
+      .addSeparatorComponents(separate => separate)
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`-# 💫 Friends get a +20% ship score boost and higher item drops! · 0/${MAX_FRIENDS} friends`)
+      );
 
-    return handleMessage(context, { embeds: [emptyEmbed] });
+    return handleMessage(context, {
+      components: [emptyContainer],
+      flags: MessageFlags.IsComponentsV2,
+    });
   }
 
   // Resolve usernames
@@ -318,14 +336,24 @@ async function handleViewFriends(context, invoker) {
     pages.push(friendEntries.slice(i, i + 10).join('\n'));
   }
 
-  const embed = new EmbedBuilder()
-    .setTitle(`👥 ${invoker.username}'s Friends`)
-    .setDescription(pages[0])
-    .setColor(0x5865f2)
-    .setFooter({ text: `${friendsList.length}/${MAX_FRIENDS} friends${pages.length > 1 ? ` • Page 1/${pages.length}` : ''}` });
+  const buildPageContainer = (page) => {
+    return new ContainerBuilder()
+      .setAccentColor(0x5865f2)
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`### 👥 **${invoker.username.toUpperCase()}'S FRIENDS**`),
+        textDisplay => textDisplay.setContent(pages[page])
+      )
+      .addSeparatorComponents(separate => separate)
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`-# 👥 ${friendsList.length}/${MAX_FRIENDS} friends · Page ${page + 1}/${pages.length}`)
+      );
+  };
 
   if (pages.length <= 1) {
-    return handleMessage(context, { embeds: [embed] });
+    return handleMessage(context, {
+      components: [buildPageContainer(0)],
+      flags: MessageFlags.IsComponentsV2,
+    });
   }
 
   // Add pagination buttons
@@ -344,8 +372,8 @@ async function handleViewFriends(context, invoker) {
   const paginationRow = new ActionRowBuilder().addComponents(prevBtn, nextBtn);
 
   const responseMsg = await handleMessage(context, {
-    embeds: [embed],
-    components: [paginationRow],
+    components: [buildPageContainer(0), paginationRow],
+    flags: MessageFlags.IsComponentsV2,
   });
 
   if (!responseMsg) return;
@@ -370,12 +398,6 @@ async function handleViewFriends(context, invoker) {
       currentPage = Math.max(currentPage - 1, 0);
     }
 
-    const updatedEmbed = new EmbedBuilder()
-      .setTitle(`👥 ${invoker.username}'s Friends`)
-      .setDescription(pages[currentPage])
-      .setColor(0x5865f2)
-      .setFooter({ text: `${friendsList.length}/${MAX_FRIENDS} friends • Page ${currentPage + 1}/${pages.length}` });
-
     const updatedRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("friends_prev")
@@ -390,8 +412,8 @@ async function handleViewFriends(context, invoker) {
     );
 
     await responseMsg.edit({
-      embeds: [updatedEmbed],
-      components: [updatedRow],
+      components: [buildPageContainer(currentPage), updatedRow],
+      flags: MessageFlags.IsComponentsV2,
     }).catch(() => {});
   });
 
@@ -408,7 +430,10 @@ async function handleViewFriends(context, invoker) {
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(true)
     );
-    await responseMsg.edit({ components: [disabledRow] }).catch(() => {});
+    await responseMsg.edit({
+      components: [buildPageContainer(currentPage), disabledRow],
+      flags: MessageFlags.IsComponentsV2,
+    }).catch(() => {});
   });
 }
 
