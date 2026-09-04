@@ -24,18 +24,19 @@ import {
 
 import shippingQuotes from "./req/shipSuggestions.js";
 import { areFriends, addFriend, getCachedFriends, MAX_FRIENDS } from './req/friendsCache.js';
+import { ITEM_DEFINITIONS } from '../../inventory.js';
 import { sendErrorLog } from "../../../utils/errorLogger.js";
 
 // Path to custom scores JSON file
 const shipDatabasePath = path.join(process.cwd(), "database", "customScores.json");
 
-// Ship item drop table (weighted)
+// Ship item drop table (weighted from official Kasiko ITEM_DEFINITIONS)
 const SHIP_DROP_TABLE = [
-  { id: 'rose', name: 'Rose', emoji: '🌹', weight: 40 },
-  { id: 'loveletter', name: 'Love Letter', emoji: '💌', weight: 25 },
-  { id: 'chocolate', name: 'Chocolate', emoji: '🍫', weight: 20 },
-  { id: 'crystalheart', name: 'Crystal Heart', emoji: '💎', weight: 10 },
-  { id: 'crownofhearts', name: 'Crown of Hearts', emoji: '👑', weight: 5 },
+  { id: 'rose', weight: 45 },         // Rose (romantic gift, usable in ship/marriage)
+  { id: 'lollipop', weight: 25 },     // Lollipop (sweet gift, sellable/shareable)
+  { id: 'teddy', weight: 15 },        // Teddy Bear (cuddly gift, sellable/shareable)
+  { id: 'scratch_card', weight: 10 }, // Scratch Card (consumable lottery ticket)
+  { id: 'ticket', weight: 5 },        // Ticket (loot transport ticket)
 ];
 const TOTAL_DROP_WEIGHT = SHIP_DROP_TABLE.reduce((a, b) => a + b.weight, 0);
 
@@ -45,11 +46,15 @@ function rollShipDrop(isFriend) {
 
   // Weighted random pick
   let roll = Math.random() * TOTAL_DROP_WEIGHT;
-  for (const item of SHIP_DROP_TABLE) {
-    roll -= item.weight;
-    if (roll <= 0) return item;
+  for (const entry of SHIP_DROP_TABLE) {
+    roll -= entry.weight;
+    if (roll <= 0) {
+      const def = ITEM_DEFINITIONS[entry.id];
+      return def ? { id: def.id, name: def.name, emoji: def.emoji } : null;
+    }
   }
-  return SHIP_DROP_TABLE[0]; // fallback
+  const fallback = ITEM_DEFINITIONS['rose'];
+  return fallback ? { id: fallback.id, name: fallback.name, emoji: fallback.emoji } : null;
 }
 
 /**
