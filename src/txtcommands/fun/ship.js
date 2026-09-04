@@ -69,8 +69,8 @@ async function handleMessage(context, data) {
     // If not already deferred, defer it.
     if (!context.deferred) {
       await context
-      .deferReply()
-      .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+        .deferReply()
+        .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
     }
     return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
   } else {
@@ -239,7 +239,7 @@ const ShipCmd = {
           const customScores = JSON.parse(data);
           // Create a sorted key (order does not matter).
           const key = [user1.id,
-            user2.id].sort().join("-");
+          user2.id].sort().join("-");
           if (customScores.hasOwnProperty(key)) {
             customScore = customScores[key];
           }
@@ -260,12 +260,12 @@ const ShipCmd = {
 
       // Calculate the love score.
       let score =
-      customScore !== null
-      ? Math.min(100, customScore): Math.min(
-        100,
-        getLoveScore(user1.id, user2.id, user1.username || user1.user?.username || "User1", user2.username || user2.user?.username || "User2", 100, Math.max(35, Math.ceil(Math.random() * 40))) +
-        Math.floor(Math.random() * 10)
-      );
+        customScore !== null
+          ? Math.min(100, customScore) : Math.min(
+            100,
+            getLoveScore(user1.id, user2.id, user1.username || user1.user?.username || "User1", user2.username || user2.user?.username || "User2", 100, Math.max(35, Math.ceil(Math.random() * 40))) +
+            Math.floor(Math.random() * 10)
+          );
 
       // Friend bonus: up to +20% boost
       if (isFriend && customScore === null) {
@@ -341,7 +341,7 @@ const ShipCmd = {
         const heartImageWidth = 100;
         const heartImageHeight = 100;
         ctx.drawImage(heartImage, circleX - heartImageWidth / 2, circleY - 12 - heartImageHeight / 2, heartImageWidth, heartImageHeight);
-      } catch {}
+      } catch { }
 
       ctx.fillStyle = "rgb(196,0,0)";
       ctx.font = "30px Roboto, sans-serif";
@@ -353,10 +353,10 @@ const ShipCmd = {
 
       // Build message description with friend bonus and item drop indicators
       let msgDescription =
-      `### <a:red_heart:1356865968164569158>  *** 𝙒𝙄𝙉𝘿𝙎 𝙊𝙁 𝘼𝙁𝙁𝙀𝘾𝙏𝙄𝙊𝙉 ***\n` +
-      `### **${user1.username || user1.user?.username}** <:wine:1356880010866069562> **${user2.username || user2.user?.username}${user2.bot ? " <:bot:1359577258959962152>" : ""}**\n` +
-      `ᥫ᭡ ﹒ ***_𝗦𝗰𝗼𝗿𝗲 ﹒ ${score}%_***${isFriend ? " 💫" : ""}\n` +
-      `-# 💌 _${quote}_${isFriend ? " ᵇᵒⁿᵘˢ" : ""}\n`;
+        `### <a:red_heart:1356865968164569158>  *** 𝙒𝙄𝙉𝘿𝙎 𝙊𝙁 𝘼𝙁𝙁𝙀𝘾𝙏𝙄𝙊𝙉 ***\n` +
+        `### **${user1.username || user1.user?.username}** <:wine:1356880010866069562> **${user2.username || user2.user?.username}${user2.bot ? " <:bot:1359577258959962152>" : ""}**\n` +
+        `ᥫ᭡ ﹒ ***_𝗦𝗰𝗼𝗿𝗲 ﹒ ${score}%_***${isFriend ? " 💫" : ""}\n` +
+        `-# 💌 _${quote}_${isFriend ? " ᵇᵒⁿᵘˢ" : ""}\n`;
 
       if (droppedItem) {
         msgDescription += `-# 🎁 _You found a ${droppedItem.emoji} **${droppedItem.name}**!_\n`;
@@ -364,22 +364,22 @@ const ShipCmd = {
 
       // Create buttons.
       const likeButton = new ButtonBuilder()
-      .setCustomId("like_ship")
-      .setLabel("𝑳𝑰𝑲𝑬")
-      .setEmoji('1359578512893149246')
-      .setDisabled((user1.id === user2.id || user2.bot) ? true: false)
-      .setStyle(ButtonStyle.Danger);
+        .setCustomId("like_ship")
+        .setLabel("𝑳𝑰𝑲𝑬")
+        .setEmoji('1359578512893149246')
+        .setDisabled((user1.id === user2.id || user2.bot) ? true : false)
+        .setStyle(ButtonStyle.Danger);
       const passButton = new ButtonBuilder()
-      .setCustomId("pass_ship")
-      .setLabel("𝑷𝑨𝑺𝑺")
-      .setEmoji('1359578522670207126')
-      .setStyle(ButtonStyle.Secondary);
+        .setCustomId("pass_ship")
+        .setLabel("𝑷𝑨𝑺𝑺")
+        .setEmoji('1359578522670207126')
+        .setStyle(ButtonStyle.Secondary);
       const friendsButton = new ButtonBuilder()
-      .setCustomId("friends_ship")
-      .setLabel(isFriend ? "𝑭𝑹𝑰𝑬𝑵𝑫𝑺 ✓" : "𝑭𝑹𝑰𝑬𝑵𝑫𝑺")
-      .setEmoji('👥')
-      .setDisabled(user1.id === user2.id || user2.bot)
-      .setStyle(isFriend ? ButtonStyle.Success : ButtonStyle.Primary);
+        .setCustomId("friends_ship")
+        .setLabel(isFriend ? "𝑭𝑹𝑰𝑬𝑵𝑫𝑺 ✓" : "𝑭𝑹𝑰𝑬𝑵𝑫𝑺")
+        .setEmoji('1545399894397943818')
+        .setDisabled(user1.id === user2.id || user2.bot)
+        .setStyle(isFriend ? ButtonStyle.Success : ButtonStyle.Primary);
       const actionRow = new ActionRowBuilder().addComponents(likeButton, passButton, friendsButton);
 
       // Send the ship embed/image using our universal handler or channel.send on pass
@@ -421,7 +421,7 @@ const ShipCmd = {
           });
         }
 
-        await interaction.deferUpdate().catch(() => {});
+        await interaction.deferUpdate().catch(() => { });
         // Disable the buttons on current card.
         const disabledRow = new ActionRowBuilder().addComponents(
           likeButton.setDisabled(true),
@@ -430,7 +430,7 @@ const ShipCmd = {
         );
         await responseMessage.edit({
           components: [disabledRow]
-        }).catch(() => {});
+        }).catch(() => { });
 
         if (interaction.customId === "like_ship") {
           const user2Data = await getUserData(user2?.id);
@@ -474,7 +474,7 @@ const ShipCmd = {
             components: [likeContainer, rosesRow],
             flags: MessageFlags.IsComponentsV2,
             ephemeral: true,
-          }).catch(() => {});
+          }).catch(() => { });
 
           // Collector for the send roses button.
           const dmCollectorFilter = i => i.user.id === invoker.id && i.customId === "send_roses";
@@ -486,7 +486,7 @@ const ShipCmd = {
 
           if (dmCollector) {
             dmCollector.on("collect", async btnInteraction => {
-              await btnInteraction.deferUpdate().catch(() => {});
+              await btnInteraction.deferUpdate().catch(() => { });
               try {
                 await user2.send(`💖 **${invoker.username}** 𝘩𝘢𝘴 𝘴𝘦𝘯𝘵 𝘺𝘰𝘶 **5** 𝘳𝘰𝘴𝘦𝘴 <:rose:1343097565738172488>\n` +
                   `𝑌𝑜𝑢𝑟 𝑝𝑜𝑝𝑢𝑙𝑎𝑟𝑖𝑡𝑦 𝑠𝑐𝑜𝑟𝑒 𝑖𝑛𝑐𝑟𝑒𝑎𝑠𝑒𝑑 𝑏𝑦 **+25**!\n` +
@@ -504,12 +504,12 @@ const ShipCmd = {
                 await btnInteraction.followUp({
                   content: `<:rose:1343097565738172488> 5 roses have been sent to **${user2.username || user2.user?.username}**!`,
                   ephemeral: true
-                }).catch(() => {});
+                }).catch(() => { });
               } catch (err) {
                 await btnInteraction.followUp({
                   content: `Could not send DM to **${user2.username || user2.user?.username}**. They might have DMs disabled.`,
                   ephemeral: true
-                }).catch(() => {});
+                }).catch(() => { });
               }
             });
           }
@@ -519,7 +519,7 @@ const ShipCmd = {
           await interaction.followUp({
             content: `❤️ **${interaction.user.username}**, 𝘱𝘦𝘳𝘧𝘰𝘳𝘮𝘪𝘯𝘨 𝘢 𝘯𝘦𝘸 𝘴𝘩𝘪𝘱...\n${randomQuote}`,
             ephemeral: true
-          }).catch(() => {});
+          }).catch(() => { });
 
           collector.stop();
 
@@ -545,7 +545,7 @@ const ShipCmd = {
               content: `✅ You and **${user2.username || user2.user?.username}** are already friends! 💫\n` +
                 `-# 👥 You have **${friendsList.length}/${MAX_FRIENDS}** friends`,
               ephemeral: true,
-            }).catch(() => {});
+            }).catch(() => { });
           } else {
             // Not friends — offer to add
             const invokerFriends = await getCachedFriends(invoker.id);
@@ -553,20 +553,20 @@ const ShipCmd = {
               await interaction.followUp({
                 content: `⚠️ Your friends list is full! (${MAX_FRIENDS}/${MAX_FRIENDS}). Remove someone first with \`kas friends remove @user\`.`,
                 ephemeral: true,
-              }).catch(() => {});
+              }).catch(() => { });
             } else {
               const targetFriends = await getCachedFriends(user2.id);
               if (targetFriends.length >= MAX_FRIENDS) {
                 await interaction.followUp({
                   content: `⚠️ **${user2.username || user2.user?.username}**'s friends list is full!`,
                   ephemeral: true,
-                }).catch(() => {});
+                }).catch(() => { });
               } else {
                 // Send friend request in the channel using Discord Containers
                 const requestContainer = new ContainerBuilder()
                   .setAccentColor(0x5865f2)
                   .addTextDisplayComponents(
-                    textDisplay => textDisplay.setContent(`### 👥 **FRIEND REQUEST**`),
+                    textDisplay => textDisplay.setContent(`### <:friends:1545399894397943818> **FRIEND REQUEST**`),
                     textDisplay => textDisplay.setContent(
                       `**${invoker.username}** wants to be friends with **${user2.username || user2.user?.username}**!\n\n` +
                       `**${user2.username || user2.user?.username}**, click below to accept!`
@@ -575,19 +575,19 @@ const ShipCmd = {
                   .addSeparatorComponents(separate => separate)
                   .addTextDisplayComponents(
                     textDisplay => textDisplay.setContent(
-                      `-# 💫 Friends get a **+20% ship score boost** and **higher item drop rates**! · Expires in 60s`
+                      `-# <:happy:1403061130955587634> Friends get a **+20% ship score boost** and **higher item drop rates**! · Expires in 60s`
                     )
                   );
 
                 const acceptBtn = new ButtonBuilder()
                   .setCustomId("ship_friend_accept")
                   .setLabel("Accept")
-                  .setEmoji("✅")
+                  .setEmoji("1388858843324350474")
                   .setStyle(ButtonStyle.Success);
                 const declineBtn = new ButtonBuilder()
                   .setCustomId("ship_friend_decline")
                   .setLabel("Decline")
-                  .setEmoji("❌")
+                  .setEmoji("1388858904095625226")
                   .setStyle(ButtonStyle.Danger);
                 const friendReqRow = new ActionRowBuilder().addComponents(acceptBtn, declineBtn);
 
@@ -601,16 +601,16 @@ const ShipCmd = {
                   const friendFilter = (btnI) => btnI.user.id === user2.id;
                   const friendCollector = reqMsg.createMessageComponentCollector
                     ? reqMsg.createMessageComponentCollector({
-                        filter: friendFilter,
-                        componentType: ComponentType.Button,
-                        time: 60000,
-                        max: 1,
-                      })
+                      filter: friendFilter,
+                      componentType: ComponentType.Button,
+                      time: 60000,
+                      max: 1,
+                    })
                     : null;
 
                   if (friendCollector) {
                     friendCollector.on("collect", async (btnI) => {
-                      await btnI.deferUpdate().catch(() => {});
+                      await btnI.deferUpdate().catch(() => { });
                       const disabledFriendRow = new ActionRowBuilder().addComponents(
                         acceptBtn.setDisabled(true),
                         declineBtn.setDisabled(true)
@@ -622,7 +622,7 @@ const ShipCmd = {
                           const successContainer = new ContainerBuilder()
                             .setAccentColor(0x57f287)
                             .addTextDisplayComponents(
-                              textDisplay => textDisplay.setContent(`### 💖 **FRIENDSHIP FORMED!**`),
+                              textDisplay => textDisplay.setContent(`### <:rose_flower:1367919954455953488> **FRIENDSHIP FORMED!**`),
                               textDisplay => textDisplay.setContent(
                                 `**${invoker.username}** and **${user2.username || user2.user?.username}** are now friends! 🎉`
                               ),
@@ -635,25 +635,25 @@ const ShipCmd = {
                             content: null,
                             components: [successContainer, disabledFriendRow],
                             flags: MessageFlags.IsComponentsV2,
-                          }).catch(() => {});
+                          }).catch(() => { });
                         } else {
                           await btnI.followUp({
                             content: `⚠️ Could not add friend. ${result.error === 'already_friends' ? "You're already friends!" : "Please try again later."}`,
                             ephemeral: true,
-                          }).catch(() => {});
-                          await reqMsg.edit({ components: [disabledFriendRow] }).catch(() => {});
+                          }).catch(() => { });
+                          await reqMsg.edit({ components: [disabledFriendRow] }).catch(() => { });
                         }
                       } else {
                         const declineContainer = new ContainerBuilder()
                           .setAccentColor(0xed4245)
                           .addTextDisplayComponents(
-                            textDisplay => textDisplay.setContent(`❌ **${user2.username || user2.user?.username}** declined the friend request.`)
+                            textDisplay => textDisplay.setContent(`<:checkbox_cross:1388858904095625226> **${user2.username || user2.user?.username}** declined the friend request.`)
                           );
                         await reqMsg.edit({
                           content: null,
                           components: [declineContainer, disabledFriendRow],
                           flags: MessageFlags.IsComponentsV2,
-                        }).catch(() => {});
+                        }).catch(() => { });
                       }
                     });
 
@@ -662,7 +662,7 @@ const ShipCmd = {
                         const timeoutContainer = new ContainerBuilder()
                           .setAccentColor(0x99aab5)
                           .addTextDisplayComponents(
-                            textDisplay => textDisplay.setContent(`⏰ Friend request expired.`)
+                            textDisplay => textDisplay.setContent(`<:clock:1540072937485369364> Friend request expired.`)
                           );
                         const disabledFriendRow = new ActionRowBuilder().addComponents(
                           acceptBtn.setDisabled(true),
@@ -672,7 +672,7 @@ const ShipCmd = {
                           content: null,
                           components: [timeoutContainer, disabledFriendRow],
                           flags: MessageFlags.IsComponentsV2,
-                        }).catch(() => {});
+                        }).catch(() => { });
                       }
                     });
                   }
@@ -693,8 +693,8 @@ const ShipCmd = {
           );
           await responseMessage.edit({
             components: [disabledRow]
-          }).catch(() => {});
-        } catch (err) {}
+          }).catch(() => { });
+        } catch (err) { }
       });
     } catch (e) {
       console.error(e);
@@ -705,7 +705,7 @@ const ShipCmd = {
         author: context.user || context.author,
         guild: context.guild,
         channel: context.channel
-      }).catch(() => {});
+      }).catch(() => { });
       return handleMessage(context,
         "❗Something went wrong during shipping. Possibly an error occurred with your profile picture or interactions.");
     }
@@ -717,8 +717,8 @@ function getLoveScore(id1, id2, username1, username2, maxScore = 100, seed = 31)
   if (typeof id1 !== "string" || typeof id2 !== "string" || typeof username1 !== "string" || typeof username2 !== "string") {
     throw new Error("IDs and usernames must be strings.");
   }
-  const combinedIds = id1 < id2 ? `${id1}${id2}`: `${id2}${id1}`;
-  const combinedUsernames = username1 < username2 ? `${username1}${username2}`: `${username2}${username1}`;
+  const combinedIds = id1 < id2 ? `${id1}${id2}` : `${id2}${id1}`;
+  const combinedUsernames = username1 < username2 ? `${username1}${username2}` : `${username2}${username1}`;
   function hashString(str, seed) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
