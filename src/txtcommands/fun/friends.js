@@ -17,20 +17,9 @@ import {
   removeFriend,
   MAX_FRIENDS,
 } from './req/friendsCache.js';
-
-async function handleMessage(context, data) {
-  const isInteraction = !!context.isCommand;
-  if (isInteraction) {
-    if (!context.deferred) {
-      await context
-        .deferReply()
-        .catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-    }
-    return context.editReply(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  } else {
-    return context.channel.send(data).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-  }
-}
+import {
+  handleMessage,
+} from '../../../helper.js';
 
 const FriendsCmd = {
   name: "friends",
@@ -153,13 +142,13 @@ async function handleAddFriend(args, context, invoker) {
   const acceptBtn = new ButtonBuilder()
     .setCustomId("friend_accept")
     .setLabel("Accept")
-    .setEmoji("✅")
+    .setEmoji({ name: "✅" })
     .setStyle(ButtonStyle.Success);
 
   const declineBtn = new ButtonBuilder()
     .setCustomId("friend_decline")
     .setLabel("Decline")
-    .setEmoji("❌")
+    .setEmoji({ name: "❌" })
     .setStyle(ButtonStyle.Danger);
 
   confirmContainer.addActionRowComponents(row => row.addComponents(acceptBtn, declineBtn));
@@ -350,7 +339,7 @@ async function handleViewFriends(context, invoker) {
               button => button
                 .setCustomId(`friends_rm_${friend.id}`)
                 .setLabel("Remove")
-                .setEmoji("🗑️")
+                .setEmoji({ name: "🗑️" })
                 .setStyle(ButtonStyle.Danger)
                 .setDisabled(disabled)
             )

@@ -71,16 +71,13 @@ export function buildBankStatusContainer({ name, userData, account, additionalRe
     )
     .addSeparatorComponents(separate => separate)
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`**𝘋𝘌𝘗𝘖𝘚𝘐𝘛**`),
-      textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${(account?.deposit || 0).toLocaleString()}`)
+      textDisplay => textDisplay.setContent(`**𝘋𝘌𝘗𝘖𝘚𝘐𝘛**\n-# <:kasiko_coin:1300141236841086977> ${(account?.deposit || 0).toLocaleString()}`)
     )
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`**𝘊𝘈𝘗𝘈𝘊𝘐𝘛𝘠**`),
-      textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${((account?.level || 1) * BankInfo.storage).toLocaleString()}`)
+      textDisplay => textDisplay.setContent(`**𝘊𝘈𝘗𝘈𝘊𝘐𝘛𝘠**\n-# <:kasiko_coin:1300141236841086977> ${((account?.level || 1) * BankInfo.storage).toLocaleString()}`)
     )
     .addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`<:bank_card:1368183874378666096>  **𝘊𝘈𝘚𝘏 𝘐𝘕 𝘏𝘈𝘕𝘋**`),
-      textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${(userData?.cash || 0).toLocaleString()}`)
+      textDisplay => textDisplay.setContent(`<:bank_card:1368183874378666096>  **𝘊𝘈𝘚𝘏 𝘐𝘕 𝘏𝘈𝘕𝘋**\n-# <:kasiko_coin:1300141236841086977> ${(userData?.cash || 0).toLocaleString()}`)
     );
 
   if (!account?.open) {
@@ -89,7 +86,7 @@ export function buildBankStatusContainer({ name, userData, account, additionalRe
         new ButtonBuilder()
           .setCustomId('open_bank')
           .setLabel('𝗢𝗣𝗘𝗡 𝗕𝗔𝗡𝗞 𝗔𝗖𝗖𝗢𝗨𝗡𝗧')
-          .setEmoji(`1300141236841086977`)
+          .setEmoji({ id: '1300141236841086977' })
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(disabled)
       )
@@ -100,22 +97,20 @@ export function buildBankStatusContainer({ name, userData, account, additionalRe
     container.addSectionComponents(
       section => section
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`**𝘕𝘌𝘟𝘛 𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
-        textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${nextUpgradeCost.toLocaleString()} (to Lv.${(account.level || 1) + 1}) · \`kas bank upgrade\``)
+        textDisplay => textDisplay.setContent(`**𝘕𝘌𝘟𝘛 𝘜𝘗𝘎𝘙𝘈𝘋𝘌**\n-# <:kasiko_coin:1300141236841086977> ${nextUpgradeCost.toLocaleString()} (to Lv.${(account.level || 1) + 1}) · \`kas bank upgrade\``)
       )
       .setButtonAccessory(
         btn => btn
         .setCustomId('bank_upgrade')
         .setLabel('Upgrade')
-        .setEmoji('1355139233559351326')
+        .setEmoji({ id: '1355139233559351326' })
         .setStyle(canAfford ? ButtonStyle.Success : ButtonStyle.Secondary)
         .setDisabled(disabled)
       )
     );
   } else {
     container.addTextDisplayComponents(
-      textDisplay => textDisplay.setContent(`**𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
-      textDisplay => textDisplay.setContent(`-# 🏆 Bank Vault is at MAX LEVEL (${(BankInfo.maxLevel || 2700).toLocaleString()})!`)
+      textDisplay => textDisplay.setContent(`**𝘜𝘗𝘎𝘙𝘈𝘋𝘌**\n-# 🏆 Bank Vault is at MAX LEVEL (${(BankInfo.maxLevel || 2700).toLocaleString()})!`)
     );
   }
 
