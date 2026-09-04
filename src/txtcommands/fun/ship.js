@@ -356,10 +356,10 @@ const ShipCmd = {
         `### <a:red_heart:1356865968164569158>  *** 𝙒𝙄𝙉𝘿𝙎 𝙊𝙁 𝘼𝙁𝙁𝙀𝘾𝙏𝙄𝙊𝙉 ***\n` +
         `### **${user1.username || user1.user?.username}** <:wine:1356880010866069562> **${user2.username || user2.user?.username}${user2.bot ? " <:bot:1359577258959962152>" : ""}**\n` +
         `ᥫ᭡ ﹒ ***_𝗦𝗰𝗼𝗿𝗲 ﹒ ${score}%_***${isFriend ? " 💫" : ""}\n` +
-        `-# 💌 _${quote}_${isFriend ? " ᵇᵒⁿᵘˢ" : ""}\n`;
+        `-# <:love_letter:1545403943733960844> _${quote}_${isFriend ? " ᵇᵒⁿᵘˢ" : ""}\n`;
 
       if (droppedItem) {
-        msgDescription += `-# 🎁 _You found a ${droppedItem.emoji} **${droppedItem.name}**!_\n`;
+        msgDescription += `-# <:rewards:1545404626503868567> _You found a ${droppedItem.emoji} **${droppedItem.name}**!_\n`;
       }
 
       // Create buttons.
@@ -421,18 +421,14 @@ const ShipCmd = {
           });
         }
 
-        await interaction.deferUpdate().catch(() => { });
-        // Disable the buttons on current card.
-        const disabledRow = new ActionRowBuilder().addComponents(
-          likeButton.setDisabled(true),
-          passButton.setDisabled(true),
-          friendsButton.setDisabled(true)
-        );
-        await responseMessage.edit({
-          components: [disabledRow]
-        }).catch(() => { });
-
         if (interaction.customId === "like_ship") {
+          await interaction.deferUpdate().catch(() => { });
+
+          // Only disable the like button so friends and pass remain clickable
+          likeButton.setDisabled(true);
+          const updatedRow = new ActionRowBuilder().addComponents(likeButton, passButton, friendsButton);
+          await responseMessage.edit({ components: [updatedRow] }).catch(() => { });
+
           const user2Data = await getUserData(user2?.id);
           const user1Data = await getUserData(user1?.id);
 
@@ -441,6 +437,13 @@ const ShipCmd = {
               popularity: (user2Data?.popularity || 0) + 1
             });
           }
+
+          const rosesButton = new ButtonBuilder()
+            .setCustomId("send_roses")
+            .setDisabled((!user2Data || (user1Data?.inventory?.['rose'] || 0) < 5) ? true : false)
+            .setLabel("𝙎𝙀𝙉𝘿 𝙋𝙍𝙄𝙑𝘼𝙏𝙀 𝙍𝙊𝙎𝙀𝙎 (𝟓)")
+            .setEmoji(`1343097565738172488`)
+            .setStyle(ButtonStyle.Primary);
 
           const likeContainer = new ContainerBuilder()
             .setAccentColor(0xff69b4)
@@ -460,21 +463,13 @@ const ShipCmd = {
                 `-# ᥫ᭡ Sending roses increases their popularity (+25) and sends a DM notification\n` +
                 `-# ᥫ᭡ Propose to them using **\`kas marry @user\`**`
               )
-            );
-
-          const rosesButton = new ButtonBuilder()
-            .setCustomId("send_roses")
-            .setDisabled((!user2Data || (user1Data?.inventory?.['rose'] || 0) < 5) ? true : false)
-            .setLabel("𝙎𝙀𝙉𝘿 𝙋𝙍𝙄𝙑𝘼𝙏𝙀 𝙍𝙊𝙎𝙀𝙎 (𝟓)")
-            .setEmoji(`1343097565738172488`)
-            .setStyle(ButtonStyle.Primary);
-          const rosesRow = new ActionRowBuilder().addComponents(rosesButton);
+            )
+            .addActionRowComponents(row => row.addComponents(rosesButton));
 
           await interaction.followUp({
-            components: [likeContainer, rosesRow],
-            flags: MessageFlags.IsComponentsV2,
-            ephemeral: true,
-          }).catch(() => { });
+            components: [likeContainer],
+            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+          }).catch(console.error);
 
           // Collector for the send roses button.
           const dmCollectorFilter = i => i.user.id === invoker.id && i.customId === "send_roses";
@@ -514,6 +509,16 @@ const ShipCmd = {
             });
           }
         } else if (interaction.customId === "pass_ship") {
+          await interaction.deferUpdate().catch(() => { });
+
+          // Disable all buttons on the passed card
+          const disabledRow = new ActionRowBuilder().addComponents(
+            likeButton.setDisabled(true),
+            passButton.setDisabled(true),
+            friendsButton.setDisabled(true)
+          );
+          await responseMessage.edit({ components: [disabledRow] }).catch(() => { });
+
           const randomQuote = shippingQuotes[Math.floor(Math.random() * shippingQuotes.length)];
 
           await interaction.followUp({
@@ -541,147 +546,228 @@ const ShipCmd = {
           if (friendCheck) {
             // Already friends
             const friendsList = await getCachedFriends(invoker.id);
-            await interaction.followUp({
-              content: `✅ You and **${user2.username || user2.user?.username}** are already friends! 💫\n` +
-                `-# 👥 You have **${friendsList.length}/${MAX_FRIENDS}** friends`,
-              ephemeral: true,
-            }).catch(() => { });
-          } else {
-            // Not friends — offer to add
-            const invokerFriends = await getCachedFriends(invoker.id);
-            if (invokerFriends.length >= MAX_FRIENDS) {
+            const alreadyContainer = new ContainerBuilder()
+              .setAccentColor(0x57f287)
+              .addTextDisplayComponents(
+                td => td.setContent(`### <:rose_flower:1367919954455953488> **ALREADY FRIENDS!**`),
+                td => td.setContent(`You and **${user2.username || user2.user?.username}** are already friends! 💫`),
+                td => td.setContent(`-# <:friends:1545399894397943818> Friends: **${friendsList.length}/${MAX_FRIENDS}** · You have the +20% score boost & boosted item drops!`)
+              );
+
+            return await interaction.reply({
+              components: [alreadyContainer],
+              flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            }).catch(async () => {
               await interaction.followUp({
-                content: `⚠️ Your friends list is full! (${MAX_FRIENDS}/${MAX_FRIENDS}). Remove someone first with \`kas friends remove @user\`.`,
-                ephemeral: true,
+                components: [alreadyContainer],
+                flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+              }).catch(console.error);
+            });
+          }
+
+          // Not friends — check friend limits first
+          const invokerFriends = await getCachedFriends(invoker.id);
+          if (invokerFriends.length >= MAX_FRIENDS) {
+            const fullContainer = new ContainerBuilder()
+              .setAccentColor(0xed4245)
+              .addTextDisplayComponents(
+                td => td.setContent(`### <:checkbox_cross:1388858904095625226> **FRIENDS LIST FULL**`),
+                td => td.setContent(`Your friends list is full (**${MAX_FRIENDS}/${MAX_FRIENDS}**)!`),
+                td => td.setContent(`-# Remove someone first with \`kas friends remove @user\`.`)
+              );
+            return await interaction.reply({
+              components: [fullContainer],
+              flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            }).catch(console.error);
+          }
+
+          const targetFriends = await getCachedFriends(user2.id);
+          if (targetFriends.length >= MAX_FRIENDS) {
+            const targetFullContainer = new ContainerBuilder()
+              .setAccentColor(0xed4245)
+              .addTextDisplayComponents(
+                td => td.setContent(`### <:checkbox_cross:1388858904095625226> **CANNOT ADD FRIEND**`),
+                td => td.setContent(`**${user2.username || user2.user?.username}**'s friends list is full (**${MAX_FRIENDS}/${MAX_FRIENDS}**)!`)
+              );
+            return await interaction.reply({
+              components: [targetFullContainer],
+              flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            }).catch(console.error);
+          }
+
+          // Ask confirmation: "Ask for confirmation if they are not friends and they want to add that user."
+          const confirmAddBtn = new ButtonBuilder()
+            .setCustomId(`ship_cf_add_${user2.id}`)
+            .setLabel("Send Request")
+            .setEmoji("1388858843324350474")
+            .setStyle(ButtonStyle.Success);
+
+          const cancelAddBtn = new ButtonBuilder()
+            .setCustomId(`ship_cf_cancel_${user2.id}`)
+            .setLabel("Cancel")
+            .setEmoji("1388858904095625226")
+            .setStyle(ButtonStyle.Secondary);
+
+          const confirmContainer = new ContainerBuilder()
+            .setAccentColor(0x5865f2)
+            .addTextDisplayComponents(
+              td => td.setContent(`### <:friends:1545399894397943818> **ADD FRIEND?**`),
+              td => td.setContent(`Do you want to send a friend request to **${user2.username || user2.user?.username}**?`),
+              td => td.setContent(`-# <:happy:1403061130955587634> Friends get a **+20% ship score boost** and **higher item drop rates**!`)
+            )
+            .addActionRowComponents(row => row.addComponents(confirmAddBtn, cancelAddBtn));
+
+          const confirmMsg = await interaction.reply({
+            components: [confirmContainer],
+            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            fetchReply: true,
+          }).catch(async () => {
+            return await interaction.followUp({
+              components: [confirmContainer],
+              flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+              fetchReply: true,
+            }).catch(console.error);
+          });
+
+          if (!confirmMsg) return;
+
+          const confirmCollector = confirmMsg.createMessageComponentCollector({
+            filter: (btnI) => btnI.user.id === invoker.id,
+            componentType: ComponentType.Button,
+            time: 60000,
+            max: 1,
+          });
+
+          confirmCollector.on("collect", async (btnI) => {
+            if (btnI.customId === `ship_cf_add_${user2.id}`) {
+              await btnI.deferUpdate().catch(() => { });
+
+              const sentContainer = new ContainerBuilder()
+                .setAccentColor(0x57f287)
+                .addTextDisplayComponents(
+                  td => td.setContent(`### <:rose_flower:1367919954455953488> **REQUEST SENT!**`),
+                  td => td.setContent(`A friend request has been sent to **${user2.username || user2.user?.username}** in the channel!`)
+                );
+              await btnI.editReply({
+                components: [sentContainer],
+                flags: MessageFlags.IsComponentsV2,
               }).catch(() => { });
-            } else {
-              const targetFriends = await getCachedFriends(user2.id);
-              if (targetFriends.length >= MAX_FRIENDS) {
-                await interaction.followUp({
-                  content: `⚠️ **${user2.username || user2.user?.username}**'s friends list is full!`,
-                  ephemeral: true,
-                }).catch(() => { });
-              } else {
-                // Send friend request in the channel using Discord Containers
-                const requestContainer = new ContainerBuilder()
-                  .setAccentColor(0x5865f2)
-                  .addTextDisplayComponents(
-                    textDisplay => textDisplay.setContent(`### <:friends:1545399894397943818> **FRIEND REQUEST**`),
-                    textDisplay => textDisplay.setContent(
-                      `**${invoker.username}** wants to be friends with **${user2.username || user2.user?.username}**!\n\n` +
-                      `**${user2.username || user2.user?.username}**, click below to accept!`
-                    )
+
+              // Send public request in channel for user2 to accept/decline
+              const acceptBtn = new ButtonBuilder()
+                .setCustomId("ship_friend_accept")
+                .setLabel("Accept")
+                .setEmoji("1388858843324350474")
+                .setStyle(ButtonStyle.Success);
+              const declineBtn = new ButtonBuilder()
+                .setCustomId("ship_friend_decline")
+                .setLabel("Decline")
+                .setEmoji("1388858904095625226")
+                .setStyle(ButtonStyle.Danger);
+
+              const requestContainer = new ContainerBuilder()
+                .setAccentColor(0x5865f2)
+                .addTextDisplayComponents(
+                  td => td.setContent(`### <:friends:1545399894397943818> **FRIEND REQUEST**`),
+                  td => td.setContent(
+                    `Hey <@${user2.id}>! **${invoker.username}** wants to add you as a friend!\n\n` +
+                    `Click below to accept or decline.`
+                  ),
+                  td => td.setContent(
+                    `-# <:happy:1403061130955587634> Friends get a **+20% ship score boost** and **higher item drop rates**! · Expires in 60s`
                   )
-                  .addSeparatorComponents(separate => separate)
-                  .addTextDisplayComponents(
-                    textDisplay => textDisplay.setContent(
-                      `-# <:happy:1403061130955587634> Friends get a **+20% ship score boost** and **higher item drop rates**! · Expires in 60s`
-                    )
-                  );
+                )
+                .addActionRowComponents(row => row.addComponents(acceptBtn, declineBtn));
 
-                const acceptBtn = new ButtonBuilder()
-                  .setCustomId("ship_friend_accept")
-                  .setLabel("Accept")
-                  .setEmoji("1388858843324350474")
-                  .setStyle(ButtonStyle.Success);
-                const declineBtn = new ButtonBuilder()
-                  .setCustomId("ship_friend_decline")
-                  .setLabel("Decline")
-                  .setEmoji("1388858904095625226")
-                  .setStyle(ButtonStyle.Danger);
-                const friendReqRow = new ActionRowBuilder().addComponents(acceptBtn, declineBtn);
+              const reqMsg = await context.channel.send({
+                components: [requestContainer],
+                flags: MessageFlags.IsComponentsV2,
+              }).catch(console.error);
 
-                const reqMsg = await interaction.followUp({
-                  content: `<@${user2.id}>`,
-                  components: [requestContainer, friendReqRow],
-                  flags: MessageFlags.IsComponentsV2,
-                }).catch(() => null);
+              if (!reqMsg) return;
 
-                if (reqMsg) {
-                  const friendFilter = (btnI) => btnI.user.id === user2.id;
-                  const friendCollector = reqMsg.createMessageComponentCollector
-                    ? reqMsg.createMessageComponentCollector({
-                      filter: friendFilter,
-                      componentType: ComponentType.Button,
-                      time: 60000,
-                      max: 1,
-                    })
-                    : null;
+              const friendCollector = reqMsg.createMessageComponentCollector({
+                filter: (targetI) => targetI.user.id === user2.id,
+                componentType: ComponentType.Button,
+                time: 60000,
+                max: 1,
+              });
 
-                  if (friendCollector) {
-                    friendCollector.on("collect", async (btnI) => {
-                      await btnI.deferUpdate().catch(() => { });
-                      const disabledFriendRow = new ActionRowBuilder().addComponents(
-                        acceptBtn.setDisabled(true),
-                        declineBtn.setDisabled(true)
+              friendCollector.on("collect", async (targetI) => {
+                await targetI.deferUpdate().catch(() => { });
+
+                if (targetI.customId === "ship_friend_accept") {
+                  const result = await addFriend(invoker.id, user2.id);
+                  if (result.success) {
+                    const successContainer = new ContainerBuilder()
+                      .setAccentColor(0x57f287)
+                      .addTextDisplayComponents(
+                        td => td.setContent(`### <:rose_flower:1367919954455953488> **FRIENDSHIP FORMED!**`),
+                        td => td.setContent(
+                          `**${invoker.username}** and **${user2.username || user2.user?.username}** are now friends! 🎉`
+                        ),
+                        td => td.setContent(
+                          `-# 💫 Ship together for a +20% score boost and higher item drops!`
+                        )
                       );
 
-                      if (btnI.customId === "ship_friend_accept") {
-                        const result = await addFriend(invoker.id, user2.id);
-                        if (result.success) {
-                          const successContainer = new ContainerBuilder()
-                            .setAccentColor(0x57f287)
-                            .addTextDisplayComponents(
-                              textDisplay => textDisplay.setContent(`### <:rose_flower:1367919954455953488> **FRIENDSHIP FORMED!**`),
-                              textDisplay => textDisplay.setContent(
-                                `**${invoker.username}** and **${user2.username || user2.user?.username}** are now friends! 🎉`
-                              ),
-                              textDisplay => textDisplay.setContent(
-                                `-# 💫 Ship together for a +20% score boost and higher item drops!`
-                              )
-                            );
-
-                          await reqMsg.edit({
-                            content: null,
-                            components: [successContainer, disabledFriendRow],
-                            flags: MessageFlags.IsComponentsV2,
-                          }).catch(() => { });
-                        } else {
-                          await btnI.followUp({
-                            content: `⚠️ Could not add friend. ${result.error === 'already_friends' ? "You're already friends!" : "Please try again later."}`,
-                            ephemeral: true,
-                          }).catch(() => { });
-                          await reqMsg.edit({ components: [disabledFriendRow] }).catch(() => { });
-                        }
-                      } else {
-                        const declineContainer = new ContainerBuilder()
-                          .setAccentColor(0xed4245)
-                          .addTextDisplayComponents(
-                            textDisplay => textDisplay.setContent(`<:checkbox_cross:1388858904095625226> **${user2.username || user2.user?.username}** declined the friend request.`)
-                          );
-                        await reqMsg.edit({
-                          content: null,
-                          components: [declineContainer, disabledFriendRow],
-                          flags: MessageFlags.IsComponentsV2,
-                        }).catch(() => { });
-                      }
-                    });
-
-                    friendCollector.on("end", async (collected) => {
-                      if (collected.size === 0) {
-                        const timeoutContainer = new ContainerBuilder()
-                          .setAccentColor(0x99aab5)
-                          .addTextDisplayComponents(
-                            textDisplay => textDisplay.setContent(`<:clock:1540072937485369364> Friend request expired.`)
-                          );
-                        const disabledFriendRow = new ActionRowBuilder().addComponents(
-                          acceptBtn.setDisabled(true),
-                          declineBtn.setDisabled(true)
-                        );
-                        await reqMsg.edit({
-                          content: null,
-                          components: [timeoutContainer, disabledFriendRow],
-                          flags: MessageFlags.IsComponentsV2,
-                        }).catch(() => { });
-                      }
-                    });
+                    await reqMsg.edit({
+                      components: [successContainer],
+                      flags: MessageFlags.IsComponentsV2,
+                    }).catch(console.error);
+                  } else {
+                    const errorContainer = new ContainerBuilder()
+                      .setAccentColor(0xed4245)
+                      .addTextDisplayComponents(
+                        td => td.setContent(`⚠️ Could not add friend. ${result.error === 'already_friends' ? "You're already friends!" : "Friends list is full!"}`)
+                      );
+                    await reqMsg.edit({
+                      components: [errorContainer],
+                      flags: MessageFlags.IsComponentsV2,
+                    }).catch(console.error);
                   }
+                } else {
+                  const declineContainer = new ContainerBuilder()
+                    .setAccentColor(0xed4245)
+                    .addTextDisplayComponents(
+                      td => td.setContent(`<:checkbox_cross:1388858904095625226> **${user2.username || user2.user?.username}** declined the friend request.`)
+                    );
+                  await reqMsg.edit({
+                    components: [declineContainer],
+                    flags: MessageFlags.IsComponentsV2,
+                  }).catch(console.error);
                 }
-              }
+              });
+
+              friendCollector.on("end", async (collected) => {
+                if (collected.size === 0) {
+                  const timeoutContainer = new ContainerBuilder()
+                    .setAccentColor(0x99aab5)
+                    .addTextDisplayComponents(
+                      td => td.setContent(`<:clock:1540072937485369364> Friend request from **${invoker.username}** to **${user2.username || user2.user?.username}** expired.`)
+                    );
+                  await reqMsg.edit({
+                    components: [timeoutContainer],
+                    flags: MessageFlags.IsComponentsV2,
+                  }).catch(console.error);
+                }
+              });
+
+            } else {
+              // Invoker cancelled
+              await btnI.deferUpdate().catch(() => { });
+              const cancelContainer = new ContainerBuilder()
+                .setAccentColor(0x99aab5)
+                .addTextDisplayComponents(
+                  td => td.setContent(`❌ Friend request cancelled.`)
+                );
+              await btnI.editReply({
+                components: [cancelContainer],
+                flags: MessageFlags.IsComponentsV2,
+              }).catch(() => { });
             }
-          }
+          });
         }
-        collector.stop();
       });
 
       collector.on("end", async () => {
