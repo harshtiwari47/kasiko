@@ -280,13 +280,13 @@ async function handleRemoveFriend(args, context, invoker) {
 // ── VIEW FRIENDS LIST ─────────────────────────────────────────────────────────
 
 async function handleViewFriends(context, invoker) {
-  const friendsList = await getCachedFriends(invoker.id);
+  let friendsList = await getCachedFriends(invoker.id);
 
-  if (friendsList.length === 0) {
+  if (!friendsList || friendsList.length === 0) {
     const emptyContainer = new ContainerBuilder()
       .setAccentColor(0x99aab5)
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`### 👥 **FRIENDS LIST**`),
+        textDisplay => textDisplay.setContent(`### 👥 **${invoker.username.toUpperCase()}'S FRIENDS**`),
         textDisplay => textDisplay.setContent(
           `*You don't have any friends yet!*\n\n` +
           `Use \`kas friends add @user\` to send a friend request.`
@@ -304,121 +304,160 @@ async function handleViewFriends(context, invoker) {
   }
 
   // Resolve usernames
-  const friendEntries = [];
-  for (const friendId of friendsList) {
-    try {
-      const user = await context.client.users.fetch(friendId).catch(() => null);
-      const displayName = user ? user.username : `Unknown (${friendId})`;
-      friendEntries.push(`> 💗 **${displayName}**`);
-    } catch {
-      friendEntries.push(`> 💗 \`${friendId}\``);
-    }
-  }
+  let friendObjects = await Promise.all(
+    friendsList.map(async (friendId) => {
+      try {
+        const user = context.client.users.cache.get(friendId) || await context.client.users.fetch(friendId).catch(() => null);
+        return {
+          id: friendId,
+          username: user ? user.username : `User (${friendId})`
+        };
+      } catch {
+        return {
+          id: friendId,
+          username: `User (${friendId})`
+        };
+      }
+    })
+  );
 
-  // Paginate if more than 10
-  const pages = [];
-  for (let i = 0; i < friendEntries.length; i += 10) {
-    pages.push(friendEntries.slice(i, i + 10).join('\n'));
-  }
+  const PAGE_SIZE = 5;
 
-  const buildPageContainer = (page) => {
-    return new ContainerBuilder()
+  const buildPageContainer = (pageIndex, currentFriendObjects, disabled = false) => {
+    const totalPages = Math.max(1, Math.ceil(currentFriendObjects.length / PAGE_SIZE));
+    const validPage = Math.min(Math.max(0, pageIndex), totalPages - 1);
+    const startIdx = validPage * PAGE_SIZE;
+    const pageFriends = currentFriendObjects.slice(startIdx, startIdx + PAGE_SIZE);
+
+    const container = new ContainerBuilder()
       .setAccentColor(0x5865f2)
       .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`### 👥 **${invoker.username.toUpperCase()}'S FRIENDS**`),
-        textDisplay => textDisplay.setContent(pages[page])
-      )
-      .addSeparatorComponents(separate => separate)
-      .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`-# 👥 ${friendsList.length}/${MAX_FRIENDS} friends · Page ${page + 1}/${pages.length}`)
+        textDisplay => textDisplay.setContent(`### 👥 **${invoker.username.toUpperCase()}'S FRIENDS**`)
       );
+
+    if (pageFriends.length === 0) {
+      container.addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`*You don't have any friends yet!*\n\nUse \`kas friends add @user\` to send a friend request.`)
+      );
+    } else {
+      for (const friend of pageFriends) {
+        container.addSectionComponents(
+          section => section
+            .addTextDisplayComponents(
+              textDisplay => textDisplay.setContent(`> 💗 **${friend.username}**`)
+            )
+            .setButtonAccessory(
+              button => button
+                .setCustomId(`friends_rm_${friend.id}`)
+                .setLabel("Remove")
+                .setEmoji("🗑️")
+                .setStyle(ButtonStyle.Danger)
+                .setDisabled(disabled)
+            )
+        );
+      }
+    }
+
+    container.addSeparatorComponents(separate => separate);
+    container.addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(
+        `-# 👥 ${currentFriendObjects.length}/${MAX_FRIENDS} friends · Page ${validPage + 1}/${totalPages} · Click 🗑️ Remove next to any friend to remove them`
+      )
+    );
+
+    if (totalPages > 1) {
+      container.addActionRowComponents(
+        row => row.addComponents(
+          new ButtonBuilder()
+            .setCustomId("friends_prev")
+            .setLabel("◀")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(disabled || validPage === 0),
+          new ButtonBuilder()
+            .setCustomId("friends_next")
+            .setLabel("▶")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(disabled || validPage === totalPages - 1)
+        )
+      );
+    }
+
+    return container;
   };
 
-  if (pages.length <= 1) {
-    return handleMessage(context, {
-      components: [buildPageContainer(0)],
-      flags: MessageFlags.IsComponentsV2,
-    });
-  }
-
-  // Add pagination buttons
   let currentPage = 0;
-  const prevBtn = new ButtonBuilder()
-    .setCustomId("friends_prev")
-    .setLabel("◀")
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(true);
-  const nextBtn = new ButtonBuilder()
-    .setCustomId("friends_next")
-    .setLabel("▶")
-    .setStyle(ButtonStyle.Secondary)
-    .setDisabled(pages.length <= 1);
-
-  const paginationRow = new ActionRowBuilder().addComponents(prevBtn, nextBtn);
 
   const responseMsg = await handleMessage(context, {
-    components: [buildPageContainer(0), paginationRow],
+    components: [buildPageContainer(currentPage, friendObjects)],
     flags: MessageFlags.IsComponentsV2,
   });
 
-  if (!responseMsg) return;
+  if (!responseMsg || !responseMsg.createMessageComponentCollector) return;
 
   const filter = (i) => i.user.id === invoker.id;
-  const collector = responseMsg.createMessageComponentCollector
-    ? responseMsg.createMessageComponentCollector({
-        filter,
-        componentType: ComponentType.Button,
-        time: 120000,
-      })
-    : null;
-
-  if (!collector) return;
+  const collector = responseMsg.createMessageComponentCollector({
+    filter,
+    time: 120000,
+  });
 
   collector.on("collect", async (interaction) => {
-    await interaction.deferUpdate().catch(() => {});
+    try {
+      if (interaction.customId === "friends_prev") {
+        await interaction.deferUpdate().catch(() => {});
+        currentPage = Math.max(currentPage - 1, 0);
+        await responseMsg.edit({
+          components: [buildPageContainer(currentPage, friendObjects)],
+          flags: MessageFlags.IsComponentsV2,
+        }).catch(() => {});
+      } else if (interaction.customId === "friends_next") {
+        await interaction.deferUpdate().catch(() => {});
+        const totalPages = Math.max(1, Math.ceil(friendObjects.length / PAGE_SIZE));
+        currentPage = Math.min(currentPage + 1, totalPages - 1);
+        await responseMsg.edit({
+          components: [buildPageContainer(currentPage, friendObjects)],
+          flags: MessageFlags.IsComponentsV2,
+        }).catch(() => {});
+      } else if (interaction.customId.startsWith("friends_rm_")) {
+        const targetId = interaction.customId.replace("friends_rm_", "");
+        const targetFriend = friendObjects.find(f => f.id === targetId);
+        const targetName = targetFriend ? targetFriend.username : targetId;
 
-    if (interaction.customId === "friends_next") {
-      currentPage = Math.min(currentPage + 1, pages.length - 1);
-    } else if (interaction.customId === "friends_prev") {
-      currentPage = Math.max(currentPage - 1, 0);
+        await interaction.deferReply({ ephemeral: true }).catch(() => {});
+
+        const res = await removeFriend(invoker.id, targetId);
+        if (res.success) {
+          friendObjects = friendObjects.filter(f => f.id !== targetId);
+          const totalPages = Math.max(1, Math.ceil(friendObjects.length / PAGE_SIZE));
+          if (currentPage >= totalPages) {
+            currentPage = Math.max(0, totalPages - 1);
+          }
+
+          await interaction.editReply({
+            content: `👋 **${targetName}** has been removed from your friends list.`,
+          }).catch(() => {});
+
+          await responseMsg.edit({
+            components: [buildPageContainer(currentPage, friendObjects)],
+            flags: MessageFlags.IsComponentsV2,
+          }).catch(() => {});
+        } else {
+          await interaction.editReply({
+            content: `⚠️ Could not remove **${targetName}**. Please try again later.`,
+          }).catch(() => {});
+        }
+      }
+    } catch (err) {
+      console.error("[Friends Collector Error]:", err);
     }
-
-    const updatedRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("friends_prev")
-        .setLabel("◀")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(currentPage === 0),
-      new ButtonBuilder()
-        .setCustomId("friends_next")
-        .setLabel("▶")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(currentPage === pages.length - 1)
-    );
-
-    await responseMsg.edit({
-      components: [buildPageContainer(currentPage), updatedRow],
-      flags: MessageFlags.IsComponentsV2,
-    }).catch(() => {});
   });
 
   collector.on("end", async () => {
-    const disabledRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("friends_prev")
-        .setLabel("◀")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-      new ButtonBuilder()
-        .setCustomId("friends_next")
-        .setLabel("▶")
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true)
-    );
-    await responseMsg.edit({
-      components: [buildPageContainer(currentPage), disabledRow],
-      flags: MessageFlags.IsComponentsV2,
-    }).catch(() => {});
+    try {
+      await responseMsg.edit({
+        components: [buildPageContainer(currentPage, friendObjects, true)],
+        flags: MessageFlags.IsComponentsV2,
+      }).catch(() => {});
+    } catch (e) {}
   });
 }
 

@@ -8,7 +8,6 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
   ComponentType,
   ContainerBuilder,
   MessageFlags
@@ -49,6 +48,78 @@ export function getTotalBankUpgradeCost(startLevel, times, additionalReward = 0)
     total += getSingleLevelBankUpgradeCost(startLevel + i, additionalReward);
   }
   return total;
+}
+
+export function buildBankStatusContainer({ name, userData, account, additionalReward = 0, disabled = false }) {
+  const isMaxLevel = (account?.level || 1) >= (BankInfo.maxLevel || 2700);
+
+  const container = new ContainerBuilder()
+    .addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`### <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤`),
+        textDisplay => textDisplay.setContent(`-# <:spark:1355139233559351326> **LEVEL:** **${account?.level || 1}**${isMaxLevel ? ' (MAX)' : ` / ${BankInfo.maxLevel}`}`)
+      )
+      .setThumbnailAccessory(
+        thumbnail => thumbnail
+        .setDescription('Bank')
+        .setURL("https://harshtiwari47.github.io/kasiko-public/images/royal-bank.jpg")
+      )
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`<:reply:1368224908307468408> \` 𝖠𝖼𝖼𝗈𝗎𝗇𝗍 — ${name} \``)
+    )
+    .addSeparatorComponents(separate => separate)
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`**𝘋𝘌𝘗𝘖𝘚𝘐𝘛**`),
+      textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${(account?.deposit || 0).toLocaleString()}`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`**𝘊𝘈𝘗𝘈𝘊𝘐𝘛𝘠**`),
+      textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${((account?.level || 1) * BankInfo.storage).toLocaleString()}`)
+    )
+    .addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`<:bank_card:1368183874378666096>  **𝘊𝘈𝘚𝘏 𝘐𝘕 𝘏𝘈𝘕𝘋**`),
+      textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${(userData?.cash || 0).toLocaleString()}`)
+    );
+
+  if (!account?.open) {
+    container.addActionRowComponents(
+      row => row.addComponents(
+        new ButtonBuilder()
+          .setCustomId('open_bank')
+          .setLabel('𝗢𝗣𝗘𝗡 𝗕𝗔𝗡𝗞 𝗔𝗖𝗖𝗢𝗨𝗡𝗧')
+          .setEmoji(`1300141236841086977`)
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(disabled)
+      )
+    );
+  } else if (!isMaxLevel) {
+    const nextUpgradeCost = getSingleLevelBankUpgradeCost(account.level || 1, additionalReward);
+    const canAfford = (account.deposit || 0) >= nextUpgradeCost;
+    container.addSectionComponents(
+      section => section
+      .addTextDisplayComponents(
+        textDisplay => textDisplay.setContent(`**𝘕𝘌𝘟𝘛 𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
+        textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${nextUpgradeCost.toLocaleString()} (to Lv.${(account.level || 1) + 1}) · \`kas bank upgrade\``)
+      )
+      .setButtonAccessory(
+        btn => btn
+        .setCustomId('bank_upgrade')
+        .setLabel('Upgrade')
+        .setEmoji('1355139233559351326')
+        .setStyle(canAfford ? ButtonStyle.Success : ButtonStyle.Secondary)
+        .setDisabled(disabled)
+      )
+    );
+  } else {
+    container.addTextDisplayComponents(
+      textDisplay => textDisplay.setContent(`**𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
+      textDisplay => textDisplay.setContent(`-# 🏆 Bank Vault is at MAX LEVEL (${(BankInfo.maxLevel || 2700).toLocaleString()})!`)
+    );
+  }
+
+  return container;
 }
 
 export const Bank = {
@@ -315,17 +386,9 @@ export const Bank = {
         name
       } = discordUser(context);
 
-      const userData = await getUserData(userId);
+      let userData = await getUserData(userId);
 
       if (!userData) return;
-
-      const account = userData.bankAccount;
-
-      if (!account) {
-        return await handleMessage(context,
-          `ⓘ **${name}**, you don't have a bank account yet. Open one first!\nOpen through **\`bank\`** or *USE*: **\`bank open\`**\n**COST**: <:kasiko_coin:1300141236841086977> 1000`
-        ).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-      }
 
       const passInfo = await checkPassValidity(userId);
       let additionalReward = 0;
@@ -339,103 +402,60 @@ export const Bank = {
         }
       }
 
-      const rowComp = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-        .setCustomId('open_bank')
-        .setLabel('𝗢𝗣𝗘𝗡 𝗕𝗔𝗡𝗞 𝗔𝗖𝗖𝗢𝗨𝗡𝗧')
-        .setEmoji(`1300141236841086977`)
-        .setStyle(ButtonStyle.Secondary)
-      );
-
-      const isMaxLevel = account.level >= (BankInfo.maxLevel || 2700);
-
-      const Container = new ContainerBuilder()
-      .addSectionComponents(
-        section => section
-        .addTextDisplayComponents(
-          textDisplay => textDisplay.setContent(`### <:bank:1352897312606785576> 𝐑𝐨𝐲𝐚𝐥 𝐁𝐚𝐧𝐤`),
-          textDisplay => textDisplay.setContent(`-# <:spark:1355139233559351326> **LEVEL:** **${account.level}**${isMaxLevel ? ' (MAX)' : ` / ${BankInfo.maxLevel}`}`)
-        )
-        .setThumbnailAccessory(
-          thumbnail => thumbnail
-          .setDescription('Bank')
-          .setURL("https://harshtiwari47.github.io/kasiko-public/images/royal-bank.jpg")
-        )
-      )
-      .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`<:reply:1368224908307468408> \` 𝖠𝖼𝖼𝗈𝗎𝗇𝗍 — ${name} \``)
-      )
-      .addSeparatorComponents(separate => separate)
-      .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`**𝘋𝘌𝘗𝘖𝘚𝘐𝘛**`),
-        textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${account.deposit.toLocaleString()}`)
-      )
-      .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`**𝘊𝘈𝘗𝘈𝘊𝘐𝘛𝘠**`),
-        textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${(account.level * BankInfo.storage).toLocaleString()}`)
-      )
-      .addTextDisplayComponents(
-        textDisplay => textDisplay.setContent(`<:bank_card:1368183874378666096>  **𝘊𝘈𝘚𝘏 𝘐𝘕 𝘏𝘈𝘕𝘋**`),
-        textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${userData.cash.toLocaleString()}`)
-      )
-
-      if (!isMaxLevel) {
-        const nextUpgradeCost = getSingleLevelBankUpgradeCost(account.level, additionalReward);
-        Container.addTextDisplayComponents(
-          textDisplay => textDisplay.setContent(`**𝘕𝘌𝘟𝘛 𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
-          textDisplay => textDisplay.setContent(`-# <:kasiko_coin:1300141236841086977> ${nextUpgradeCost.toLocaleString()} (to Lv.${account.level + 1}) · \`kas bank upgrade\``)
-        );
-      } else {
-        Container.addTextDisplayComponents(
-          textDisplay => textDisplay.setContent(`**𝘜𝘗𝘎𝘙𝘈𝘋𝘌**`),
-          textDisplay => textDisplay.setContent(`-# 🏆 Bank Vault is at MAX LEVEL (${(BankInfo.maxLevel || 2700).toLocaleString()})!`)
-        );
-      }
+      let account = userData.bankAccount;
+      let container = buildBankStatusContainer({ name, userData, account, additionalReward });
 
       const resMsg = await handleMessage(context, {
-        components: !account?.open ? [Container, rowComp] : [Container],
+        components: [container],
         flags: MessageFlags.IsComponentsV2
-      }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
+      });
 
-      if (!account?.open) {
-        const collector = resMsg?.createMessageComponentCollector ? resMsg.createMessageComponentCollector({
-          time: 60000,
-        }) : null;
+      if (!resMsg || !resMsg.createMessageComponentCollector) return;
 
-        if (!collector) return;
+      const collector = resMsg.createMessageComponentCollector({
+        filter: i => i.user.id === userId && ['open_bank', 'bank_upgrade'].includes(i.customId),
+        time: 60000
+      });
 
-        collector.on('collect', async (interaction) => {
-          if (interaction.replied || interaction.deferred) return; // Do not reply again
-          await interaction.deferUpdate();
-
-          try {
-            if (interaction.user.id !== userId) {
-              return interaction.reply({
-                content: 'You are not allowed to interact!',
-                ephemeral: true,
-              }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
-            }
-
-            if (interaction.customId === 'open_bank') {
-              await Bank.openAccount(interaction);
-            }
-
+      collector.on('collect', async interaction => {
+        try {
+          if (interaction.customId === 'open_bank') {
+            await interaction.deferReply({ ephemeral: true }).catch(() => {});
+            await Bank.openAccount(interaction);
+            userData = await getUserData(userId);
+            account = userData?.bankAccount;
+            const updatedContainer = buildBankStatusContainer({ name, userData, account, additionalReward });
             await resMsg.edit({
-              components: [Container]
+              components: [updatedContainer],
+              flags: MessageFlags.IsComponentsV2
             }).catch(() => {});
-            return;
-          } catch (err) {
-            console.log(err)
+          } else if (interaction.customId === 'bank_upgrade') {
+            await interaction.deferReply({ ephemeral: true }).catch(() => {});
+            await Bank.upgrade(interaction, 1);
+            userData = await getUserData(userId);
+            account = userData?.bankAccount;
+            const updatedContainer = buildBankStatusContainer({ name, userData, account, additionalReward });
+            await resMsg.edit({
+              components: [updatedContainer],
+              flags: MessageFlags.IsComponentsV2
+            }).catch(() => {});
           }
-        });
+        } catch (err) {
+          console.error("Error handling bank button interaction:", err);
+        }
+      });
 
-        collector.on('end',
-          async () => {
-            await resMsg.edit({
-              components: [Container]
-            }).catch(() => {});
-          });
-      }
+      collector.on('end', async () => {
+        try {
+          const disabledContainer = buildBankStatusContainer({ name, userData, account, additionalReward, disabled: true });
+          await resMsg.edit({
+            components: [disabledContainer],
+            flags: MessageFlags.IsComponentsV2
+          }).catch(() => {});
+        } catch (e) {}
+      });
+
+      return resMsg;
 
     } catch (err) {
       return await handleMessage(context,
@@ -613,23 +633,27 @@ export default {
           return Bank.upgrade(context, times);
 
         case "help":
-          const bankEmbed = new EmbedBuilder()
-          .setColor('#d4e6f6')
-          .setTitle('<:bank:1352897312606785576> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝑩𝒂𝒏𝒌')
-          .setDescription(
-            `Hello **${username}**, manage your bank using the following commands:\n\n` +
-            '**`bank open`**\n- Open a bank account.\n' +
-            '**`deposit <amount>`**\n- Deposit funds into your bank.\n' +
-            '**`withdraw <amount>`**\n- Withdraw funds from your bank.\n' +
-            '**`bank`**\n- Check your bank status (you can use **bs** or **ba**).\n' +
-            '**`bank upgrade <times (default 1)>`**\n- Upgrade your bank level (Max Lv.2,700). Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level; increases scalingly after Lv.50).'
-          )
-          .setFooter({
-            text: 'Use your bank wisely!'
-          });
+          const helpContainer = new ContainerBuilder()
+            .setAccentColor(0xd4e6f6)
+            .addTextDisplayComponents(
+              textDisplay => textDisplay.setContent(`### <:bank:1352897312606785576> 𝑾𝒆𝒍𝒄𝒐𝒎𝒆 𝒕𝒐 𝑩𝒂𝒏𝒌`),
+              textDisplay => textDisplay.setContent(
+                `Hello **${username}**, manage your bank using the following commands:\n\n` +
+                '**`bank open`**\n- Open a bank account.\n' +
+                '**`deposit <amount>`**\n- Deposit funds into your bank.\n' +
+                '**`withdraw <amount>`**\n- Withdraw funds from your bank.\n' +
+                '**`bank`**\n- Check your bank status (you can use **bs** or **ba**).\n' +
+                '**`bank upgrade <times (default 1)>`**\n- Upgrade your bank level (Max Lv.2,700). Each level increases capacity by <:kasiko_coin:1300141236841086977> 500k. (COST: <:kasiko_coin:1300141236841086977> 300k per level; increases scalingly after Lv.50).'
+              )
+            )
+            .addSeparatorComponents(separate => separate)
+            .addTextDisplayComponents(
+              textDisplay => textDisplay.setContent(`-# 💡 Use your bank wisely!`)
+            );
 
           return await handleMessage(context, {
-            embeds: [bankEmbed]
+            components: [helpContainer],
+            flags: MessageFlags.IsComponentsV2
           }).catch(err => ![50001, 50013, 10008].includes(err.code) && console.error(err));
 
         default:
