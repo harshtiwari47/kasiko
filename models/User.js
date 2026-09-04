@@ -43,6 +43,14 @@ const userSchema = new mongoose.Schema({
       type: Number,
     default: 0
     },
+    friends: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (v) => v.length <= 30,
+        message: 'Cannot have more than 30 friends.'
+      }
+    },
     profileBio: {
       type: String,
     default: null

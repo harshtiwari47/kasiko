@@ -23,10 +23,34 @@ import {
 } from '../../../database.js';
 
 import shippingQuotes from "./req/shipSuggestions.js";
+import { areFriends, addFriend, getCachedFriends, MAX_FRIENDS } from './req/friendsCache.js';
 import { sendErrorLog } from "../../../utils/errorLogger.js";
 
 // Path to custom scores JSON file
 const shipDatabasePath = path.join(process.cwd(), "database", "customScores.json");
+
+// Ship item drop table (weighted)
+const SHIP_DROP_TABLE = [
+  { id: 'rose', name: 'Rose', emoji: '🌹', weight: 40 },
+  { id: 'loveletter', name: 'Love Letter', emoji: '💌', weight: 25 },
+  { id: 'chocolate', name: 'Chocolate', emoji: '🍫', weight: 20 },
+  { id: 'crystalheart', name: 'Crystal Heart', emoji: '💎', weight: 10 },
+  { id: 'crownofhearts', name: 'Crown of Hearts', emoji: '👑', weight: 5 },
+];
+const TOTAL_DROP_WEIGHT = SHIP_DROP_TABLE.reduce((a, b) => a + b.weight, 0);
+
+function rollShipDrop(isFriend) {
+  const dropRate = isFriend ? 0.18 : 0.08; // 18% for friends, 8% base
+  if (Math.random() > dropRate) return null;
+
+  // Weighted random pick
+  let roll = Math.random() * TOTAL_DROP_WEIGHT;
+  for (const item of SHIP_DROP_TABLE) {
+    roll -= item.weight;
+    if (roll <= 0) return item;
+  }
+  return SHIP_DROP_TABLE[0]; // fallback
+}
 
 /**
 * Universal function for sending responses to text commands and slash commands.
@@ -218,8 +242,18 @@ const ShipCmd = {
         console.error("Error reading customScores.json:", error);
       }
 
+      // Check if the two users are friends (fast Redis lookup)
+      let isFriend = false;
+      try {
+        if (user1.id !== user2.id && !user2.bot) {
+          isFriend = await areFriends(user1.id, user2.id);
+        }
+      } catch {
+        // Non-critical — default to not friends
+      }
+
       // Calculate the love score.
-      const score =
+      let score =
       customScore !== null
       ? Math.min(100, customScore): Math.min(
         100,
@@ -227,7 +261,30 @@ const ShipCmd = {
         Math.floor(Math.random() * 10)
       );
 
+      // Friend bonus: up to +20% boost
+      if (isFriend && customScore === null) {
+        score = Math.min(100, Math.round(score * 1.20));
+      }
+
       const quote = pickQuote(score);
+
+      // Roll for item drops
+      const droppedItem = rollShipDrop(isFriend);
+
+      // If an item dropped, add to invoker's inventory asynchronously
+      if (droppedItem) {
+        try {
+          const invokerData = await getUserData(invoker.id);
+          if (invokerData) {
+            const currentCount = invokerData?.inventory?.[droppedItem.id] || 0;
+            await updateUser(invoker.id, {
+              [`inventory.${droppedItem.id}`]: currentCount + 1
+            });
+          }
+        } catch {
+          // Non-critical — item not added
+        }
+      }
 
       // Create the canvas image.
       const canvasWidth = 700;
@@ -287,11 +344,17 @@ const ShipCmd = {
       const attachment = new AttachmentBuilder(await canvas.encode("png"), {
         name: "ship.png"
       });
-      const msgDescription =
+
+      // Build message description with friend bonus and item drop indicators
+      let msgDescription =
       `### <a:red_heart:1356865968164569158>  *** 𝙒𝙄𝙉𝘿𝙎 𝙊𝙁 𝘼𝙁𝙁𝙀𝘾𝙏𝙄𝙊𝙉 ***\n` +
-      `### **${user1.username || user1.user?.username}** <:wine:1356880010866069562> **${user2.username || user2.user?.username}${user2.bot ? " <:bot:1359577258959962152>": ""}**\n` +
-      `ᥫ᭡ ﹒ ***_𝗦𝗰𝗼𝗿𝗲 ﹒ ${score}%_***\n` +
-      `-# 💌 _${quote}_\n`;
+      `### **${user1.username || user1.user?.username}** <:wine:1356880010866069562> **${user2.username || user2.user?.username}${user2.bot ? " <:bot:1359577258959962152>" : ""}**\n` +
+      `ᥫ᭡ ﹒ ***_𝗦𝗰𝗼𝗿𝗲 ﹒ ${score}%_***${isFriend ? " 💫" : ""}\n` +
+      `-# 💌 _${quote}_${isFriend ? " ᵇᵒⁿᵘˢ" : ""}\n`;
+
+      if (droppedItem) {
+        msgDescription += `-# 🎁 _You found a ${droppedItem.emoji} **${droppedItem.name}**!_\n`;
+      }
 
       // Create buttons.
       const likeButton = new ButtonBuilder()
@@ -305,7 +368,13 @@ const ShipCmd = {
       .setLabel("𝑷𝑨𝑺𝑺")
       .setEmoji('1359578522670207126')
       .setStyle(ButtonStyle.Secondary);
-      const actionRow = new ActionRowBuilder().addComponents(likeButton, passButton);
+      const friendsButton = new ButtonBuilder()
+      .setCustomId("friends_ship")
+      .setLabel(isFriend ? "𝑭𝑹𝑰𝑬𝑵𝑫𝑺 ✓" : "𝑭𝑹𝑰𝑬𝑵𝑫𝑺")
+      .setEmoji('👥')
+      .setDisabled(user1.id === user2.id || user2.bot)
+      .setStyle(isFriend ? ButtonStyle.Success : ButtonStyle.Primary);
+      const actionRow = new ActionRowBuilder().addComponents(likeButton, passButton, friendsButton);
 
       // Send the ship embed/image using our universal handler or channel.send on pass
       const messagePayload = {
@@ -350,7 +419,8 @@ const ShipCmd = {
         // Disable the buttons on current card.
         const disabledRow = new ActionRowBuilder().addComponents(
           likeButton.setDisabled(true),
-          passButton.setDisabled(true)
+          passButton.setDisabled(true),
+          friendsButton.setDisabled(true)
         );
         await responseMessage.edit({
           components: [disabledRow]
@@ -456,6 +526,138 @@ const ShipCmd = {
             ignoreMentions: true,
             isAll
           });
+        } else if (interaction.customId === "friends_ship") {
+          // Friends button handler
+          const friendCheck = await areFriends(invoker.id, user2.id);
+
+          if (friendCheck) {
+            // Already friends
+            const friendsList = await getCachedFriends(invoker.id);
+            await interaction.followUp({
+              content: `✅ You and **${user2.username || user2.user?.username}** are already friends! 💫\n` +
+                `-# 👥 You have **${friendsList.length}/${MAX_FRIENDS}** friends`,
+              ephemeral: true,
+            }).catch(() => {});
+          } else {
+            // Not friends — offer to add
+            const invokerFriends = await getCachedFriends(invoker.id);
+            if (invokerFriends.length >= MAX_FRIENDS) {
+              await interaction.followUp({
+                content: `⚠️ Your friends list is full! (${MAX_FRIENDS}/${MAX_FRIENDS}). Remove someone first with \`kas friends remove @user\`.`,
+                ephemeral: true,
+              }).catch(() => {});
+            } else {
+              const targetFriends = await getCachedFriends(user2.id);
+              if (targetFriends.length >= MAX_FRIENDS) {
+                await interaction.followUp({
+                  content: `⚠️ **${user2.username || user2.user?.username}**'s friends list is full!`,
+                  ephemeral: true,
+                }).catch(() => {});
+              } else {
+                // Send friend request in the channel
+                const requestEmbed = new EmbedBuilder()
+                  .setTitle("👥 Friend Request")
+                  .setDescription(
+                    `**${invoker.username}** wants to be friends with **${user2.username || user2.user?.username}**!\n\n` +
+                    `**${user2.username || user2.user?.username}**, click below to accept!\n\n` +
+                    `-# 💫 Friends get a **+20% ship score boost** and **higher item drop rates**!`
+                  )
+                  .setColor(0x5865f2)
+                  .setFooter({ text: "Expires in 60 seconds" });
+
+                const acceptBtn = new ButtonBuilder()
+                  .setCustomId("ship_friend_accept")
+                  .setLabel("Accept")
+                  .setEmoji("✅")
+                  .setStyle(ButtonStyle.Success);
+                const declineBtn = new ButtonBuilder()
+                  .setCustomId("ship_friend_decline")
+                  .setLabel("Decline")
+                  .setEmoji("❌")
+                  .setStyle(ButtonStyle.Danger);
+                const friendReqRow = new ActionRowBuilder().addComponents(acceptBtn, declineBtn);
+
+                const reqMsg = await interaction.followUp({
+                  content: `<@${user2.id}>`,
+                  embeds: [requestEmbed],
+                  components: [friendReqRow],
+                }).catch(() => null);
+
+                if (reqMsg) {
+                  const friendFilter = (btnI) => btnI.user.id === user2.id;
+                  const friendCollector = reqMsg.createMessageComponentCollector
+                    ? reqMsg.createMessageComponentCollector({
+                        filter: friendFilter,
+                        componentType: ComponentType.Button,
+                        time: 60000,
+                        max: 1,
+                      })
+                    : null;
+
+                  if (friendCollector) {
+                    friendCollector.on("collect", async (btnI) => {
+                      await btnI.deferUpdate().catch(() => {});
+                      const disabledFriendRow = new ActionRowBuilder().addComponents(
+                        acceptBtn.setDisabled(true),
+                        declineBtn.setDisabled(true)
+                      );
+
+                      if (btnI.customId === "ship_friend_accept") {
+                        const result = await addFriend(invoker.id, user2.id);
+                        if (result.success) {
+                          const successEmbed = new EmbedBuilder()
+                            .setTitle("💖 Friendship Formed!")
+                            .setDescription(
+                              `**${invoker.username}** and **${user2.username || user2.user?.username}** are now friends! 🎉\n\n` +
+                              `-# 💫 Ship together for a +20% score boost and higher item drops!`
+                            )
+                            .setColor(0x57f287);
+
+                          await reqMsg.edit({
+                            content: null,
+                            embeds: [successEmbed],
+                            components: [disabledFriendRow],
+                          }).catch(() => {});
+                        } else {
+                          await btnI.followUp({
+                            content: `⚠️ Could not add friend. ${result.error === 'already_friends' ? "You're already friends!" : "Please try again later."}`,
+                            ephemeral: true,
+                          }).catch(() => {});
+                          await reqMsg.edit({ components: [disabledFriendRow] }).catch(() => {});
+                        }
+                      } else {
+                        const declineEmbed = new EmbedBuilder()
+                          .setDescription(`❌ **${user2.username || user2.user?.username}** declined the friend request.`)
+                          .setColor(0xed4245);
+                        await reqMsg.edit({
+                          content: null,
+                          embeds: [declineEmbed],
+                          components: [disabledFriendRow],
+                        }).catch(() => {});
+                      }
+                    });
+
+                    friendCollector.on("end", async (collected) => {
+                      if (collected.size === 0) {
+                        const timeoutEmbed = new EmbedBuilder()
+                          .setDescription(`⏰ Friend request expired.`)
+                          .setColor(0x99aab5);
+                        const disabledFriendRow = new ActionRowBuilder().addComponents(
+                          acceptBtn.setDisabled(true),
+                          declineBtn.setDisabled(true)
+                        );
+                        await reqMsg.edit({
+                          content: null,
+                          embeds: [timeoutEmbed],
+                          components: [disabledFriendRow],
+                        }).catch(() => {});
+                      }
+                    });
+                  }
+                }
+              }
+            }
+          }
         }
         collector.stop();
       });
@@ -464,7 +666,8 @@ const ShipCmd = {
         try {
           const disabledRow = new ActionRowBuilder().addComponents(
             likeButton.setDisabled(true),
-            passButton.setDisabled(true)
+            passButton.setDisabled(true),
+            friendsButton.setDisabled(true)
           );
           await responseMessage.edit({
             components: [disabledRow]
