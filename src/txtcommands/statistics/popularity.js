@@ -97,7 +97,7 @@ export async function getTopPopularityUsers(userId, guildId, limit = 30) {
   }
 }
 
-// Build the Discord ContainerBuilder for popularity leaderboard
+// Build the compact Discord ContainerBuilder for popularity leaderboard (Top 10 + user score)
 export async function buildPopularityContainer({ userId, guildId, page = 1, disabled = false }) {
   try {
     const itemsPerPage = 10;
@@ -150,20 +150,16 @@ export async function buildPopularityContainer({ userId, guildId, page = 1, disa
       )
       .addSeparatorComponents(sep => sep)
       .addTextDisplayComponents(
-        td => td.setContent(
-          `**✨ What is Popularity?**\n` +
-          `Popularity measures your social charm and reputation in the community! It reflects how admired and loved you are by other players.\n\n` +
-          `**🔥 How to Increase:**\n` +
-          `• ❤️ **Get Liked in Ship:** Earn **+1 Popularity** whenever someone clicks Like on your ship card (\`kas ship\`)\n` +
-          `• <:rose:1343097565738172488> **Receive Roses:** Earn **+25 Popularity** when someone sends you 5 Private Roses in \`kas ship\`\n` +
-          `• 👑 **Climb the Leaderboard:** Reach the top 3 for prestigious server throne and medal badges!`
-        )
-      )
-      .addSeparatorComponents(sep => sep)
-      .addTextDisplayComponents(
         td => td.setContent(`### 🏆 **TOP MEMBERS**\n${leaderboard}`),
-        td => td.setContent(`-# Page ${page}/${totalPages} · Use \`kas ship\` to spread love and earn popularity!`)
+        td => td.setContent(`-# Page ${page}/${totalPages} · Click ℹ️ Help to learn how popularity works!`)
       );
+
+    const helpBtn = new ButtonBuilder()
+      .setCustomId("pop_help")
+      .setLabel("Help")
+      .setEmoji("ℹ️")
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(disabled);
 
     if (totalPages > 1) {
       container.addActionRowComponents(row =>
@@ -177,8 +173,13 @@ export async function buildPopularityContainer({ userId, guildId, page = 1, disa
             .setCustomId("pop_next")
             .setLabel("▶")
             .setStyle(ButtonStyle.Primary)
-            .setDisabled(disabled || page === totalPages)
+            .setDisabled(disabled || page === totalPages),
+          helpBtn
         )
+      );
+    } else {
+      container.addActionRowComponents(row =>
+        row.addComponents(helpBtn)
       );
     }
 
@@ -203,6 +204,73 @@ export async function buildPopularityContainer({ userId, guildId, page = 1, disa
   }
 }
 
+// Build the Popularity Help & Guide ContainerBuilder
+export async function buildPopularityHelpContainer({ userId, guildId, disabled = false }) {
+  try {
+    const userDoc = await User.findOne({ id: userId }).select("popularity").lean();
+    const userScore = userDoc?.popularity || 0;
+
+    const higherCount = (await UserGuild.aggregate([
+      { $match: { guildId } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "id",
+          as: "userData"
+        }
+      },
+      { $unwind: "$userData" },
+      { $match: { "userData.popularity": { $gt: userScore } } },
+      { $count: "rank" }
+    ]))?.[0]?.rank;
+
+    const userRank = userDoc ? (higherCount !== undefined ? higherCount + 1 : 1) : "Unranked";
+
+    const helpContainer = new ContainerBuilder()
+      .setAccentColor(0xf06292)
+      .addTextDisplayComponents(
+        td => td.setContent(`### <:popularity:1359565087341543435> **POPULARITY GUIDE & FAQ**`),
+        td => td.setContent(
+          `**Your Popularity:** <:popularity:1359565087341543435> **\`${Number(userScore?.toFixed(1) || 0).toLocaleString()}\`** · Server Rank: **#${userRank}**`
+        )
+      )
+      .addSeparatorComponents(sep => sep)
+      .addTextDisplayComponents(
+        td => td.setContent(
+          `**✨ What is Popularity?**\n` +
+          `Popularity measures your social charm and reputation in Kasiko! It reflects how admired and loved you are by other players in the community.\n\n` +
+          `**🔥 How to Increase:**\n` +
+          `• ❤️ **Get Liked in Ship:** Earn **+1 Popularity** whenever someone clicks Like on your ship card (\`kas ship\`)\n` +
+          `• <:rose:1343097565738172488> **Receive Roses:** Earn **+25 Popularity** when someone sends you 5 Private Roses in \`kas ship\`\n` +
+          `• 👑 **Climb the Leaderboard:** Reach the top 3 for prestigious server throne and medal badges!\n\n` +
+          `-# Tip: Use \`kas ship\` with friends and exchange roses to boost each other's score!`
+        )
+      )
+      .addActionRowComponents(row =>
+        row.addComponents(
+          new ButtonBuilder()
+            .setCustomId("pop_lb")
+            .setLabel("Leaderboard")
+            .setEmoji("🏆")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disabled)
+        )
+      );
+
+    return { container: helpContainer };
+  } catch (error) {
+    console.error("Error generating popularity help container:", error);
+    const errContainer = new ContainerBuilder()
+      .setAccentColor(0xed4245)
+      .addTextDisplayComponents(
+        td => td.setContent(`### <:checkbox_cross:1388858904095625226> **Error**`),
+        td => td.setContent(`An error occurred while generating the popularity guide.`)
+      );
+    return { container: errContainer };
+  }
+}
+
 export async function popularity(context) {
   try {
     const userId = context.user ? context.user.id : context.author.id;
@@ -220,6 +288,7 @@ export async function popularity(context) {
     }
 
     let currentPage = 1;
+    let currentView = "leaderboard";
     let { container, totalPages } = await buildPopularityContainer({
       userId,
       guildId,
@@ -231,12 +300,12 @@ export async function popularity(context) {
       flags: MessageFlags.IsComponentsV2
     });
 
-    if (!sentMessage || totalPages <= 1) return;
+    if (!sentMessage) return;
 
     const filter = (interaction) => {
       if (interaction.isButton()) {
         const invokerId = context.user ? context.user.id : context.author.id;
-        return interaction.user.id === invokerId && ["pop_prev", "pop_next"].includes(interaction.customId);
+        return interaction.user.id === invokerId && ["pop_prev", "pop_next", "pop_help", "pop_lb"].includes(interaction.customId);
       }
       return false;
     };
@@ -252,12 +321,39 @@ export async function popularity(context) {
     collector.on("collect", async (interaction) => {
       try {
         await interaction.deferUpdate().catch(() => {});
+
+        if (interaction.customId === "pop_help") {
+          currentView = "help";
+          const { container: helpContainer } = await buildPopularityHelpContainer({
+            userId,
+            guildId
+          });
+          return await sentMessage.edit({
+            components: [helpContainer],
+            flags: MessageFlags.IsComponentsV2
+          });
+        }
+
+        if (interaction.customId === "pop_lb") {
+          currentView = "leaderboard";
+          const { container: lbContainer } = await buildPopularityContainer({
+            userId,
+            guildId,
+            page: currentPage
+          });
+          return await sentMessage.edit({
+            components: [lbContainer],
+            flags: MessageFlags.IsComponentsV2
+          });
+        }
+
         if (interaction.customId === "pop_prev" && currentPage > 1) {
           currentPage--;
         } else if (interaction.customId === "pop_next" && currentPage < totalPages) {
           currentPage++;
         }
 
+        currentView = "leaderboard";
         const { container: updatedContainer } = await buildPopularityContainer({
           userId,
           guildId,
@@ -277,17 +373,29 @@ export async function popularity(context) {
 
     collector.on("end", async () => {
       try {
-        const { container: disabledContainer } = await buildPopularityContainer({
-          userId,
-          guildId,
-          page: currentPage,
-          disabled: true
-        });
         if (!sentMessage?.edit) return;
-        await sentMessage.edit({
-          components: [disabledContainer],
-          flags: MessageFlags.IsComponentsV2
-        }).catch(() => {});
+        if (currentView === "help") {
+          const { container: disabledHelp } = await buildPopularityHelpContainer({
+            userId,
+            guildId,
+            disabled: true
+          });
+          await sentMessage.edit({
+            components: [disabledHelp],
+            flags: MessageFlags.IsComponentsV2
+          }).catch(() => {});
+        } else {
+          const { container: disabledContainer } = await buildPopularityContainer({
+            userId,
+            guildId,
+            page: currentPage,
+            disabled: true
+          });
+          await sentMessage.edit({
+            components: [disabledContainer],
+            flags: MessageFlags.IsComponentsV2
+          }).catch(() => {});
+        }
       } catch {}
     });
   } catch (error) {

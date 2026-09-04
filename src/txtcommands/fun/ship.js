@@ -25,7 +25,7 @@ import {
 
 import shippingQuotes from "./req/shipSuggestions.js";
 import { areFriends, addFriend, getCachedFriends, MAX_FRIENDS } from './req/friendsCache.js';
-import { buildPopularityContainer } from '../statistics/popularity.js';
+import { buildPopularityContainer, buildPopularityHelpContainer } from '../statistics/popularity.js';
 import { ITEM_DEFINITIONS } from '../../inventory.js';
 import { sendErrorLog } from "../../../utils/errorLogger.js";
 
@@ -424,6 +424,7 @@ const ShipCmd = {
           const guildId = interaction.guildId || context.guild?.id;
           const targetUserId = interaction.user.id;
           let popPage = 1;
+          let popView = "leaderboard";
 
           const { container: popContainer, totalPages: popTotalPages } = await buildPopularityContainer({
             userId: targetUserId,
@@ -443,22 +444,49 @@ const ShipCmd = {
             }).catch(console.error);
           });
 
-          if (!popMsg || popTotalPages <= 1) return;
+          if (!popMsg) return;
 
           const popCollector = popMsg.createMessageComponentCollector({
-            filter: (btnI) => btnI.user.id === targetUserId && ["pop_prev", "pop_next"].includes(btnI.customId),
+            filter: (btnI) => btnI.user.id === targetUserId && ["pop_prev", "pop_next", "pop_help", "pop_lb"].includes(btnI.customId),
             componentType: ComponentType.Button,
             time: 120000,
           });
 
           popCollector.on("collect", async (btnI) => {
             await btnI.deferUpdate().catch(() => {});
+
+            if (btnI.customId === "pop_help") {
+              popView = "help";
+              const { container: helpContainer } = await buildPopularityHelpContainer({
+                userId: targetUserId,
+                guildId,
+              });
+              return await btnI.editReply({
+                components: [helpContainer],
+                flags: MessageFlags.IsComponentsV2,
+              }).catch(() => {});
+            }
+
+            if (btnI.customId === "pop_lb") {
+              popView = "leaderboard";
+              const { container: lbContainer } = await buildPopularityContainer({
+                userId: targetUserId,
+                guildId,
+                page: popPage,
+              });
+              return await btnI.editReply({
+                components: [lbContainer],
+                flags: MessageFlags.IsComponentsV2,
+              }).catch(() => {});
+            }
+
             if (btnI.customId === "pop_prev" && popPage > 1) {
               popPage--;
             } else if (btnI.customId === "pop_next" && popPage < popTotalPages) {
               popPage++;
             }
 
+            popView = "leaderboard";
             const { container: newPopContainer } = await buildPopularityContainer({
               userId: targetUserId,
               guildId,
