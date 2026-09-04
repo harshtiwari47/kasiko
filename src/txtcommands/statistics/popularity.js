@@ -1,17 +1,14 @@
 import {
-  EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ComponentType,
+  ContainerBuilder,
+  MessageFlags,
 } from "discord.js";
+import User from "../../../models/User.js";
 import UserGuild from "../../../models/UserGuild.js";
-import {
-  client
-} from "../../../bot.js";
-import {
-  Helper
-} from "../../../helper.js";
+import { client } from "../../../bot.js";
 
 // Helper to send a message or reply based on context
 async function handleMessage(context, data) {
@@ -27,22 +24,22 @@ async function handleMessage(context, data) {
 }
 
 // Get top users based on server-specific popularity
-async function getTopUsers(userId, guildId, limit = 30) {
+export async function getTopPopularityUsers(userId, guildId, limit = 30) {
   try {
-    // Since popularity is only relevant in a server setting, we expect a valid guildId.
     if (!guildId) {
       throw new Error("Popularity leaderboard is only available in a guild/server context.");
     }
 
-    // Fetch top users in the server sorted by the popularity field (highest first)
-    const users = await UserGuild.aggregate([{
-      $match: {
-        guildId
-      }
-    },
+    // Fetch top users in the server sorted by popularity in User model
+    const users = await UserGuild.aggregate([
+      {
+        $match: {
+          guildId
+        }
+      },
       {
         $lookup: {
-          from: "users", // MongoDB collection name (lowercase plural by default)
+          from: "users",
           localField: "userId",
           foreignField: "id",
           as: "userData"
@@ -64,63 +61,47 @@ async function getTopUsers(userId, guildId, limit = 30) {
           userId: 1,
           popularity: "$userData.popularity"
         }
-      }]);
-
-    // Fetch the current user's record in the server
-    const userRecord = await UserGuild.findOne({
-      userId, guildId
-    }).select("popularity");
-
-    if (!userRecord) {
-      return {
-        users,
-        userRank: "Unranked",
-      };
-    }
-
-    // Count how many users have a higher popularity value
-    const higherCount = await UserGuild.countDocuments({
-      guildId,
-      popularity: {
-        $gt: userRecord.popularity
       }
-    });
+    ]);
 
-    const userRank = higherCount + 1;
+    // Fetch the invoker's popularity score
+    const userDoc = await User.findOne({ id: userId }).select("popularity").lean();
+    const userScore = userDoc?.popularity || 0;
+
+    // Count how many users in this guild have higher popularity
+    const higherCount = (await UserGuild.aggregate([
+      { $match: { guildId } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "id",
+          as: "userData"
+        }
+      },
+      { $unwind: "$userData" },
+      { $match: { "userData.popularity": { $gt: userScore } } },
+      { $count: "rank" }
+    ]))?.[0]?.rank;
+
+    const userRank = userDoc ? (higherCount !== undefined ? higherCount + 1 : 1) : "Unranked";
 
     return {
       users,
+      userScore,
       userRank
     };
   } catch (error) {
-    console.error("Error fetching top users (popularity):", error);
+    console.error("Error fetching top popularity users:", error);
     throw error;
   }
 }
 
-// Create the popularity leaderboard embed
-async function createLeaderboardEmbed( {
-  userId, page = 1, guildId
-}) {
+// Build the Discord ContainerBuilder for popularity leaderboard
+export async function buildPopularityContainer({ userId, guildId, page = 1, disabled = false }) {
   try {
     const itemsPerPage = 10;
-    const {
-      users,
-      userRank
-    } = await getTopUsers(userId, guildId, itemsPerPage * 3); // Top 30
-
-    if (users.length === 0) {
-      return {
-        embed: new EmbedBuilder()
-        .setColor("#ed971e")
-        .setTitle(`<:trophy:1352897371595477084> 𝗦𝗘𝗥𝗩𝗘𝗥 𝗣𝗢𝗣𝗨𝗟𝗔𝗥𝗜𝗧𝗬  ✧`)
-        .setDescription("No users found!")
-        .setFooter({
-          text: `Your position: Not ranked`
-        }),
-        totalPages: 1,
-      };
-    }
+    const { users, userScore, userRank } = await getTopPopularityUsers(userId, guildId, itemsPerPage * 3); // Top 30
 
     let totalPages = Math.ceil(users.length / itemsPerPage);
     if (totalPages === 0) totalPages = 1;
@@ -132,155 +113,160 @@ async function createLeaderboardEmbed( {
     const end = start + itemsPerPage;
     const currentUsers = users.slice(start, end);
 
+    const userDetailsList = await Promise.all(
+      currentUsers.map(async u => {
+        try {
+          const fetched = await client.users.fetch(u.userId);
+          return { ...u, username: fetched.username };
+        } catch {
+          return { ...u, username: "Unknown User" };
+        }
+      })
+    );
+
     let leaderboard = "";
-    for (const [index, user] of currentUsers.entries()) {
-      let userDetails;
-      try {
-        userDetails = await client.users.fetch(user.userId);
-      } catch (err) {
-        userDetails = {
-          username: "Unknown User"
-        };
+    if (userDetailsList.length === 0) {
+      leaderboard = "No ranked users found in this server yet! Ship with members to appear here.";
+    } else {
+      for (const [index, u] of userDetailsList.entries()) {
+        const userIndex = ((page - 1) * itemsPerPage) + index + 1;
+        let posIcon = "<:rose:1343097565738172488>";
+        if (userIndex === 1) posIcon = "<:throne:1350387076834791486>";
+        else if (userIndex === 2) posIcon = "🥈";
+        else if (userIndex === 3) posIcon = "🥉";
+
+        const prefix = userIndex === 1 ? "## " : userIndex === 2 ? "### " : userIndex === 3 ? "### " : "";
+        leaderboard += `${prefix}**${posIcon}** **${u.username}** — <:popularity:1359565087341543435> **\`${Number(u.popularity?.toFixed(1) || 0).toLocaleString()}\`**\n`;
       }
-
-      // Calculate user's overall rank based on their position in the paginated list.
-      let userIndex = ((page - 1) * itemsPerPage) + index + 1;
-      let posIcon = "<:rose:1343097565738172488>"; // popularity rose icon
-
-      // Optionally show special icons for top positions.
-      if (userIndex === 1) posIcon = "<:throne:1350387076834791486>";
-      else if (userIndex === 2) posIcon = "🥈";
-      else if (userIndex === 3) posIcon = "🥉";
-
-      leaderboard += `${userIndex === 1 ? "## ": userIndex === 2 ? "### ": userIndex === 3 ? "### ": ""}**${posIcon}** **${userDetails.username}** - <:popularity:1359565087341543435> **\`${Number(user.popularity?.toFixed(1) || 0).toLocaleString()}\`**\n`;
     }
 
-    const userPosition = userRank && userRank <= itemsPerPage * 3 ? userRank: userRank || "Unranked";
+    const container = new ContainerBuilder()
+      .setAccentColor(0xf06292)
+      .addTextDisplayComponents(
+        td => td.setContent(`### <:trophy:1352897371595477084> **SERVER POPULARITY LEADERBOARD**`),
+        td => td.setContent(
+          `**Your Popularity:** <:popularity:1359565087341543435> **\`${Number(userScore?.toFixed(1) || 0).toLocaleString()}\`** · Server Rank: **#${userRank}**`
+        )
+      )
+      .addSeparatorComponents(sep => sep)
+      .addTextDisplayComponents(
+        td => td.setContent(
+          `**✨ What is Popularity?**\n` +
+          `Popularity measures your social charm and reputation in the community! It reflects how admired and loved you are by other players.\n\n` +
+          `**🔥 How to Increase:**\n` +
+          `• ❤️ **Get Liked in Ship:** Earn **+1 Popularity** whenever someone clicks Like on your ship card (\`kas ship\`)\n` +
+          `• <:rose:1343097565738172488> **Receive Roses:** Earn **+25 Popularity** when someone sends you 5 Private Roses in \`kas ship\`\n` +
+          `• 👑 **Climb the Leaderboard:** Reach the top 3 for prestigious server throne and medal badges!`
+        )
+      )
+      .addSeparatorComponents(sep => sep)
+      .addTextDisplayComponents(
+        td => td.setContent(`### 🏆 **TOP MEMBERS**\n${leaderboard}`),
+        td => td.setContent(`-# Page ${page}/${totalPages} · Use \`kas ship\` to spread love and earn popularity!`)
+      );
 
-
-    const embed = new EmbedBuilder()
-    .setTitle(`<:trophy:1352897371595477084> 𝗦𝗘𝗥𝗩𝗘𝗥 𝗣𝗢𝗣𝗨𝗟𝗔𝗥𝗜𝗧𝗬  ✧`)
-    .setDescription(leaderboard)
-    .setFooter({
-      text: `Page ${page}/${totalPages} | Your position: ${userPosition}`
-    });
+    if (totalPages > 1) {
+      container.addActionRowComponents(row =>
+        row.addComponents(
+          new ButtonBuilder()
+            .setCustomId("pop_prev")
+            .setLabel("◀")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disabled || page === 1),
+          new ButtonBuilder()
+            .setCustomId("pop_next")
+            .setLabel("▶")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disabled || page === totalPages)
+        )
+      );
+    }
 
     return {
-      embed,
-      totalPages
+      container,
+      totalPages,
+      page
     };
   } catch (error) {
-    console.error("Error generating popularity leaderboard embed:", error);
+    console.error("Error generating popularity leaderboard container:", error);
+    const errContainer = new ContainerBuilder()
+      .setAccentColor(0xed4245)
+      .addTextDisplayComponents(
+        td => td.setContent(`### <:checkbox_cross:1388858904095625226> **Error**`),
+        td => td.setContent(`An error occurred while generating the popularity leaderboard.`)
+      );
     return {
-      embed: new EmbedBuilder()
-      .setColor("#ed971e")
-      .setTitle("Error")
-      .setDescription("An error occurred while generating the popularity leaderboard.")
-      .setTimestamp(),
+      container: errContainer,
       totalPages: 1,
+      page: 1
     };
   }
 }
 
-// Create an action row with navigation buttons for the leaderboard
-function createActionRow( {
-  currentPage, totalPages
-}) {
-  return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-    .setCustomId("previous")
-    .setLabel("◀")
-    .setStyle(ButtonStyle.Primary)
-    .setDisabled(currentPage === 1),
-    new ButtonBuilder()
-    .setCustomId("next")
-    .setLabel("▶")
-    .setStyle(ButtonStyle.Primary)
-    .setDisabled(currentPage === totalPages)
-  );
-}
-
-// Main function to execute the popularity leaderboard command.
 export async function popularity(context) {
   try {
-    // Get the invoker's userId and require a guild context.
-    const userId = context.user ? context.user.id: context.author.id;
+    const userId = context.user ? context.user.id : context.author.id;
     const guildId = context.guild?.id;
     if (!guildId) {
+      const dmContainer = new ContainerBuilder()
+        .setAccentColor(0xed4245)
+        .addTextDisplayComponents(
+          td => td.setContent(`⚠️ This command can only be used in a server.`)
+        );
       return handleMessage(context, {
-        content: "This command can only be used in a server."
+        components: [dmContainer],
+        flags: MessageFlags.IsComponentsV2
       });
     }
 
     let currentPage = 1;
-
-    // Create the initial embed and calculate total pages.
-    let {
-      embed: initialEmbed,
-      totalPages
-    } = await createLeaderboardEmbed( {
-        userId,
-        page: currentPage,
-        guildId,
-      });
-
-    let actionRow = createActionRow( {
-      currentPage, totalPages
+    let { container, totalPages } = await buildPopularityContainer({
+      userId,
+      guildId,
+      page: currentPage
     });
 
-    const messageData = {
-      embeds: [initialEmbed],
-      components: [actionRow],
-    };
+    const sentMessage = await handleMessage(context, {
+      components: [container],
+      flags: MessageFlags.IsComponentsV2
+    });
 
-    const sentMessage = await handleMessage(context, messageData);
+    if (!sentMessage || totalPages <= 1) return;
 
-    // Set up a collector for button interactions.
     const filter = (interaction) => {
       if (interaction.isButton()) {
-        const invokerId = context.user ? context.user.id: context.author.id;
-        return interaction.user.id === invokerId;
+        const invokerId = context.user ? context.user.id : context.author.id;
+        return interaction.user.id === invokerId && ["pop_prev", "pop_next"].includes(interaction.customId);
       }
       return false;
     };
 
-    const collector = sentMessage?.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
+    const collector = sentMessage.createMessageComponentCollector ? sentMessage.createMessageComponentCollector({
       filter,
       componentType: ComponentType.Button,
-      time: 3 * 60 * 1000, // 3 minutes
+      time: 3 * 60 * 1000,
     }) : null;
 
     if (!collector) return;
 
     collector.on("collect", async (interaction) => {
       try {
-        await interaction.deferUpdate();
-        switch (interaction.customId) {
-          case "previous":
-            if (currentPage > 1) currentPage--;
-            break;
-          case "next":
-            if (currentPage < totalPages) currentPage++;
-            break;
-          default:
-            break;
+        await interaction.deferUpdate().catch(() => {});
+        if (interaction.customId === "pop_prev" && currentPage > 1) {
+          currentPage--;
+        } else if (interaction.customId === "pop_next" && currentPage < totalPages) {
+          currentPage++;
         }
 
-        const {
-          embed: updatedEmbed,
-          totalPages: newTotalPages
-        } = await createLeaderboardEmbed( {
-            userId,
-            page: currentPage,
-            guildId,
-          });
-        totalPages = newTotalPages;
-        const updatedActionRow = createActionRow( {
-          currentPage, totalPages
+        const { container: updatedContainer } = await buildPopularityContainer({
+          userId,
+          guildId,
+          page: currentPage
         });
+
         await sentMessage.edit({
-          embeds: [updatedEmbed],
-          components: [updatedActionRow],
+          components: [updatedContainer],
+          flags: MessageFlags.IsComponentsV2
         });
       } catch (e) {
         if (e.message !== "Unknown Message" && e.message !== "Missing Permissions") {
@@ -289,50 +275,48 @@ export async function popularity(context) {
       }
     });
 
-    collector.on("end",
-      async () => {
-        // Disable all buttons after expiration.
-        const disabledRow = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-          .setCustomId("previous")
-          .setLabel("◀")
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(true),
-          new ButtonBuilder()
-          .setCustomId("next")
-          .setLabel("▶")
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(true)
-        );
+    collector.on("end", async () => {
+      try {
+        const { container: disabledContainer } = await buildPopularityContainer({
+          userId,
+          guildId,
+          page: currentPage,
+          disabled: true
+        });
         if (!sentMessage?.edit) return;
         await sentMessage.edit({
-          components: [disabledRow],
-        });
-      });
+          components: [disabledContainer],
+          flags: MessageFlags.IsComponentsV2
+        }).catch(() => {});
+      } catch {}
+    });
   } catch (error) {
-    console.error("Error in popularity leaderboard command:",
-      error);
-    await handleMessage(context,
-      {
-        content: "Oops! Something went wrong while fetching the popularity leaderboard!",
-      });
+    console.error("Error in popularity leaderboard command:", error);
+    const errContainer = new ContainerBuilder()
+      .setAccentColor(0xed4245)
+      .addTextDisplayComponents(
+        td => td.setContent(`Oops! Something went wrong while fetching the popularity leaderboard!`)
+      );
+    await handleMessage(context, {
+      components: [errContainer],
+      flags: MessageFlags.IsComponentsV2
+    });
   }
 }
 
 export default {
   name: "popularity",
   description:
-  "Displays the top server-specific popularity leaderboard ranking users by their popularity score from ship.",
+    "Displays the top server-specific popularity leaderboard ranking users by their popularity score from ship.",
   aliases: ["poplb"],
   args: "",
   emoji: "🔥",
   example: ["popularity"],
   related: ["leaderboard", "profile", "stat"],
-  cooldown: 10000, // 10 second cooldown
+  cooldown: 10000,
   category: "📰 Information",
 
-  execute: (args,
-    context) => {
+  execute: (args, context) => {
     return popularity(context);
   },
 };

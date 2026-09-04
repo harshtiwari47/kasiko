@@ -162,10 +162,10 @@ async function handleAddFriend(args, context, invoker) {
     .setEmoji("❌")
     .setStyle(ButtonStyle.Danger);
 
-  const row = new ActionRowBuilder().addComponents(acceptBtn, declineBtn);
+  confirmContainer.addActionRowComponents(row => row.addComponents(acceptBtn, declineBtn));
 
   const responseMsg = await handleMessage(context, {
-    components: [confirmContainer, row],
+    components: [confirmContainer],
     flags: MessageFlags.IsComponentsV2,
   });
 
@@ -199,13 +199,8 @@ async function handleAddFriend(args, context, invoker) {
             textDisplay => textDisplay.setContent(`-# 💫 Ship together for a +20% score boost and higher item drops!`)
           );
 
-        const disabledRow = new ActionRowBuilder().addComponents(
-          acceptBtn.setDisabled(true),
-          declineBtn.setDisabled(true)
-        );
-
         await responseMsg.edit({
-          components: [successContainer, disabledRow],
+          components: [successContainer],
           flags: MessageFlags.IsComponentsV2,
         }).catch(() => {});
       } else if (result.error === 'already_friends') {
@@ -226,13 +221,8 @@ async function handleAddFriend(args, context, invoker) {
           textDisplay => textDisplay.setContent(`❌ **${targetUser.username}** declined the friend request.`)
         );
 
-      const disabledRow = new ActionRowBuilder().addComponents(
-        acceptBtn.setDisabled(true),
-        declineBtn.setDisabled(true)
-      );
-
       await responseMsg.edit({
-        components: [declineContainer, disabledRow],
+        components: [declineContainer],
         flags: MessageFlags.IsComponentsV2,
       }).catch(() => {});
     }
@@ -246,13 +236,8 @@ async function handleAddFriend(args, context, invoker) {
           textDisplay => textDisplay.setContent(`⏰ Friend request from **${invoker.username}** to **${targetUser.username}** expired.`)
         );
 
-      const disabledRow = new ActionRowBuilder().addComponents(
-        acceptBtn.setDisabled(true),
-        declineBtn.setDisabled(true)
-      );
-
       await responseMsg.edit({
-        components: [timeoutContainer, disabledRow],
+        components: [timeoutContainer],
         flags: MessageFlags.IsComponentsV2,
       }).catch(() => {});
     }

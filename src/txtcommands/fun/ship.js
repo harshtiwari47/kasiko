@@ -25,6 +25,7 @@ import {
 
 import shippingQuotes from "./req/shipSuggestions.js";
 import { areFriends, addFriend, getCachedFriends, MAX_FRIENDS } from './req/friendsCache.js';
+import { buildPopularityContainer } from '../statistics/popularity.js';
 import { ITEM_DEFINITIONS } from '../../inventory.js';
 import { sendErrorLog } from "../../../utils/errorLogger.js";
 
@@ -380,7 +381,11 @@ const ShipCmd = {
         .setEmoji('1545399894397943818')
         .setDisabled(user1.id === user2.id || user2.bot)
         .setStyle(isFriend ? ButtonStyle.Success : ButtonStyle.Primary);
-      const actionRow = new ActionRowBuilder().addComponents(likeButton, passButton, friendsButton);
+      const popularityButton = new ButtonBuilder()
+        .setCustomId("popularity_ship")
+        .setEmoji('1359565087341543435')
+        .setStyle(ButtonStyle.Secondary);
+      const actionRow = new ActionRowBuilder().addComponents(likeButton, passButton, friendsButton, popularityButton);
 
       // Send the ship embed/image using our universal handler or channel.send on pass
       const messagePayload = {
@@ -403,8 +408,8 @@ const ShipCmd = {
 
       if (!responseMessage) return;
 
-      // Create a collector for button interactions (only the invoker may interact).
-      const filter = i => i.user.id === invoker.id;
+      // Create a collector for button interactions.
+      const filter = i => ["like_ship", "pass_ship", "friends_ship", "popularity_ship"].includes(i.customId);
       const collector = responseMessage?.createMessageComponentCollector ? responseMessage.createMessageComponentCollector({
         filter,
         componentType: ComponentType.Button,
@@ -414,19 +419,80 @@ const ShipCmd = {
       if (!collector) return;
 
       collector.on("collect", async interaction => {
-        if (interaction.user.id !== invoker.id) {
-          return await interaction.reply({
-            content: "⚠️ You cannot interact with this button.",
-            ephemeral: true,
+        // Popularity leaderboard button — anyone in the server can click to view server popularity
+        if (interaction.customId === "popularity_ship") {
+          const guildId = interaction.guildId || context.guild?.id;
+          const targetUserId = interaction.user.id;
+          let popPage = 1;
+
+          const { container: popContainer, totalPages: popTotalPages } = await buildPopularityContainer({
+            userId: targetUserId,
+            guildId,
+            page: popPage,
           });
+
+          const popMsg = await interaction.reply({
+            components: [popContainer],
+            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+            fetchReply: true,
+          }).catch(async () => {
+            return await interaction.followUp({
+              components: [popContainer],
+              flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+              fetchReply: true,
+            }).catch(console.error);
+          });
+
+          if (!popMsg || popTotalPages <= 1) return;
+
+          const popCollector = popMsg.createMessageComponentCollector({
+            filter: (btnI) => btnI.user.id === targetUserId && ["pop_prev", "pop_next"].includes(btnI.customId),
+            componentType: ComponentType.Button,
+            time: 120000,
+          });
+
+          popCollector.on("collect", async (btnI) => {
+            await btnI.deferUpdate().catch(() => {});
+            if (btnI.customId === "pop_prev" && popPage > 1) {
+              popPage--;
+            } else if (btnI.customId === "pop_next" && popPage < popTotalPages) {
+              popPage++;
+            }
+
+            const { container: newPopContainer } = await buildPopularityContainer({
+              userId: targetUserId,
+              guildId,
+              page: popPage,
+            });
+
+            await btnI.editReply({
+              components: [newPopContainer],
+              flags: MessageFlags.IsComponentsV2,
+            }).catch(() => {});
+          });
+
+          return;
+        }
+
+        // For like, pass, and friends: only the invoker may interact
+        if (interaction.user.id !== invoker.id) {
+          const warnContainer = new ContainerBuilder()
+            .setAccentColor(0xed4245)
+            .addTextDisplayComponents(
+              td => td.setContent(`⚠️ You cannot interact with this ship card. Use \`kas ship\` to get your own!`)
+            );
+          return await interaction.reply({
+            components: [warnContainer],
+            flags: MessageFlags.IsComponentsV2 | MessageFlags.Ephemeral,
+          }).catch(console.error);
         }
 
         if (interaction.customId === "like_ship") {
           await interaction.deferUpdate().catch(() => { });
 
-          // Only disable the like button so friends and pass remain clickable
+          // Only disable the like button so friends, popularity and pass remain clickable
           likeButton.setDisabled(true);
-          const updatedRow = new ActionRowBuilder().addComponents(likeButton, passButton, friendsButton);
+          const updatedRow = new ActionRowBuilder().addComponents(likeButton, passButton, friendsButton, popularityButton);
           await responseMessage.edit({ components: [updatedRow] }).catch(() => { });
 
           const user2Data = await getUserData(user2?.id);
@@ -515,7 +581,8 @@ const ShipCmd = {
           const disabledRow = new ActionRowBuilder().addComponents(
             likeButton.setDisabled(true),
             passButton.setDisabled(true),
-            friendsButton.setDisabled(true)
+            friendsButton.setDisabled(true),
+            popularityButton.setDisabled(true)
           );
           await responseMessage.edit({ components: [disabledRow] }).catch(() => { });
 
@@ -598,7 +665,7 @@ const ShipCmd = {
           // Ask confirmation: "Ask for confirmation if they are not friends and they want to add that user."
           const confirmAddBtn = new ButtonBuilder()
             .setCustomId(`ship_cf_add_${user2.id}`)
-            .setLabel("Send Request")
+            .setLabel("Add Friend")
             .setEmoji("1388858843324350474")
             .setStyle(ButtonStyle.Success);
 
@@ -612,7 +679,7 @@ const ShipCmd = {
             .setAccentColor(0x5865f2)
             .addTextDisplayComponents(
               td => td.setContent(`### <:friends:1545399894397943818> **ADD FRIEND?**`),
-              td => td.setContent(`Do you want to send a friend request to **${user2.username || user2.user?.username}**?`),
+              td => td.setContent(`Do you want to add **${user2.username || user2.user?.username}** as your friend?`),
               td => td.setContent(`-# <:happy:1403061130955587634> Friends get a **+20% ship score boost** and **higher item drop rates**!`)
             )
             .addActionRowComponents(row => row.addComponents(confirmAddBtn, cancelAddBtn));
@@ -642,124 +709,64 @@ const ShipCmd = {
             if (btnI.customId === `ship_cf_add_${user2.id}`) {
               await btnI.deferUpdate().catch(() => { });
 
-              const sentContainer = new ContainerBuilder()
-                .setAccentColor(0x57f287)
-                .addTextDisplayComponents(
-                  td => td.setContent(`### <:rose_flower:1367919954455953488> **REQUEST SENT!**`),
-                  td => td.setContent(`A friend request has been sent to **${user2.username || user2.user?.username}** in the channel!`)
+              const result = await addFriend(invoker.id, user2.id);
+              if (result.success) {
+                const currentFriends = await getCachedFriends(invoker.id);
+                const successContainer = new ContainerBuilder()
+                  .setAccentColor(0x57f287)
+                  .addTextDisplayComponents(
+                    td => td.setContent(`### <:rose_flower:1367919954455953488> **FRIENDSHIP FORMED!**`),
+                    td => td.setContent(
+                      `You and **${user2.username || user2.user?.username}** are now friends! 🎉`
+                    ),
+                    td => td.setContent(
+                      `-# 💫 Friends: **${currentFriends.length}/${MAX_FRIENDS}** · Ship together for a +20% score boost and higher item drops!`
+                    )
+                  );
+
+                await btnI.editReply({
+                  components: [successContainer],
+                  flags: MessageFlags.IsComponentsV2,
+                }).catch(() => { });
+
+                // Update ship card friends button to Success (green)
+                friendsButton.setStyle(ButtonStyle.Success).setLabel("𝑭𝑹𝑰𝑬𝑵𝑫𝑺 ✓");
+                const updatedRow = new ActionRowBuilder().addComponents(
+                  likeButton,
+                  passButton,
+                  friendsButton,
+                  popularityButton
                 );
-              await btnI.editReply({
-                components: [sentContainer],
-                flags: MessageFlags.IsComponentsV2,
-              }).catch(() => { });
+                await responseMessage.edit({ components: [updatedRow] }).catch(() => { });
 
-              // Send public request in channel for user2 to accept/decline
-              const acceptBtn = new ButtonBuilder()
-                .setCustomId("ship_friend_accept")
-                .setLabel("Accept")
-                .setEmoji("1388858843324350474")
-                .setStyle(ButtonStyle.Success);
-              const declineBtn = new ButtonBuilder()
-                .setCustomId("ship_friend_decline")
-                .setLabel("Decline")
-                .setEmoji("1388858904095625226")
-                .setStyle(ButtonStyle.Danger);
-
-              const requestContainer = new ContainerBuilder()
-                .setAccentColor(0x5865f2)
-                .addTextDisplayComponents(
-                  td => td.setContent(`### <:friends:1545399894397943818> **FRIEND REQUEST**`),
-                  td => td.setContent(
-                    `Hey <@${user2.id}>! **${invoker.username}** wants to add you as a friend!\n\n` +
-                    `Click below to accept or decline.`
-                  ),
-                  td => td.setContent(
-                    `-# <:happy:1403061130955587634> Friends get a **+20% ship score boost** and **higher item drop rates**! · Expires in 60s`
-                  )
-                )
-                .addActionRowComponents(row => row.addComponents(acceptBtn, declineBtn));
-
-              const reqMsg = await context.channel.send({
-                components: [requestContainer],
-                flags: MessageFlags.IsComponentsV2,
-              }).catch(console.error);
-
-              if (!reqMsg) return;
-
-              const friendCollector = reqMsg.createMessageComponentCollector({
-                filter: (targetI) => targetI.user.id === user2.id,
-                componentType: ComponentType.Button,
-                time: 60000,
-                max: 1,
-              });
-
-              friendCollector.on("collect", async (targetI) => {
-                await targetI.deferUpdate().catch(() => { });
-
-                if (targetI.customId === "ship_friend_accept") {
-                  const result = await addFriend(invoker.id, user2.id);
-                  if (result.success) {
-                    const successContainer = new ContainerBuilder()
-                      .setAccentColor(0x57f287)
-                      .addTextDisplayComponents(
-                        td => td.setContent(`### <:rose_flower:1367919954455953488> **FRIENDSHIP FORMED!**`),
-                        td => td.setContent(
-                          `**${invoker.username}** and **${user2.username || user2.user?.username}** are now friends! 🎉`
-                        ),
-                        td => td.setContent(
-                          `-# 💫 Ship together for a +20% score boost and higher item drops!`
-                        )
-                      );
-
-                    await reqMsg.edit({
-                      components: [successContainer],
-                      flags: MessageFlags.IsComponentsV2,
-                    }).catch(console.error);
-                  } else {
-                    const errorContainer = new ContainerBuilder()
-                      .setAccentColor(0xed4245)
-                      .addTextDisplayComponents(
-                        td => td.setContent(`⚠️ Could not add friend. ${result.error === 'already_friends' ? "You're already friends!" : "Friends list is full!"}`)
-                      );
-                    await reqMsg.edit({
-                      components: [errorContainer],
-                      flags: MessageFlags.IsComponentsV2,
-                    }).catch(console.error);
-                  }
-                } else {
-                  const declineContainer = new ContainerBuilder()
-                    .setAccentColor(0xed4245)
-                    .addTextDisplayComponents(
-                      td => td.setContent(`<:checkbox_cross:1388858904095625226> **${user2.username || user2.user?.username}** declined the friend request.`)
-                    );
-                  await reqMsg.edit({
-                    components: [declineContainer],
-                    flags: MessageFlags.IsComponentsV2,
-                  }).catch(console.error);
-                }
-              });
-
-              friendCollector.on("end", async (collected) => {
-                if (collected.size === 0) {
-                  const timeoutContainer = new ContainerBuilder()
-                    .setAccentColor(0x99aab5)
-                    .addTextDisplayComponents(
-                      td => td.setContent(`<:clock:1540072937485369364> Friend request from **${invoker.username}** to **${user2.username || user2.user?.username}** expired.`)
-                    );
-                  await reqMsg.edit({
-                    components: [timeoutContainer],
-                    flags: MessageFlags.IsComponentsV2,
-                  }).catch(console.error);
-                }
-              });
-
+                // Send friendly DM notification to user2
+                try {
+                  await user2.send(
+                    `👥 **${invoker.username}** has added you as a friend on Kasiko!\n` +
+                    `𝑌𝑜𝑢 𝑏𝑜𝑡ℎ 𝑛𝑜𝑤 𝑔𝑒𝑡 𝑎 **+20% ship score boost** 𝑎𝑛𝑑 **higher item drops** when shipping together! 🎉`
+                  );
+                } catch { }
+              } else {
+                const errorMsg = result.error === 'already_friends'
+                  ? "You're already friends!"
+                  : "Friends list is full!";
+                const errorContainer = new ContainerBuilder()
+                  .setAccentColor(0xed4245)
+                  .addTextDisplayComponents(
+                    td => td.setContent(`⚠️ Could not add friend. ${errorMsg}`)
+                  );
+                await btnI.editReply({
+                  components: [errorContainer],
+                  flags: MessageFlags.IsComponentsV2,
+                }).catch(() => { });
+              }
             } else {
               // Invoker cancelled
               await btnI.deferUpdate().catch(() => { });
               const cancelContainer = new ContainerBuilder()
                 .setAccentColor(0x99aab5)
                 .addTextDisplayComponents(
-                  td => td.setContent(`❌ Friend request cancelled.`)
+                  td => td.setContent(`❌ Cancelled adding friend.`)
                 );
               await btnI.editReply({
                 components: [cancelContainer],
@@ -775,7 +782,8 @@ const ShipCmd = {
           const disabledRow = new ActionRowBuilder().addComponents(
             likeButton.setDisabled(true),
             passButton.setDisabled(true),
-            friendsButton.setDisabled(true)
+            friendsButton.setDisabled(true),
+            popularityButton.setDisabled(true)
           );
           await responseMessage.edit({
             components: [disabledRow]
